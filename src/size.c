@@ -22,7 +22,7 @@ void bnw_llik(int *K, int *n, int *s, int *nk, double *Nk, double *llik){
     }
     *llik=ll;
 }
-double bnw_llikN(int *N, int *K, int *n, int *s, int *nk, int *Nk){
+double bnw_llikN(int *K, int *n, int *s, int *nk, int *Nk){
     int i, k, Nkk, Nc;
     double ll;
     ll=0.;
@@ -135,7 +135,7 @@ void bnw_NC(int *N, int *K, int *n, int *s, int *nk, int *Nk,
 //   for(k=0;k<(*K);k++){
 //    Nkk+=(Nk[k]*(k+1));
 //   }
-//   Nc=bnw_llikN(N,K,n,s,nk,Nk);
+//   Nc=bnw_llikN(K,n,s,nk,Nk);
      q=-dmultinorm(N,K,Nk,lqprob);
      htdv[i]=q;
      htnv[i]=bnw_unposN(N,K,n,s,nk,Nk,lprob)+q;
@@ -207,7 +207,7 @@ void bnw_mp(int *N, int *lenN, int *K, int *n, int *s, int *nk,
     lM=log(*M);
     lCval=log(*Cval);
 
-    fact =1.;
+    fact=1.;
     Nc=0.;
     for(k=0;k<*K;k++){
       Nkk=k+1;
@@ -225,14 +225,11 @@ void bnw_mp(int *N, int *lenN, int *K, int *n, int *s, int *nk,
 
     i=0;
     while(i < Mi){
-//   for(k=0;k<(*K);k++){
-//    Nk[k]=0;
-//   }
-//   Sample an N
 /*  Generate a random draw from the size prior (here uniform) */
-/*  Generate a random draw from the population of sizes */
      Ntotpriori = trunc(Nlen*unif_rand()+1.);
      Ntotprior = N[Ntotpriori];
+//   Rprintf("N= %d",Ntotprior);
+/*  Generate a random draw from the population of sizes */
      rmultinom(Ntotprior, dprob, *K, Nprior);
 // for(k=0;k<*K;k++){
 //  Rprintf(" %d",Nprior[k]);
@@ -243,9 +240,9 @@ void bnw_mp(int *N, int *lenN, int *K, int *n, int *s, int *nk,
 //    Nkk+=(Nk[k]*(k+1));
 //   }
 //   
-//   
 //   q=-dmultinorm(N,K,Nk,lprob);
-     q=bnw_llikN(&Ntotprior,K,n,s,nk,Nprior);
+//   
+     q=bnw_llikN(K,n,s,nk,Nprior);
      if(q > lCval){
        Rprintf("Warning: Rejection sampling bound log(C)=%f exceeded\n",lCval);
        Rprintf("         by drawn value of %f.\n",q);
