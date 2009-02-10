@@ -7,28 +7,6 @@
 #include <Rmath.h>
 #include <math.h>
 
-/* ERGMM_MCMC_lp_edge = unnormalized log-probability of a dyad. */
-/* ERGMM_MCMC_set_lp_Yconst = (one-time) setting of the network's normalization constant. */
-/* ERGMM_MCMC_E_edge = expected value of a dyad. */
-
-void bnw_llik(int *K, int *n, int *s, int *snk, double *Nk, double *llik){
-    int i, k;
-    double Nc=0., ll=0.;
-//    Rprintf("K=%d n=%d\n",*K,*n);
-    for(k=0;k<*K;k++){
-	  Nc+=(k+1)*Nk[k];
-	  ll+=lgammafn(Nk[k]+1.)-lgammafn(Nk[k]-snk[k]+1.);
-    }
-//    Rprintf("llik=%f\n",ll);
-    for(i=0;i<(*n);i++){
-//    Rprintf("ll=%f s=%d Nc=%f\n",ll,s[i],Nc);
-	  ll+=log(s[i]/Nc);
-	  Nc-=s[i];
-    }
-//    Rprintf("llik=%f",ll);
-    *llik=ll;
-}
-
 void bnw_unpos(int *K, int *n, int *s, int *snk, double *Nk, double *mu,
 	       double *rho, double *unpos){
     int i, k;

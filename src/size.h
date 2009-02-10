@@ -13,7 +13,14 @@ double bnw_unposN(int *N, int *K, int *n, int *s, int *nk, int *Nk, double *lpro
 void bnw_NC(int *N, int *K, int *n, int *s, int *nk, int *Nk,
 	    double *prob,
 	    double *mu,
-	    double *rho, int *M, double *unpos);
+  	    double *rho, int *M, double *unpos);
+void bnw_mp(int *N, int *lenN, int *K, int *n, int *s, int *nk,
+	    double *Cval,
+	    double *prob,
+	    int *Nprior,
+	    double *mu,
+	    double *rho, int *M);
+
 double ldwarint(int *N, double *mu, double *rho);
 
 #endif /* SIZE_H */

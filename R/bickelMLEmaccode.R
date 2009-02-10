@@ -16,21 +16,6 @@ llhoodinC<-function(pop,s){
     Cret$llik
 }
 
-llhoodf<-function(N,s,n=tabulate(s)){
-    #this function takes a vector of population sizes and a vector s of 
-    #sequential sizes of sampled units and returns a log likelihood value
-    #s values must all be positive integers
-    if(length(n)>length(N)){print("Error - observed unit outside range")}
-    Cret <- .C("bnw_llik",
-              K=as.integer(length(N)),
-              n=as.integer(length(s)),
-              s=as.integer(s),
-              snk=as.integer(n),
-              Nk=as.double(N),
-              llik=as.double(0))
-    Cret$llik
-}
-
 unposf<-function(mu,rho,N,s,n=tabulate(s)){
     #this function takes a vector of population sizes and a vector s of 
     #sequential sizes of sampled units and returns a log likelihood value
