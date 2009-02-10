@@ -3,7 +3,7 @@ margposteriorsize<-function(s,N=trunc(length(s)*seq(1.1,4,length=10)+1),
           mu=5,rho=3,M=100000,
           parallel=1,seed=NULL, verbose=FALSE, 
           n=tabulate(s,nbin=K),
-          Cval=NULL,
+          lCval=NULL,
           nstart=NULL,
           return.all=TRUE){
   if(length(N)==0||!is.numeric(N)||trunc(N)!=N){
@@ -13,15 +13,16 @@ margposteriorsize<-function(s,N=trunc(length(s)*seq(1.1,4,length=10)+1),
   if(!is.null(seed))  set.seed(as.integer(seed))
   prob=rep(0,K)
   llik <- function(x,s,n){ llhoodf(N=exp(x),s=s,n=n) }
-  if(is.null(Cval)){
+  if(is.null(lCval)){
    if(is.null(nstart)){
           nstart=n/(1:K)
-          nstart=3*sum(n)*nstart/sum(nstart)
+          nstart=log(3*sum(n)*nstart/sum(nstart))
    }
    out <- optim(par=nstart, fn=llik, s=s, n=n,
     control=list(maxit=10000,fnscale=-1))
    Nmle <- exp(out$par)
-   Cval <- exp(out$value)
+   lCval <- out$value
+   print(lCval)
   }else{
    Nmle <- nstart
   }
@@ -33,7 +34,7 @@ margposteriorsize<-function(s,N=trunc(length(s)*seq(1.1,4,length=10)+1),
               n=as.integer(length(s)),
               s=as.integer(s),
               nk=as.integer(n),
-              Cval=as.double(Cval),
+              lCval=as.double(lCval),
               prob=as.double(N),
               Nprior=as.integer(prob),
               Nmle=as.integer(round(Nmle)),
@@ -77,7 +78,7 @@ margposteriorsize<-function(s,N=trunc(length(s)*seq(1.1,4,length=10)+1),
     flush.console()
     MCsamplesize.parallel=round(M/parallel)
     outlist <- clusterCall(cl, margposteriorsize,
-      s=s,N=N,K=K,mu=mu,rho=rho,n=n,Cval=Cval,nstart=Nmle,
+      s=s,N=N,K=K,mu=mu,rho=rho,n=n,lCval=lCval,nstart=Nmle,
       M=MCsamplesize.parallel)
 #   if(length(N)==0||!is.numeric(N)||trunc(N)!=N){
 #
@@ -94,8 +95,8 @@ margposteriorsize<-function(s,N=trunc(length(s)*seq(1.1,4,length=10)+1),
     for(i in 1:np){
       out <- outlist[[i]]
       Cret$prob <- Cret$prob + out$prob / np
-      if(out$Cval > Cret$Cval){
-        Cret$Cval <- out$Cval
+      if(out$lCval > Cret$lCval){
+        Cret$lCval <- out$lCval
         Cret$Nmle <- out$Nmle
       }
     }

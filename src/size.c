@@ -189,7 +189,7 @@ void bnw_NC(int *N, int *K, int *n, int *s, int *nk, int *Nk,
 // Rprintf("N=%d #pop ties=%d #mean ties %f\n",(*N),Nkk,(Nkk*1.)/(*N));
 }
 void bnw_mp(int *N, int *lenN, int *K, int *n, int *s, int *nk,
-	    double *Cval,
+	    double *lCval,
 	    double *prob,
 	    int *Nprior,
 	    int *Nmle,
@@ -197,7 +197,7 @@ void bnw_mp(int *N, int *lenN, int *K, int *n, int *s, int *nk,
 	    double *rho, int *M){
     int i, k, Nkk, Mi, Nlen;
     int Ntotprior, Ntotpriori;
-    double fact, lCval, q;
+    double fact, Cval, q;
     double Nc, Md, lM;
     double *dprob = (double *) malloc(sizeof(double) * (*K));
 
@@ -205,7 +205,7 @@ void bnw_mp(int *N, int *lenN, int *K, int *n, int *s, int *nk,
     Md=(double)(*M);
     Nlen=(*lenN);
     lM=log(*M);
-    lCval=log(*Cval);
+    Cval=(*lCval);
 
     fact=1.;
     Nc=0.;
@@ -228,13 +228,13 @@ void bnw_mp(int *N, int *lenN, int *K, int *n, int *s, int *nk,
 /*  Generate a random draw from the size prior (here uniform) */
      Ntotpriori = trunc(Nlen*unif_rand()+1.);
      Ntotprior = N[Ntotpriori];
-//   Rprintf("N= %d",Ntotprior);
 /*  Generate a random draw from the population of sizes */
      rmultinom(Ntotprior, dprob, *K, Nprior);
 // for(k=0;k<*K;k++){
 //  Rprintf(" %d",Nprior[k]);
 // }
 //  Rprintf("\n");
+//   Rprintf("N= %d",Ntotprior);
 //   Nkk=0;
 //   for(k=0;k<(*K);k++){
 //    Nkk+=(Nk[k]*(k+1));
@@ -243,19 +243,19 @@ void bnw_mp(int *N, int *lenN, int *K, int *n, int *s, int *nk,
 //   q=-dmultinorm(N,K,Nk,lprob);
 //   
      q=bnw_llikN(K,n,s,nk,Nprior);
-     if(q > lCval){
-       Rprintf("Warning: Rejection sampling bound log(C)=%f exceeded\n",lCval);
+     if(q > Cval){
+       Rprintf("Warning: Rejection sampling bound log(C)=%f exceeded\n",Cval);
        Rprintf("         by drawn value of %f.\n",q);
        Rprintf("         Resetting the value to 110 percent of the draw.\n");
        i=0;
        fact =1.1;
-       lCval=q+log(fact);
+       Cval=q+log(fact);
        for(k=0;k<(*K);k++){
          Nmle[k]=Nprior[k];
        }
      }
 // Rprintf("i=%d Ntotprior=%d lCval=%f q=%f\n",i,Ntotprior, lCval, q);
-     if(lCval+log(unif_rand()) < q){
+     if(Cval+log(unif_rand()) < q){
       prob[Ntotpriori]=prob[Ntotpriori]+1;
       i++;
       if( ((10*i) % Mi)==0 && Mi > 500){
@@ -266,7 +266,8 @@ void bnw_mp(int *N, int *lenN, int *K, int *n, int *s, int *nk,
     for(k=0;k<Nlen;k++){
         prob[k]=prob[k]/Md;
     }
-    *Cval=exp(lCval)/fact;
+//  *Cval=exp(lCval)/fact;
+    *lCval=Cval-log(fact);
     PutRNGstate();  /* Disable RNG before returning */
     free(dprob);
 }
