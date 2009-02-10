@@ -192,19 +192,22 @@ void bnw_mp(int *N, int *lenN, int *K, int *n, int *s, int *nk,
 	    double *Cval,
 	    double *prob,
 	    int *Nprior,
+	    int *Nmle,
 	    double *mu,
 	    double *rho, int *M){
-    int i, k, Nkk, Mi;
+    int i, k, Nkk, Mi, Nlen;
     int Ntotprior, Ntotpriori;
-    double lCval, q;
+    double fact, lCval, q;
     double Nc, Md, lM;
     double *dprob = (double *) malloc(sizeof(double) * (*K));
 
     Mi=(int)(*M);
     Md=(double)(*M);
+    Nlen=(*lenN);
     lM=log(*M);
     lCval=log(*Cval);
 
+    fact =1.;
     Nc=0.;
     for(k=0;k<*K;k++){
       Nkk=k+1;
@@ -214,7 +217,7 @@ void bnw_mp(int *N, int *lenN, int *K, int *n, int *s, int *nk,
     for(k=0;k<*K;k++){
       dprob[k]=dprob[k]/Nc;
     }
-    for(i=0;i<*lenN;i++){
+    for(i=0;i<Nlen;i++){
       prob[i]=0.;
     }
 
@@ -228,7 +231,7 @@ void bnw_mp(int *N, int *lenN, int *K, int *n, int *s, int *nk,
 //   Sample an N
 /*  Generate a random draw from the size prior (here uniform) */
 /*  Generate a random draw from the population of sizes */
-     Ntotpriori = trunc((*lenN)*unif_rand()+1.);
+     Ntotpriori = trunc(Nlen*unif_rand()+1.);
      Ntotprior = N[Ntotpriori];
      rmultinom(Ntotprior, dprob, *K, Nprior);
 // for(k=0;k<*K;k++){
@@ -248,7 +251,11 @@ void bnw_mp(int *N, int *lenN, int *K, int *n, int *s, int *nk,
        Rprintf("         by drawn value of %f.\n",q);
        Rprintf("         Resetting the value to 110 percent of the draw.\n");
        i=0;
-       lCval=q+log(1.1);
+       fact =1.1;
+       lCval=q+log(fact);
+       for(k=0;k<(*K);k++){
+         Nmle[k]=Nprior[k];
+       }
      }
 // Rprintf("i=%d Ntotprior=%d lCval=%f q=%f\n",i,Ntotprior, lCval, q);
      if(lCval+log(unif_rand()) < q){
@@ -259,11 +266,12 @@ void bnw_mp(int *N, int *lenN, int *K, int *n, int *s, int *nk,
      }
 
     }
-    for(k=0;k<(*lenN);k++){
+    for(k=0;k<Nlen;k++){
         prob[k]=prob[k]/Md;
     }
+    *Cval=exp(lCval)/fact;
     PutRNGstate();  /* Disable RNG before returning */
-    free(prob);
+    free(dprob);
 }
 
 double ldwarint(int *N, double *mu, double *rho){

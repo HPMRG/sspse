@@ -18,6 +18,7 @@ void bnw_mp(int *N, int *lenN, int *K, int *n, int *s, int *nk,
 	    double *Cval,
 	    double *prob,
 	    int *Nprior,
+	    int *Nmle,
 	    double *mu,
 	    double *rho, int *M);
 

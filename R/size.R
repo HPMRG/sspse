@@ -3,7 +3,8 @@ margposteriorsize<-function(s,N=trunc(length(s)*seq(1.1,4,length=10)+1),
           mu=5,rho=3,M=100000,
           parallel=1,seed=NULL, verbose=FALSE, 
           n=tabulate(s,nbin=K),
-          nstart=round(3*n/(1:K)),
+          Cval=NULL,
+          nstart=NULL,
           return.all=TRUE){
   if(length(N)==0||!is.numeric(N)||trunc(N)!=N){
     stop("N needs to be a vector of integers.")
@@ -12,10 +13,18 @@ margposteriorsize<-function(s,N=trunc(length(s)*seq(1.1,4,length=10)+1),
   if(!is.null(seed))  set.seed(as.integer(seed))
   prob=rep(0,K)
   llik <- function(x,s,n){ llhoodf(N=exp(x),s=s,n=n) }
-  out <- optim(par=nstart, fn=llik, s=s, n=n,
+  if(is.null(Cval)){
+   if(is.null(nstart)){
+          nstart=n/(1:K)
+          nstart=3*sum(n)*nstart/sum(nstart)
+   }
+   out <- optim(par=nstart, fn=llik, s=s, n=n,
     control=list(maxit=10000,fnscale=-1))
-  Nmle <- exp(out$par)
-  Cval <- exp(out$value)
+   Nmle <- exp(out$par)
+   Cval <- exp(out$value)
+  }else{
+   Nmle <- nstart
+  }
   if(parallel==1){
     Cret <- .C("bnw_mp",
               N=as.integer(N),
@@ -27,6 +36,7 @@ margposteriorsize<-function(s,N=trunc(length(s)*seq(1.1,4,length=10)+1),
               Cval=as.double(Cval),
               prob=as.double(N),
               Nprior=as.integer(prob),
+              Nmle=as.integer(round(Nmle)),
               mu=as.double(mu),
               rho=as.double(rho),
               M=as.integer(M))
@@ -66,8 +76,10 @@ margposteriorsize<-function(s,N=trunc(length(s)*seq(1.1,4,length=10)+1),
 #
     flush.console()
     MCsamplesize.parallel=round(M/parallel)
-    outlist <- clusterCall(cl, margposN,
-      mu=mu,rho=rho,N=N,K=K,s=s,M=MCsamplesize.parallel)
+    outlist <- clusterCall(cl, margposteriorsize,
+      s=s,N=N,K=K,mu=mu,rho=rho,n=n,Cval=Cval,nstart=Nmle,
+      M=MCsamplesize.parallel)
+#   if(length(N)==0||!is.numeric(N)||trunc(N)!=N){
 #
 #   Process the results
 #
@@ -76,15 +88,25 @@ margposteriorsize<-function(s,N=trunc(length(s)*seq(1.1,4,length=10)+1),
 #    z <- outlist[[i]]
 #    Cret <- Cret+z/parallel
 #   }
-    Cret <- list(unpos=mean(unlist(outlist)))
+    np <- length(outlist)
+    Cret <- outlist[[1]]
+    Cret$prob <- Cret$prob / np
+    for(i in 1:np){
+      out <- outlist[[i]]
+      Cret$prob <- Cret$prob + out$prob / np
+      if(out$Cval > Cret$Cval){
+        Cret$Cval <- out$Cval
+        Cret$Nmle <- out$Nmle
+      }
+    }
     if(verbose){
      cat("parallel samplesize=", parallel,"by", MCsamplesize.parallel,"\n")
     }
+#   }
     stopCluster(cl)
     if(getClusterOption("type")=="PVM") .PVM.exit()
   }
   if(return.all){
-    Cret$Nmle <- Nmle
     Cret
   }else{
     Cret$prob
