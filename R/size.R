@@ -1,9 +1,9 @@
 margposteriorsize<-function(s,N=trunc(length(s)*seq(1.1,4,length=10)+1),
           K=(1:max(s)),
           mu=5,rho=3,M=100000,
-          parallel=1,seed=NULL, verbose=FALSE, 
+          parallel=1,seed=NULL, verbose=TRUE, 
           n=tabulate(s,nbin=K),
-          lCval=NULL,
+          lbound=NULL,
           nstart=NULL,
           return.all=TRUE){
   if(length(N)==0||!is.numeric(N)||trunc(N)!=N){
@@ -12,20 +12,20 @@ margposteriorsize<-function(s,N=trunc(length(s)*seq(1.1,4,length=10)+1),
   if(any(length(s)>N)){print("Error - observed unit outside range")}
   if(!is.null(seed))  set.seed(as.integer(seed))
   prob=rep(0,K)
-  llik <- function(x,s,n){ llhoodf(N=exp(x),s=s,n=n) }
-  if(is.null(lCval)){
+  llik <- function(x,s,n){ llhoodf(N=exp(x)-0.5,s=s,n=n) }
+  if(is.null(lbound)){
    if(is.null(nstart)){
           nstart=n/(1:K)
-          nstart=log(3*sum(n)*nstart/sum(nstart))
+          nstart=3*sum(n)*nstart/sum(nstart)
    }
-   out <- optim(par=nstart, fn=llik, s=s, n=n,
+   out <- optim(par=log(nstart+0.5), fn=llik, s=s, n=n,
     control=list(maxit=10000,fnscale=-1))
-   Nmle <- exp(out$par)
-   lCval <- out$value
-   print(lCval)
+   Nmle <- exp(out$par)-0.5
+   lbound <- out$value
   }else{
    Nmle <- nstart
   }
+  if(verbose) cat(paste("Rejection sampling bound set to",lbound,"\n"))
   if(parallel==1){
     Cret <- .C("bnw_mp",
               N=as.integer(N),
@@ -34,7 +34,7 @@ margposteriorsize<-function(s,N=trunc(length(s)*seq(1.1,4,length=10)+1),
               n=as.integer(length(s)),
               s=as.integer(s),
               nk=as.integer(n),
-              lCval=as.double(lCval),
+              lbound=as.double(lbound),
               prob=as.double(N),
               Nprior=as.integer(prob),
               Nmle=as.integer(round(Nmle)),
@@ -58,7 +58,7 @@ margposteriorsize<-function(s,N=trunc(length(s)*seq(1.1,4,length=10)+1),
      {
       hostfile <- paste(Sys.getenv("HOME"), "/.xpvm_hosts", sep = "")
       .PVM.start.pvmd(hostfile)
-      cat("no problem... PVM started by rpm...\n")
+      cat("no problem... PVM started by size...\n")
      }
     }else{
      if(verbose)
@@ -78,7 +78,7 @@ margposteriorsize<-function(s,N=trunc(length(s)*seq(1.1,4,length=10)+1),
     flush.console()
     MCsamplesize.parallel=round(M/parallel)
     outlist <- clusterCall(cl, margposteriorsize,
-      s=s,N=N,K=K,mu=mu,rho=rho,n=n,lCval=lCval,nstart=Nmle,
+      s=s,N=N,K=K,mu=mu,rho=rho,n=n,lbound=lbound,nstart=Nmle,
       M=MCsamplesize.parallel)
 #   if(length(N)==0||!is.numeric(N)||trunc(N)!=N){
 #
@@ -91,12 +91,13 @@ margposteriorsize<-function(s,N=trunc(length(s)*seq(1.1,4,length=10)+1),
 #   }
     np <- length(outlist)
     Cret <- outlist[[1]]
+    Cret$M <- M
     Cret$prob <- Cret$prob / np
     for(i in 1:np){
       out <- outlist[[i]]
       Cret$prob <- Cret$prob + out$prob / np
-      if(out$lCval > Cret$lCval){
-        Cret$lCval <- out$lCval
+      if(out$lbound > Cret$lbound){
+        Cret$lbound <- out$lbound
         Cret$Nmle <- out$Nmle
       }
     }
@@ -192,7 +193,7 @@ margposN<-function(N,K,s,mu=5,rho=3,M=100000,
      {
       hostfile <- paste(Sys.getenv("HOME"), "/.xpvm_hosts", sep = "")
       .PVM.start.pvmd(hostfile)
-      cat("no problem... PVM started by rpm...\n")
+      cat("no problem... PVM started by size...\n")
      }
     }else{
      if(verbose)

@@ -189,7 +189,7 @@ void bnw_NC(int *N, int *K, int *n, int *s, int *nk, int *Nk,
 // Rprintf("N=%d #pop ties=%d #mean ties %f\n",(*N),Nkk,(Nkk*1.)/(*N));
 }
 void bnw_mp(int *N, int *lenN, int *K, int *n, int *s, int *nk,
-	    double *lCval,
+	    double *lbound,
 	    double *prob,
 	    int *Nprior,
 	    int *Nmle,
@@ -197,7 +197,7 @@ void bnw_mp(int *N, int *lenN, int *K, int *n, int *s, int *nk,
 	    double *rho, int *M){
     int i, k, Nkk, Mi, Nlen;
     int Ntotprior, Ntotpriori;
-    double fact, Cval, q;
+    double fact, bound, q;
     double Nc, Md, lM;
     double *dprob = (double *) malloc(sizeof(double) * (*K));
 
@@ -205,7 +205,7 @@ void bnw_mp(int *N, int *lenN, int *K, int *n, int *s, int *nk,
     Md=(double)(*M);
     Nlen=(*lenN);
     lM=log(*M);
-    Cval=(*lCval);
+    bound=(*lbound);
 
     fact=1.;
     Nc=0.;
@@ -243,19 +243,19 @@ void bnw_mp(int *N, int *lenN, int *K, int *n, int *s, int *nk,
 //   q=-dmultinorm(N,K,Nk,lprob);
 //   
      q=bnw_llikN(K,n,s,nk,Nprior);
-     if(q > Cval){
-       Rprintf("Warning: Rejection sampling bound log(C)=%f exceeded\n",Cval);
+     if(q > bound){
+       Rprintf("Warning: Rejection sampling bound log(C)=%f exceeded\n",bound);
        Rprintf("         by drawn value of %f.\n",q);
        Rprintf("         Resetting the value to 110 percent of the draw.\n");
        i=0;
        fact =1.1;
-       Cval=q+log(fact);
+       bound=q+log(fact);
        for(k=0;k<(*K);k++){
          Nmle[k]=Nprior[k];
        }
      }
-// Rprintf("i=%d Ntotprior=%d lCval=%f q=%f\n",i,Ntotprior, lCval, q);
-     if(Cval+log(unif_rand()) < q){
+// Rprintf("i=%d Ntotprior=%d lbound=%f q=%f\n",i,Ntotprior, lbound, q);
+     if(bound+log(unif_rand()) < q){
       prob[Ntotpriori]=prob[Ntotpriori]+1;
       i++;
       if( ((10*i) % Mi)==0 && Mi > 500){
@@ -266,8 +266,8 @@ void bnw_mp(int *N, int *lenN, int *K, int *n, int *s, int *nk,
     for(k=0;k<Nlen;k++){
         prob[k]=prob[k]/Md;
     }
-//  *Cval=exp(lCval)/fact;
-    *lCval=Cval-log(fact);
+//  *bound=exp(lbound)/fact;
+    *lbound=bound-log(fact);
     PutRNGstate();  /* Disable RNG before returning */
     free(dprob);
 }
