@@ -9,34 +9,41 @@
 
 void bnw_llik(int *K, int *n, int *s, int *nk, double *Nk, double *llik){
     int i, k;
-    double Nc=0., ll=0.;
-    for(k=0;k<*K;k++){
-	  Nc+=(k+1)*Nk[k];
+    double totsize, ll;
+    totsize=0.;
+    ll=0.;
+    for(k=0;k<(*K);k++){
+      if(Nk[k]>0.){
+//	  totsize+=sizeNk[k]*Nk[k];
+	  totsize+=(k+1)*Nk[k];
 	  if(Nk[k]<nk[k]){*llik=-1000000.;return;}
 	  ll+=lgammafn(Nk[k]+1.)-lgammafn(Nk[k]-nk[k]+1.);
+      }
     }
     for(i=0;i<(*n);i++){
-	  if(Nc<=0.){*llik=-1000000.;return;}
-	  ll+=log(s[i]/Nc);
-	  Nc-=s[i];
+	  if(totsize<=0.){*llik=-1000000.;return;}
+	  ll+=log(s[i]/totsize);
+	  totsize-=s[i];
     }
     *llik=ll;
 }
 double bnw_llikN(int *K, int *n, int *s, int *nk, int *Nk){
-    int i, k, Nkk, Nc;
+    int i, k, Nkk, totsize;
     double ll;
     ll=0.;
-    Nc=0;
+    totsize=0;
     for(k=0;k<(*K);k++){
-	  Nkk=Nk[k];
-	  Nc+=(k+1)*Nkk;
+      Nkk=Nk[k];
+      if(Nkk>0){
+	  totsize+=(k+1)*Nkk;
 	  if(Nkk<nk[k]) return(-1000000.);
 	  ll+=lgammafn(Nkk+1.)-lgammafn(Nkk-nk[k]+1.);
+      }
     }
     for(i=0;i<(*n);i++){
-	  if(Nc<=0) return(-1000000.);
-	  ll+=log(1.*s[i]/(1.*Nc));
-	  Nc-=s[i];
+	  if(totsize<=0) return(-1000000.);
+	  ll+=log(s[i]/((double)totsize));
+	  totsize-=s[i];
     }
     return(ll);
 }
@@ -191,6 +198,7 @@ void bnw_NC(int *N, int *K, int *n, int *s, int *nk, int *Nk,
 void bnw_mp(int *N, int *lenN, int *K, int *n, int *s, int *nk,
 	    double *lbound,
 	    double *prob,
+	    double *NtotMLE,
 	    int *Nprior,
 	    int *Nmle,
 	    double *mu,
@@ -219,6 +227,7 @@ void bnw_mp(int *N, int *lenN, int *K, int *n, int *s, int *nk,
     }
     for(i=0;i<Nlen;i++){
       prob[i]=0.;
+      NtotMLE[i]=-1000000.;
     }
 
     GetRNGstate();  /* R function enabling uniform RNG */
@@ -226,7 +235,7 @@ void bnw_mp(int *N, int *lenN, int *K, int *n, int *s, int *nk,
     i=0;
     while(i < Mi){
 /*  Generate a random draw from the size prior (here uniform) */
-     Ntotpriori = trunc(Nlen*unif_rand()+1.);
+     Ntotpriori = trunc(Nlen*unif_rand());
      Ntotprior = N[Ntotpriori];
 /*  Generate a random draw from the population of sizes */
      rmultinom(Ntotprior, dprob, *K, Nprior);
@@ -248,7 +257,7 @@ void bnw_mp(int *N, int *lenN, int *K, int *n, int *s, int *nk,
        Rprintf("         by drawn value of %f.\n",q);
        Rprintf("         Resetting the value to 110 percent of the draw.\n");
        i=0;
-       fact =1.1;
+       fact=1.1;
        bound=q+log(fact);
        for(k=0;k<(*K);k++){
          Nmle[k]=Nprior[k];
@@ -261,7 +270,7 @@ void bnw_mp(int *N, int *lenN, int *K, int *n, int *s, int *nk,
       if( ((10*i) % Mi)==0 && Mi > 500){
        Rprintf("Sampled %d from %d\n", i, Mi);}
      }
-
+     if(q > NtotMLE[Ntotpriori]){NtotMLE[Ntotpriori]=q;}
     }
     for(k=0;k<Nlen;k++){
         prob[k]=prob[k]/Md;
