@@ -12,16 +12,30 @@ margposteriorsize<-function(s,N=trunc(length(s)*seq(1.1,4,length=10)+1),
   if(any(length(s)>N)){print("Error - observed unit outside range")}
   if(!is.null(seed))  set.seed(as.integer(seed))
   prob=rep(0,K)
-  llik <- function(x,s,n){ llhoodf(N=exp(x)-0.5,s=s,n=n) }
   if(is.null(lbound)){
+   toN <- function(x,Ntot){
+     s <- 1+sum(exp(x))
+     Ntot*c(1,exp(x))/(1+sum(exp(x)))
+   }
+   tox <- function(N){
+     N[-1]/N[1]
+   }
+   llik <- function(x,Ntot,s,n){
+     llhoodf(N=toN(x,Ntot),s=s,n=n)
+   }
    if(is.null(nstart)){
           nstart=n/(1:K)
           nstart=3*sum(n)*nstart/sum(nstart)
    }
-   out <- optim(par=log(nstart+0.5), fn=llik, s=s, n=n,
-    control=list(maxit=10000,fnscale=-1))
-   Nmle <- exp(out$par)-0.5
-   lbound <- out$value
+   for(i in seq(along=N)){
+     out <- optim(par=tox(nstart), fn=llik, s=s, n=n, Ntot=N[i],
+      method="SANN",
+      control=list(maxit=10000,fnscale=-1))
+     if(out$value > lbound || i ==1){
+       lbound <- max(out$value)
+       Nmle <- toN(out$par, Ntot=N[i])
+     }
+   }
   }else{
    Nmle <- nstart
   }
