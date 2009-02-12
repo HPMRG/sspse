@@ -9,21 +9,26 @@
 
 void bnw_llik(int *K, int *n, int *s, int *nk, double *Nk, double *llik){
     int i, k;
-    double totsize, ll;
+    double totsize, ll, Nkk;
     totsize=0.;
     ll=0.;
     for(k=0;k<(*K);k++){
-      if(Nk[k]>0.){
+      if(Nk[k]<nk[k]){*llik=-1000000.;
+   Rprintf("k=%d Nk[k]=%f nk[k]=%f\n",k,Nk[k],nk[k]);
+	      return;}
+    }
+    for(k=0;k<(*K);k++){
 //	  totsize+=sizeNk[k]*Nk[k];
-	  totsize+=(k+1)*Nk[k];
-	  if(Nk[k]<nk[k]){*llik=-1000000.;return;}
-	  ll+=lgammafn(Nk[k]+1.)-lgammafn(Nk[k]-nk[k]+1.);
+      Nkk=Nk[k];
+      if(Nkk>0.){
+        totsize+=(k+1)*Nkk;
+        ll+=lgammafn(Nkk+1.)-lgammafn(Nkk-nk[k]+1.);
       }
     }
     for(i=0;i<(*n);i++){
-	  if(totsize<=0.){*llik=-1000000.;return;}
-	  ll+=log(s[i]/totsize);
-	  totsize-=s[i];
+//	  if(totsize<=0.){*llik=-1000000.;return;}
+      ll+=log(s[i]/totsize);
+      totsize-=s[i];
     }
     *llik=ll;
 }
@@ -33,15 +38,17 @@ double bnw_llikN(int *K, int *n, int *s, int *nk, int *Nk){
     ll=0.;
     totsize=0;
     for(k=0;k<(*K);k++){
+      if(Nk[k]<nk[k]) return(-1000000.);
+    }
+    for(k=0;k<(*K);k++){
       Nkk=Nk[k];
       if(Nkk>0){
-	  totsize+=(k+1)*Nkk;
-	  if(Nkk<nk[k]) return(-1000000.);
-	  ll+=lgammafn(Nkk+1.)-lgammafn(Nkk-nk[k]+1.);
+        totsize+=(k+1)*Nkk;
+        ll+=lgammafn(Nkk+1.)-lgammafn(Nkk-nk[k]+1.);
       }
     }
     for(i=0;i<(*n);i++){
-	  if(totsize<=0) return(-1000000.);
+//	  if(totsize<=0) return(-1000000.);
 	  ll+=log(s[i]/((double)totsize));
 	  totsize-=s[i];
     }
@@ -196,6 +203,69 @@ void bnw_NC(int *N, int *K, int *n, int *s, int *nk, int *Nk,
 // Rprintf("N=%d #pop ties=%d #mean ties %f\n",(*N),Nkk,(Nkk*1.)/(*N));
 }
 void bnw_mp(int *N, int *lenN, int *K, int *n, int *s, int *nk,
+	    double *lbound,
+	    double *dprob,
+	    double *prob,
+	    double *NtotMLE,
+	    int *Nprior,
+	    int *Nmle,
+	    int *M){
+    int i, k,Mi, Nlen;
+    int Ntotprior, Ntotpriori;
+    double fact, bound, q;
+    double Md, lM;
+
+    Mi=(int)(*M);
+    Md=(double)(*M);
+    Nlen=(*lenN);
+    lM=log(*M);
+    bound=(*lbound);
+
+    fact=1.;
+    for(i=0;i<Nlen;i++){
+      prob[i]=0.;
+      NtotMLE[i]=-1000000.;
+    }
+
+    GetRNGstate();  /* R function enabling uniform RNG */
+
+    i=0;
+    while(i < Mi){
+/*  Generate a random draw from the size prior (here uniform) */
+     Ntotpriori = trunc(Nlen*unif_rand());
+     Ntotprior = N[Ntotpriori];
+/*   Generate a random draw from the population of sizes */
+     rmultinom(Ntotprior, dprob, *K, Nprior);
+     q=bnw_llikN(K,n,s,nk,Nprior);
+     if(q > bound){
+       Rprintf("Warning: Rejection sampling bound log(C)=%f exceeded\n",bound);
+       Rprintf("         by drawn value of %f.\n",q);
+       Rprintf("         Resetting the value to 110 percent of the draw.\n");
+       i=0;
+       fact=1.1;
+       bound=q+log(fact);
+       for(k=0;k<(*K);k++){
+         Nmle[k]=Nprior[k];
+       }
+     }
+// Rprintf("i=%d Ntotprior=%d lbound=%f q=%f\n",i,Ntotprior, lbound, q);
+     if(bound+log(unif_rand()) < q){
+      prob[Ntotpriori]=prob[Ntotpriori]+1;
+      i++;
+      if( ((10*i) % Mi)==0 && Mi > 500){
+       Rprintf("Sampled %d from %d\n", i, Mi);}
+     }
+     if(q > NtotMLE[Ntotpriori]){NtotMLE[Ntotpriori]=q;}
+    }
+    for(k=0;k<Nlen;k++){
+        prob[k]=prob[k]/Md;
+    }
+//  *bound=exp(lbound)/fact;
+    *lbound=bound-log(fact);
+    PutRNGstate();  /* Disable RNG before returning */
+}
+
+void bnw_mpwar(int *N, int *lenN, int *K, int *n, int *s, int *nk,
 	    double *lbound,
 	    double *prob,
 	    double *NtotMLE,

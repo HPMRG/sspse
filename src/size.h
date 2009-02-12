@@ -14,7 +14,7 @@ void bnw_NC(int *N, int *K, int *n, int *s, int *nk, int *Nk,
 	    double *prob,
 	    double *mu,
   	    double *rho, int *M, double *unpos);
-void bnw_mp(int *N, int *lenN, int *K, int *n, int *s, int *nk,
+void bnw_mpwar(int *N, int *lenN, int *K, int *n, int *s, int *nk,
 	    double *lbound,
 	    double *prob,
 	    double *NtotMLE,
@@ -22,6 +22,14 @@ void bnw_mp(int *N, int *lenN, int *K, int *n, int *s, int *nk,
 	    int *Nmle,
 	    double *mu,
 	    double *rho, int *M);
+void bnw_mp(int *N, int *lenN, int *K, int *n, int *s, int *nk,
+	    double *lbound,
+	    double *dprob,
+	    double *prob,
+	    double *NtotMLE,
+	    int *Nprior,
+	    int *Nmle,
+	    int *M);
 
 double ldwarint(int *N, double *mu, double *rho);
 
