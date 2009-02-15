@@ -10,10 +10,21 @@ void bnw_unpos(int *K, int *n, int *s, int *nk, double *Nk, double *mu,
 double bnw_llikN(int *K, int *n, int *s, int *nk, int *Nk);
 double dmultinorm(int *N, int *K, int *Nk, double *lprob);
 double bnw_unposN(int *N, int *K, int *n, int *s, int *nk, int *Nk, double *lprob);
+void bnw_NCbound(int *N, int *K, int *n, int *s, int *nk, int *Nk,
+	    double *prob,
+	    double *qprob,
+  	    int *M, double *unpos);
+void bnw_stocdiscrete(int *N, int *K, int *n, int *s, int *nk, int *Nk,
+	    double *qprob,
+  	    int *M, double *mllik);
 void bnw_NC(int *N, int *K, int *n, int *s, int *nk, int *Nk,
 	    double *prob,
-	    double *mu,
-  	    double *rho, int *M, double *unpos);
+	    double *qprob,
+  	    int *M, double *unpos);
+void bnw_NCwar(int *N, int *K, int *n, int *s, int *nk, int *Nk,
+            double *prob,
+            double *mu,
+            double *rho, int *M, double *unpos);
 void bnw_mpwar(int *N, int *lenN, int *K, int *n, int *s, int *nk,
 	    double *lbound,
 	    double *prob,

@@ -70,47 +70,35 @@ double dmultinorm(int *N, int *K, int *Nk, double *lprob){
 
 void bnw_NC(int *N, int *K, int *n, int *s, int *nk, int *Nk,
 	    double *prob,
-	    double *mu,
-	    double *rho, int *M, double *unpos){
-    int i, k, Nkk, Mi;
+	    double *qprob,
+	    int *M, double *unpos){
+    int i, k, Ki, Ni, Mi, Nni;
     int nvalidhtn, nvalidhtd, nvalidthistime, minvalid;
-    double mhtni, vhtni, mhtdi, vhtdi, htn, htd, q;
+    double mhtni, vhtni, mhtdi, vhtdi, htn, htd, q, p;
     double mhtn, vhtn, mhtd, vhtd;
-    double Nd, Nc, lcardN, Kd, Md, lM;
+    double Nd, lcardN, Kd, Md, lM;
     double *lprob = (double *) malloc(sizeof(double) * (*K));
-    double *qprob = (double *) malloc(sizeof(double) * (*K));
     double *lqprob = (double *) malloc(sizeof(double) * (*K));
     double *htnv = (double *) malloc(sizeof(double) * (*M));
     double *htdv = (double *) malloc(sizeof(double) * (*M));
 
+    Ni=(int)(*N);
+    Ki=(int)(*K);
     Mi=(int)(*M);
     Nd=(double)(*N);
     Md=(double)(*M);
     Kd=(double)(*K);
     lM=log(*M);
 //  This is the number of populations of size N with K classes
-    lcardN=lgammafn(Nd+Kd)-lgammafn(Kd)-lgammafn(Nd+1.);
+//  lcardN=lgammafn(Nd+Kd)-lgammafn(Kd)-lgammafn(Nd+1.);
+    Nni=Ni;
+    for(k=0;k<Ki;k++){
+      Nni-=nk[k];
+    }
+    lcardN=lgammafn(Nni+Kd)-lgammafn(Kd)-lgammafn(Nni+1.);
 
-    Nc=0.;
-    for(k=0;k<*K;k++){
-      Nkk=k+1;
-      lprob[k]=ldwarint(&Nkk,mu,rho);
-      prob[k]=exp(lprob[k]);
-      Nc+=prob[k];
-//   Rprintf("k=%d prob=%f\n",k,prob[k]);
-    }
-    for(k=0;k<*K;k++){
-      prob[k]=prob[k]/Nc;
+    for(k=0;k<Ki;k++){
       lprob[k]=log(prob[k]);
-    }
-    Nc=0.;
-    for(k=0;k<*K;k++){
-      qprob[k]=prob[k]*(k+1);
-      Nc+=qprob[k];
-//   Rprintf("k=%d prob=%f\n",k,prob[k]);
-    }
-    for(k=0;k<*K;k++){
-      qprob[k]=qprob[k]/Nc;
       lqprob[k]=log(qprob[k]);
     }
 /*  Generate a random draw from the population of sizes */
@@ -135,250 +123,188 @@ void bnw_NC(int *N, int *K, int *n, int *s, int *nk, int *Nk,
     minvalid=trunc(0.05*Mi);
     if(minvalid < 100) minvalid=100;
     while(nvalidhtn < minvalid){
-    for(i=0;i<Mi;i++){
-//   for(k=0;k<(*K);k++){
-//    Nk[k]=0;
-//   }
-     rmultinom(*N, qprob, *K, Nk);
+     for(i=0;i<Mi;i++){
+      rmultinom(Nni, qprob, Ki, Nk);
 // Rprintf("N=%d\n",*N);
-//for(k=0;k<*K;k++){
+//for(k=0;k<Ki;k++){
 // Rprintf(" %d",Nk[k]);
 //}
 // Rprintf("\n");
 //   Nkk=0;
-//   for(k=0;k<(*K);k++){
+//   for(k=0;k<(Ki);k++){
 //    Nkk+=(Nk[k]*(k+1));
 //   }
-//   Nc=bnw_llikN(K,n,s,nk,Nk);
-     q=-dmultinorm(N,K,Nk,lqprob);
-     htdv[i]=q;
-     htnv[i]=bnw_unposN(N,K,n,s,nk,Nk,lprob)+q;
-    }
-//  Rprintf("mhtni=%f mhtdi=%f\n",log(mhtni),log(mhtdi));
-    mhtni=0.;
-    mhtdi=0.;
-    nvalidthistime=0;
-    for(i=0;i<Mi;i++){
-      if(htnv[i] > -900000.){
-        mhtni+=htnv[i]/Md;
-        nvalidthistime++;
+      q=dmultinorm(&Nni,K,Nk,lqprob);
+//    htnv[i]=bnw_unposN(N,K,n,s,nk,Nk,lprob)-q;
+      for(k=0;k<Ki;k++){
+       Nk[k]=Nk[k]+nk[k];
       }
-      mhtdi+=htdv[i]/Md;
-    }
-    mhtni=Md*mhtni/nvalidthistime;
-    vhtni=0.;
-    vhtdi=0.;
-    for(i=0;i<Mi;i++){
-      if(htnv[i] > -900000.){
+      p=dmultinorm(N,K,Nk,lprob);
+      htnv[i]=bnw_llikN(K,n,s,nk,Nk)+p-q;
+      htdv[i]=-q;
+//  Rprintf("i=%d unposN=%f q=%f p=%f\n",i,htnv[i],q,p);
+     }
+     mhtni=0.;
+     mhtdi=0.;
+     nvalidthistime=0;
+     for(i=0;i<Mi;i++){
+       if(htnv[i] > -90000.){
+         mhtni+=htnv[i]/Md;
+         nvalidthistime++;
+       }
+       mhtdi+=htdv[i]/Md;
+     }
+     mhtni=Md*mhtni/nvalidthistime;
+     vhtni=0.;
+     vhtdi=0.;
+     for(i=0;i<Mi;i++){
+      if(htnv[i] > -90000.){
         vhtni+=(htnv[i]-mhtni)*(htnv[i]-mhtni)/nvalidthistime;
       }
       vhtdi+=(htdv[i]-mhtdi)*(htdv[i]-mhtdi)/Md;
-    }
-//  mhtni=log(mhtni)+htnq1-q1-log(mhtdi)+q1+lcardN;
-    mhtn=(nvalidhtn*mhtn+nvalidthistime*mhtni)/(nvalidhtn+nvalidthistime);
-    vhtn=(nvalidhtn*vhtn+nvalidthistime*vhtni)/(nvalidhtn+nvalidthistime);
-    mhtd=(nvalidhtd*mhtd+Mi*mhtdi)/(nvalidhtd+Mi);
-    vhtd=(nvalidhtd*vhtd+Mi*vhtdi)/(nvalidhtd+Mi);
-    nvalidhtn+=nvalidthistime;
-    nvalidhtd+=Mi;
-    Rprintf("N=%d minvalid=%d nvalidhtn=%d nvalidhtd=%d\n",
+     }
+//   mhtni=log(mhtni)+htnq1-q1-log(mhtdi)+q1+lcardN;
+     mhtn=(nvalidhtn*mhtn+nvalidthistime*mhtni)/(nvalidhtn+nvalidthistime);
+     vhtn=(nvalidhtn*vhtn+nvalidthistime*vhtni)/(nvalidhtn+nvalidthistime);
+     mhtd=(nvalidhtd*mhtd+Mi*mhtdi)/(nvalidhtd+Mi);
+     vhtd=(nvalidhtd*vhtd+Mi*vhtdi)/(nvalidhtd+Mi);
+     nvalidhtn+=nvalidthistime;
+     nvalidhtd+=Mi;
+     Rprintf("N=%d minvalid=%d nvalidhtn=%d nvalidhtd=%d\n",
 	     *N,minvalid,nvalidhtn, nvalidhtd);
     }
     htn=mhtn+0.5*vhtn+log(1.*nvalidhtn);
-    htd=mhtd+0.5*vhtd+lM;
+    htd=mhtd+0.5*vhtd+log(1.*nvalidhtd);
+//  Rprintf("mhtn=%f vhtn=%f nvalidhtn=%d\n",mhtn,vhtn,nvalidhtn);
+//  Rprintf("mhtd=%f vhtd=%f nvalidhtd=%d\n",mhtd,vhtd,nvalidhtd);
+//  htd=mhtd+0.5*vhtd+lM;
 //  htn=mhtn+0.5*vhtn;
 //  htd=mhtd+0.5*vhtd;
     *unpos=htn-htd+lcardN;
-    Rprintf("N=%d Pct Valid=%f\n",(*N),(nvalidhtn*1.)/Md);
+    Rprintf("N=%d Pct Valid=%f\n",Ni,(nvalidhtn*1.)/(1.*nvalidhtd));
+    Rprintf("htn=%f htd=%f lcardN=%f\n",htn,htd,lcardN);
 //  htn=htn-htd;
 //  htn=log(htn)-log(htd)+lcardN;
 //    cpos=log(cpos/(1.*(*M)));
     PutRNGstate();  /* Disable RNG before returning */
     free(lprob);
-    free(qprob);
     free(lqprob);
-//  free(htnv);
-//  free(htdv);
-//    Rprintf("K=%d lcardN=%f cpos=%f\n",*K, lcardN,cpos);
+    free(htnv);
+    free(htdv);
+//    Rprintf("K=%d lcardN=%f cpos=%f\n",Ki, lcardN,cpos);
 // Rprintf("N=%d #pop ties=%d #mean ties %f\n",(*N),Nkk,(Nkk*1.)/(*N));
 }
-void bnw_mp(int *N, int *lenN, int *K, int *n, int *s, int *nk,
-	    double *lbound,
-	    double *dprob,
+void bnw_NCbound(int *N, int *K, int *n, int *s, int *nk, int *Nk,
 	    double *prob,
-	    double *NtotMLE,
-	    int *Nprior,
-	    int *Nmle,
-	    int *M){
-    int i, k,Mi, Nlen;
-    int Ntotprior, Ntotpriori;
-    double fact, bound, q;
-    double Md, lM;
+	    double *qprob,
+	    int *M, double *unpos){
+    int i, k, Ki, Ni, Mi, Nni;
+    double htn, mhtd;
+    double Nd, Kd, Md, lM;
+    double *lprob = (double *) malloc(sizeof(double) * (*K));
 
+    Ni=(int)(*N);
+    Ki=(int)(*K);
     Mi=(int)(*M);
+    Nd=(double)(*N);
     Md=(double)(*M);
-    Nlen=(*lenN);
+    Kd=(double)(*K);
     lM=log(*M);
-    bound=(*lbound);
 
-    fact=1.;
-    for(i=0;i<Nlen;i++){
-      prob[i]=0.;
-      NtotMLE[i]=-1000000.;
+    Nni=Ni;
+    for(k=0;k<Ki;k++){
+      Nni-=nk[k];
+      lprob[k]=log(prob[k]);
     }
 
     GetRNGstate();  /* R function enabling uniform RNG */
 
-    i=0;
-    while(i < Mi){
-/*  Generate a random draw from the size prior (here uniform) */
-     Ntotpriori = trunc(Nlen*unif_rand());
-     Ntotprior = N[Ntotpriori];
-/*   Generate a random draw from the population of sizes */
-     rmultinom(Ntotprior, dprob, *K, Nprior);
-     q=bnw_llikN(K,n,s,nk,Nprior);
-     if(q > bound){
-       Rprintf("Warning: Rejection sampling bound log(C)=%f exceeded\n",bound);
-       Rprintf("         by drawn value of %f.\n",q);
-       Rprintf("         Resetting the value to 110 percent of the draw.\n");
-       i=0;
-       fact=1.1;
-       bound=q+log(fact);
-       for(k=0;k<(*K);k++){
-         Nmle[k]=Nprior[k];
-       }
-     }
-// Rprintf("i=%d Ntotprior=%d lbound=%f q=%f\n",i,Ntotprior, lbound, q);
-     if(bound+log(unif_rand()) < q){
-      prob[Ntotpriori]=prob[Ntotpriori]+1;
-      i++;
-      if( ((10*i) % Mi)==0 && Mi > 500){
-       Rprintf("Sampled %d from %d\n", i, Mi);}
-     }
-     if(q > NtotMLE[Ntotpriori]){NtotMLE[Ntotpriori]=q;}
+    mhtd=0.;
+    for(i=0;i<Mi;i++){
+/*    Generate a random draw from the population of sizes */
+      rmultinom(Nni, qprob, Ki, Nk);
+//    htn=bnw_unposN(N,K,n,s,nk,Nk,lprob);
+      for(k=0;k<Ki;k++){
+       Nk[k]=Nk[k]+nk[k];
+      }
+      htn=dmultinorm(N,K,Nk,lprob);
+//  Rprintf("i=%d Nni=%d htn=%f\n",i,Nni,htn);
+      htn=bnw_llikN(K,n,s,nk,Nk)+htn;
+      if(htn > -90000.){mhtd+=exp(0.0001*htn)/Md;}
     }
-    for(k=0;k<Nlen;k++){
-        prob[k]=prob[k]/Md;
-    }
-//  *bound=exp(lbound)/fact;
-    *lbound=bound-log(fact);
+    *unpos=mhtd;
+//  Rprintf("N=%d Pct Valid=%f\n",Ni,mhtd);
     PutRNGstate();  /* Disable RNG before returning */
+    free(lprob);
 }
-
-void bnw_mpwar(int *N, int *lenN, int *K, int *n, int *s, int *nk,
-	    double *lbound,
-	    double *prob,
-	    double *NtotMLE,
-	    int *Nprior,
-	    int *Nmle,
-	    double *mu,
-	    double *rho, int *M){
-    int i, k, Nkk, Mi, Nlen;
-    int Ntotprior, Ntotpriori;
-    double fact, bound, q;
-    double Nc, Md, lM;
-    double *dprob = (double *) malloc(sizeof(double) * (*K));
-
+void bnw_stocdiscrete(int *N, int *K, int *n, int *s, int *nk, int *Nk,
+	    double *qprob,
+	    int *M, double *mllik){
+    int i, k, Ki, Ni, Nni, Mi;
+    double llik, lbound;
+    Ki=(int)(*K);
+    Ni=(int)(*N);
     Mi=(int)(*M);
-    Md=(double)(*M);
-    Nlen=(*lenN);
-    lM=log(*M);
-    bound=(*lbound);
+    int *Nmle = (int *) malloc(sizeof(int) * Ki);
+//  int *Npropose = (int *) malloc(sizeof(int) * Ki);
 
-    fact=1.;
-    Nc=0.;
-    for(k=0;k<*K;k++){
-      Nkk=k+1;
-      dprob[k]=exp(ldwarint(&Nkk,mu,rho));
-      Nc+=dprob[k];
+    Nni=Ni;
+    for(k=0;k<Ki;k++){
+     Nni-=nk[k];
     }
-    for(k=0;k<*K;k++){
-      dprob[k]=dprob[k]/Nc;
-    }
-    for(i=0;i<Nlen;i++){
-      prob[i]=0.;
-      NtotMLE[i]=-1000000.;
-    }
-
     GetRNGstate();  /* R function enabling uniform RNG */
 
-    i=0;
-    while(i < Mi){
-/*  Generate a random draw from the size prior (here uniform) */
-     Ntotpriori = trunc(Nlen*unif_rand());
-     Ntotprior = N[Ntotpriori];
-/*  Generate a random draw from the population of sizes */
-     rmultinom(Ntotprior, dprob, *K, Nprior);
-// for(k=0;k<*K;k++){
-//  Rprintf(" %d",Nprior[k]);
-// }
-//  Rprintf("\n");
-//   Rprintf("N= %d",Ntotprior);
-//   Nkk=0;
-//   for(k=0;k<(*K);k++){
-//    Nkk+=(Nk[k]*(k+1));
-//   }
-//   
-//   q=-dmultinorm(N,K,Nk,lprob);
-//   
-     q=bnw_llikN(K,n,s,nk,Nprior);
-     if(q > bound){
-       Rprintf("Warning: Rejection sampling bound log(C)=%f exceeded\n",bound);
-       Rprintf("         by drawn value of %f.\n",q);
-       Rprintf("         Resetting the value to 110 percent of the draw.\n");
-       i=0;
-       fact=1.1;
-       bound=q+log(fact);
-       for(k=0;k<(*K);k++){
-         Nmle[k]=Nprior[k];
+    lbound=-1000000.;
+    for(i=0;i<Mi;i++){
+/*    Generate a random draw from the population of sizes */
+      rmultinom(Nni, qprob, Ki, Nk);
+      for(k=0;k<Ki;k++){
+//     Npropose[k]=Nk[k]+nk[k];
+       Nk[k]=Nk[k]+nk[k];
+      }
+      llik=bnw_llikN(K,n,s,nk,Nk);
+       for(k=0;k<Ki;k++){
+//if(Nk[k]<0)  Rprintf("Error: i=%d llik=%f lbound=%f Nk[k]=%d\n",i,llik,lbound,Nk[k]);
        }
-     }
-// Rprintf("i=%d Ntotprior=%d lbound=%f q=%f\n",i,Ntotprior, lbound, q);
-     if(bound+log(unif_rand()) < q){
-      prob[Ntotpriori]=prob[Ntotpriori]+1;
-      i++;
-      if( ((10*i) % Mi)==0 && Mi > 500){
-       Rprintf("Sampled %d from %d\n", i, Mi);}
-     }
-     if(q > NtotMLE[Ntotpriori]){NtotMLE[Ntotpriori]=q;}
+//  Rprintf("i=%d llik=%f lbound=%f\n",i,llik,lbound);
+      if(llik > lbound){
+       for(k=0;k<Ki;k++){
+         Nmle[k]=Nk[k];
+       }
+       lbound=llik;
+//  Rprintf("i=%d lbound=%f\n",i,lbound);
+      }
     }
-    for(k=0;k<Nlen;k++){
-        prob[k]=prob[k]/Md;
+    for(k=0;k<Ki;k++){
+      Nk[k]=Nmle[k];
     }
-//  *bound=exp(lbound)/fact;
-    *lbound=bound-log(fact);
+    *mllik=lbound;
+//  Rprintf("N=%d Pct Valid=%f\n",Ni,mhtd);
     PutRNGstate();  /* Disable RNG before returning */
-    free(dprob);
+//  free(Npropose);
+    free(Nmle);
 }
-
-double ldwarint(int *N, double *mu, double *rho){
-    double p, lpmf, r;
-    r = (*rho);
-    p = (*mu)*(r-2.) - r + 1.;
-    lpmf = log(r - 1.) + lgammafn(*N + p) + lgammafn(r + p) - 
-           lgammafn(1. + p) - lgammafn(*N + r + p);
-    return(lpmf);
-}
-
 double bnw_unposN(int *N, int *K, int *n, int *s, int *nk, int *Nk,
 		  double *lprob){
-    int i, k, Nkk, Nc;
+    int i, k, Nkk, totsize;
     double ll;
-    Nc=0;
+    for(k=0;k<(*K);k++){
+      if(Nk[k]<nk[k]) return(-1000000.);
+    }
+    totsize=0;
     ll=lgammafn((*N)+1.);
     for(k=0;k<*K;k++){
 	  Nkk=Nk[k];
-	  Nc+=(k+1)*Nkk;
-	  if(Nkk<nk[k]) return(-1000000.);
 	  if(Nkk>0){
-	    ll+=lgammafn(Nkk+1.)-lgammafn(Nkk-nk[k]+1.);
-	    ll+=Nkk*lprob[k]-lgammafn(Nkk+1.);
+	    totsize+=(k+1)*Nkk;
+	    ll+=Nkk*lprob[k]-lgammafn(Nkk-nk[k]+1.);
+//   ll+=lgammafn(Nkk+1.)-lgammafn(Nkk-nk[k]+1.);
+//   ll+=Nkk*lprob[k]-lgammafn(Nkk+1.);
 	  }
     }
     for(i=0;i<(*n);i++){
-          if(Nc<=0) return(-1000000.);
-	  ll+=log(1.*s[i]/(1.*Nc));
-	  Nc-=s[i];
+	  ll+=log(s[i]/(1.*totsize));
+	  totsize-=s[i];
     }
     return(ll);
 }
