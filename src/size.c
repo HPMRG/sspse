@@ -308,3 +308,64 @@ double bnw_unposN(int *N, int *K, int *n, int *s, int *nk, int *Nk,
     }
     return(ll);
 }
+void bnw_stocdiscreteimpute(int *N, int *K, int *n, int *s, int *nk, int *Nk,
+	    double *qprob,
+	    int *nsim, int *M, double *mllik){
+    int i, j, k, l, Ki, Ni, Nni, Mi, nsims, ns;
+    double llik, lbound;
+    ns=(int)(*n);
+    nsims=(int)(*nsim);
+    Ki=(int)(*K);
+    Ni=(int)(*N);
+    Mi=(int)(*M);
+    int *si = (int *) malloc(sizeof(int) * ns);
+    int *nki = (int *) malloc(sizeof(int) * Ki);
+    int *Nmle = (int *) malloc(sizeof(int) * Ki);
+    int *Nnis = (int *) malloc(sizeof(int) * nsims);
+
+    for(l=0;l<nsims;l++){
+     Nni=Ni;
+     for(k=0;k<Ki;k++){
+      Nni-=nk[k];
+     }
+     Nnis[l]=Nni;
+    }
+    GetRNGstate();  /* R function enabling uniform RNG */
+
+    lbound=-1000000.;
+    for(i=0;i<Mi;i++){
+      llik=0.;
+      for(l=0;l<nsims;l++){
+       for(j=0;j<ns;j++){
+        si[j]=s[l*ns+j];
+       }
+       for(k=0;k<Ki;k++){
+        nki[k]=nk[l*Ki+k];
+       }
+/*     Generate a random draw from the population of sizes */
+       Nni=Nnis[l];
+       rmultinom(Nni, qprob, Ki, Nk);
+       for(k=0;k<Ki;k++){
+        Nk[k]=Nk[k]+nki[k];
+       }
+       llik+=bnw_llikN(K,n,si,nki,Nk);
+      }
+//  Rprintf("i=%d llik=%f lbound=%f\n",i,llik,lbound);
+      if(llik > lbound){
+       for(k=0;k<Ki;k++){
+         Nmle[k]=Nk[k];
+       }
+       lbound=llik;
+      }
+    }
+    for(k=0;k<Ki;k++){
+      Nk[k]=Nmle[k];
+    }
+    *mllik=lbound;
+    PutRNGstate();  /* Disable RNG before returning */
+//  Rprintf("i=%d llik=%f lbound=%f\n",i,llik,lbound);
+    free(si);
+    free(nki);
+    free(Nmle);
+    free(Nnis);
+}

@@ -17,6 +17,9 @@ void bnw_NCbound(int *N, int *K, int *n, int *s, int *nk, int *Nk,
 void bnw_stocdiscrete(int *N, int *K, int *n, int *s, int *nk, int *Nk,
 	    double *qprob,
   	    int *M, double *mllik);
+void bnw_stocdiscreteimpute(int *N, int *K, int *n, int *s, int *nk, int *Nk,
+	    double *qprob,
+  	    int *nsim, int *M, double *mllik);
 void bnw_NC(int *N, int *K, int *n, int *s, int *nk, int *Nk,
 	    double *prob,
 	    double *qprob,
