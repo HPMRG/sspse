@@ -12,7 +12,7 @@ llspps<-function(counts, sizes, s){
 
 
 lllspps<-function(lcountdif,sizes,s){
-  #computes the log likelihood.  This is used to feed to optim.  The first argument is the log of the 
+  #couputes the log likelihood.  This is used to feed to optim.  The first argument is the log of the 
   # difference between the population counts and the sample counts.  This formulation forces this difference 
   # to be non-negative.
   countdif<-exp(lcountdif)
@@ -46,6 +46,48 @@ roundstoc<-function(vec){# takes a vector and makes it integers, keeping the tot
 	temp
 	}
 
+Zee<-function(lam,n,nk,sizes,D){
+(1/n)*
+sum(1/(sum((nk*sizes/n)/(1-exp(-lam*sizes)))-(D/n)))-lam
+}
+
+
+bnwnest<-function(lst,toplam=10,bottomlam=1e-10){
+  s<-lst
+  sizes<-sort(unique(s))
+  nk<-tabulate(s)[tabulate(s)>0]
+  D2<-cumsum(s)
+  D<-c(0,D2[-length(D2)])
+  n<-length(s)
+  if(sign(Zee(bottomlam,n=n,nk=nk,sizes=sizes,D=D))!=
+    sign(Zee(toplam,n=n,nk=nk,sizes=sizes,D=D))){
+  lest<-uniroot(Zee,n=n,nk=nk,sizes=sizes,D=D,
+    interval=c(bottomlam,toplam))$root
+  bbnest<-nk/(1-exp(-lest*sizes))
+  out<-bbnest
+  }else{out<-rep(0,length(sizes))}
+  out
+}
+
+mleNest<-function(lst,start=NULL){
+  if(is.null(start)){start<-bnwnest(lst)}
+  s<-lst
+  sizes<-sort(unique(s))
+  nk<-tabulate(s)[tabulate(s)>0]
+  D2<-cumsum(s)
+  D<-c(0,D2[-length(D2)])
+  n<-length(s)
+  if(sum(start)>0){
+  xstart<-log(start-tabulate(s)[sizes])
+  }else{xstart<-log(tabulate(s)[sizes])}
+  out<-optim(par=xstart,
+    fn=lllspps,
+    sizes=sizes, s=s,
+    control=list(maxit=100000,fnscale=-1))
+  Nest<-exp(out$par)+tabulate(s)[sizes]
+  list(Nk=Nest,conv=out$conv)
+}
+
 
 bins<-function(vec,breaks,maxval, below=T){
 #returns the vec re-coded to assign the values of vec to bins
@@ -68,6 +110,6 @@ bins<-function(vec,breaks,maxval, below=T){
   newvec
 }
 
-#bins(c(1:10),breaks=c(2,3,8),maxval=11)
+
 
 
