@@ -246,7 +246,6 @@ void bnw_stocdiscrete(int *N, int *K, int *n, int *s, int *nk, int *Nk,
     Ni=(int)(*N);
     Mi=(int)(*M);
     int *Nmle = (int *) malloc(sizeof(int) * Ki);
-//  int *Npropose = (int *) malloc(sizeof(int) * Ki);
 
     Nni=Ni;
     for(k=0;k<Ki;k++){
@@ -259,13 +258,12 @@ void bnw_stocdiscrete(int *N, int *K, int *n, int *s, int *nk, int *Nk,
 /*    Generate a random draw from the population of sizes */
       rmultinom(Nni, qprob, Ki, Nk);
       for(k=0;k<Ki;k++){
-//     Npropose[k]=Nk[k]+nk[k];
        Nk[k]=Nk[k]+nk[k];
       }
       llik=bnw_llikN(K,n,s,nk,Nk);
-       for(k=0;k<Ki;k++){
+//     for(k=0;k<Ki;k++){
 //if(Nk[k]<0)  Rprintf("Error: i=%d llik=%f lbound=%f Nk[k]=%d\n",i,llik,lbound,Nk[k]);
-       }
+//     }
 //  Rprintf("i=%d llik=%f lbound=%f\n",i,llik,lbound);
       if(llik > lbound){
        for(k=0;k<Ki;k++){
@@ -279,9 +277,7 @@ void bnw_stocdiscrete(int *N, int *K, int *n, int *s, int *nk, int *Nk,
       Nk[k]=Nmle[k];
     }
     *mllik=lbound;
-//  Rprintf("N=%d Pct Valid=%f\n",Ni,mhtd);
     PutRNGstate();  /* Disable RNG before returning */
-//  free(Npropose);
     free(Nmle);
 }
 double bnw_unposN(int *N, int *K, int *n, int *s, int *nk, int *Nk,
@@ -322,6 +318,7 @@ void bnw_stocdiscreteimpute(int *N, int *K, int *n, int *s, int *nk, int *Nk,
     int *nki = (int *) malloc(sizeof(int) * Ki);
     int *Nmle = (int *) malloc(sizeof(int) * Ki);
     int *Nnis = (int *) malloc(sizeof(int) * nsims);
+    double *qprobi = (double *) malloc(sizeof(double) * Ki);
 
     for(l=0;l<nsims;l++){
      Nni=Ni;
@@ -341,15 +338,17 @@ void bnw_stocdiscreteimpute(int *N, int *K, int *n, int *s, int *nk, int *Nk,
        }
        for(k=0;k<Ki;k++){
         nki[k]=nk[l*Ki+k];
+        qprobi[k]=qprob[l*Ki+k];
        }
 /*     Generate a random draw from the population of sizes */
        Nni=Nnis[l];
-       rmultinom(Nni, qprob, Ki, Nk);
+       rmultinom(Nni, qprobi, Ki, Nk);
        for(k=0;k<Ki;k++){
         Nk[k]=Nk[k]+nki[k];
        }
        llik+=bnw_llikN(K,n,si,nki,Nk);
       }
+      llik/=nsims;
 //  Rprintf("i=%d llik=%f lbound=%f\n",i,llik,lbound);
       if(llik > lbound){
        for(k=0;k<Ki;k++){
@@ -366,6 +365,7 @@ void bnw_stocdiscreteimpute(int *N, int *K, int *n, int *s, int *nk, int *Nk,
 //  Rprintf("i=%d llik=%f lbound=%f\n",i,llik,lbound);
     free(si);
     free(nki);
+    free(qprobi);
     free(Nmle);
     free(Nnis);
 }

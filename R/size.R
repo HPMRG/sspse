@@ -5,7 +5,7 @@ margposteriorsize<-function(N=trunc(length(s)*seq(1.1,4,length=10)+1),
           M=100000,
           parallel=1, seed=NULL, verbose=TRUE, 
           n=tabulate(s,nbin=K),
-	  maxit=5000, method="Nelder-Mead",
+	  maxit=50000, method="Nelder-Mead", temp=10,
 	  return.all=TRUE){
   if(length(prob)!=K){
     stop("The vector of probabilities need to have length K.")
@@ -18,7 +18,7 @@ margposteriorsize<-function(N=trunc(length(s)*seq(1.1,4,length=10)+1),
   if(length(N)==1){
       Cret <- margposN(s=s,N=N,K=K,prob=prob,M=M,seed=seed,n=n,
                        return.all=return.all,parallel=parallel,
-		       maxit=maxit,method=method)
+		       maxit=maxit,method=method,temp=temp)
   }else{
     require(snow)
 #
@@ -99,7 +99,7 @@ margposN<-function(N, s,
           parallel=1, seed=NULL, verbose=FALSE, 
           n=tabulate(s,nbin=K),
 	  qprob=NULL,
-	  maxit=5000, method="Nelder-Mead",
+	  maxit=50000, method="Nelder-Mead", temp=10,
           return.all=FALSE){
   #this function takes a vector of population sizes and a vector s of 
   #sequential sizes of sampled units and returns a log likelihood value
@@ -136,7 +136,7 @@ margposN<-function(N, s,
    out <- optim(par=tox(out,nk=n), fn=llik, 
      Ntot=N, n=n, s=s, prob=prob,
      method=method,
-    control=list(maxit=maxit,fnscale=-1))
+    control=list(maxit=maxit,fnscale=-1,temp=temp))
    Nmle <- toN(out$par, Ntot=N, nk=n)
 #  lbound <- llhoodf(N=Nmle, s=s, verbose=FALSE)
 #  qprob <- n/sum(n)
@@ -193,7 +193,7 @@ margposN<-function(N, s,
     MCsamplesize.parallel=round(M/parallel)
     outlist <- clusterCall(cl, margposN,
       s=s,N=N,K=K,prob=prob,M=MCsamplesize.parallel,n=n,qprob=qprob,
-      maxit=maxit,method=method)
+      maxit=maxit,method=method,temp=temp)
 #
 #   Process the results
 #
@@ -239,7 +239,7 @@ discretemleN<-function(N,s,
           parallel=1, seed=NULL, verbose=FALSE, 
           n=tabulate(s,nbin=K),
 	  qprob=NULL,
-	  maxit=5000, method="Nelder-Mead",
+	  maxit=50000, method="Nelder-Mead", temp=10,
           return.all=TRUE){
   if(length(s)>N){print("Error: The population counts should not be exceeded by the sample counts.")}
   if(!is.null(seed))  set.seed(as.integer(seed))
@@ -256,25 +256,23 @@ discretemleN<-function(N,s,
   llik <- function(x,Ntot,n,s){
     N <- toN(x,Ntot,n)
     .C("bnw_llik",
-              K=as.integer(length(N)),
-              n=as.integer(length(s)),
-              s=as.integer(s),
-              nk=as.integer(n),
-              Nk=as.double(N),
-              llik=as.double(0))$llik
+        K=as.integer(length(N)),
+        n=as.integer(length(s)),
+        s=as.integer(s),
+        nk=as.integer(n),
+        Nk=as.double(N),
+        llik=as.double(0))$llik
   }
   if(is.null(qprob)){
    out <- N*n/sum(n)
    out <- optim(par=tox(out,nk=n), fn=llik, 
      Ntot=N, n=n, s=s,
      method=method,
-    control=list(maxit=maxit,fnscale=-1))
+    control=list(maxit=maxit,fnscale=-1,temp=temp))
    Nmle <- toN(out$par, Ntot=N, nk=n)
    lbound <- llhoodf(N=Nmle, s=s, verbose=FALSE)
    qprob <- Nmle/sum(Nmle)
   }
-# print(qprob)
-# print(lbound)
   if(parallel==1){
     Cret <- .C("bnw_stocdiscrete",
               N=as.integer(N),
@@ -324,7 +322,7 @@ discretemleN<-function(N,s,
     MCsamplesize.parallel=round(M/parallel)
     outlist <- clusterCall(cl, discretemleN,
       s=s,N=N,K=K,M=MCsamplesize.parallel,n=n,qprob=qprob,
-      maxit=maxit,method=method)
+      maxit=maxit,method=method,temp=temp)
 #
 #   Process the results
 #
@@ -356,7 +354,7 @@ discretemleNimpute<-function(N,s,
           parallel=1, seed=NULL, verbose=FALSE, 
 	  n=NULL,
 	  qprob=NULL,
-	  maxit=5000, method="Nelder-Mead",
+	  maxit=50000, method="Nelder-Mead", temp=10,
           return.all=TRUE){
   if(length(s)/nsim>N){print("Error: The population counts should not be exceeded by the sample counts.")}
   if(!is.null(seed))  set.seed(as.integer(seed))
@@ -374,32 +372,31 @@ discretemleNimpute<-function(N,s,
     ltox[is.na(ltox) || is.infinite(ltox)] <- -100000
     ltox
   } 
-  llik <- function(x,Ntot,n,s,nsim,nbase){
-   ns <- length(s)/nsim
-   K <- length(n)/nsim
-   N <- toN(x,Ntot,nbase)
-   llik <- 0
-   for(i in 1:nsim){
-    llik <- llik + .C("bnw_llik",
-              K=as.integer(K),
-              n=as.integer(ns),
-              s=as.integer(s[(i-1)*ns+(1:ns)]),
-              nk=as.integer(n[(i-1)*K+(1:K)]),
+  llik <- function(x,Ntot,n,s){
+    N <- toN(x,Ntot,n)
+    .C("bnw_llik",
+              K=as.integer(length(N)),
+              n=as.integer(length(s)),
+              s=as.integer(s),
+              nk=as.integer(n),
               Nk=as.double(N),
-              llik=as.double(0))$llik/nsim
-   }
-   llik
+              llik=as.double(0))$llik
   }
   if(is.null(qprob)){
-   nbase <- apply(matrix(n,nrow=K),1,max)
-   out <- N*nbase/sum(nbase)
-   out <- optim(par=tox(out,nbase), fn=llik, 
-     Ntot=N, n=n, s=s, nsim=nsim, nbase=nbase,
+   cprob <- NULL
+   lbound <- NULL
+   for(i in 1:nsim){
+    ni <- n[(i-1)*K+(1:K)]
+    si <- s[(i-1)*ns+(1:ns)]
+    out <- N*ni/sum(ni)
+    out <- optim(par=tox(out,nk=ni), fn=llik, 
+     Ntot=N, n=ni, s=si,
      method=method,
-    control=list(maxit=maxit,fnscale=-1))
-   Nmle <- toN(out$par, Ntot=N, nbase)
-   lbound <- llhoodf(N=Nmle, s=s[1:ns], verbose=FALSE)
-   qprob <- Nmle/sum(Nmle)
+     control=list(maxit=maxit,fnscale=-1,temp=temp))
+    Nmle <- toN(out$par, Ntot=N, nk=ni)
+    lbound <- c(lbound,llhoodf(N=Nmle, s=si, verbose=FALSE))
+    qprob <- c(qprob,Nmle/sum(Nmle))
+   }
   }
   if(parallel==1){
     Cret <- .C("bnw_stocdiscreteimpute",
@@ -451,7 +448,7 @@ discretemleNimpute<-function(N,s,
     MCsamplesize.parallel=round(M/parallel)
     outlist <- clusterCall(cl, discretemleNimpute,
       s=s,N=N,nsim=nsim,K=K,M=MCsamplesize.parallel,qprob=qprob,
-      maxit=maxit,method=method)
+      maxit=maxit,method=method,temp=temp)
 #
 #   Process the results
 #
@@ -481,7 +478,7 @@ discretemle<-function(N=trunc(length(s)*seq(1.1,4,length=10)+1),
           M=100000,
           parallel=1, seed=NULL, verbose=FALSE, 
           n=tabulate(s,nbin=K),
-	  maxit=5000, method="Nelder-Mead",
+	  maxit=50000, method="Nelder-Mead", temp=10,
           return.all=TRUE){
   if(length(N)==0||!is.numeric(N)||trunc(N)!=N){
     stop("N needs to be a vector of integers.")
@@ -490,7 +487,7 @@ discretemle<-function(N=trunc(length(s)*seq(1.1,4,length=10)+1),
 
   if(length(N)==1){
       Cret <- discretemleN(s=s,N=N,K=K,M=M,seed=seed,n=n,
-                maxit=maxit,method=method,
+                maxit=maxit,method=method,temp=temp,
 		return.all=return.all,parallel=parallel)
   }else{
     require(snow)
@@ -528,7 +525,8 @@ discretemle<-function(N=trunc(length(s)*seq(1.1,4,length=10)+1),
 #
     flush.console()
     outlist <- clusterApply(cl, as.list(N), discretemleN,
-      s=s,K=K,M=M,n=n,return.all=TRUE,parallel=1,maxit=maxit,method=method)
+      s=s,K=K,M=M,n=n,return.all=TRUE,parallel=1,maxit=maxit,method=method,
+      temp=temp)
 #
 #   Process the results
 #
@@ -561,7 +559,7 @@ discretemleimpute<-function(N=trunc(length(s)*seq(1.1,4,length=10)+1),
           M=100000,
           parallel=1, seed=NULL, verbose=FALSE, 
 	  nsim=10, truncate.size=K,
-	  maxit=5000, method="Nelder-Mead",
+	  maxit=50000, method="Nelder-Mead", temp=10,
           return.all=TRUE){
   if(length(N)==0||!is.numeric(N)||trunc(N)!=N){
     stop("N needs to be a vector of integers.")
@@ -580,7 +578,7 @@ discretemleimpute<-function(N=trunc(length(s)*seq(1.1,4,length=10)+1),
   }
   if(length(N)==1){
       Cret <- discretemleNimpute(N=N,s=s,nsim=nsim,n=n,K=K,M=M,seed=seed,
-                maxit=maxit,method=method,
+                maxit=maxit,method=method,temp=temp,
 		return.all=return.all,parallel=parallel)
   }else{
     require(snow)
@@ -619,7 +617,7 @@ discretemleimpute<-function(N=trunc(length(s)*seq(1.1,4,length=10)+1),
     flush.console()
     outlist <- clusterApply(cl, as.list(N), discretemleNimpute,
       s=s,nsim=nsim,K=K,M=M,n=n,return.all=TRUE,parallel=1,
-      maxit=maxit,method=method)
+      maxit=maxit,method=method,temp=temp)
 #
 #   Process the results
 #
@@ -651,7 +649,7 @@ discretemleimputeindividual<-function(N=trunc(length(s)*seq(1.1,4,length=10)+1),
 	  K=max(s),
           M=100000,
           parallel=1, seed=NULL, verbose=FALSE, 
-	  maxit=5000, method="Nelder-Mead",
+	  maxit=50000, method="Nelder-Mead", temp=10,
 	  nsim=10, truncate.size=K,
           return.all=TRUE){
   if(length(N)==0||!is.numeric(N)||trunc(N)!=N){
@@ -672,7 +670,7 @@ discretemleimputeindividual<-function(N=trunc(length(s)*seq(1.1,4,length=10)+1),
    s[s > truncate.size] <- truncate.size
    stab <- tabulate(s,nbin=max(sizeN))[sizeN]
    out <- discretemle(N=N,s=s,K=K,M=M,seed=seed,n=stab,
-             maxit=maxit,method=method,
+             maxit=maxit,method=method,temp=temp,
 	     verbose=verbose,
              return.all=return.all,parallel=parallel)
    outraw[i,] <- out$llik
