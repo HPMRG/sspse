@@ -137,10 +137,10 @@ margposN<-function(N, s,
      Ntot=N, n=n, s=s, prob=prob,
      method=method,
     control=list(maxit=maxit,fnscale=-1,temp=temp))
-   Nmle <- toN(out$par, Ntot=N, nk=n)
-#  lbound <- llhoodf(N=Nmle, s=s, verbose=FALSE)
+   Nkmle <- toN(out$par, Ntot=N, nk=n)
+#  lbound <- llhoodf(N=Nkmle, s=s, verbose=FALSE)
 #  qprob <- n/sum(n)
-   qprob <- Nmle/sum(Nmle)
+   qprob <- Nkmle/sum(Nkmle)
   }
   print(qprob)
   if(parallel==1){
@@ -209,6 +209,7 @@ margposN<-function(N, s,
     stopCluster(cl)
     if(getClusterOption("type")=="PVM") .PVM.exit()
   }
+  Cret$Nmle <- sum(Cret$Nk)
   if(return.all){
     Cret
   }else{
@@ -269,9 +270,11 @@ discretemleN<-function(N,s,
      Ntot=N, n=n, s=s,
      method=method,
     control=list(maxit=maxit,fnscale=-1,temp=temp))
-   Nmle <- toN(out$par, Ntot=N, nk=n)
-   lbound <- llhoodf(N=Nmle, s=s, verbose=FALSE)
-   qprob <- Nmle/sum(Nmle)
+   Nkmle <- toN(out$par, Ntot=N, nk=n)
+   lbound <- llhoodf(N=Nkmle, s=s, verbose=FALSE)
+   qprob <- Nkmle/sum(Nkmle)
+  }else{
+   lbound <- -1000000
   }
   if(parallel==1){
     Cret <- .C("bnw_stocdiscrete",
@@ -284,6 +287,9 @@ discretemleN<-function(N,s,
               qprob=as.double(qprob),
               M=as.integer(M),
               mllik=as.double(0))
+    Cret$llik <- Cret$mllik
+    Cret$Nkmle <- Cret$Nk
+    Cret$lbound <- lbound
   }else{
     require(snow)
 #
@@ -341,6 +347,7 @@ discretemleN<-function(N,s,
     if(getClusterOption("type")=="PVM") .PVM.exit()
   }
   Cret$lbound <- lbound
+  Cret$Nmle <- sum(Cret$Nk)
   if(return.all){
     Cret
   }else{
@@ -393,9 +400,9 @@ discretemleNimpute<-function(N,s,
      Ntot=N, n=ni, s=si,
      method=method,
      control=list(maxit=maxit,fnscale=-1,temp=temp))
-    Nmle <- toN(out$par, Ntot=N, nk=ni)
-    lbound <- c(lbound,llhoodf(N=Nmle, s=si, verbose=FALSE))
-    qprob <- c(qprob,Nmle/sum(Nmle))
+    Nkmle <- toN(out$par, Ntot=N, nk=ni)
+    lbound <- c(lbound,llhoodf(N=Nkmle, s=si, verbose=FALSE))
+    qprob <- c(qprob,Nkmle/sum(Nkmle))
    }
   }
   if(parallel==1){
@@ -466,6 +473,7 @@ discretemleNimpute<-function(N,s,
     stopCluster(cl)
     if(getClusterOption("type")=="PVM") .PVM.exit()
   }
+  Cret$Nmle <- sum(Cret$Nmle)
   if(return.all){
     Cret
   }else{
@@ -533,20 +541,21 @@ discretemle<-function(N=trunc(length(s)*seq(1.1,4,length=10)+1),
     Cret <- outlist[[1]]
     Cret$N <- N
     Cret$llik <- Cret$mllik
-    Cret$Nmle <- Cret$Nk
+    Cret$Nkmle <- Cret$Nk
     Cret$Nk <- NULL
     for(i in (2 : length(outlist))){
      z <- outlist[[i]]
      Cret$llik <- c(Cret$llik,z$mllik)
      Cret$lbound <- c(Cret$lbound,z$lbound)
      if(z$mllik > Cret$mllik){
-      Cret$Nmle <- z$Nk
+      Cret$Nkmle <- z$Nk
       Cret$mllik <- z$mllik
      }
     }
     stopCluster(cl)
     if(getClusterOption("type")=="PVM") .PVM.exit()
   }
+  Cret$Nmle <- sum(Cret$Nmle)
   if(return.all){
     Cret
   }else{
@@ -624,14 +633,14 @@ discretemleimpute<-function(N=trunc(length(s)*seq(1.1,4,length=10)+1),
     Cret <- outlist[[1]]
     Cret$N <- N
     Cret$llik <- Cret$mllik
-    Cret$Nmle <- Cret$Nk
+    Cret$Nkmle <- Cret$Nk
     Cret$Nk <- NULL
     for(i in (2 : length(outlist))){
      z <- outlist[[i]]
      Cret$llik <- c(Cret$llik,z$mllik)
      Cret$lbound <- c(Cret$lbound,z$lbound)
      if(z$mllik > Cret$mllik){
-      Cret$Nmle <- z$Nk
+      Cret$Nkmle <- z$Nk
       Cret$mllik <- z$mllik
      }
     }
@@ -674,7 +683,7 @@ discretemleimputeindividual<-function(N=trunc(length(s)*seq(1.1,4,length=10)+1),
 	     verbose=verbose,
              return.all=return.all,parallel=parallel)
    outraw[i,] <- out$llik
-   outmle[i,] <- out$Nmle
+   outmle[i,] <- out$Nkmle
   }
-  list(llik=outraw, Nmle=outmle)
+  list(llik=outraw, Nkmle=outmle, Nmle=sum(outmle))
 }
