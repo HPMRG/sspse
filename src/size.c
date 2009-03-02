@@ -13,12 +13,6 @@ void bnw_llik(int *K, int *n, int *s, int *nk, double *Nk, double *llik){
     totsize=0.;
     ll=0.;
     for(k=0;k<(*K);k++){
-      if(Nk[k]<nk[k]){*llik=-1000000.;
-   Rprintf("k=%d Nk[k]=%f nk[k]=%f\n",k,Nk[k],nk[k]);
-	      return;}
-    }
-    for(k=0;k<(*K);k++){
-//	  totsize+=sizeNk[k]*Nk[k];
       Nkk=Nk[k];
       if(Nkk>0.){
         totsize+=(k+1)*Nkk;
@@ -26,7 +20,6 @@ void bnw_llik(int *K, int *n, int *s, int *nk, double *Nk, double *llik){
       }
     }
     for(i=0;i<(*n);i++){
-//	  if(totsize<=0.){*llik=-1000000.;return;}
       ll+=log(s[i]/totsize);
       totsize-=s[i];
     }
@@ -51,6 +44,25 @@ double bnw_llikN(int *K, int *n, int *s, int *nk, int *Nk){
 //	  if(totsize<=0) return(-1000000.);
 	  ll+=log(s[i]/((double)totsize));
 	  totsize-=s[i];
+    }
+    return(ll);
+}
+double bnw_llikNf(int *K, int *n, int *s, int *nk, int *Nk){
+    int i, k, Nkk, totsize;
+    double ll,dtotsize;
+    ll=0.;
+    totsize=0;
+    for(k=0;k<(*K);k++){
+      Nkk=Nk[k];
+      if(Nkk>0){
+        totsize+=(k+1)*Nkk;
+        ll+=lgammafn(Nkk+1.)-lgammafn(Nkk-nk[k]+1.);
+      }
+    }
+    dtotsize=(double)totsize;
+    for(i=0;i<(*n);i++){
+      ll+=log(s[i]/dtotsize);
+      dtotsize-=s[i];
     }
     return(ll);
 }
@@ -140,7 +152,7 @@ void bnw_NC(int *N, int *K, int *n, int *s, int *nk, int *Nk,
        Nk[k]=Nk[k]+nk[k];
       }
       p=dmultinorm(N,K,Nk,lprob);
-      htnv[i]=bnw_llikN(K,n,s,nk,Nk)+p-q;
+      htnv[i]=bnw_llikNf(K,n,s,nk,Nk)+p-q;
       htdv[i]=-q;
 //  Rprintf("i=%d unposN=%f q=%f p=%f\n",i,htnv[i],q,p);
      }
@@ -173,7 +185,8 @@ void bnw_NC(int *N, int *K, int *n, int *s, int *nk, int *Nk,
      Rprintf("N=%d minvalid=%d nvalidhtn=%d nvalidhtd=%d\n",
 	     *N,minvalid,nvalidhtn, nvalidhtd);
     }
-    htn=mhtn+0.5*vhtn+log(1.*nvalidhtn);
+//  htn=mhtn+0.5*vhtn+log(1.*nvalidhtn);
+    htn=mhtn+0.5*vhtn+log(1.*nvalidhtd);
     htd=mhtd+0.5*vhtd+log(1.*nvalidhtd);
 //  Rprintf("mhtn=%f vhtn=%f nvalidhtn=%d\n",mhtn,vhtn,nvalidhtn);
 //  Rprintf("mhtd=%f vhtd=%f nvalidhtd=%d\n",mhtd,vhtd,nvalidhtd);
@@ -199,9 +212,11 @@ void bnw_NCbound(int *N, int *K, int *n, int *s, int *nk, int *Nk,
 	    double *qprob,
 	    int *M, double *unpos){
     int i, k, Ki, Ni, Mi, Nni;
-    double htn, mhtd;
+    double mhtn;
+    double mhtni, vhtni, htn;
     double Nd, Kd, Md, lM;
     double *lprob = (double *) malloc(sizeof(double) * (*K));
+    double *htnv = (double *) malloc(sizeof(double) * (*M));
 
     Ni=(int)(*N);
     Ki=(int)(*K);
@@ -219,7 +234,7 @@ void bnw_NCbound(int *N, int *K, int *n, int *s, int *nk, int *Nk,
 
     GetRNGstate();  /* R function enabling uniform RNG */
 
-    mhtd=0.;
+    mhtn=0.;
     for(i=0;i<Mi;i++){
 /*    Generate a random draw from the population of sizes */
       rmultinom(Nni, qprob, Ki, Nk);
@@ -229,13 +244,33 @@ void bnw_NCbound(int *N, int *K, int *n, int *s, int *nk, int *Nk,
       }
       htn=dmultinorm(N,K,Nk,lprob);
 //  Rprintf("i=%d Nni=%d htn=%f\n",i,Nni,htn);
-      htn=bnw_llikN(K,n,s,nk,Nk)+htn;
-      if(htn > -90000.){mhtd+=exp(0.0001*htn)/Md;}
+      htn=bnw_llikNf(K,n,s,nk,Nk)+htn;
+//    htn=bnw_llikN(K,n,s,nk,Nk);
+    if(htn > -90000.){
+        htnv[i]=htn;
+//      mhtn+=exp(0.0001*htn)/Md;
+    }else{
+        htnv[i]=-10000.;
     }
-    *unpos=mhtd;
-//  Rprintf("N=%d Pct Valid=%f\n",Ni,mhtd);
+    }
+     mhtni=0.;
+     for(i=0;i<Mi;i++){
+       if(htnv[i] > -90000.){
+         mhtni+=htnv[i]/Md;
+       }
+     }
+     vhtni=0.;
+     for(i=0;i<Mi;i++){
+      if(htnv[i] > -90000.){
+        vhtni+=(htnv[i]-mhtni)*(htnv[i]-mhtni)/Md;
+      }
+     }
+    htn=mhtni+0.5*vhtni;
+    *unpos=htn;
+//  Rprintf("N=%d Pct Valid=%f\n",Ni,mhtn);
     PutRNGstate();  /* Disable RNG before returning */
     free(lprob);
+    free(htnv);
 }
 void bnw_stocdiscrete(int *N, int *K, int *n, int *s, int *nk, int *Nk,
 	    double *qprob,
@@ -260,7 +295,7 @@ void bnw_stocdiscrete(int *N, int *K, int *n, int *s, int *nk, int *Nk,
       for(k=0;k<Ki;k++){
        Nk[k]=Nk[k]+nk[k];
       }
-      llik=bnw_llikN(K,n,s,nk,Nk);
+      llik=bnw_llikNf(K,n,s,nk,Nk);
 //     for(k=0;k<Ki;k++){
 //if(Nk[k]<0)  Rprintf("Error: i=%d llik=%f lbound=%f Nk[k]=%d\n",i,llik,lbound,Nk[k]);
 //     }
@@ -346,7 +381,7 @@ void bnw_stocdiscreteimpute(int *N, int *K, int *n, int *s, int *nk, int *Nk,
        for(k=0;k<Ki;k++){
         Nk[k]=Nk[k]+nki[k];
        }
-       llik+=bnw_llikN(K,n,si,nki,Nk);
+       llik+=bnw_llikNf(K,n,si,nki,Nk);
       }
       llik/=nsims;
 //  Rprintf("i=%d llik=%f lbound=%f\n",i,llik,lbound);
