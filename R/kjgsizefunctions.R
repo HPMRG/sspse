@@ -30,6 +30,18 @@ sppssample<-function(counts,sizes,n){
    ss
 }
 
+sppssamplei<-function(s,n){
+   ss<-rep(0,n)
+   si<-1:length(s)
+   for(i in 1:n){
+     sss <- sample(si, size=1, prob=s)
+     ss[i] <- sss
+     s <- s[-sss]
+     si <- si[-sss]
+   }
+   ss
+}
+
 roundstoc<-function(vec){# takes a vector and makes it integers, keeping the total the same
 	#vec<-c(1.2,1.3,2.5)
 	target<-sum(vec)
