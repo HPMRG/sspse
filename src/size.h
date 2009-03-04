@@ -47,5 +47,4 @@ void bnw_mp(int *N, int *lenN, int *K, int *n, int *s, int *nk,
 	    int *M);
 
 double ldwarint(int *N, double *mu, double *rho);
-
 #endif /* SIZE_H */
