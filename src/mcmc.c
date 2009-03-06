@@ -409,3 +409,78 @@ void MHpln (int *nk, int *K,
   PutRNGstate();  /* Disable RNG before returning */
   *staken = taken;
 }
+
+void MHpriorpln (double *mu0, double *kappa0, 
+            double *sigma0,  double *df0,
+            double *sigmaproposal, 
+            double *musample, double *sigmasample,
+            int *samplesize, int *staken, int *burnin, int *interval,
+	    int *fVerbose
+			 ) {
+  int step, taken, give_log=1;
+  int i, isamp, iinterval, isamplesize, iburnin;
+  double ip, cutoff;
+  double mustar, mui;
+  double sigmastar, sigmai, sigma2star, sigma2i, qsigma2star, qsigma2i;
+  double pithetastar, pithetai;
+  double dkappa0, rkappa0, ddf0, dmu0;
+  double dsigma0, dsigma20, dsigmaproposal;
+
+  GetRNGstate();  /* R function enabling uniform RNG */
+
+  isamplesize=(*samplesize);
+  iinterval=(*interval);
+  iburnin=(*burnin);
+  dkappa0=(*kappa0);
+  rkappa0=sqrt(dkappa0);
+  ddf0=(*df0);
+  dsigma0=(*sigma0);
+  dsigma20=(dsigma0*dsigma0);
+  dmu0=(*mu0);
+  dsigmaproposal=(*sigmaproposal);
+  isamp = taken = 0;
+  step = -iburnin;
+  mui = dmu0;
+  sigma2i = dsigma20;
+  sigmai  = sqrt(sigma2i);
+  qsigma2i = dsclinvchisq(sigma2i, ddf0, dsigma20, give_log);
+  pithetai = dnorm(mui, dmu0, sigmai/rkappa0, give_log);
+  while (isamp < isamplesize) {
+    /* Propose new theta */
+    mustar = rnorm(mui, dsigmaproposal);
+    sigma2star = rsclinvchisq(ddf0,sigma2i);
+    sigmastar = sqrt(sigma2star);
+
+    /* Calculate pieces of the posterior. */
+    qsigma2star = dsclinvchisq(sigma2star,ddf0, dsigma20,give_log);
+    pithetastar = dnorm(mustar, dmu0, sigmastar/rkappa0,give_log);
+
+    /* Calculate ratio */
+    ip = pithetastar-pithetai;
+    /* The logic is to set exp(cutoff) = exp(ip) * qratio ,
+    then let the MH probability equal min{exp(cutoff), 1.0}.
+    But we'll do it in log space instead.  */
+    cutoff = ip + qsigma2i-qsigma2star;
+      
+    /* if we accept the proposed network */
+    if (cutoff >= 0.0 || log(unif_rand()) < cutoff) { 
+      /* Make proposed chnages */
+      sigmai = sigmastar;
+      mui    = mustar;
+      sigma2i = sigma2star;
+      qsigma2i = qsigma2star;
+      pithetai = pithetastar;
+      taken++;
+      if (step > 0 && step==(iinterval*(step/iinterval))) { 
+        /* record statistics for posterity */
+        musample[isamp]=mui;
+        sigmasample[isamp]=sigmai;
+        isamp++;
+        if (*fVerbose) Rprintf("Taken %d MH samples...\n", isamp);
+      }
+    }
+    step++;
+  }
+  PutRNGstate();  /* Disable RNG before returning */
+  *staken = taken;
+}

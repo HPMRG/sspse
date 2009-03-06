@@ -52,4 +52,11 @@ void MHpln (int *nk, int *K,
             int *samplesize, int *staken, int *burnin, int *interval,
 	    int *fVerbose
 			 );
+void MHpriorpln (double *mu0, double *kappa0, 
+            double *sigma0,  double *df0,
+            double *sigmaproposal, 
+            double *musample, double *sigmasample,
+            int *samplesize, int *staken, int *burnin, int *interval,
+	    int *fVerbose
+			 );
 #endif /* MCMC_H */

@@ -1,7 +1,7 @@
-poswest<-function(s,N,
+poswest<-function(s,maxN=4*length(s),
                   K=2*max(s), nk=tabulate(s,nbin=K), n=length(s),
-		  maxN=2*N,
-                  mu0=2,sigma0=0.5,kappa0=2/sigma0,df0=5,
+		  N=maxN/2,
+                  mu0=2,sigma0=0.5,kappa0=1/sigma0, df0=3,
                   sigmaproposal=0.045, 
                   samplesize=10,burnin=0,interval=1,burnintheta=1000,
                   seed=NULL,
@@ -109,10 +109,36 @@ pospln<-function(pop, K=max(pop),
     attr(Cret$sample, "class") <- "mcmc"
     Cret
 }
-posteriorsize<-function(s,N=2*length(s),
+priorpln<-function(mu0=2,sigma0=0.3,kappa0=1/sigma0,df0=3,
+                 sigmaproposal=0.045, 
+                 samplesize=1000,burnin=0,interval=1,
+                 seed=NULL,
+                 verbose=TRUE){
+    musample <- rep(0,samplesize)
+    sigmasample <- rep(0,samplesize)
+    Cret <- .C("MHpriorpln",
+              mu0=as.double(mu0), kappa0=as.double(kappa0),
+              sigma0=as.double(sigma0), df0=as.double(df0),
+              sigmaproposal=as.double(sigmaproposal),
+              musample=as.double(musample),
+              sigmasample=as.double(sigmasample),
+              samplesize=as.integer(samplesize),
+              staken=integer(1),
+              burnin=as.integer(burnin),
+              interval=as.integer(interval),
+              fVerbose=as.integer(verbose))
+    Cret$sample <- cbind(Cret$musample, Cret$sigmasample)
+    colnames(Cret$sample) <- c("mu","sigma")
+    endrun <- burnin+interval*(samplesize-1)
+    attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
+    attr(Cret$sample, "class") <- "mcmc"
+    Cret
+}
+posteriorsize<-function(s,
+                  maxN=4*length(s),
                   K=2*max(s), nk=tabulate(s,nbin=K), n=length(s),
-		  maxN=2*N,
-                  mu0=2,sigma0=0.5,kappa0=2/sigma0,df0=5,
+		  N=0.5*maxN,
+                  mu0=2,sigma0=0.5,kappa0=1/sigma0,df0=3,
                   sigmaproposal=0.045, 
                   samplesize=1000,burnin=100,interval=1,burnintheta=100,
                   parallel=1, seed=NULL,
