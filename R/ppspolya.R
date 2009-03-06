@@ -18,8 +18,8 @@ ppspolya <- function(s, n=length(s), N=2*n, c=1, wts=1/s,
                y=as.double(c(y, rep(0, N-n))),
                size=as.double(c(s, rep(0, N-n))),
                w=as.double(cumsum(wts)),
-               n=as.integer(n),
-               N=as.integer(N),
+               nin=as.integer(n),
+               Nin=as.integer(N),
                PACKAGE="size")
        return(out)
 }
