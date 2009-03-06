@@ -133,7 +133,7 @@
      int *iwork;
      double *work;
      int limit=100;
-     double reltol=0.00001;
+     double reltol=0.001;
      double abstol=0.00001;
      lenw = 4 * limit;
      iwork =   (int *) Calloc(limit, int);

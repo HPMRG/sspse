@@ -17,13 +17,39 @@
 #define rsclinvchisq(df,scale) ((scale)*(df)/(rchisq(df)))
 
 double poilog(int x, double my, double sig);
-void MetropolisHastings (double *s,
-		         double *mu0, double *kappa0, 
-                         double *sigma20,  double *df0,
-                         double *sigmaproposal, 
-			 int *N,
-			 double *musample, double *sigmasample,
-			 int *nsteps, int *staken, int *burnin, int *interval,
-			 int fVerbose
+void gspps (int *pop,
+            int *nk, 
+            int *K, 
+            int *n, 
+            int *samplesize, int *burnin, int *interval,
+            double *mu0, double *kappa0, 
+            double *sigma0,  double *df0,
+            double *sigmaproposal, 
+            int *N, int *maxN, 
+            double *sample, 
+            int *burnintheta,
+	    int *fVerbose
+			 );
+void gsppsN (int *pop,
+            int *nk, 
+            int *K, 
+            int *n, 
+            int *samplesize, int *burnin, int *interval,
+            double *mu0, double *kappa0, 
+            double *sigma0,  double *df0,
+            double *sigmaproposal, 
+            int *N, 
+            int *sample, 
+            int *burnintheta,
+	    int *fVerbose
+			 );
+void MHpln (int *nk, int *K,
+	    double *mu0, double *kappa0, 
+            double *sigma0,  double *df0,
+            double *sigmaproposal, 
+            int *N, 
+            double *musample, double *sigmasample,
+            int *samplesize, int *staken, int *burnin, int *interval,
+	    int *fVerbose
 			 );
 #endif /* MCMC_H */
