@@ -429,7 +429,7 @@ void MHpriorpln (double *mu0, double *kappa0,
 	    int *fVerbose
 			 ) {
   int step, taken, give_log=1;
-  int i, isamp, iinterval, isamplesize, iburnin;
+  int isamp, iinterval, isamplesize, iburnin;
   double ip, cutoff;
   double mustar, mui;
   double sigmastar, sigmai, sigma2star, sigma2i, qsigma2star, qsigma2i;
