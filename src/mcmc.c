@@ -340,9 +340,8 @@ void MHpln (int *nk, int *K,
   mui = dmu0;
   sigma2i = dsigma20;
   sigmai  = sqrt(sigma2i);
-  qsigma2i = dnorm(0., 0., 1., give_log);
   pithetai = dnorm(mui, dmu0, sigmai/rkappa0, give_log);
-  pithetai = pithetai*dsclinvchisq(sigma2i, ddf0, dsigma20);
+  pithetai = pithetai+dsclinvchisq(sigma2i, ddf0, dsigma20);
   pis=0.;
   for (i=0; i<Ki; i++){
     pi[i] = poilog(i+1,mui,sigmai);
@@ -356,9 +355,12 @@ void MHpln (int *nk, int *K,
 
 //  Rprintf("%f %f %f %f %f\n", mustar, dmu0, sigma2star, dkappa0, sigma2i);
     /* Calculate pieces of the posterior. */
-    qsigma2star = dnorm(log(sigma2star/sigma2i)/dsigmaproposal,0.,1.,give_log);
+    qsigma2star = dnorm(log(sigma2star/sigma2i)/dsigmaproposal,0.,1.,give_log)
+                  -log(dsigmaproposal*sigma2star);
     pithetastar = dnorm(mustar, dmu0, sigmastar/rkappa0, give_log);
     pithetastar = pithetastar+dsclinvchisq(sigma2star, ddf0, dsigma20);
+    qsigma2i = dnorm(log(sigma2i/sigma2star)/dsigmaproposal,0.,1.,give_log)
+               -log(dsigmaproposal*sigma2i);
 
     /* Calculate ratio */
     ip = pithetastar-pithetai;
@@ -390,7 +392,7 @@ void MHpln (int *nk, int *K,
 
     /* if we accept the proposed network */
     if (cutoff >= 0.0 || log(unif_rand()) < cutoff) { 
-      /* Make proposed chnages */
+      /* Make proposed changes */
       sigmai = sigmastar;
       mui    = mustar;
       sigma2i = sigma2star;
@@ -456,9 +458,8 @@ void MHpriorpln (double *mu0, double *kappa0,
   mui = dmu0;
   sigma2i = dsigma20;
   sigmai  = sqrt(sigma2i);
-  qsigma2i = dnorm(0., 0., 1., give_log);
   pithetai = dnorm(mui, dmu0, sigmai/rkappa0, give_log);
-  pithetai = pithetai*dsclinvchisq(sigma2i, ddf0, dsigma20);
+  pithetai = pithetai+dsclinvchisq(sigma2i, ddf0, dsigma20);
   while (isamp < isamplesize) {
     /* Propose new theta */
     mustar = rnorm(mui, dmuproposal);
@@ -466,11 +467,12 @@ void MHpriorpln (double *mu0, double *kappa0,
     sigmastar = sqrt(sigma2star);
 
     /* Calculate pieces of the posterior. */
-    qsigma2star = dnorm(log(sigma2star/sigma2i)/dsigmaproposal,0.,1., give_log);
+    qsigma2star = dnorm(log(sigma2star/sigma2i)/dsigmaproposal,0.,1.,give_log)
+                  -log(dsigmaproposal*sigma2star);
     pithetastar = dnorm(mustar, dmu0, sigmastar/rkappa0, give_log);
     pithetastar = pithetastar+dsclinvchisq(sigma2star, ddf0, dsigma20);
-    if (*fVerbose) Rprintf("step %d pithetastar %f qsigma2star %f\n", 
-		           step, pithetastar, qsigma2star);
+    qsigma2i = dnorm(log(sigma2i/sigma2star)/dsigmaproposal,0.,1.,give_log)
+               -log(dsigmaproposal*sigma2i);
 
     /* Calculate ratio */
     ip = pithetastar-pithetai;
@@ -481,13 +483,19 @@ void MHpriorpln (double *mu0, double *kappa0,
       
     /* if we accept the proposed network */
     if (cutoff >= 0.0 || log(unif_rand()) < cutoff) { 
-      /* Make proposed chnages */
+    if (*fVerbose) {
+     sigmai = exp(mustar+0.5*sigmastar);
+     if(sigmai < 4.){
+     Rprintf("step %d mu %f pithetastar %f pithetai %f qsigma2star %f qsigma2i %f mustar %f sigmastar %f\n", 
+		           step, sigmai, pithetastar, pithetai, qsigma2star, qsigma2i, mustar, sigmastar);
+			   }
+			   }
+      /* Make proposed changes */
       sigmai = sigmastar;
       mui    = mustar;
       sigma2i = sigma2star;
-      qsigma2i = qsigma2star;
       pithetai = pithetastar;
-    if (*fVerbose) Rprintf("step %d mui %f sigmai %f\n", step, mui, sigmai);
+//    if (*fVerbose) Rprintf("step %d mui %f sigmai %f\n", step, mui, sigmai);
       taken++;
       if (step > 0 && step==(iinterval*(step/iinterval))) { 
         /* record statistics for posterity */
