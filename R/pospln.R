@@ -1,15 +1,18 @@
 poswest<-function(s,maxN=4*length(s),
                   K=2*max(s), nk=tabulate(s,nbin=K), n=length(s),
 		  N=maxN/2,
-                  mu0=2,sigma0=0.3,kappa0=4, df0=10,
+                  prior.mean.degree=7, prior.sd.degree=2.2,
+                  prior.mean.df=4, prior.sd.df=10,
                   muproposal=0.01, 
                   sigmaproposal=0.1, 
-                  samplesize=10,burnin=0,interval=1,burnintheta=1000,
+                  samplesize=10,burnin=0,interval=1,burnintheta=500,
                   seed=NULL,
                   verbose=TRUE){
     #this function takes a vector of population sizes and a vector s of 
     #sequential sizes of sampled units and returns a log likelihood value
     #s values must all be positive integers
+    sigma0 <- sqrt(log(1+prior.sd.degree*prior.sd.degree/(prior.mean.degree*prior.mean.degree)))
+    mu0 <- log(prior.mean.degree)-0.5*sigma0*sigma0
     if(!is.null(seed))  set.seed(as.integer(seed))
     Cret <- .C("gspps",
               pop=as.integer(c(s,rep(0,maxN-n))),
@@ -19,8 +22,8 @@ poswest<-function(s,maxN=4*length(s),
               samplesize=as.integer(samplesize),
               burnin=as.integer(burnin),
               interval=as.integer(interval),
-              mu0=as.double(mu0), kappa0=as.double(kappa0),
-              sigma0=as.double(sigma0), df0=as.double(df0),
+              mu0=as.double(mu0), prior.mean.df=as.double(prior.mean.df),
+              sigma0=as.double(sigma0), prior.sd.df=as.double(prior.sd.df),
               muproposal=as.double(muproposal),
               sigmaproposal=as.double(sigmaproposal),
               N=as.integer(N),
@@ -29,10 +32,9 @@ poswest<-function(s,maxN=4*length(s),
               burnintheta=as.integer(burnintheta),
               fVerbose=as.integer(verbose))
     Cret$sample<-matrix(Cret$sample,nrow=samplesize,ncol=4,byrow=TRUE)
+    Cret$sample[,"mu"] <- exp(Cret$sample[,"mu"]+0.5*Cret$sample[,"sigma"]*Cret$sample[,"sigma"])
+    Cret$sample[,"sigma"] <- Cret$sample[,"mu"]*sqrt(exp(Cret$sample[,"sigma"]*Cret$sample[,"sigma"])-1)
     colnames(Cret$sample) <- c("N","mu","sigma","isolates")
-    Cret$sample <- cbind(Cret$sample,
-      exp(Cret$sample[,"mu"]+0.5*Cret$sample[,"sigma"]))
-    colnames(Cret$sample) <- c("N","mu","sigma","isolates","meandegree")
     Cret$nk<-Cret$nk/sum(Cret$nk)
     endrun <- burnin+interval*(samplesize-1)
     attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
@@ -46,15 +48,18 @@ poswest<-function(s,maxN=4*length(s),
 }
 poswestN<-function(s,N,
                  K=max(s), nk=tabulate(s,nbin=K), n=length(s),
-                 mu0=2,sigma0=0.3,kappa0=4,df0=10,
+                 prior.mean.degree=7, prior.sd.degree=2.2,
+                 prior.mean.df=4,prior.sd.df=10,
                  muproposal=0.01, 
                  sigmaproposal=0.1, 
-                 samplesize=10,burnin=0,interval=1,burnintheta=1000,
+                 samplesize=10,burnin=0,interval=1,burnintheta=500,
                  seed=NULL,
                  verbose=TRUE){
     #this function takes a vector of population sizes and a vector s of 
     #sequential sizes of sampled units and returns a log likelihood value
     #s values must all be positive integers
+    sigma0 <- sqrt(log(1+prior.sd.degree*prior.sd.degree/(prior.mean.degree*prior.mean.degree)))
+    mu0 <- log(prior.mean.degree)-0.5*sigma0*sigma0
     if(!is.null(seed))  set.seed(as.integer(seed))
     Cret <- .C("gsppsN",
               pop=as.integer(c(s,rep(0,N-n))),
@@ -64,8 +69,8 @@ poswestN<-function(s,N,
               samplesize=as.integer(samplesize),
               burnin=as.integer(burnin),
               interval=as.integer(interval),
-              mu0=as.double(mu0), kappa0=as.double(kappa0),
-              sigma0=as.double(sigma0), df0=as.double(df0),
+              mu0=as.double(mu0), prior.mean.df=as.double(prior.mean.df),
+              sigma0=as.double(sigma0), prior.sd.df=as.double(prior.sd.df),
               muproposal=as.double(muproposal),
               sigmaproposal=as.double(sigmaproposal),
               N=as.integer(N),
@@ -80,7 +85,8 @@ poswestN<-function(s,N,
     Cret
 }
 pospln<-function(pop, K=max(pop),
-                 mu0=2,sigma0=0.3,kappa0=4,df0=10,
+                 prior.mean.degree=7, prior.sd.degree=2.2,
+                 prior.mean.df=4,prior.sd.df=10,
                  muproposal=0.01, 
                  sigmaproposal=0.1, 
                  samplesize=1000,burnin=0,interval=1,
@@ -89,6 +95,8 @@ pospln<-function(pop, K=max(pop),
     #this function takes a vector of population sizes and a vector s of 
     #sequential sizes of sampled units and returns a log likelihood value
     #s values must all be positive integers
+    sigma0 <- sqrt(log(1+prior.sd.degree*prior.sd.degree/(prior.mean.degree*prior.mean.degree)))
+    mu0 <- log(prior.mean.degree)-0.5*sigma0*sigma0
     if(!is.null(seed))  set.seed(as.integer(seed))
     nk <- tabulate(pop,nbin=K)
     musample <- rep(0,samplesize)
@@ -96,8 +104,8 @@ pospln<-function(pop, K=max(pop),
     Cret <- .C("MHpln",
               nk=as.integer(nk),
               K=as.integer(K),
-              mu0=as.double(mu0), kappa0=as.double(kappa0),
-              sigma0=as.double(sigma0), df0=as.double(df0),
+              mu0=as.double(mu0), prior.mean.df=as.double(prior.mean.df),
+              sigma0=as.double(sigma0), prior.sd.df=as.double(prior.sd.df),
               muproposal=as.double(muproposal),
               sigmaproposal=as.double(sigmaproposal),
               N=as.integer(length(pop)),
@@ -110,22 +118,27 @@ pospln<-function(pop, K=max(pop),
               fVerbose=as.integer(verbose))
     Cret$sample <- cbind(Cret$musample, Cret$sigmasample)
     colnames(Cret$sample) <- c("mu","sigma")
+    Cret$sample[,"mu"] <- exp(Cret$sample[,"mu"]+0.5*Cret$sample[,"sigma"]*Cret$sample[,"sigma"])
+    Cret$sample[,"sigma"] <- Cret$sample[,"mu"]*sqrt(exp(Cret$sample[,"sigma"]*Cret$sample[,"sigma"])-1)
     endrun <- burnin+interval*(samplesize-1)
     attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
     attr(Cret$sample, "class") <- "mcmc"
     Cret
 }
-priorpln<-function(mu0=2,sigma0=0.3,kappa0=4,df0=10,
+priorpln<-function(prior.mean.degree=7, prior.sd.degree=2.2,
+                 prior.mean.df=4,prior.sd.df=10,
                  muproposal=0.01, 
                  sigmaproposal=0.1, 
                  samplesize=1000,burnin=0,interval=1,
                  seed=NULL,
                  verbose=TRUE){
+    sigma0 <- sqrt(log(1+prior.sd.degree*prior.sd.degree/(prior.mean.degree*prior.mean.degree)))
+    mu0 <- log(prior.mean.degree)-0.5*sigma0*sigma0
     musample <- rep(0,samplesize)
     sigmasample <- rep(0,samplesize)
     Cret <- .C("MHpriorpln",
-              mu0=as.double(mu0), kappa0=as.double(kappa0),
-              sigma0=as.double(sigma0), df0=as.double(df0),
+              mu0=as.double(mu0), prior.mean.df=as.double(prior.mean.df),
+              sigma0=as.double(sigma0), prior.sd.df=as.double(prior.sd.df),
               muproposal=as.double(muproposal),
               sigmaproposal=as.double(sigmaproposal),
               musample=as.double(musample),
@@ -137,6 +150,8 @@ priorpln<-function(mu0=2,sigma0=0.3,kappa0=4,df0=10,
               fVerbose=as.integer(verbose))
     Cret$sample <- cbind(Cret$musample, Cret$sigmasample)
     colnames(Cret$sample) <- c("mu","sigma")
+    Cret$sample[,"mu"] <- exp(Cret$sample[,"mu"]+0.5*Cret$sample[,"sigma"]*Cret$sample[,"sigma"])
+    Cret$sample[,"sigma"] <- Cret$sample[,"mu"]*sqrt(exp(Cret$sample[,"sigma"]*Cret$sample[,"sigma"])-1)
     endrun <- burnin+interval*(samplesize-1)
     attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
     attr(Cret$sample, "class") <- "mcmc"
@@ -146,16 +161,19 @@ posteriorsize<-function(s,
                   maxN=4*length(s),
                   K=2*max(s), nk=tabulate(s,nbin=K), n=length(s),
 		  N=0.5*maxN,
-                  mu0=2,sigma0=0.3,kappa0=4,df0=10,
+                  prior.mean.degree=7, prior.sd.degree=2.2,
+                  prior.mean.df=4,prior.sd.df=10,
                   muproposal=0.01, 
                   sigmaproposal=0.1, 
-                  samplesize=1000,burnin=100,interval=1,burnintheta=100,
+                  samplesize=1000,burnin=100,interval=1,burnintheta=500,
                   parallel=1, seed=NULL,
                   verbose=TRUE){
-
+  sigma0 <- sqrt(log(1+prior.sd.degree*prior.sd.degree/(prior.mean.degree*prior.mean.degree)))
+  mu0 <- log(prior.mean.degree)-0.5*sigma0*sigma0
   if(parallel==1){
       Cret <- poswest(s=s,N=N,K=K,nk=nk,n=n,maxN=maxN,
-                      mu0=mu0,kappa0=kappa0,sigma0=sigma0,df0=df0,
+                      prior.mean.degree=prior.mean.degree,prior.mean.df=prior.mean.df,
+                      prior.sd.degree=prior.sd.degree,prior.sd.df=prior.sd.df,
                       sigmaproposal=sigmaproposal, 
                       samplesize=samplesize,burnin=burnin,interval=interval,
 		      burnintheta=burnintheta,
@@ -198,7 +216,8 @@ posteriorsize<-function(s,
     samplesize.parallel=round(samplesize/parallel)
     outlist <- clusterCall(cl, poswest,
       s=s,N=N,K=K,nk=nk,n=n,maxN=maxN,
-      mu0=mu0,kappa0=kappa0,sigma0=sigma0,df0=df0,
+      prior.mean.degree=prior.mean.degree,prior.mean.df=prior.mean.df,
+      prior.sd.degree=prior.sd.degree,prior.sd.df=prior.sd.df,
       sigmaproposal=sigmaproposal, 
       samplesize=samplesize.parallel,burnin=burnin,interval=interval,
       burnintheta=burnintheta)
@@ -211,7 +230,7 @@ posteriorsize<-function(s,
      Cret$sample <- rbind(Cret$sample,z$sample)
      Cret$samplesize <- samplesize
     }
-    colnames(Cret$sample) <- c("N","mu","sigma","isolates","meandegree")
+    colnames(Cret$sample) <- c("N","mu","sigma","isolates")
     endrun <- burnin+interval*(samplesize-1)
     attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
     attr(Cret$sample, "class") <- "mcmc"
