@@ -32,9 +32,9 @@ poswest<-function(s,maxN=4*length(s),
               burnintheta=as.integer(burnintheta),
               fVerbose=as.integer(verbose))
     Cret$sample<-matrix(Cret$sample,nrow=samplesize,ncol=4,byrow=TRUE)
+    colnames(Cret$sample) <- c("N","mu","sigma","isolates")
     Cret$sample[,"mu"] <- exp(Cret$sample[,"mu"]+0.5*Cret$sample[,"sigma"]*Cret$sample[,"sigma"])
     Cret$sample[,"sigma"] <- Cret$sample[,"mu"]*sqrt(exp(Cret$sample[,"sigma"]*Cret$sample[,"sigma"])-1)
-    colnames(Cret$sample) <- c("N","mu","sigma","isolates")
     Cret$nk<-Cret$nk/sum(Cret$nk)
     endrun <- burnin+interval*(samplesize-1)
     attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
