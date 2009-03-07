@@ -12,7 +12,9 @@
    These functions evaluate the density and generate deviates from this distribution.
 */
 
-#define dsclinvchisq(x,df,scale,give_log) (give_log ? (dchisq((df)*((double)(scale))/((double)(x)),df,1)+log(((double)(scale))*(df)/(double)((x)*(x)))) : (dchisq((df)*((double)(scale))/((double)(x)),df,0)*(df)*((double)(scale))/(double)((x)*(x))))
+#define dsclinvchisqboth(x,df,scale,give_log) (give_log ? (dchisq((df)*((double)(scale))/((double)(x)),df,1)+log(((double)(scale))*(df)/(double)((x)*(x)))) : (dchisq((df)*((double)(scale))/((double)(x)),df,0)*(df)*((double)(scale))/(double)((x)*(x))))
+
+#define dsclinvchisq(x,df,scale) (dchisq((df)*((double)(scale))/((double)(x)),df,1)+log(((double)(scale))*(df)/(double)((x)*(x))))
 
 #define rsclinvchisq(df,scale) ((scale)*(df)/(rchisq(df)))
 
@@ -24,6 +26,7 @@ void gspps (int *pop,
             int *samplesize, int *burnin, int *interval,
             double *mu0, double *kappa0, 
             double *sigma0,  double *df0,
+            double *muproposal, 
             double *sigmaproposal, 
             int *N, int *maxN, 
             double *sample, 
@@ -37,6 +40,7 @@ void gsppsN (int *pop,
             int *samplesize, int *burnin, int *interval,
             double *mu0, double *kappa0, 
             double *sigma0,  double *df0,
+            double *muproposal, 
             double *sigmaproposal, 
             int *N, 
             int *sample, 
@@ -46,6 +50,7 @@ void gsppsN (int *pop,
 void MHpln (int *nk, int *K,
 	    double *mu0, double *kappa0, 
             double *sigma0,  double *df0,
+            double *muproposal, 
             double *sigmaproposal, 
             int *N, 
             double *musample, double *sigmasample,
@@ -54,6 +59,7 @@ void MHpln (int *nk, int *K,
 			 );
 void MHpriorpln (double *mu0, double *kappa0, 
             double *sigma0,  double *df0,
+            double *muproposal, 
             double *sigmaproposal, 
             double *musample, double *sigmasample,
             int *samplesize, int *staken, int *burnin, int *interval,

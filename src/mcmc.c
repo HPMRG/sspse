@@ -14,6 +14,7 @@ void gspps (int *pop,
             int *samplesize, int *burnin, int *interval,
             double *mu0, double *kappa0, 
             double *sigma0,  double *df0,
+            double *muproposal, 
             double *sigmaproposal, 
             int *N, int *maxN, 
             double *sample, 
@@ -23,7 +24,7 @@ void gspps (int *pop,
   int step, staken, getone=1, intervalone=1, fVerboseMHpln = 0;
   int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
   double mu;
-  double dkappa0, ddf0, dmu0, dsigma0, dsigmaproposal;
+  double dkappa0, ddf0, dmu0, dsigma0, dmuproposal, dsigmaproposal;
   int tU, popi, imaxN;
   double r, gammart, pis;
 
@@ -41,6 +42,7 @@ void gspps (int *pop,
   dsigma0=(*sigma0);
   dmu0=(*mu0);
   dsigmaproposal=(*sigmaproposal);
+  dmuproposal=(*muproposal);
 
   double *pi = (double *) malloc(sizeof(double) * Ki);
   int *b = (int *) malloc(sizeof(int) * ni);
@@ -72,7 +74,7 @@ void gspps (int *pop,
   step = -iburnin;
   while (isamp < isamplesize) {
     /* Draw new theta */
-    MHpln(Nk,K,mu0,kappa0,sigma0,df0,sigmaproposal,&Ni,
+    MHpln(Nk,K,mu0,kappa0,sigma0,df0,muproposal,sigmaproposal,&Ni,
 	  musample, sigmasample, &getone, &staken, burnintheta, &intervalone, 
 	  &fVerboseMHpln);
     /* Draw new N */
@@ -198,6 +200,7 @@ void gsppsN (int *pop,
             int *samplesize, int *burnin, int *interval,
             double *mu0, double *kappa0, 
             double *sigma0,  double *df0,
+            double *muproposal, 
             double *sigmaproposal, 
             int *N, 
             int *sample, 
@@ -207,7 +210,7 @@ void gsppsN (int *pop,
   int step, staken, getone=1, intervalone=1, fVerboseMHpln = 0;
   int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
   double mu;
-  double dkappa0, ddf0, dmu0, dsigma0, dsigmaproposal;
+  double dkappa0, ddf0, dmu0, dsigma0, dmuproposal, dsigmaproposal;
   int tU, popi;
   double r;
 
@@ -224,6 +227,7 @@ void gsppsN (int *pop,
   dsigma0=(*sigma0);
   dmu0=(*mu0);
   dsigmaproposal=(*sigmaproposal);
+  dmuproposal=(*muproposal);
 
   int *b = (int *) malloc(sizeof(int) * ni);
   int *Nk = (int *) malloc(sizeof(int) * Ki);
@@ -242,7 +246,7 @@ void gsppsN (int *pop,
   step = -iburnin;
   while (isamp < isamplesize) {
     /* Draw new theta */
-    MHpln(Nk,K,mu0,kappa0,sigma0,df0,sigmaproposal,N,
+    MHpln(Nk,K,mu0,kappa0,sigma0,df0,muproposal,sigmaproposal,N,
 	  musample, sigmasample, &getone, &staken, burnintheta, &intervalone, 
 	  &fVerboseMHpln);
     tU=0;
@@ -296,6 +300,7 @@ void gsppsN (int *pop,
 void MHpln (int *nk, int *K,
 	    double *mu0, double *kappa0, 
             double *sigma0,  double *df0,
+            double *muproposal, 
             double *sigmaproposal, 
             int *N, 
             double *musample, double *sigmasample,
@@ -310,7 +315,7 @@ void MHpln (int *nk, int *K,
   double sigmastar, sigmai, sigma2star, sigma2i, qsigma2star, qsigma2i;
   double pithetastar, pithetai;
   double dkappa0, rkappa0, ddf0, dmu0;
-  double dsigma0, dsigma20, dsigmaproposal;
+  double dsigma0, dsigma20, dmuproposal, dsigmaproposal;
 
   GetRNGstate();  /* R function enabling uniform RNG */
 
@@ -329,13 +334,15 @@ void MHpln (int *nk, int *K,
   dsigma20=(dsigma0*dsigma0);
   dmu0=(*mu0);
   dsigmaproposal=(*sigmaproposal);
+  dmuproposal=(*muproposal);
   isamp = taken = 0;
   step = -iburnin;
   mui = dmu0;
   sigma2i = dsigma20;
   sigmai  = sqrt(sigma2i);
-  qsigma2i = dsclinvchisq(sigma2i, ddf0, dsigma20, give_log);
+  qsigma2i = dnorm(0., 0., 1., give_log);
   pithetai = dnorm(mui, dmu0, sigmai/rkappa0, give_log);
+  pithetai = pithetai*dsclinvchisq(sigma2i, ddf0, dsigma20);
   pis=0.;
   for (i=0; i<Ki; i++){
     pi[i] = poilog(i+1,mui,sigmai);
@@ -343,19 +350,22 @@ void MHpln (int *nk, int *K,
   }
   while (isamp < isamplesize) {
     /* Propose new theta */
-    mustar = rnorm(mui, dsigmaproposal);
-    sigma2star = rsclinvchisq(ddf0,sigma2i);
+    mustar = rnorm(mui, dmuproposal);
+    sigma2star = sigma2i*exp(rnorm(0., dsigmaproposal));
     sigmastar = sqrt(sigma2star);
 
 //  Rprintf("%f %f %f %f %f\n", mustar, dmu0, sigma2star, dkappa0, sigma2i);
     /* Calculate pieces of the posterior. */
-    qsigma2star = dsclinvchisq(sigma2star,ddf0, dsigma20,give_log);
-    pithetastar = dnorm(mustar, dmu0, sigmastar/rkappa0,give_log);
+    qsigma2star = dnorm(log(sigma2star/sigma2i)/dsigmaproposal,0.,1.,give_log);
+    pithetastar = dnorm(mustar, dmu0, sigmastar/rkappa0, give_log);
+    pithetastar = pithetastar+dsclinvchisq(sigma2star, ddf0, dsigma20);
 
     /* Calculate ratio */
     ip = pithetastar-pithetai;
-//  if (*fVerbose)
-//    Rprintf("Now proposing %d MH steps %f ip0...\n", step, ip);
+//  if (*fVerbose){
+//    Rprintf("pithetastar %f pithetai %f qsigma2star %f qsigmai %f\n",
+//           pithetastar,pithetai,qsigma2star,qsigma2i);
+//  }
     pstars=0.;
     for (i=0; i<Ki; i++){
       pstar[i] = poilog(i+1,mustar,sigmastar);
@@ -412,6 +422,7 @@ void MHpln (int *nk, int *K,
 
 void MHpriorpln (double *mu0, double *kappa0, 
             double *sigma0,  double *df0,
+            double *muproposal, 
             double *sigmaproposal, 
             double *musample, double *sigmasample,
             int *samplesize, int *staken, int *burnin, int *interval,
@@ -424,7 +435,7 @@ void MHpriorpln (double *mu0, double *kappa0,
   double sigmastar, sigmai, sigma2star, sigma2i, qsigma2star, qsigma2i;
   double pithetastar, pithetai;
   double dkappa0, rkappa0, ddf0, dmu0;
-  double dsigma0, dsigma20, dsigmaproposal;
+  double dsigma0, dsigma20, dmuproposal, dsigmaproposal;
 
   GetRNGstate();  /* R function enabling uniform RNG */
 
@@ -437,23 +448,29 @@ void MHpriorpln (double *mu0, double *kappa0,
   dsigma0=(*sigma0);
   dsigma20=(dsigma0*dsigma0);
   dmu0=(*mu0);
+  dmuproposal=(*muproposal);
   dsigmaproposal=(*sigmaproposal);
+  dmuproposal=(*muproposal);
   isamp = taken = 0;
   step = -iburnin;
   mui = dmu0;
   sigma2i = dsigma20;
   sigmai  = sqrt(sigma2i);
-  qsigma2i = dsclinvchisq(sigma2i, ddf0, dsigma20, give_log);
+  qsigma2i = dnorm(0., 0., 1., give_log);
   pithetai = dnorm(mui, dmu0, sigmai/rkappa0, give_log);
+  pithetai = pithetai*dsclinvchisq(sigma2i, ddf0, dsigma20);
   while (isamp < isamplesize) {
     /* Propose new theta */
-    mustar = rnorm(mui, dsigmaproposal);
-    sigma2star = rsclinvchisq(ddf0,sigma2i);
+    mustar = rnorm(mui, dmuproposal);
+    sigma2star = sigma2i*exp(rnorm(0., dsigmaproposal));
     sigmastar = sqrt(sigma2star);
 
     /* Calculate pieces of the posterior. */
-    qsigma2star = dsclinvchisq(sigma2star,ddf0, dsigma20,give_log);
-    pithetastar = dnorm(mustar, dmu0, sigmastar/rkappa0,give_log);
+    qsigma2star = dnorm(log(sigma2star/sigma2i)/dsigmaproposal,0.,1., give_log);
+    pithetastar = dnorm(mustar, dmu0, sigmastar/rkappa0, give_log);
+    pithetastar = pithetastar+dsclinvchisq(sigma2star, ddf0, dsigma20);
+    if (*fVerbose) Rprintf("step %d pithetastar %f qsigma2star %f\n", 
+		           step, pithetastar, qsigma2star);
 
     /* Calculate ratio */
     ip = pithetastar-pithetai;
@@ -470,6 +487,7 @@ void MHpriorpln (double *mu0, double *kappa0,
       sigma2i = sigma2star;
       qsigma2i = qsigma2star;
       pithetai = pithetastar;
+    if (*fVerbose) Rprintf("step %d mui %f sigmai %f\n", step, mui, sigmai);
       taken++;
       if (step > 0 && step==(iinterval*(step/iinterval))) { 
         /* record statistics for posterity */
