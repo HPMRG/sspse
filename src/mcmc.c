@@ -77,6 +77,7 @@ void gspps (int *pop,
     MHpln(Nk,K,mu0,kappa0,sigma0,df0,muproposal,sigmaproposal,&Ni,
 	  musample, sigmasample, &getone, &staken, burnintheta, &intervalone, 
 	  &fVerboseMHpln);
+
     /* Draw new N */
     pis=0.;
     for (i=0; i<Ki; i++){
@@ -90,7 +91,6 @@ void gspps (int *pop,
     gammart=log(gammart);
     tU = -1000000000;
     for (i=0; i<imaxN; i++){
-//  if (*fVerbose) Rprintf("i %d lpm[i] %f\n", i, i*gammart+lgamma(ni+i+1.)-lgamma(i+1.));
       lpm[i]=i*gammart+lgamma(ni+i+1.)-lgamma(i+1.);
       if(lpm[i] > tU) tU = lpm[i];
     }
@@ -98,7 +98,6 @@ void gspps (int *pop,
       lpm[i]=exp(lpm[i]-tU);
     }
     for (i=1; i<imaxN; i++){
-//  if (*fVerbose) Rprintf("i %d lpm[i] %f\n", i, lpm[i]);
       lpm[i]=lpm[i-1]+lpm[i];
     }
     gammart = lpm[imaxN-1] * unif_rand();
@@ -106,11 +105,22 @@ void gspps (int *pop,
     while(gammart > lpm[Ni]){Ni++;}
     Ni+= ni;
     if(Ni >= imaxN) Ni = imaxN-1;
+		    
+    /* Draw phis */
+    tU=0;
+    for (i=ni; i<Ni; i++){
+      tU+=pop[i];
+    }
+    r=0.;
+    for (i=0; i<ni; i++){
+//    phi[i]=(tU+b[i])*exp_rand();
+      r+=exp_rand()/(tU+b[i]);
+    }
 
+    /* Draw unseen sizes */
     for (i=0; i<Ki; i++){
       Nk[i]=nk[i];
     }
-    /* Draw unseen sizes */
     for (i=ni; i<Ni; i++){
       /* Propose unseen size for unit i */
       mu = exp(rnorm(musample[0], sigmasample[0]));
@@ -123,49 +133,8 @@ void gspps (int *pop,
       pop[i]=popi;
       Nk[popi-1]=Nk[popi-1]+1;
     }
-    tU=0;
-    for (i=ni; i<Ni; i++){
-      tU+=pop[i];
-    }
-    /* Draw phis */
-    r=0.;
-    for (i=0; i<ni; i++){
-//    phi[i]=(tU+b[i])*exp_rand();
-      r+=exp_rand()/(tU+b[i]);
-    }
-    /* Draw new N */
-    pis=0.;
-    for (i=0; i<Ki; i++){
-      pi[i]=poilog(i+1,musample[0],sigmasample[0]);
-      pis+=pi[i];
-    }
-    gammart=0.;
-    for (i=0; i<Ki; i++){
-      gammart+=(exp(-r*(i+1))*pi[i]);
-    }
-    gammart=log(gammart);
-    tU = -1000000000;
-    for (i=0; i<imaxN; i++){
-//  if (*fVerbose) Rprintf("i %d lpm[i] %f\n", i, i*gammart+lgamma(ni+i+1.)-lgamma(i+1.));
-      lpm[i]=i*gammart+lgamma(ni+i+1.)-lgamma(i+1.);
-      if(lpm[i] > tU) tU = lpm[i];
-    }
-    for (i=0; i<imaxN; i++){
-      lpm[i]=exp(lpm[i]-tU);
-    }
-    for (i=1; i<imaxN; i++){
-//  if (*fVerbose) Rprintf("i %d lpm[i] %f\n", i, lpm[i]);
-      lpm[i]=lpm[i-1]+lpm[i];
-    }
-    gammart = lpm[imaxN-1] * unif_rand();
-    Ni = 0;
-    while(gammart > lpm[Ni]){Ni++;}
-    Ni+= ni;
-    if(Ni >= imaxN) Ni = imaxN-1;
-		    
     if (step > 0 && step==(iinterval*(step/iinterval))) { 
       /* record statistics for posterity */
-//    if (*fVerbose) Rprintf("isamp %d pop[501] %d\n", isamp, pop[501]);
       sample[isamp*4  ]=(double)(Ni);
       sample[isamp*4+1]=musample[0];
       sample[isamp*4+2]=sigmasample[0];
@@ -174,9 +143,7 @@ void gspps (int *pop,
         Nkpos[i]=Nkpos[i]+Nk[i];
       }
       isamp++;
-      if (*fVerbose) Rprintf("Taken %d samples...\n", isamp);
-//    if (*fVerbose) Rprintf("r %f gammart %f\n", r, gammart);
-//    if (*fVerbose) Rprintf("Ni %d lpm[0] %f imaxN %d\n", Ni, lpm[0], imaxN);
+      if (*fVerbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d samples...\n", isamp);
     }
     step++;
   }
@@ -285,7 +252,7 @@ void gsppsN (int *pop,
         sample[isamp*Ni+i]=pop[i];
       }
       isamp++;
-      if (*fVerbose) Rprintf("Taken %d samples...\n", isamp);
+      if (*fVerbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d samples...\n", isamp);
     }
     step++;
   }
@@ -403,16 +370,13 @@ void MHpln (int *nk, int *K,
         pi[i] = pstar[i];
       }
       taken++;
-//  if (*fVerbose)
-//    Rprintf("Taken %d MH steps...\n", taken);
-//    }
-    if (step > 0 && step==(iinterval*(step/iinterval))) { 
-      /* record statistics for posterity */
-      musample[isamp]=mui;
-      sigmasample[isamp]=sigmai;
-      isamp++;
-      if (*fVerbose) Rprintf("Taken %d MH samples...\n", isamp);
-    }
+      if (step > 0 && step==(iinterval*(step/iinterval))) { 
+        /* record statistics for posterity */
+        musample[isamp]=mui;
+        sigmasample[isamp]=sigmai;
+        isamp++;
+        if (*fVerbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d MH samples...\n", isamp);
+      }
     }
     step++;
   }
@@ -483,13 +447,14 @@ void MHpriorpln (double *mu0, double *kappa0,
       
     /* if we accept the proposed network */
     if (cutoff >= 0.0 || log(unif_rand()) < cutoff) { 
-    if (*fVerbose) {
-     sigmai = exp(mustar+0.5*sigmastar);
-     if(sigmai < 4.){
-     Rprintf("step %d mu %f pithetastar %f pithetai %f qsigma2star %f qsigma2i %f mustar %f sigmastar %f\n", 
-		           step, sigmai, pithetastar, pithetai, qsigma2star, qsigma2i, mustar, sigmastar);
-			   }
-			   }
+//    if (*fVerbose) {
+//     sigmai = exp(mustar+0.5*sigmastar);
+//     sigmai = exp(mustar+0.5*sigmastar);
+//     if(sigmai > 12.){
+//     Rprintf("step %d mu %f pithetastar %f pithetai %f qsigma2star %f qsigma2i %f mustar %f sigmastar %f cutoff %f\n", 
+//		           step, sigmai, pithetastar, pithetai, qsigma2star, qsigma2i, mustar, sigmastar, cutoff);
+//			   }
+//			   }
       /* Make proposed changes */
       sigmai = sigmastar;
       mui    = mustar;
@@ -502,7 +467,7 @@ void MHpriorpln (double *mu0, double *kappa0,
         musample[isamp]=mui;
         sigmasample[isamp]=sigmai;
         isamp++;
-        if (*fVerbose) Rprintf("Taken %d MH samples...\n", isamp);
+        if (*fVerbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d MH samples...\n", isamp);
       }
     }
     step++;
