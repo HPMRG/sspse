@@ -19,11 +19,11 @@ void gsppsdis (int *pop, int *dis,
             int *N, int *maxN, 
             double *sample, 
             int *burnintheta,
-	    int *fVerbose
-			 ) {
+            int *fVerbose
+              ) {
   int step, staken, getone=1, intervalone=1, fVerboseMHdis = 0;
-  int i, l, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
-  double mu, pbeta, lpmi;
+  int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
+  double mu, mu0i, mu1i, pbeta, beta, sigma;
   double dkappa0, ddf0, dmu0, dmu1, dsigma0, dmuproposal, dsigmaproposal;
   int tU, popi, imaxN, itotdis0, itotdis;
   double r, gamma0rt, gamma1rt, p0is, p1is;
@@ -83,6 +83,11 @@ void gsppsdis (int *pop, int *dis,
     itotdis+=dis[i];
   }
 
+  betasample[0] = -1.386294;
+  musample[0] = dmu0;
+  musample[1] = dmu1;
+  sigmasample[0] = dsigma0;
+
   isamp = 0;
   step = -iburnin;
   while (isamp < isamplesize) {
@@ -92,15 +97,18 @@ void gsppsdis (int *pop, int *dis,
 	  burnintheta, &intervalone, 
 	  &fVerboseMHdis);
 
-//  if (*fVerbose) Rprintf("step %d Ni %d itotdis %d beta %f mu0 %f mu1 %f\n",
-//  step, Ni, itotdis, betasample[0], musample[0], musample[1]);
+    beta=betasample[0];
+    pbeta=exp(beta)/(1.+exp(beta));
+    mu0i=musample[0];
+    mu1i=musample[1];
+    sigma=sigmasample[0];
 
     /* Draw new N */
     p0is=0.;
     p1is=0.;
     for (i=0; i<Ki; i++){
-      p0i[i]=poilog(i+1,musample[0],sigmasample[0]);
-      p1i[i]=poilog(i+1,musample[1],sigmasample[0]);
+      p0i[i]=poilog(i+1,mu0i,sigma);
+      p1i[i]=poilog(i+1,mu1i,sigma);
       p0is+=p0i[i];
       p1is+=p1i[i];
     }
@@ -110,18 +118,12 @@ void gsppsdis (int *pop, int *dis,
       gamma0rt+=(exp(-r*(i+1))*p0i[i]);
       gamma1rt+=(exp(-r*(i+1))*p1i[i]);
     }
-    gamma0rt=log(gamma0rt);
-    gamma1rt=log(gamma1rt);
+//    gamma0rt=log(gamma0rt);
+//    gamma1rt=log(gamma1rt);
+    gamma0rt=log((1.-pbeta)*gamma0rt+pbeta*gamma1rt);
     tU = -1000000000;
-    lpm[0]=lgamma(ni+1.);
-    if(lpm[0] > tU) tU = lpm[0];
-//  if (*fVerbose) Rprintf("i %d lpm[i] %f\n", i, i*gammart+lgamma(ni+i+1.)-lgamma(i+1.));
-    for (i=1; i<imaxN; i++){
-     lpmi=0.;
-     for (l=0; l<i; l++){
-      lpmi+=exp((i-l)*gamma0rt+l*gamma1rt-lgamma(l+1.)-lgamma(i-l+1.));
-     }
-     lpm[i]=lgamma(ni+i+1.)+log(lpmi);
+    for (i=0; i<imaxN; i++){
+     lpm[i]=lgamma(ni+i+1.)-lgamma(i+1)+i*gamma0rt;
      if(lpm[i] > tU) tU = lpm[i];
     }
     for (i=0; i<imaxN; i++){
@@ -139,8 +141,8 @@ void gsppsdis (int *pop, int *dis,
     Ni+= ni;
     if(Ni >= imaxN) Ni = imaxN-1;
 
-  if (*fVerbose) Rprintf("step %d Ni %d itotdis %d beta %f mu0 %f mu1 %f s0 %f r %f\n",
-  step, Ni, itotdis, betasample[0], musample[0], musample[1], sigmasample[0], r);
+//  if (*fVerbose) Rprintf("step %d Ni %d itotdis %d beta %f mu0 %f mu1 %f s0 %f r %f\n",
+//  step, Ni, itotdis, betasample[0], musample[0], musample[1], sigmasample[0], r);
 
     /* Draw phis */
     tU=0;
@@ -159,17 +161,17 @@ void gsppsdis (int *pop, int *dis,
     }
     for (i=ni; i<Ni; i++){
       /* Propose unseen disease status for unit i */
-      pbeta = exp(betasample[0])/(1.+exp(betasample[0]));
       if(unif_rand() < pbeta){
         dis[i]=1;
       }else{
         dis[i]=0;
       }
       /* Propose unseen size for unit i */
-      mu = exp(rnorm(musample[dis[i]], sigmasample[0]));
       /* Use rejection sampling */
+      mu = exp(rnorm(musample[dis[i]], sigma));
       popi=rpois(mu);
       while((log(1.0-unif_rand()) > -r*popi) || (popi == 0)){
+       mu = exp(rnorm(musample[dis[i]], sigma));
        popi=rpois(mu);
       }
       if(popi > Ki){popi=Ki;}
@@ -189,11 +191,11 @@ void gsppsdis (int *pop, int *dis,
       /* record statistics for posterity */
 //    if (*fVerbose) Rprintf("isamp %d pop[501] %d\n", isamp, pop[501]);
       sample[isamp*7  ]=(double)(Ni);
-      sample[isamp*7+1]=musample[0];
-      sample[isamp*7+2]=musample[1];
-      sample[isamp*7+3]=sigmasample[0];
+      sample[isamp*7+1]=mu0i;
+      sample[isamp*7+2]=mu1i;
+      sample[isamp*7+3]=sigma;
       sample[isamp*7+4]=(double)(Nk0[0]);
-      sample[isamp*7+5]=betasample[0];
+      sample[isamp*7+5]=beta;
       sample[isamp*7+6]=(double)(itotdis);
       for (i=0; i<Ki; i++){
         Nk0pos[i]=Nk0pos[i]+Nk0[i];
@@ -267,13 +269,15 @@ void MHdis (int *Nk0, int *Nk1, int *totdis, int *K,
   dmu1=(*mu1);
   dsigmaproposal=(*sigmaproposal);
   dmuproposal=(*muproposal);
+
   isamp = taken = 0;
   step = -iburnin;
-  betai = -1.386294;
-  mu0i = dmu0;
-  mu1i = dmu1;
-  sigma2i = dsigma20;
-  sigmai  = sqrt(sigma2i);
+  betai = betasample[0];
+  mu0i = musample[0];
+  mu1i = musample[1];
+  sigmai = sigmasample[0];
+  sigma2i  = sigmai*sigmai;
+
   pithetai = dnorm(mu0i, dmu0, sigmai/rkappa0, give_log);
   pithetai = pithetai+dnorm(mu1i, dmu1, sigmai/rkappa0, give_log);
   pithetai = pithetai+dsclinvchisq(sigma2i, ddf0, dsigma20);
@@ -309,10 +313,10 @@ void MHdis (int *Nk0, int *Nk1, int *totdis, int *K,
     /* Add the disease status */
     pbeta = exp(betastar)/(1.+exp(betastar));
 //    Rprintf("pbeta %f betastar %f\n", pbeta, betastar);
-    ip+=itotdis*log(pbeta);
+    ip+=(itotdis*log(pbeta)+(Ni-itotdis)*log(1.-pbeta));
     pbeta = exp(betai)/(1.+exp(betai));
-    ip-=itotdis*log(pbeta);
-//    Rprintf("betai %f betastar %f\n", betai, betastar);
+    ip-=(itotdis*log(pbeta)+(Ni-itotdis)*log(1.-pbeta));
+//    Rprintf("pbeta %f betai %f betastar %f\n", pbeta, betai, betastar);
 //    Rprintf("pithetastar %f pithetai %f qsigma2star %f qsigmai %f\n",
 //           pithetastar,pithetai,qsigma2star,qsigma2i);
     p0stars=0.;
