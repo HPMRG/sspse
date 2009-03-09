@@ -23,7 +23,7 @@ void gspps (int *pop,
 			 ) {
   int step, staken, getone=1, intervalone=1, fVerboseMHpln = 0;
   int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
-  double mu;
+  double mu, mu0i, sigma;
   double dkappa0, ddf0, dmu0, dsigma0, dmuproposal, dsigmaproposal;
   int tU, popi, imaxN;
   double r, gammart, pis;
@@ -70,6 +70,9 @@ void gspps (int *pop,
     r+=(exp_rand()/(tU+b[i]));
   }
 
+  musample[0] = dmu0;
+  sigmasample[0] = dsigma0;
+
   isamp = 0;
   step = -iburnin;
   while (isamp < isamplesize) {
@@ -78,10 +81,13 @@ void gspps (int *pop,
 	  musample, sigmasample, &getone, &staken, burnintheta, &intervalone, 
 	  &fVerboseMHpln);
 
+    mu0i=musample[0];
+    sigma=sigmasample[0];
+
     /* Draw new N */
     pis=0.;
     for (i=0; i<Ki; i++){
-      pi[i]=poilog(i+1,musample[0],sigmasample[0]);
+      pi[i]=poilog(i+1,mu0i,sigma);
       pis+=pi[i];
     }
     gammart=0.;
@@ -123,10 +129,11 @@ void gspps (int *pop,
     }
     for (i=ni; i<Ni; i++){
       /* Propose unseen size for unit i */
-      mu = exp(rnorm(musample[0], sigmasample[0]));
+      mu = exp(rnorm(mu0i, sigma));
       /* Use rejection sampling */
       popi=rpois(mu);
-      while((log(1.0-unif_rand()) > -r*popi) || (popi == 0)){
+      while((popi == 0) || (log(1.0-unif_rand()) > -r*popi)){
+       mu = exp(rnorm(mu0i, sigma));
        popi=rpois(mu);
       }
       if(popi > Ki){popi=Ki;}
@@ -136,8 +143,8 @@ void gspps (int *pop,
     if (step > 0 && step==(iinterval*(step/iinterval))) { 
       /* record statistics for posterity */
       sample[isamp*4  ]=(double)(Ni);
-      sample[isamp*4+1]=musample[0];
-      sample[isamp*4+2]=sigmasample[0];
+      sample[isamp*4+1]=mu0i;
+      sample[isamp*4+2]=sigma;
       sample[isamp*4+3]=(double)(Nk[0]);
       for (i=0; i<Ki; i++){
         Nkpos[i]=Nkpos[i]+Nk[i];
@@ -304,9 +311,9 @@ void MHpln (int *nk, int *K,
   dmuproposal=(*muproposal);
   isamp = taken = 0;
   step = -iburnin;
-  mui = dmu0;
-  sigma2i = dsigma20;
-  sigmai  = sqrt(sigma2i);
+  mui = musample[0];
+  sigmai = sigmasample[0];
+  sigma2i  = sigmai*sigmai;
   pithetai = dnorm(mui, dmu0, sigmai/rkappa0, give_log);
   pithetai = pithetai+dsclinvchisq(sigma2i, ddf0, dsigma20);
   pis=0.;
