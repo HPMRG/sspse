@@ -160,19 +160,18 @@ void gsppsdis (int *pop, int *dis,
       Nk1[i]=nk1[i];
     }
     for (i=ni; i<Ni; i++){
-      /* Propose unseen disease status for unit i */
-      if(unif_rand() < pbeta){
-        dis[i]=1;
-      }else{
-        dis[i]=0;
-      }
-      /* Propose unseen size for unit i */
       /* Use rejection sampling */
-      mu = exp(rnorm(musample[dis[i]], sigma));
-      popi=rpois(mu);
-      while((log(1.0-unif_rand()) > -r*popi) || (popi == 0)){
-       mu = exp(rnorm(musample[dis[i]], sigma));
-       popi=rpois(mu);
+      popi=0;
+      while((popi == 0) || (log(1.0-unif_rand()) > -r*popi)){
+        /* First propose unseen disease status for unit i */
+        if(unif_rand() < pbeta){
+          dis[i]=1;
+        }else{
+          dis[i]=0;
+        }
+        /* Now propose unseen size for unit i based on disease status */
+        mu = exp(rnorm(musample[dis[i]], sigma));
+        popi=rpois(mu);
       }
       if(popi > Ki){popi=Ki;}
       pop[i]=popi;
