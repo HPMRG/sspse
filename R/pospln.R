@@ -98,11 +98,11 @@ pospln<-function(pop, K=max(pop),
     sigma0 <- sqrt(log(1+sd.prior.degree*sd.prior.degree/(mean.prior.degree*mean.prior.degree)))
     mu0 <- log(mean.prior.degree)-0.5*sigma0*sigma0
     if(!is.null(seed))  set.seed(as.integer(seed))
-    nk <- tabulate(pop,nbin=K)
+    Nk <- tabulate(pop,nbin=K)
     musample <- rep(0,samplesize)
     sigmasample <- rep(0,samplesize)
     Cret <- .C("MHpln",
-              nk=as.integer(nk),
+              Nk=as.integer(Nk),
               K=as.integer(K),
               mu0=as.double(mu0), df.mean.prior=as.double(df.mean.prior),
               sigma0=as.double(sigma0), df.sd.prior=as.double(df.sd.prior),

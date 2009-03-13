@@ -41,13 +41,14 @@ posdis<-function(s,dis,maxN=4*length(s),
               burnintheta=as.integer(burnintheta),
               fVerbose=as.integer(verbose))
     Cret$sample<-matrix(Cret$sample,nrow=samplesize,ncol=7,byrow=TRUE)
-    colnames(Cret$sample) <- c("N","mu0","mu1","sigma","isolates","beta","disease")
+    colnames(Cret$sample) <- c("N","mu0","mu1","sigma","isolates","beta","disease.count")
+    Cret$sample<-cbind(Cret$sample,Cret$sample[,"disease.count"]/Cret$sample[,"N"])
+    colnames(Cret$sample) <- c("N","mu0","mu1","sigma","isolates","beta","disease.count","disease")
     Cret$sample[,"mu0"] <- exp(Cret$sample[,"mu0"]+0.5*Cret$sample[,"sigma"]*Cret$sample[,"sigma"])
     Cret$sample[,"mu1"] <- exp(Cret$sample[,"mu1"]+0.5*Cret$sample[,"sigma"]*Cret$sample[,"sigma"])
     Cret$sample[,"sigma"] <- Cret$sample[,"mu0"]*sqrt(exp(Cret$sample[,"sigma"]*Cret$sample[,"sigma"])-1)
     Cret$nk0<-Cret$nk0/sum(Cret$nk0)
     Cret$nk1<-Cret$nk1/sum(Cret$nk1)
-    Cret$sample[,"disease"]<-Cret$sample[,"disease"]/Cret$sample[,"N"]
     endrun <- burnin+interval*(samplesize-1)
     attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
     attr(Cret$sample, "class") <- "mcmc"
@@ -177,7 +178,7 @@ posteriordisease<-function(s,dis,
      Cret$samplesize <- samplesize
     }
     colnames(Cret$sample) <- c("N","mu0","mu1","sigma","isolates","beta",
-                               "disease")
+                               "disease.count","disease")
     endrun <- burnin+interval*(samplesize-1)
     attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
     attr(Cret$sample, "class") <- "mcmc"
@@ -192,5 +193,14 @@ posteriordisease<-function(s,dis,
     stopCluster(cl)
     if(getClusterOption("type")=="PVM") .PVM.exit()
   }
+  Cret$MAP <- apply(Cret$sample,2,mapfn)
+  Cret$N <- c(Cret$MAP["N"], 
+              mean(Cret$sample[,"N"]),
+              median(Cret$sample[,"N"]),
+	      quantile(Cret$sample[,"N"],c(0.025,0.975)))
+  Cret$disease <- c(Cret$MAP["disease"], 
+              mean(Cret$sample[,"disease"]),
+              median(Cret$sample[,"disease"]),
+	      quantile(Cret$sample[,"disease"],c(0.025,0.975)))
   Cret
 }

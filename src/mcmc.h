@@ -47,7 +47,7 @@ void gsppsN (int *pop,
             int *burnintheta,
 	    int *fVerbose
 			 );
-void MHpln (int *nk, int *K,
+void MHpln (int *Nk, int *K,
 	    double *mu0, double *kappa0, 
             double *sigma0,  double *df0,
             double *muproposal, 
@@ -65,4 +65,14 @@ void MHpriorpln (double *mu0, double *kappa0,
             int *samplesize, int *staken, int *burnin, int *interval,
 	    int *fVerbose
 			 );
+void getinclC (int *N,
+            int *pop,
+            double *size, 
+            int *K, 
+            int *n, 
+            int *samplesize,
+            int *Nk,
+	    int *fVerbose
+			 );
+static void ProbSampleNoReplace(int n, double *p, int *perm, int nans, int *ans);
 #endif /* MCMC_H */

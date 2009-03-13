@@ -63,9 +63,9 @@ void gsppsdis (int *pop, int *dis,
   }
   for (i=0; i<Ki; i++){
      Nk0[i]=nk0[i];
-     Nk0pos[i]=isamplesize*nk0[i];
+     Nk0pos[i]=0;
      Nk1[i]=nk1[i];
-     Nk1pos[i]=isamplesize*nk1[i];
+     Nk1pos[i]=0;
   }
   tU=0;
   for (i=ni; i<Ni; i++){
@@ -111,6 +111,10 @@ void gsppsdis (int *pop, int *dis,
       p1i[i]=poilog(i+1,mu1i,sigma);
       p0is+=p0i[i];
       p1is+=p1i[i];
+    }
+    for (i=0; i<Ki; i++){
+      p0i[i]/=p0is;
+      p1i[i]/=p1is;
     }
     gamma0rt=0.;
     gamma1rt=0.;
@@ -193,7 +197,7 @@ void gsppsdis (int *pop, int *dis,
       sample[isamp*7+1]=mu0i;
       sample[isamp*7+2]=mu1i;
       sample[isamp*7+3]=sigma;
-      sample[isamp*7+4]=(double)(Nk0[0]);
+      sample[isamp*7+4]=(double)(Nk0[0]+Nk1[0]);
       sample[isamp*7+5]=beta;
       sample[isamp*7+6]=(double)(itotdis);
       for (i=0; i<Ki; i++){
@@ -288,6 +292,10 @@ void MHdis (int *Nk0, int *Nk1, int *totdis, int *K,
     p0is+=p0i[i];
     p1is+=p1i[i];
   }
+  for (i=0; i<Ki; i++){
+    p0i[i]/=p0is;
+    p1i[i]/=p1is;
+  }
   while (isamp < isamplesize) {
 //  Rprintf("step %d Ni %d itotdis %d isamp %d\n", step, Ni, itotdis, isamp);
     /* Propose new theta */
@@ -327,13 +335,18 @@ void MHdis (int *Nk0, int *Nk1, int *totdis, int *K,
       p1stars+=p1star[i];
     }
     for (i=0; i<Ki; i++){
-//  Rprintf("%d %f %f\n", i,poilog(s[i],mu0star,sigmastar),
-//    poilog(s[i],mu0i,sigmai));
-      lp = log(p0is*p0star[i]/(p0stars*p0i[i]));
+      p0star[i]/=p0stars;
+      p1star[i]/=p1stars;
+    }
+    for (i=0; i<Ki; i++){
+     if(Nk0[i]>0){
+      lp = log(p0star[i]/p0i[i]);
       if((lp > -100.) && (lp<100.)){ip += (Nk0[i]*lp);}
-//    Rprintf("%f %f ", lp, ip);
-      lp = log(p1is*p1star[i]/(p1stars*p1i[i]));
+     }
+     if(Nk1[i]>0){
+      lp = log(p1star[i]/p1i[i]);
       if((lp > -100.) && (lp<100.)){ip += (Nk1[i]*lp);}
+     }
     }
 //    Rprintf("%f %f\n", lp, ip);
     /* The logic is to set exp(cutoff) = exp(ip) * qratio ,
@@ -353,8 +366,6 @@ void MHdis (int *Nk0, int *Nk1, int *totdis, int *K,
       sigma2i = sigma2star;
       qsigma2i = qsigma2star;
       pithetai = pithetastar;
-      p0is=p0stars;
-      p1is=p1stars;
       for (i=0; i<Ki; i++){
         p0i[i] = p0star[i];
         p1i[i] = p1star[i];

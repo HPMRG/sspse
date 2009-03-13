@@ -59,23 +59,17 @@ roundstoc<-function(vec){# takes a vector and makes it integers, keeping the tot
 
 
 probtodist<-function(classes,nums,prob,n){
-	#print("starting new run") ##
-	#print(classes) ##
-	#print(nums) ##
-	#print(prob) ##
-	#print(n) ##
-	#minprob<-min(prob[prob>0]) #added 070708
-	#prob[prob==0]<-minprob/4 #added 070708
-	#print(prob) ##
+  #classes: size of each class 
+  #nums: number of members of that class 
+  #prob: Probabilities of selection for a member of that class
 	props<-rep(0,length(classes))
-#	denomconst<-sum(nums/prob)
 	for(k in 1:length(classes)){
-		props[k]<-nums[k]/prob[k]
-		#print(paste(k,props[k])) ##
-		}
+	  props[k]<-nums[k]/prob[k]
+	}
 	props<-props/sum(props)
-	#print(props) ##
 	if(any(is.na(props))){print("Error in proptodist")}	
+  #classes: size of each class: 
+  #props: proportion of the population in that class
 	list(classes=classes, props=props)	
 	}
 
@@ -159,34 +153,118 @@ popclass<-rep(classes,times=nbyclass)
     list(degvec=degvec,pvec=pvec,nbyclass=nbyclass)
 }
 
-
 getest<-function(samp,n,nit=5, nsampsamp=1000, trace=FALSE,remember=FALSE){
   classes<-sort(unique(samp))
   nums<-table(samp)
   nsamp<-length(samp)
-   prob<-classes/sum(samp)
-   memory<-matrix(0,nit+1,length(classes))
+  prob<-classes/sum(samp)
+  memory<-matrix(0,nit+1,length(classes))
 
-   temp<-probtodist(classes,nums,prob,n)
-   #memory[1,]<-n*temp$props
-   if(trace){ 
-     plot(temp$classes,temp$props,type="l")#,ylim=c(0,.2))
-     lines(temp$classes,prob,type="l")
-     }
-   newprobs<-getincl(temp$classes,temp$props,n, nsamp, nsampsamp)
-   memory[1,]<-newprobs$nbyclass
+  temp<-probtodist(classes,nums,prob,n)
+  newprobs<-getincl(temp$classes,temp$props,n, nsamp, nsampsamp)
 
   for(i in 1:nit){
     temp<-probtodist(newprobs$degvec,nums,newprobs$pvec,n)
-    #memory[i+1,]<-n*temp$props
-    #print(temp)
-    if(trace){
-      lines(temp$classes,temp$props,type="l",col=i)
-      lines(temp$classes,newprobs$pvec,type="l",col=i)
-      }
     newprobs<-getincl(temp$classes,temp$props, n, nsamp, nsampsamp=nsampsamp)
-    memory[(i+1),]<-newprobs$nbyclass
   }
-# list(probs=newprobs$pvec,NNhat=N*temp$props,sizes=temp$classes,memory=memory)
   list(probs=newprobs$pvec,NNhat=n*temp$props,sizes=temp$classes)
+}
+
+getincl.raw<-function(size,
+                  Nk=sort(unique(size)),
+		  n=500,
+                  M=1000,
+                  seed=NULL,
+                  verbose=TRUE){
+    #this function takes a vector of population sizes and a vector s of 
+    #sequential sizes of sampled units and returns a log likelihood value
+    #s values must all be positive integers
+    K <- length(Nk)
+    pop <- match(size,Nk)-1
+    if(!is.null(seed))  set.seed(as.integer(seed))
+    size <- size/sum(size)
+    Cret <- .C("getinclC",
+              N=as.integer(length(size)),
+              pop=as.integer(pop),
+              size=as.double(size),
+              K=as.integer(K),
+              n=as.integer(n),
+              samplesize=as.integer(M),
+              Nk=as.integer(Nk),
+              fVerbose=as.integer(verbose))
+    Cret
+}
+
+getestC<-function(samp,n,nit=5, nsampsamp=1000){
+# samp: sample
+# n: population size
+  classes<-sort(unique(samp))
+  nums<-table(samp)
+  nsamp<-length(samp)
+  prob<-classes/sum(samp)
+
+  #temp$classes: size of each class 
+  #temp$nums: number of members of that class 
+  #temp$prob: Probabilities of selection for a member of that class
+  temp<-probtodist(classes=classes,nums=nums,prob=prob,n=n)
+  #temp$classes: size of each class 
+  #temp$props: proportion of the population in that class
+  newprobs<-getinclC(classes=temp$classes,props=temp$props,n=n, nsamp=nsamp,
+                     nsampsamp=nsampsamp)
+  #temp$degvec: size of each class
+  #temp$pvec: Probabilities of selection for a member of that class
+
+  for(i in 1:nit){
+    temp<-probtodist(classes=newprobs$degvec,nums=nums,prob=newprobs$pvec,n=n)
+    newprobs<-getinclC(classes=temp$classes,props=temp$props,n=n, nsamp=nsamp,
+                       nsampsamp=nsampsamp)
+  }
+  list(probs=newprobs$pvec,props=temp$props,classes=temp$classes)
+}
+getinclC<-function(classes,props,n,nsamp,nsampsamp){
+  props2<-props/sum(props)
+  nbyclass<-round(n*props2)
+  #artificially inflate each value to at least 1 node
+  nbyclass[nbyclass==0]<-1
+  offby<-n-sum(nbyclass)
+  if(is.na(offby)){print("Error in getincl: offby")}
+  if(offby>0){
+   for(ii in 1:offby){
+    dif<-props2-nbyclass/n
+    dif[dif<0]<-0
+    tochange<-sample(1:length(dif),1,prob=dif)
+    nbyclass[tochange]<-nbyclass[tochange]+1
+   }
+  }else{if(offby<0){
+   for(ii in 1:abs(offby)){		
+    dif<-nbyclass/n - props2
+    dif[dif<0]<-0
+    dif[nbyclass==1]<-0 #don't get rid of the last of any class
+    if(sum(dif==0)){
+     dif<-1-(props2-nbyclass/n)
+     dif[nbyclass==1]<-0
+    }	
+    tochange<-sample(1:length(dif),1,prob=dif)
+    nbyclass[tochange]<-nbyclass[tochange]-1
+   }
+  }}
+  popclass<-rep(classes,times=nbyclass)	
+# based on estimate of degrees, estimate true inclusion probs by class
+  pop <- match(popclass,classes)-1
+  popclass <- popclass/sum(popclass)
+  Cret <- .C("getinclC",
+              N=as.integer(length(popclass)),
+              pop=as.integer(pop),
+              size=as.double(popclass),
+              K=as.integer(length(classes)),
+              n=as.integer(nsamp),
+              samplesize=as.integer(nsampsamp),
+              Nk=as.integer(classes),
+              fVerbose=as.integer(0))
+# list(degvec=classes,pvec=Cret$Nk/(nbyclass*nsampsamp),nbyclass=nbyclass)
+  Ninf <- Cret$Nk
+  Ninf[Ninf==0] <- 1
+  Ninf <- Ninf/nbyclass
+  Ninf <- Ninf/sum(Ninf)
+  list(degvec=classes,pvec=Ninf,nbyclass=nbyclass)
 }

@@ -58,7 +58,7 @@ void gspps (int *pop,
   }
   for (i=0; i<Ki; i++){
      Nk[i]=nk[i];
-     Nkpos[i]=isamplesize*nk[i];
+     Nkpos[i]=0;
   }
   tU=0;
   for (i=ni; i<Ni; i++){
@@ -89,6 +89,9 @@ void gspps (int *pop,
     for (i=0; i<Ki; i++){
       pi[i]=poilog(i+1,mu0i,sigma);
       pis+=pi[i];
+    }
+    for (i=0; i<Ki; i++){
+      pi[i]/=pis;
     }
     gammart=0.;
     for (i=0; i<Ki; i++){
@@ -271,7 +274,7 @@ void gsppsN (int *pop,
   free(sigmasample);
 }
 
-void MHpln (int *nk, int *K,
+void MHpln (int *Nk, int *K,
 	    double *mu0, double *kappa0, 
             double *sigma0,  double *df0,
             double *muproposal, 
@@ -321,6 +324,9 @@ void MHpln (int *nk, int *K,
     pi[i] = poilog(i+1,mui,sigmai);
     pis+=pi[i];
   }
+  for (i=0; i<Ki; i++){
+    pi[i]/=pis;
+  }
   while (isamp < isamplesize) {
     /* Propose new theta */
     mustar = rnorm(mui, dmuproposal);
@@ -348,10 +354,13 @@ void MHpln (int *nk, int *K,
       pstars+=pstar[i];
     }
     for (i=0; i<Ki; i++){
-//  Rprintf("%d %f %f\n", i,poilog(s[i],mustar,sigmastar),
-//    poilog(s[i],mui,sigmai));
-      lp = log(pis*pstar[i]/(pstars*pi[i]));
-      if((lp > -100.) && (lp<100.)){ip += (nk[i]*lp);}
+      pstar[i]/=pstars;
+    }
+    for (i=0; i<Ki; i++){
+     if(Nk[i]>0){
+      lp = log(pstar[i]/pi[i]);
+      if((lp > -100.) && (lp<100.)){ip += (Nk[i]*lp);}
+     }
 //    Rprintf("%d %f\n", i, log(poilog(s[i],mustar,sigmastar)/poilog(s[i],mui,sigmai)));
     }
     /* The logic is to set exp(cutoff) = exp(ip) * qratio ,
@@ -372,7 +381,6 @@ void MHpln (int *nk, int *K,
       sigma2i = sigma2star;
       qsigma2i = qsigma2star;
       pithetai = pithetastar;
-      pis=pstars;
       for (i=0; i<Ki; i++){
         pi[i] = pstar[i];
       }
@@ -481,4 +489,91 @@ void MHpriorpln (double *mu0, double *kappa0,
   }
   PutRNGstate();  /* Disable RNG before returning */
   *staken = taken;
+}
+
+void getinclC (int *N,
+            int *pop,
+            double *size, 
+            int *K, 
+            int *n, 
+            int *samplesize,
+            int *Nk,
+	    int *fVerbose
+			 ) {
+  int i, ni, Ni, Ki, isamp, isamplesize;
+
+  GetRNGstate();  /* R function enabling uniform RNG */
+
+  ni=(*n);
+  Ni=(*N);
+  Ki=(*K);
+  isamplesize=(*samplesize);
+
+  int *perm = (int *) malloc(sizeof(int) * Ni);
+  int *tperm = (int *) malloc(sizeof(int) * Ni);
+  double *tsize = (double *) malloc(sizeof(double) * Ni);
+  int *samp = (int *) malloc(sizeof(int) * ni);
+
+  for (i=0; i<Ki; i++){
+     Nk[i]=0;
+  }
+  /* Record element identities */
+  for (i = 0; i < Ni; i++)
+    perm[i] = i + 1;
+
+  /* Sort probabilities into descending order */
+  /* Order element identities in parallel */
+  revsort(size, perm, Ni);
+
+  for(isamp = 0 ; isamp < isamplesize ; isamp++){
+    /* Draw new sample */
+    for(i = 0 ; i < Ni ; i++){
+      tsize[i]=size[i];
+      tperm[i]=perm[i];
+    }
+    ProbSampleNoReplace(Ni, tsize, tperm, ni, samp);
+//Rprintf("isamp %d %d %d %d\n",isamp,Nk[0],Nk[1],Nk[2]);
+//Rprintf("%d %d %d %d %d %d\n",samp[0],samp[1],samp[2],samp[3],samp[4],samp[5]);
+    /* Tabulate */
+    for(i = 0 ; i < ni ; i++){
+      Nk[pop[samp[i]-1]]++;
+    }
+    if (*fVerbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d samples...\n", isamp);
+  }
+  PutRNGstate();  /* Disable RNG before returning */
+  free(samp);
+  free(tsize);
+  free(perm);
+  free(tperm);
+}
+static void ProbSampleNoReplace(int n, double *p, int *perm, int nans, int *ans)
+{
+    double rT, mass, totalmass;
+    int i, j, k, n1;
+
+    /* Record element identities */
+//  for (i = 0; i < n; i++)
+//    perm[i] = i + 1;
+
+    /* Sort probabilities into descending order */
+    /* Order element identities in parallel */
+//  revsort(p, perm, n);
+
+    /* Compute the sample */
+    totalmass = 1;
+    for (i = 0, n1 = n-1; i < nans; i++, n1--) {
+	rT = totalmass * unif_rand();
+	mass = 0;
+	for (j = 0; j < n1; j++) {
+	    mass += p[j];
+	    if (rT <= mass)
+		break;
+	}
+	ans[i] = perm[j];
+	totalmass -= p[j];
+	for(k = j; k < n1; k++) {
+	    p[k] = p[k + 1];
+	    perm[k] = perm[k + 1];
+	}
+    }
 }
