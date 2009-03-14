@@ -113,6 +113,10 @@ posteriordisease<-function(s,dis,
   sigma0 <- sqrt(log(1+sd.prior.degree*sd.prior.degree/(mean0.prior.degree*mean0.prior.degree)))
   mu0 <- log(mean0.prior.degree)-0.5*sigma0*sigma0
   mu1 <- log(mean1.prior.degree)-0.5*sigma0*sigma0
+  mapfn <- function(x){
+    posdensN <- density(x)
+    posdensN$x[which.max(posdensN$y)]
+  }
   if(parallel==1){
       Cret <- posdis(s=s,dis=dis,N=N,K=K,nk0=nk0,nk1=nk1,n=n,maxN=maxN,
                       mean0.prior.degree=mean0.prior.degree,
@@ -177,22 +181,17 @@ posteriordisease<-function(s,dis,
      Cret$sample <- rbind(Cret$sample,z$sample)
      Cret$samplesize <- samplesize
     }
-    colnames(Cret$sample) <- c("N","mu0","mu1","sigma","isolates","beta",
-                               "disease.count","disease")
-    endrun <- burnin+interval*(samplesize-1)
+    endrun <- burnin+interval*(samplesize0)
     attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
     attr(Cret$sample, "class") <- "mcmc"
-    mapfn <- function(x){
-      posdensN <- density(x)
-      posdensN$x[which.max(posdensN$y)]
-    }
-    Cret$MAP <- apply(Cret$sample,2,mapfn)
     if(verbose){
      cat("parallel samplesize=", parallel,"by", samplesize.parallel,"\n")
     }
     stopCluster(cl)
     if(getClusterOption("type")=="PVM") .PVM.exit()
   }
+  colnames(Cret$sample) <- c("N","mu0","mu1","sigma","isolates","beta",
+                             "disease.count","disease")
   Cret$MAP <- apply(Cret$sample,2,mapfn)
   Cret$N <- c(Cret$MAP["N"], 
               mean(Cret$sample[,"N"]),
