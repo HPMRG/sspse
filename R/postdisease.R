@@ -41,9 +41,9 @@ posdis<-function(s,dis,maxN=4*length(s),
               burnintheta=as.integer(burnintheta),
               fVerbose=as.integer(verbose))
     Cret$sample<-matrix(Cret$sample,nrow=samplesize,ncol=7,byrow=TRUE)
-    colnames(Cret$sample) <- c("N","mu0","mu1","sigma","isolates","beta","disease.count")
+    colnames(Cret$sample) <- c("N","mu0","mu1","sigma","degree1","beta","disease.count")
     Cret$sample<-cbind(Cret$sample,Cret$sample[,"disease.count"]/Cret$sample[,"N"])
-    colnames(Cret$sample) <- c("N","mu0","mu1","sigma","isolates","beta","disease.count","disease")
+    colnames(Cret$sample) <- c("N","mu0","mu1","sigma","degree1","beta","disease.count","disease")
     Cret$sample[,"mu0"] <- exp(Cret$sample[,"mu0"]+0.5*Cret$sample[,"sigma"]*Cret$sample[,"sigma"])
     Cret$sample[,"mu1"] <- exp(Cret$sample[,"mu1"]+0.5*Cret$sample[,"sigma"]*Cret$sample[,"sigma"])
     Cret$sample[,"sigma"] <- Cret$sample[,"mu0"]*sqrt(exp(Cret$sample[,"sigma"]*Cret$sample[,"sigma"])-1)
@@ -190,7 +190,7 @@ posteriordisease<-function(s,dis,
     stopCluster(cl)
     if(getClusterOption("type")=="PVM") .PVM.exit()
   }
-  colnames(Cret$sample) <- c("N","mu0","mu1","sigma","isolates","beta",
+  colnames(Cret$sample) <- c("N","mu0","mu1","sigma","degree1","beta",
                              "disease.count","disease")
   Cret$MAP <- apply(Cret$sample,2,mapfn)
   Cret$N <- c(Cret$MAP["N"], 
