@@ -59,7 +59,7 @@ roundstoc<-function(vec){# takes a vector and makes it integers, keeping the tot
 
 
 probtodist<-function(classes,nums,prob,n){
-  #classes: size of each class 
+  #classes: size value of each class 
   #nums: number of members of that class 
   #prob: Probabilities of selection for a member of that class
 	props<-rep(0,length(classes))
@@ -68,7 +68,7 @@ probtodist<-function(classes,nums,prob,n){
 	}
 	props<-props/sum(props)
 	if(any(is.na(props))){print("Error in proptodist")}	
-  #classes: size of each class: 
+  #classes: size value of each class: 
   #props: proportion of the population in that class
 	list(classes=classes, props=props)	
 	}
@@ -203,15 +203,15 @@ getestC<-function(samp,n,nit=5, nsampsamp=1000){
   nsamp<-length(samp)
   prob<-classes/sum(samp)
 
-  #temp$classes: size of each class 
+  #temp$classes: size value of each class 
   #temp$nums: number of members of that class 
   #temp$prob: Probabilities of selection for a member of that class
   temp<-probtodist(classes=classes,nums=nums,prob=prob,n=n)
-  #temp$classes: size of each class 
+  #temp$classes: size value of each class 
   #temp$props: proportion of the population in that class
   newprobs<-getinclC(classes=temp$classes,props=temp$props,n=n, nsamp=nsamp,
                      nsampsamp=nsampsamp)
-  #temp$degvec: size of each class
+  #temp$degvec: size value of each class
   #temp$pvec: Probabilities of selection for a member of that class
 
   for(i in 1:nit){
@@ -219,6 +219,9 @@ getestC<-function(samp,n,nit=5, nsampsamp=1000){
     newprobs<-getinclC(classes=temp$classes,props=temp$props,n=n, nsamp=nsamp,
                        nsampsamp=nsampsamp)
   }
+  #classes: size value of each class 
+  #props: proportion of the population in that class
+  #probs: Probabilities of selection for a member of that class
   list(probs=newprobs$pvec,props=temp$props,classes=temp$classes)
 }
 getinclC<-function(classes,props,n,nsamp,nsampsamp){
@@ -267,4 +270,8 @@ getinclC<-function(classes,props,n,nsamp,nsampsamp){
   Ninf <- Ninf/nbyclass
   Ninf <- Ninf/sum(Ninf)
   list(degvec=classes,pvec=Ninf,nbyclass=nbyclass)
+}
+
+HTestimator<-function(diseaseobs,weightobs){
+  sum(diseaseobs*weightobs)/sum(weightobs)
 }

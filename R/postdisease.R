@@ -181,7 +181,7 @@ posteriordisease<-function(s,dis,
      Cret$sample <- rbind(Cret$sample,z$sample)
      Cret$samplesize <- samplesize
     }
-    endrun <- burnin+interval*(samplesize0)
+    endrun <- burnin+interval*(samplesize)
     attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
     attr(Cret$sample, "class") <- "mcmc"
     if(verbose){
