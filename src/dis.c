@@ -13,7 +13,7 @@ void gsppsdis (int *pop, int *dis,
             int *n, 
             int *samplesize, int *burnin, int *interval,
             double *mu0, double *mu1, double *kappa0, 
-            double *sigma0,  double *df0,
+            double *sigma0,  double *sigma1, double *df0,
             double *muproposal, 
             double *sigmaproposal, 
             int *N, int *maxN, 
@@ -23,8 +23,8 @@ void gsppsdis (int *pop, int *dis,
               ) {
   int step, staken, getone=1, intervalone=1, fVerboseMHdis = 0;
   int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
-  double mu, mu0i, mu1i, pbeta, beta, sigma;
-  double dkappa0, ddf0, dmu0, dmu1, dsigma0, dmuproposal, dsigmaproposal;
+  double mu, mu0i, mu1i, pbeta, beta, sigma0i, sigma1i;
+  double dkappa0, ddf0, dmu0, dmu1, dsigma0, dsigma1, dmuproposal, dsigmaproposal;
   int tU, popi, imaxN, itotdis0, itotdis;
   double r, gamma0rt, gamma1rt, p0is, p1is;
 
@@ -40,6 +40,7 @@ void gsppsdis (int *pop, int *dis,
   dkappa0=(*kappa0);
   ddf0=(*df0);
   dsigma0=(*sigma0);
+  dsigma1=(*sigma1);
   dmu0=(*mu0);
   dmu1=(*mu1);
   dsigmaproposal=(*sigmaproposal);
@@ -55,7 +56,7 @@ void gsppsdis (int *pop, int *dis,
   double *lpm = (double *) malloc(sizeof(double) * imaxN);
   double *musample = (double *) malloc(sizeof(double) * 2);
   double *betasample = (double *) malloc(sizeof(double));
-  double *sigmasample = (double *) malloc(sizeof(double));
+  double *sigmasample = (double *) malloc(sizeof(double) * 2);
 
   b[ni-1]=pop[ni-1];
   for (i=(ni-2); i>=0; i--){
@@ -87,12 +88,13 @@ void gsppsdis (int *pop, int *dis,
   musample[0] = dmu0;
   musample[1] = dmu1;
   sigmasample[0] = dsigma0;
+  sigmasample[1] = dsigma1;
 
   isamp = 0;
   step = -iburnin;
   while (isamp < isamplesize) {
     /* Draw new theta */
-    MHdis(Nk0,Nk1,&itotdis,K,mu0,mu1,kappa0,sigma0,df0,muproposal,sigmaproposal,
+    MHdis(Nk0,Nk1,&itotdis,K,mu0,mu1,kappa0,sigma0,sigma1,df0,muproposal,sigmaproposal,
 	  &Ni, musample, betasample, sigmasample, &getone, &staken, 
 	  burnintheta, &intervalone, 
 	  &fVerboseMHdis);
@@ -101,14 +103,15 @@ void gsppsdis (int *pop, int *dis,
     pbeta=exp(beta)/(1.+exp(beta));
     mu0i=musample[0];
     mu1i=musample[1];
-    sigma=sigmasample[0];
+    sigma0i=sigmasample[0];
+    sigma1i=sigmasample[1];
 
     /* Draw new N */
     p0is=0.;
     p1is=0.;
     for (i=0; i<Ki; i++){
-      p0i[i]=poilog(i+1,mu0i,sigma);
-      p1i[i]=poilog(i+1,mu1i,sigma);
+      p0i[i]=poilog(i+1,mu0i,sigma0i);
+      p1i[i]=poilog(i+1,mu1i,sigma1i);
       p0is+=p0i[i];
       p1is+=p1i[i];
     }
@@ -170,11 +173,12 @@ void gsppsdis (int *pop, int *dis,
         /* First propose unseen disease status for unit i */
         if(unif_rand() < pbeta){
           dis[i]=1;
+          mu = exp(rnorm(musample[1], sigmasample[1]));
         }else{
           dis[i]=0;
+          mu = exp(rnorm(musample[0], sigmasample[0]));
         }
         /* Now propose unseen size for unit i based on disease status */
-        mu = exp(rnorm(musample[dis[i]], sigma));
         popi=rpois(mu);
       }
       if(popi > Ki){popi=Ki;}
@@ -193,13 +197,14 @@ void gsppsdis (int *pop, int *dis,
     if (step > 0 && step==(iinterval*(step/iinterval))) { 
       /* record statistics for posterity */
 //    if (*fVerbose) Rprintf("isamp %d pop[501] %d\n", isamp, pop[501]);
-      sample[isamp*7  ]=(double)(Ni);
-      sample[isamp*7+1]=mu0i;
-      sample[isamp*7+2]=mu1i;
-      sample[isamp*7+3]=sigma;
-      sample[isamp*7+4]=(double)(Nk0[0]+Nk1[0]);
-      sample[isamp*7+5]=beta;
-      sample[isamp*7+6]=(double)(itotdis);
+      sample[isamp*8  ]=(double)(Ni);
+      sample[isamp*8+1]=mu0i;
+      sample[isamp*8+2]=mu1i;
+      sample[isamp*8+3]=sigma0i;
+      sample[isamp*8+4]=sigma1i;
+      sample[isamp*8+5]=(double)(Nk0[0]+Nk1[0]);
+      sample[isamp*8+6]=beta;
+      sample[isamp*8+7]=(double)(itotdis);
       for (i=0; i<Ki; i++){
         Nk0pos[i]=Nk0pos[i]+Nk0[i];
         Nk1pos[i]=Nk1pos[i]+Nk1[i];
@@ -231,7 +236,7 @@ void gsppsdis (int *pop, int *dis,
 
 void MHdis (int *Nk0, int *Nk1, int *totdis, int *K,
 	    double *mu0, double *mu1, double *kappa0, 
-            double *sigma0,  double *df0,
+            double *sigma0,  double *sigma1, double *df0,
             double *muproposal, 
             double *sigmaproposal, 
             int *N, 
@@ -245,10 +250,12 @@ void MHdis (int *Nk0, int *Nk1, int *totdis, int *K,
   double mu0star, mu1star, mu0i, mu1i, lp;
   double pbeta, betastar, betai;
   double p0is, p1is, p0stars, p1stars;
-  double sigmastar, sigmai, sigma2star, sigma2i, qsigma2star, qsigma2i;
+  double sigma0star, sigma1star, sigma0i, sigma1i;
+  double sigma02star, sigma12star, sigma02i, sigma12i;
+  double qsigma02star, qsigma12star, qsigma02i, qsigma12i;
   double pithetastar, pithetai;
   double dkappa0, rkappa0, ddf0, dmu0, dmu1;
-  double dsigma0, dsigma20, dmuproposal, dsigmaproposal;
+  double dsigma0, dsigma1, dsigma02, dsigma12, dmuproposal, dsigmaproposal;
 
   GetRNGstate();  /* R function enabling uniform RNG */
 
@@ -266,7 +273,9 @@ void MHdis (int *Nk0, int *Nk1, int *totdis, int *K,
   rkappa0=sqrt(dkappa0);
   ddf0=(*df0);
   dsigma0=(*sigma0);
-  dsigma20=(dsigma0*dsigma0);
+  dsigma1=(*sigma1);
+  dsigma02=(dsigma0*dsigma0);
+  dsigma12=(dsigma1*dsigma1);
   itotdis=(*totdis);
   dmu0=(*mu0);
   dmu1=(*mu1);
@@ -278,17 +287,20 @@ void MHdis (int *Nk0, int *Nk1, int *totdis, int *K,
   betai = betasample[0];
   mu0i = musample[0];
   mu1i = musample[1];
-  sigmai = sigmasample[0];
-  sigma2i  = sigmai*sigmai;
+  sigma0i = sigmasample[0];
+  sigma1i = sigmasample[1];
+  sigma02i  = sigma0i*sigma0i;
+  sigma12i  = sigma1i*sigma1i;
 
-  pithetai = dnorm(mu0i, dmu0, sigmai/rkappa0, give_log);
-  pithetai = pithetai+dnorm(mu1i, dmu1, sigmai/rkappa0, give_log);
-  pithetai = pithetai+dsclinvchisq(sigma2i, ddf0, dsigma20);
+  pithetai = dnorm(mu0i, dmu0, sigma0i/rkappa0, give_log);
+  pithetai = pithetai+dnorm(mu1i, dmu1, sigma1i/rkappa0, give_log);
+  pithetai = pithetai+dsclinvchisq(sigma02i, ddf0, dsigma02);
+  pithetai = pithetai+dsclinvchisq(sigma12i, ddf0, dsigma12);
   p0is=0.;
   p1is=0.;
   for (i=0; i<Ki; i++){
-    p0i[i] = poilog(i+1,mu0i,sigmai);
-    p1i[i] = poilog(i+1,mu1i,sigmai);
+    p0i[i] = poilog(i+1,mu0i,sigma0i);
+    p1i[i] = poilog(i+1,mu1i,sigma1i);
     p0is+=p0i[i];
     p1is+=p1i[i];
   }
@@ -302,18 +314,25 @@ void MHdis (int *Nk0, int *Nk1, int *totdis, int *K,
     betastar = rnorm(betai, dmuproposal);
     mu0star = rnorm(mu0i, dmuproposal);
     mu1star = rnorm(mu1i, dmuproposal);
-    sigma2star = sigma2i*exp(rnorm(0., dsigmaproposal));
-    sigmastar = sqrt(sigma2star);
+    sigma02star = sigma02i*exp(rnorm(0., dsigmaproposal));
+    sigma0star = sqrt(sigma02star);
+    sigma12star = sigma12i*exp(rnorm(0., dsigmaproposal));
+    sigma1star = sqrt(sigma12star);
 
 //  Rprintf("%f %f %f %f %f\n", mu0star, dmu0, dmu1, sigma2star, dkappa0, sigma2i);
     /* Calculate pieces of the posterior. */
-    qsigma2star = dnorm(log(sigma2star/sigma2i)/dsigmaproposal,0.,1.,give_log)
-                  -log(dsigmaproposal*sigma2star);
-    pithetastar = dnorm(mu0star, dmu0, sigmastar/rkappa0, give_log);
-    pithetastar = pithetastar+dnorm(mu1star, dmu1, sigmastar/rkappa0, give_log);
-    pithetastar = pithetastar+dsclinvchisq(sigma2star, ddf0, dsigma20);
-    qsigma2i = dnorm(log(sigma2i/sigma2star)/dsigmaproposal,0.,1.,give_log)
-               -log(dsigmaproposal*sigma2i);
+    qsigma02star = dnorm(log(sigma02star/sigma02i)/dsigmaproposal,0.,1.,give_log)
+                  -log(dsigmaproposal*sigma02star);
+    qsigma12star = dnorm(log(sigma12star/sigma12i)/dsigmaproposal,0.,1.,give_log)
+                  -log(dsigmaproposal*sigma12star);
+    pithetastar = dnorm(mu0star, dmu0, sigma0star/rkappa0, give_log);
+    pithetastar = pithetastar+dnorm(mu1star, dmu1, sigma1star/rkappa0, give_log);
+    pithetastar = pithetastar+dsclinvchisq(sigma02star, ddf0, dsigma02);
+    pithetastar = pithetastar+dsclinvchisq(sigma12star, ddf0, dsigma12);
+    qsigma02i = dnorm(log(sigma02i/sigma02star)/dsigmaproposal,0.,1.,give_log)
+               -log(dsigmaproposal*sigma02i);
+    qsigma12i = dnorm(log(sigma12i/sigma12star)/dsigmaproposal,0.,1.,give_log)
+               -log(dsigmaproposal*sigma12i);
 
     /* Calculate ratio */
     ip = pithetastar-pithetai;
@@ -329,9 +348,9 @@ void MHdis (int *Nk0, int *Nk1, int *totdis, int *K,
     p0stars=0.;
     p1stars=0.;
     for (i=0; i<Ki; i++){
-      p0star[i] = poilog(i+1,mu0star,sigmastar);
+      p0star[i] = poilog(i+1,mu0star,sigma0star);
       p0stars+=p0star[i];
-      p1star[i] = poilog(i+1,mu1star,sigmastar);
+      p1star[i] = poilog(i+1,mu1star,sigma1star);
       p1stars+=p1star[i];
     }
     for (i=0; i<Ki; i++){
@@ -352,7 +371,7 @@ void MHdis (int *Nk0, int *Nk1, int *totdis, int *K,
     /* The logic is to set exp(cutoff) = exp(ip) * qratio ,
     then let the MH probability equal min{exp(cutoff), 1.0}.
     But we'll do it in log space instead.  */
-    cutoff = ip + qsigma2i-qsigma2star;
+    cutoff = ip + qsigma02i-qsigma02star + qsigma12i-qsigma12star;
       
 //    Rprintf("Now proposing %d MH steps %f cutoff...\n", step, cutoff);
 
@@ -362,9 +381,12 @@ void MHdis (int *Nk0, int *Nk1, int *totdis, int *K,
       betai = betastar;
       mu0i    = mu0star;
       mu1i    = mu1star;
-      sigmai = sigmastar;
-      sigma2i = sigma2star;
-      qsigma2i = qsigma2star;
+      sigma0i = sigma0star;
+      sigma1i = sigma1star;
+      sigma02i = sigma02star;
+      sigma12i = sigma12star;
+      qsigma02i = qsigma02star;
+      qsigma12i = qsigma12star;
       pithetai = pithetastar;
       for (i=0; i<Ki; i++){
         p0i[i] = p0star[i];
@@ -376,7 +398,8 @@ void MHdis (int *Nk0, int *Nk1, int *totdis, int *K,
 //    }
     if (step > 0 && step==(iinterval*(step/iinterval))) { 
       /* record statistics for posterity */
-      sigmasample[isamp]=sigmai;
+      sigmasample[2*isamp]=sigma0i;
+      sigmasample[2*isamp+1]=sigma1i;
       musample[2*isamp]=mu0i;
       musample[2*isamp+1]=mu1i;
       betasample[isamp]=betai;
@@ -395,7 +418,7 @@ void MHdis (int *Nk0, int *Nk1, int *totdis, int *K,
 }
 
 void MHpriordis (double *mu0, double *mu1, double *kappa0, 
-            double *sigma0,  double *df0,
+            double *sigma0,  double *sigma1, double *df0,
             double *muproposal, 
             double *sigmaproposal, 
             double *musample, double *betasample, double *sigmasample,
@@ -407,10 +430,12 @@ void MHpriordis (double *mu0, double *mu1, double *kappa0,
   double ip, cutoff;
   double mu0star, mu1star, mu0i, mu1i;
   double betastar, betai;
-  double sigmastar, sigmai, sigma2star, sigma2i, qsigma2star, qsigma2i;
+  double sigma0star, sigma1star, sigma0i, sigma1i;
+  double sigma02star, sigma12star, sigma02i, sigma12i;
+  double qsigma02star, qsigma12star, qsigma02i, qsigma12i;
   double pithetastar, pithetai;
   double dkappa0, rkappa0, ddf0, dmu0, dmu1;
-  double dsigma0, dsigma20, dmuproposal, dsigmaproposal;
+  double dsigma0, dsigma1, dsigma02, dsigma12, dmuproposal, dsigmaproposal;
 
   GetRNGstate();  /* R function enabling uniform RNG */
 
@@ -421,7 +446,9 @@ void MHpriordis (double *mu0, double *mu1, double *kappa0,
   rkappa0=sqrt(dkappa0);
   ddf0=(*df0);
   dsigma0=(*sigma0);
-  dsigma20=(dsigma0*dsigma0);
+  dsigma02=(dsigma0*dsigma0);
+  dsigma1=(*sigma1);
+  dsigma12=(dsigma1*dsigma1);
   dmu0=(*mu0);
   dmu1=(*mu1);
   dmuproposal=(*muproposal);
@@ -432,34 +459,44 @@ void MHpriordis (double *mu0, double *mu1, double *kappa0,
   mu0i = dmu0;
   mu1i = dmu1;
   betai = -1.386294;
-  sigma2i = dsigma20;
-  sigmai  = sqrt(sigma2i);
-  pithetai = dnorm(mu0i, dmu0, sigmai/rkappa0, give_log);
-  pithetai = pithetai+dnorm(mu1i, dmu1, sigmai/rkappa0, give_log);
-  pithetai = pithetai+dsclinvchisq(sigma2i, ddf0, dsigma20);
+  sigma02i = dsigma02;
+  sigma12i = dsigma12;
+  sigma0i  = sqrt(sigma02i);
+  sigma1i  = sqrt(sigma12i);
+  pithetai = dnorm(mu0i, dmu0, sigma0i/rkappa0, give_log);
+  pithetai = pithetai+dnorm(mu1i, dmu1, sigma1i/rkappa0, give_log);
+  pithetai = pithetai+dsclinvchisq(sigma02i, ddf0, dsigma02);
+  pithetai = pithetai+dsclinvchisq(sigma12i, ddf0, dsigma12);
   while (isamp < isamplesize) {
     /* Propose new theta */
     betastar = rnorm(betai, dmuproposal);
     mu0star = rnorm(mu0i, dmuproposal);
     mu1star = rnorm(mu1i, dmuproposal);
-    sigma2star = sigma2i*exp(rnorm(0., dsigmaproposal));
-    sigmastar = sqrt(sigma2star);
+    sigma02star = sigma02i*exp(rnorm(0., dsigmaproposal));
+    sigma12star = sigma12i*exp(rnorm(0., dsigmaproposal));
+    sigma0star = sqrt(sigma02star);
+    sigma1star = sqrt(sigma12star);
 
     /* Calculate pieces of the posterior. */
-    qsigma2star = dnorm(log(sigma2star/sigma2i)/dsigmaproposal,0.,1.,give_log)
-                  -log(dsigmaproposal*sigma2star);
-    pithetastar = dnorm(mu0star, dmu0, sigmastar/rkappa0, give_log);
-    pithetastar = pithetastar+dnorm(mu1star, dmu1, sigmastar/rkappa0, give_log);
-    pithetastar = pithetastar+dsclinvchisq(sigma2star, ddf0, dsigma20);
-    qsigma2i = dnorm(log(sigma2i/sigma2star)/dsigmaproposal,0.,1.,give_log)
-               -log(dsigmaproposal*sigma2i);
+    qsigma02star = dnorm(log(sigma02star/sigma02i)/dsigmaproposal,0.,1.,give_log)
+                  -log(dsigmaproposal*sigma02star);
+    qsigma12star = dnorm(log(sigma12star/sigma12i)/dsigmaproposal,0.,1.,give_log)
+                  -log(dsigmaproposal*sigma12star);
+    pithetastar = dnorm(mu0star, dmu0, sigma0star/rkappa0, give_log);
+    pithetastar = pithetastar+dnorm(mu1star, dmu1, sigma1star/rkappa0, give_log);
+    pithetastar = pithetastar+dsclinvchisq(sigma02star, ddf0, dsigma02);
+    pithetastar = pithetastar+dsclinvchisq(sigma12star, ddf0, dsigma12);
+    qsigma02i = dnorm(log(sigma02i/sigma02star)/dsigmaproposal,0.,1.,give_log)
+               -log(dsigmaproposal*sigma02i);
+    qsigma12i = dnorm(log(sigma12i/sigma12star)/dsigmaproposal,0.,1.,give_log)
+               -log(dsigmaproposal*sigma12i);
 
     /* Calculate ratio */
     ip = pithetastar-pithetai;
     /* The logic is to set exp(cutoff) = exp(ip) * qratio ,
     then let the MH probability equal min{exp(cutoff), 1.0}.
     But we'll do it in log space instead.  */
-    cutoff = ip + qsigma2i-qsigma2star;
+    cutoff = ip + qsigma02i-qsigma02star + qsigma12i-qsigma12star;
       
     /* if we accept the proposed network */
     if (cutoff >= 0.0 || log(unif_rand()) < cutoff) { 
@@ -467,8 +504,10 @@ void MHpriordis (double *mu0, double *mu1, double *kappa0,
       betai = betastar;
       mu0i    = mu0star;
       mu1i    = mu1star;
-      sigmai = sigmastar;
-      sigma2i = sigma2star;
+      sigma0i = sigma0star;
+      sigma1i = sigma1star;
+      sigma02i = sigma02star;
+      sigma12i = sigma12star;
       pithetai = pithetastar;
 //    if (*fVerbose) Rprintf("step %d mu0i %f sigmai %f\n", step, mu0i, sigmai);
       taken++;
@@ -477,7 +516,8 @@ void MHpriordis (double *mu0, double *mu1, double *kappa0,
         musample[2*isamp]=mu0i;
         musample[2*isamp+1]=mu1i;
         betasample[isamp]=betai;
-        sigmasample[isamp]=sigmai;
+        sigmasample[2*isamp]=sigma0i;
+        sigmasample[2*isamp+1]=sigma1i;
         isamp++;
         if (*fVerbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d MH samples...\n", isamp);
       }

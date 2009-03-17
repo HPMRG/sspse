@@ -17,8 +17,9 @@ posdis<-function(s,dis,maxN=4*length(s),
     #sequential sizes of sampled units and returns a log likelihood value
     #s values must all be positive integers
     sigma0 <- sqrt(log(1+sd.prior.degree*sd.prior.degree/(mean0.prior.degree*mean0.prior.degree)))
+    sigma1 <- sqrt(log(1+sd.prior.degree*sd.prior.degree/(mean1.prior.degree*mean1.prior.degree)))
     mu0 <- log(mean0.prior.degree)-0.5*sigma0*sigma0
-    mu1 <- log(mean1.prior.degree)-0.5*sigma0*sigma0
+    mu1 <- log(mean1.prior.degree)-0.5*sigma1*sigma1
     if(!is.null(seed))  set.seed(as.integer(seed))
     Cret <- .C("gsppsdis",
               pop=as.integer(c(s,rep(0,maxN-n))),
@@ -32,21 +33,24 @@ posdis<-function(s,dis,maxN=4*length(s),
               interval=as.integer(interval),
               mu0=as.double(mu0), mu1=as.double(mu1),
 	      df.mean.prior=as.double(df.mean.prior),
-              sigma0=as.double(sigma0), df.sd.prior=as.double(df.sd.prior),
+              sigma0=as.double(sigma0),
+              sigma1=as.double(sigma1),
+	      df.sd.prior=as.double(df.sd.prior),
               muproposal=as.double(muproposal),
               sigmaproposal=as.double(sigmaproposal),
               N=as.integer(N),
               maxN=as.integer(maxN),
-              sample=double(samplesize*7),
+              sample=double(samplesize*8),
               burnintheta=as.integer(burnintheta),
               fVerbose=as.integer(verbose))
-    Cret$sample<-matrix(Cret$sample,nrow=samplesize,ncol=7,byrow=TRUE)
-    colnames(Cret$sample) <- c("N","mu0","mu1","sigma","degree1","beta","disease.count")
+    Cret$sample<-matrix(Cret$sample,nrow=samplesize,ncol=8,byrow=TRUE)
+    colnames(Cret$sample) <- c("N","mu0","mu1","sigma0","sigma1","degree1","beta","disease.count")
     Cret$sample<-cbind(Cret$sample,Cret$sample[,"disease.count"]/Cret$sample[,"N"])
-    colnames(Cret$sample) <- c("N","mu0","mu1","sigma","degree1","beta","disease.count","disease")
-    Cret$sample[,"mu0"] <- exp(Cret$sample[,"mu0"]+0.5*Cret$sample[,"sigma"]*Cret$sample[,"sigma"])
-    Cret$sample[,"mu1"] <- exp(Cret$sample[,"mu1"]+0.5*Cret$sample[,"sigma"]*Cret$sample[,"sigma"])
-    Cret$sample[,"sigma"] <- Cret$sample[,"mu0"]*sqrt(exp(Cret$sample[,"sigma"]*Cret$sample[,"sigma"])-1)
+    colnames(Cret$sample) <- c("N","mu0","mu1","sigma0","sigma1","degree1","beta","disease.count","disease")
+    Cret$sample[,"mu0"] <- exp(Cret$sample[,"mu0"]+0.5*Cret$sample[,"sigma0"]*Cret$sample[,"sigma0"])
+    Cret$sample[,"mu1"] <- exp(Cret$sample[,"mu1"]+0.5*Cret$sample[,"sigma1"]*Cret$sample[,"sigma1"])
+    Cret$sample[,"sigma0"] <- Cret$sample[,"mu0"]*sqrt(exp(Cret$sample[,"sigma0"]*Cret$sample[,"sigma0"])-1)
+    Cret$sample[,"sigma1"] <- Cret$sample[,"mu1"]*sqrt(exp(Cret$sample[,"sigma1"]*Cret$sample[,"sigma1"])-1)
     aaa <- sum(Cret$nk0+Cret$nk1)
     Cret$Nk0<-Cret$nk0/aaa
     Cret$Nk1<-Cret$nk1/aaa
@@ -112,8 +116,9 @@ posteriordisease<-function(s,dis,
                   parallel=1, seed=NULL,
                   verbose=TRUE){
   sigma0 <- sqrt(log(1+sd.prior.degree*sd.prior.degree/(mean0.prior.degree*mean0.prior.degree)))
+  sigma1 <- sqrt(log(1+sd.prior.degree*sd.prior.degree/(mean1.prior.degree*mean0.prior.degree)))
   mu0 <- log(mean0.prior.degree)-0.5*sigma0*sigma0
-  mu1 <- log(mean1.prior.degree)-0.5*sigma0*sigma0
+  mu1 <- log(mean1.prior.degree)-0.5*sigma1*sigma1
   mapfn <- function(x){
     posdensN <- density(x)
     posdensN$x[which.max(posdensN$y)]
@@ -191,7 +196,7 @@ posteriordisease<-function(s,dis,
     stopCluster(cl)
     if(getClusterOption("type")=="PVM") .PVM.exit()
   }
-  colnames(Cret$sample) <- c("N","mu0","mu1","sigma","degree1","beta",
+  colnames(Cret$sample) <- c("N","mu0","mu1","sigma0","sigma1","degree1","beta",
                              "disease.count","disease")
   Cret$MAP <- apply(Cret$sample,2,mapfn)
   Cret$N <- c(Cret$MAP["N"], 
