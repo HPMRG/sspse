@@ -73,14 +73,17 @@ priordis<-function(mean0.prior.degree=7,mean1.prior.degree=7,
                  seed=NULL,
                  verbose=TRUE){
     sigma0 <- sqrt(log(1+sd.prior.degree*sd.prior.degree/(mean0.prior.degree*mean0.prior.degree)))
+    sigma1 <- sqrt(log(1+sd.prior.degree*sd.prior.degree/(mean1.prior.degree*mean1.prior.degree)))
     mu0 <- log(mean0.prior.degree)-0.5*sigma0*sigma0
-    mu1 <- log(mean1.prior.degree)-0.5*sigma0*sigma0
+    mu1 <- log(mean1.prior.degree)-0.5*sigma1*sigma1
     musample <- rep(0,2*samplesize)
-    sigmasample <- rep(0,samplesize)
+    sigmasample <- rep(0,2*samplesize)
     Cret <- .C("MHpriordis",
               mu0=as.double(mu0), mu1=as.double(mu1),
 	      df.mean.prior=as.double(df.mean.prior),
-              sigma0=as.double(sigma0), df.sd.prior=as.double(df.sd.prior),
+              sigma0=as.double(sigma0),
+              sigma1=as.double(sigma1),
+	      df.sd.prior=as.double(df.sd.prior),
               muproposal=as.double(muproposal),
               sigmaproposal=as.double(sigmaproposal),
               musample=as.double(musample),
@@ -91,10 +94,13 @@ priordis<-function(mean0.prior.degree=7,mean1.prior.degree=7,
               interval=as.integer(interval),
               fVerbose=as.integer(verbose))
     Cret$musample<-matrix(Cret$musample,nrow=samplesize,ncol=2,byrow=TRUE)
+    Cret$sigmasample<-matrix(Cret$sigmasample,nrow=samplesize,ncol=2,byrow=TRUE)
     Cret$sample <- cbind(Cret$musample, Cret$sigmasample)
-    colnames(Cret$sample) <- c("mu0","mu1","sigma")
-    Cret$sample[,"mu0"] <- exp(Cret$sample[,"mu0"]+0.5*Cret$sample[,"sigma"]*Cret$sample[,"sigma"])
-    Cret$sample[,"sigma"] <- Cret$sample[,"mu0"]*sqrt(exp(Cret$sample[,"sigma"]*Cret$sample[,"sigma"])-1)
+    colnames(Cret$sample) <- c("mu0","mu1","sigma0","sigma1")
+    Cret$sample[,"mu0"] <- exp(Cret$sample[,"mu0"]+0.5*Cret$sample[,"sigma0"]*Cret$sample[,"sigma0"])
+    Cret$sample[,"mu1"] <- exp(Cret$sample[,"mu1"]+0.5*Cret$sample[,"sigma1"]*Cret$sample[,"sigma1"])
+    Cret$sample[,"sigma0"] <- Cret$sample[,"mu0"]*sqrt(exp(Cret$sample[,"sigma0"]*Cret$sample[,"sigma0"])-1)
+    Cret$sample[,"sigma1"] <- Cret$sample[,"mu1"]*sqrt(exp(Cret$sample[,"sigma1"]*Cret$sample[,"sigma1"])-1)
     endrun <- burnin+interval*(samplesize-1)
     attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
     attr(Cret$sample, "class") <- "mcmc"
@@ -116,7 +122,7 @@ posteriordisease<-function(s,dis,
                   parallel=1, seed=NULL,
                   verbose=TRUE){
   sigma0 <- sqrt(log(1+sd.prior.degree*sd.prior.degree/(mean0.prior.degree*mean0.prior.degree)))
-  sigma1 <- sqrt(log(1+sd.prior.degree*sd.prior.degree/(mean1.prior.degree*mean0.prior.degree)))
+  sigma1 <- sqrt(log(1+sd.prior.degree*sd.prior.degree/(mean1.prior.degree*mean1.prior.degree)))
   mu0 <- log(mean0.prior.degree)-0.5*sigma0*sigma0
   mu1 <- log(mean1.prior.degree)-0.5*sigma1*sigma1
   mapfn <- function(x){
