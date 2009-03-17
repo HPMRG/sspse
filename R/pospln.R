@@ -35,7 +35,7 @@ poswest<-function(s,maxN=4*length(s),
     colnames(Cret$sample) <- c("N","mu","sigma","degree1")
     Cret$sample[,"mu"] <- exp(Cret$sample[,"mu"]+0.5*Cret$sample[,"sigma"]*Cret$sample[,"sigma"])
     Cret$sample[,"sigma"] <- Cret$sample[,"mu"]*sqrt(exp(Cret$sample[,"sigma"]*Cret$sample[,"sigma"])-1)
-    Cret$nk<-Cret$nk/sum(Cret$nk)
+    Cret$Nk<-Cret$nk/sum(Cret$nk)
     endrun <- burnin+interval*(samplesize-1)
     attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
     attr(Cret$sample, "class") <- "mcmc"

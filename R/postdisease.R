@@ -47,8 +47,9 @@ posdis<-function(s,dis,maxN=4*length(s),
     Cret$sample[,"mu0"] <- exp(Cret$sample[,"mu0"]+0.5*Cret$sample[,"sigma"]*Cret$sample[,"sigma"])
     Cret$sample[,"mu1"] <- exp(Cret$sample[,"mu1"]+0.5*Cret$sample[,"sigma"]*Cret$sample[,"sigma"])
     Cret$sample[,"sigma"] <- Cret$sample[,"mu0"]*sqrt(exp(Cret$sample[,"sigma"]*Cret$sample[,"sigma"])-1)
-    Cret$nk0<-Cret$nk0/sum(Cret$nk0)
-    Cret$nk1<-Cret$nk1/sum(Cret$nk1)
+    aaa <- sum(Cret$nk0+Cret$nk1)
+    Cret$Nk0<-Cret$nk0/aaa
+    Cret$Nk1<-Cret$nk1/aaa
     endrun <- burnin+interval*(samplesize-1)
     attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
     attr(Cret$sample, "class") <- "mcmc"
