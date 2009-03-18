@@ -14,8 +14,8 @@ posteriorsize(s, maxN = 4 * length(s), K = 2 * max(s), nk = tabulate(s,
     seed = NULL, verbose = TRUE)
 }
 \arguments{
-  \item{s}{vector of integers; the vector of degrees from the RDS in order they are
-    recorded.}
+  \item{s}{vector of integers; the vector of degrees from the RDS in order 
+    they are recorded.}
   \item{maxN}{integer; maximum possible population size.  The prior
     for population size is uniform from 1 to MaxN}
   \item{K}{count; the maximum degree for an individual.}
@@ -23,27 +23,22 @@ posteriorsize(s, maxN = 4 * length(s), K = 2 * max(s), nk = tabulate(s,
 with degree k. This is usually computed from \eqn{s} automatically and not
 usually specified by the user.}
   \item{n}{integer; sample size, that is, the length of \eqn{s},
-  automatically computed and not
-usually specified by the user.}
-  \item{N}}{integer; initial guess for population sizesample size, that
+  automatically computed and not usually specified by the user.}
+  \item{N}{integer; initial guess for population sizesample size, that
   is, starting value for MCMC sampler. But it doesn't really matter.}
   \item{mean.prior.degree}{scalar; The mean degree for the prior
     distribution for a randomly chosen person. Prior is a
     Poisson-lognormal with this mean.}
-  \item{sd.prior.degree}{scalar; The standard deviation of the degree for the prior
-    distribution. Prior is a
+  \item{sd.prior.degree}{scalar; The standard deviation of the degree for 
+    the prior distribution. Prior is a
     Poisson-lognormal with this standard deviation.}
-
-
-
   \item{mu}{scalar; The mean for the prior distribution for a randomly chosen
     person's degree. The prior is a Waring distribution with this mean.
     By default for the mean is 5.}
   \item{rho}{scalar; The scaling parameter for the prior distribution for a randomly chosen
 person's degree. The prior is a Waring distribution with this power-law scale.
     By default for the scale is 3 (i.e., just not a variance).}
-  \item{M}{count; the number of Monte-Carlo samples of class sizes to draw to compute the marginal posterior. The default is 100000.
-  }
+  \item{M}{count; the number of Monte-Carlo samples of class sizes to draw to compute the marginal posterior. The default is 100000.}
   \item{parallel}{count; the number of parallel processes to run for the Monte-Carlo sample.  This uses PVM or MPI and requires the \code{snow} package and its dependencies to be installed.
 The default is 1, that is not to use parallel processing.
   }
@@ -51,7 +46,6 @@ The default is 1, that is not to use parallel processing.
    \code{NULL} to use whatever the state of the random number
    generator is at the time of the call.
   }
-
   \item{return.all}{logical; if this is
     \code{TRUE}, the function will return a long-list of supplementary
 information in addition to the marginal posterior value. By default it only
