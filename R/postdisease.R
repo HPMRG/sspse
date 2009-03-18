@@ -10,7 +10,7 @@ posdis<-function(s,dis,maxN=4*length(s),
                   df.mean.prior=1, df.sd.prior=5,
                   muproposal=0.01, 
                   sigmaproposal=0.1, 
-                  Np=1,
+                  Np0=1, Np1=1,
                   samplesize=10,burnin=0,interval=1,burnintheta=500,
                   seed=NULL,
                   verbose=TRUE){
@@ -22,7 +22,7 @@ posdis<-function(s,dis,maxN=4*length(s),
     mu0 <- log(mean0.prior.degree)-0.5*sigma0*sigma0
     mu1 <- log(mean1.prior.degree)-0.5*sigma1*sigma1
     if(!is.null(seed))  set.seed(as.integer(seed))
-    dimsample <- 8+2*Np
+    dimsample <- 8+Np0+Np1
     Cret <- .C("gsppsdis",
               pop=as.integer(c(s,rep(0,maxN-n))),
               dis=as.integer(c(dis,rep(0,maxN-n))),
@@ -38,7 +38,8 @@ posdis<-function(s,dis,maxN=4*length(s),
               sigma0=as.double(sigma0),
               sigma1=as.double(sigma1),
 	      df.sd.prior=as.double(df.sd.prior),
-	      Np=as.integer(Np),
+	      Np0i=as.integer(Np0),
+	      Np1i=as.integer(Np1),
               muproposal=as.double(muproposal),
               sigmaproposal=as.double(sigmaproposal),
               N=as.integer(N),
@@ -50,11 +51,11 @@ posdis<-function(s,dis,maxN=4*length(s),
 print(Cret$sample)
     colnames(Cret$sample) <- c("N","mu0","mu1","sigma0","sigma1","degree1",
       "beta","disease.count",
-      paste("p0deg",1:Np,sep=""),paste("p1deg",1:Np,sep=""))
+      paste("p0deg",1:Np0,sep=""),paste("p1deg",1:Np1,sep=""))
     Cret$sample<-cbind(Cret$sample,Cret$sample[,"disease.count"]/Cret$sample[,"N"])
     colnames(Cret$sample) <- c("N","mu0","mu1","sigma0","sigma1","degree1",
       "beta","disease.count",
-      paste("p0deg",1:Np,sep=""),paste("p1deg",1:Np,sep=""),
+      paste("p0deg",1:Np0,sep=""),paste("p1deg",1:Np1,sep=""),
       "disease")
     Cret$sample[,"mu0"] <- exp(Cret$sample[,"mu0"]+0.5*Cret$sample[,"sigma0"]*Cret$sample[,"sigma0"])
     Cret$sample[,"mu1"] <- exp(Cret$sample[,"mu1"]+0.5*Cret$sample[,"sigma1"]*Cret$sample[,"sigma1"])
@@ -127,7 +128,7 @@ posteriordisease<-function(s,dis,
                   df.mean.prior=1,df.sd.prior=5,
                   muproposal=0.01, 
                   sigmaproposal=0.1, 
-                  Np=1,
+                  Np0=1, Np1=1,
                   samplesize=1000,burnin=100,interval=1,burnintheta=500,
                   parallel=1, seed=NULL,
                   verbose=TRUE){
@@ -145,7 +146,7 @@ posteriordisease<-function(s,dis,
                       mean1.prior.degree=mean1.prior.degree,
 		      df.mean.prior=df.mean.prior,
                       sd.prior.degree=sd.prior.degree,df.sd.prior=df.sd.prior,
-                      sigmaproposal=sigmaproposal,Np=Np,
+                      sigmaproposal=sigmaproposal,Np0=Np0,Np1=Np1,
                       samplesize=samplesize,burnin=burnin,interval=interval,
 		      burnintheta=burnintheta,
                       seed=seed)
@@ -191,7 +192,7 @@ posteriordisease<-function(s,dis,
       mean1.prior.degree=mean1.prior.degree,
       df.mean.prior=df.mean.prior,
       sd.prior.degree=sd.prior.degree,df.sd.prior=df.sd.prior,
-      sigmaproposal=sigmaproposal,Np=Np,
+      sigmaproposal=sigmaproposal,Np0=Np0,Np1=Np1,
       samplesize=samplesize.parallel,burnin=burnin,interval=interval,
       burnintheta=burnintheta)
 #
@@ -214,7 +215,7 @@ posteriordisease<-function(s,dis,
   }
   colnames(Cret$sample) <- c("N","mu0","mu1","sigma0","sigma1","degree1",
     "beta","disease.count",
-    paste("p0deg",1:Np,sep=""),paste("p1deg",1:Np,sep=""), "disease")
+    paste("p0deg",1:Np0,sep=""),paste("p1deg",1:Np1,sep=""), "disease")
   Cret$MAP <- apply(Cret$sample,2,mapfn)
   Cret$N <- c(Cret$MAP["N"], 
               mean(Cret$sample[,"N"]),

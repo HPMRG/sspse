@@ -14,7 +14,7 @@ void gsppsdis (int *pop, int *dis,
             int *samplesize, int *burnin, int *interval,
             double *mu0, double *mu1, double *kappa0, 
             double *sigma0,  double *sigma1, double *df0,
-	    int *Np,
+	    int *Np0i, int *Np1i,
             double *muproposal, 
             double *sigmaproposal, 
             int *N, int *maxN, 
@@ -39,8 +39,8 @@ void gsppsdis (int *pop, int *dis,
   isamplesize=(*samplesize);
   iinterval=(*interval);
   iburnin=(*burnin);
-  Np0=(*Np);
-  Np1=(*Np);
+  Np0=(*Np0i);
+  Np1=(*Np1i);
   dkappa0=(*kappa0);
   ddf0=(*df0);
   dsigma0=(*sigma0);
@@ -95,10 +95,10 @@ void gsppsdis (int *pop, int *dis,
 
   betasample[0] = -1.386294;
   for (i=0; i<Np0; i++){
-     psample[2*i] = 0.01;
+     psample[i    ] = 0.01;
   }
   for (i=0; i<Np1; i++){
-     psample[2*i+1]=0.01;
+     psample[i+Np0]=0.01;
   }
   musample[0] = dmu0;
   musample[1] = dmu1;
@@ -119,10 +119,10 @@ void gsppsdis (int *pop, int *dis,
     beta=betasample[0];
     pbeta=exp(beta)/(1.+exp(beta));
     for (i=0; i<Np0; i++){
-      pdeg0i[i] = psample[2*i];
+      pdeg0i[i] = psample[i];
     }
     for (i=0; i<Np1; i++){
-      pdeg1i[i] = psample[2*i+1];
+      pdeg1i[i] = psample[i+Np0];
     }
     mu0i=musample[0];
     mu1i=musample[1];
@@ -134,10 +134,12 @@ void gsppsdis (int *pop, int *dis,
     /* First find the degree distribution */
     p0is=0.;
     p1is=0.;
-    for (i=0; i<Ki; i++){
+    for (i=Np0; i<Ki; i++){
       p0i[i]=poilog(i+1,mu0i,sigma0i);
-      p1i[i]=poilog(i+1,mu1i,sigma1i);
       p0is+=p0i[i];
+    }
+    for (i=Np1; i<Ki; i++){
+      p1i[i]=poilog(i+1,mu1i,sigma1i);
       p1is+=p1i[i];
     }
     for (i=0; i<Ki; i++){
@@ -157,10 +159,10 @@ void gsppsdis (int *pop, int *dis,
       p1i[i]*=p1is;
     }
     for (i=0; i<Np0; i++){
-      p0i[i]+=pdeg0i[i];
+      p0i[i]=pdeg0i[i];
     }
     for (i=0; i<Np1; i++){
-      p1i[i]+=pdeg1i[i];
+      p1i[i]=pdeg1i[i];
     }
     gamma0rt=0.;
     gamma1rt=0.;
@@ -249,10 +251,10 @@ void gsppsdis (int *pop, int *dis,
       sample[isamp*dimsample+6]=beta;
       sample[isamp*dimsample+7]=(double)(itotdis);
       for (i=0; i<Np0; i++){
-        sample[isamp*dimsample+8+2*i]=pdeg0i[i];
+        sample[isamp*dimsample+8+i]=pdeg0i[i];
       }
       for (i=0; i<Np1; i++){
-        sample[isamp*dimsample+8+2*i+1]=pdeg1i[i];
+        sample[isamp*dimsample+8+Np0+i]=pdeg1i[i];
       }
       for (i=0; i<Ki; i++){
         Nk0pos[i]=Nk0pos[i]+Nk0[i];
@@ -345,17 +347,18 @@ void MHdis (int *Nk0, int *Nk1, int *totdis, int *K,
   dsigmaproposal=(*sigmaproposal);
   dmuproposal=(*muproposal);
 
+  // First set starting values
   isamp = taken = 0;
   step = -iburnin;
   betai = betasample[0];
   p0is=1.;
   p1is=1.;
   for (i=0; i<Np0; i++){
-    pdeg0i[i] = psample[2*i];
+    pdeg0i[i] = psample[i];
     p0is-= pdeg0i[i];
   }
   for (i=0; i<Np1; i++){
-    pdeg1i[i] = psample[2*i+1];
+    pdeg1i[i] = psample[i+Np0];
     p1is-= pdeg1i[i];
   }
   for (i=0; i<Np0; i++){
@@ -377,10 +380,12 @@ void MHdis (int *Nk0, int *Nk1, int *totdis, int *K,
   pithetai = pithetai+dsclinvchisq(sigma12i, ddf0, dsigma12);
   p0is=0.;
   p1is=0.;
-  for (i=0; i<Ki; i++){
-    p0i[i] = poilog(i+1,mu0i,sigma0i);
-    p1i[i] = poilog(i+1,mu1i,sigma1i);
+  for (i=Np0; i<Ki; i++){
+    p0i[i]=poilog(i+1,mu0i,sigma0i);
     p0is+=p0i[i];
+  }
+  for (i=Np1; i<Ki; i++){
+    p1i[i]=poilog(i+1,mu1i,sigma1i);
     p1is+=p1i[i];
   }
   for (i=0; i<Ki; i++){
@@ -400,21 +405,27 @@ void MHdis (int *Nk0, int *Nk1, int *totdis, int *K,
     p1i[i]*=p1is;
   }
   for (i=0; i<Np0; i++){
-    p0i[i]+=pdeg0i[i];
+    p0i[i]=pdeg0i[i];
   }
   for (i=0; i<Np1; i++){
-    p1i[i]+=pdeg1i[i];
+    p1i[i]=pdeg1i[i];
   }
+
+  // Now do the MCMC updates (starting with the burnin updates)
   while (isamp < isamplesize) {
 //  Rprintf("step %d Ni %d itotdis %d isamp %d\n", step, Ni, itotdis, isamp);
     /* Propose new theta */
+    /* Start with the disease status parameters */
     betastar = rnorm(betai, dmuproposal);
+    pbeta = exp(betastar)/(1.+exp(betastar));
+    /* Now the degree distribution model parameters */
     for (i=0; i<Np0; i++){
       odeg0star[i] = rnorm(odeg0i[i], dmuproposal);
     }
     for (i=0; i<Np1; i++){
       odeg1star[i] = rnorm(odeg1i[i], dmuproposal);
     }
+    /* Convert from odds to probabilities */
     p0is=1.;
     p1is=1.;
     for (i=0; i<Np0; i++){
@@ -431,6 +442,7 @@ void MHdis (int *Nk0, int *Nk1, int *totdis, int *K,
     for (i=0; i<Np1; i++){
       pdeg1star[i]/=p1is;
     }
+    /* Now the degree distribution (log) mean adn s.d. parameters */
     mu0star = rnorm(mu0i, dmuproposal);
     mu1star = rnorm(mu1i, dmuproposal);
     sigma02star = sigma02i*exp(rnorm(0., dsigmaproposal));
@@ -456,7 +468,6 @@ void MHdis (int *Nk0, int *Nk1, int *totdis, int *K,
     /* Calculate ratio */
     ip = pithetastar-pithetai;
     /* Add the disease status */
-    pbeta = exp(betastar)/(1.+exp(betastar));
 //    Rprintf("pbeta %f betastar %f\n", pbeta, betastar);
     ip+=(itotdis*log(pbeta)+(Ni-itotdis)*log(1.-pbeta));
     pbeta = exp(betai)/(1.+exp(betai));
@@ -466,10 +477,12 @@ void MHdis (int *Nk0, int *Nk1, int *totdis, int *K,
 //           pithetastar,pithetai,qsigma2star,qsigma2i);
     p0stars=0.;
     p1stars=0.;
-    for (i=0; i<Ki; i++){
-      p0star[i] = poilog(i+1,mu0star,sigma0star);
+    for (i=Np0; i<Ki; i++){
+      p0star[i]=poilog(i+1,mu0star,sigma0star);
       p0stars+=p0star[i];
-      p1star[i] = poilog(i+1,mu1star,sigma1star);
+    }
+    for (i=Np1; i<Ki; i++){
+      p1star[i]=poilog(i+1,mu1star,sigma1star);
       p1stars+=p1star[i];
     }
     for (i=0; i<Ki; i++){
@@ -489,10 +502,10 @@ void MHdis (int *Nk0, int *Nk1, int *totdis, int *K,
       p1star[i]*=p1stars;
     }
     for (i=0; i<Np0; i++){
-      p0star[i]+=pdeg0star[i];
+      p0star[i]=pdeg0star[i];
     }
     for (i=0; i<Np1; i++){
-      p1star[i]+=pdeg1star[i];
+      p1star[i]=pdeg1star[i];
     }
     for (i=0; i<Ki; i++){
      if(Nk0[i]>0){
@@ -541,22 +554,22 @@ void MHdis (int *Nk0, int *Nk1, int *totdis, int *K,
 //  if (*fVerbose)
 //    Rprintf("Taken %d MH steps...\n", taken);
 //    }
-    if (step > 0 && step==(iinterval*(step/iinterval))) { 
-      /* record statistics for posterity */
-      sigmasample[2*isamp]=sigma0i;
-      sigmasample[2*isamp+1]=sigma1i;
-      musample[2*isamp]=mu0i;
-      musample[2*isamp+1]=mu1i;
-      betasample[isamp]=betai;
-      for (i=0; i<Np0; i++){
-        psample[2*i  ]=pdeg0i[i];
+      if (step > 0 && step==(iinterval*(step/iinterval))) { 
+        /* record statistics for posterity */
+        sigmasample[2*isamp]=sigma0i;
+        sigmasample[2*isamp+1]=sigma1i;
+        musample[2*isamp]=mu0i;
+        musample[2*isamp+1]=mu1i;
+        betasample[isamp]=betai;
+        for (i=0; i<Np0; i++){
+          psample[i    ]=pdeg0i[i];
+        }
+        for (i=0; i<Np1; i++){
+          psample[i+Np0]=pdeg1i[i];
+        }
+        isamp++;
+        if (*fVerbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d samples...\n", isamp);
       }
-      for (i=0; i<Np1; i++){
-        psample[2*i+1]=pdeg1i[i];
-      }
-      isamp++;
-      if (*fVerbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d samples...\n", isamp);
-    }
     }
     step++;
   }

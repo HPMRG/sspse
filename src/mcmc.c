@@ -14,6 +14,7 @@ void gspps (int *pop,
             int *samplesize, int *burnin, int *interval,
             double *mu0, double *kappa0, 
             double *sigma0,  double *df0,
+	    int *Npi,
             double *muproposal, 
             double *sigmaproposal, 
             int *N, int *maxN, 
@@ -22,8 +23,9 @@ void gspps (int *pop,
 	    int *fVerbose
 			 ) {
   int step, staken, getone=1, intervalone=1, fVerboseMHpln = 0;
+  int dimsample, Np;
   int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
-  double mu, mu0i, sigma;
+  double mu, mui, sigmai;
   double dkappa0, ddf0, dmu0, dsigma0, dmuproposal, dsigmaproposal;
   int tU, popi, imaxN;
   double r, gammart, pis;
@@ -37,6 +39,7 @@ void gspps (int *pop,
   isamplesize=(*samplesize);
   iinterval=(*interval);
   iburnin=(*burnin);
+  Np=(*Npi);
   dkappa0=(*kappa0);
   ddf0=(*df0);
   dsigma0=(*sigma0);
@@ -44,11 +47,15 @@ void gspps (int *pop,
   dsigmaproposal=(*sigmaproposal);
   dmuproposal=(*muproposal);
 
+  dimsample=4+Np;
+
   double *pi = (double *) malloc(sizeof(double) * Ki);
   int *b = (int *) malloc(sizeof(int) * ni);
   int *Nk = (int *) malloc(sizeof(int) * Ki);
   int *Nkpos = (int *) malloc(sizeof(int) * Ki);
   double *lpm = (double *) malloc(sizeof(double) * imaxN);
+  double *pdegi = (double *) malloc(sizeof(double) * Np);
+  double *psample = (double *) malloc(sizeof(double) * Np);
   double *musample = (double *) malloc(sizeof(double));
   double *sigmasample = (double *) malloc(sizeof(double));
 
@@ -70,6 +77,9 @@ void gspps (int *pop,
     r+=(exp_rand()/(tU+b[i]));
   }
 
+  for (i=0; i<Np; i++){
+     psample[i] = 0.01;
+  }
   musample[0] = dmu0;
   sigmasample[0] = dsigma0;
 
@@ -77,21 +87,35 @@ void gspps (int *pop,
   step = -iburnin;
   while (isamp < isamplesize) {
     /* Draw new theta */
-    MHpln(Nk,K,mu0,kappa0,sigma0,df0,muproposal,sigmaproposal,&Ni,
+    MHpln(Nk,K,mu0,kappa0,sigma0,df0,muproposal,sigmaproposal,
+          &Ni, &Np, psample,
 	  musample, sigmasample, &getone, &staken, burnintheta, &intervalone, 
 	  &fVerboseMHpln);
 
-    mu0i=musample[0];
-    sigma=sigmasample[0];
+    for (i=0; i<Np; i++){
+      pdegi[i] = psample[i];
+    }
+    mui=musample[0];
+    sigmai=sigmasample[0];
 
-    /* Draw new N */
+    /* First find the degree distribution */
     pis=0.;
-    for (i=0; i<Ki; i++){
-      pi[i]=poilog(i+1,mu0i,sigma);
+    for (i=Np; i<Ki; i++){
+      pi[i]=poilog(i+1,mui,sigmai);
       pis+=pi[i];
     }
     for (i=0; i<Ki; i++){
       pi[i]/=pis;
+    }
+    pis=1.;
+    for (i=0; i<Np; i++){
+      pis-=pdegi[i];
+    }
+    for (i=0; i<Ki; i++){
+      pi[i]*=pis;
+    }
+    for (i=0; i<Np; i++){
+      pi[i]=pdegi[i];
     }
     gammart=0.;
     for (i=0; i<Ki; i++){
@@ -132,11 +156,11 @@ void gspps (int *pop,
     }
     for (i=ni; i<Ni; i++){
       /* Propose unseen size for unit i */
-      mu = exp(rnorm(mu0i, sigma));
+      mu = exp(rnorm(mui, sigmai));
       /* Use rejection sampling */
       popi=rpois(mu);
       while((popi == 0) || (log(1.0-unif_rand()) > -r*popi)){
-       mu = exp(rnorm(mu0i, sigma));
+       mu = exp(rnorm(mui, sigmai));
        popi=rpois(mu);
       }
       if(popi > Ki){popi=Ki;}
@@ -145,10 +169,13 @@ void gspps (int *pop,
     }
     if (step > 0 && step==(iinterval*(step/iinterval))) { 
       /* record statistics for posterity */
-      sample[isamp*4  ]=(double)(Ni);
-      sample[isamp*4+1]=mu0i;
-      sample[isamp*4+2]=sigma;
-      sample[isamp*4+3]=(double)(Nk[0]);
+      sample[isamp*dimsample  ]=(double)(Ni);
+      sample[isamp*dimsample+1]=mui;
+      sample[isamp*dimsample+2]=sigmai;
+      sample[isamp*dimsample+3]=(double)(Nk[0]);
+      for (i=0; i<Np; i++){
+        sample[isamp*dimsample+4+i]=pdegi[i];
+      }
       for (i=0; i<Ki; i++){
         Nkpos[i]=Nkpos[i]+Nk[i];
       }
@@ -177,13 +204,15 @@ void gsppsN (int *pop,
             int *samplesize, int *burnin, int *interval,
             double *mu0, double *kappa0, 
             double *sigma0,  double *df0,
+	    int *Npi,
             double *muproposal, 
             double *sigmaproposal, 
-            int *N, 
+            int *N,
             int *sample, 
             int *burnintheta,
 	    int *fVerbose
 			 ) {
+  int Np;
   int step, staken, getone=1, intervalone=1, fVerboseMHpln = 0;
   int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
   double mu;
@@ -196,6 +225,7 @@ void gsppsN (int *pop,
   ni=(*n);
   Ni=(*N);
   Ki=(*K);
+  Np=(*Npi);
   isamplesize=(*samplesize);
   iinterval=(*interval);
   iburnin=(*burnin);
@@ -209,6 +239,7 @@ void gsppsN (int *pop,
   int *b = (int *) malloc(sizeof(int) * ni);
   int *Nk = (int *) malloc(sizeof(int) * Ki);
   double *phi = (double *) malloc(sizeof(double) * ni);
+  double *psample = (double *) malloc(sizeof(double) * Np);
   double *musample = (double *) malloc(sizeof(double));
   double *sigmasample = (double *) malloc(sizeof(double));
   b[ni-1]=pop[ni-1];
@@ -224,6 +255,7 @@ void gsppsN (int *pop,
   while (isamp < isamplesize) {
     /* Draw new theta */
     MHpln(Nk,K,mu0,kappa0,sigma0,df0,muproposal,sigmaproposal,N,
+          &Np, psample,
 	  musample, sigmasample, &getone, &staken, burnintheta, &intervalone, 
 	  &fVerboseMHpln);
     tU=0;
@@ -279,11 +311,12 @@ void MHpln (int *Nk, int *K,
             double *sigma0,  double *df0,
             double *muproposal, 
             double *sigmaproposal, 
-            int *N, 
+            int *N, int *Npi, double *psample,
             double *musample, double *sigmasample,
             int *samplesize, int *staken, int *burnin, int *interval,
 	    int *fVerbose
 			 ) {
+  int Np;
   int step, taken, give_log=1;
   int i, Ki, Ni, isamp, iinterval, isamplesize, iburnin;
   double ip, cutoff;
@@ -297,8 +330,13 @@ void MHpln (int *Nk, int *K,
   GetRNGstate();  /* R function enabling uniform RNG */
 
   Ki=(*K);
+  Np=(*Npi);
   double *pstar = (double *) malloc(sizeof(double) * Ki);
   double *pi = (double *) malloc(sizeof(double) * Ki);
+  double *odegstar = (double *) malloc(sizeof(double) * Np);
+  double *odegi = (double *) malloc(sizeof(double) * Np);
+  double *pdegstar = (double *) malloc(sizeof(double) * Np);
+  double *pdegi = (double *) malloc(sizeof(double) * Np);
 
   Ni=(*N);
   isamplesize=(*samplesize);
@@ -314,21 +352,53 @@ void MHpln (int *Nk, int *K,
   dmuproposal=(*muproposal);
   isamp = taken = 0;
   step = -iburnin;
+  pis=1.;
+  for (i=0; i<Np; i++){
+    pdegi[i] = psample[i];
+    pis-= pdegi[i];
+  }
+  for (i=0; i<Np; i++){
+    odegi[i] = log(pdegi[i]/pis);
+  }
   mui = musample[0];
   sigmai = sigmasample[0];
   sigma2i  = sigmai*sigmai;
   pithetai = dnorm(mui, dmu0, sigmai/rkappa0, give_log);
   pithetai = pithetai+dsclinvchisq(sigma2i, ddf0, dsigma20);
   pis=0.;
-  for (i=0; i<Ki; i++){
-    pi[i] = poilog(i+1,mui,sigmai);
+  for (i=Np; i<Ki; i++){
+    pi[i]=poilog(i+1,mui,sigmai);
     pis+=pi[i];
   }
   for (i=0; i<Ki; i++){
     pi[i]/=pis;
   }
+  pis=1.;
+  for (i=0; i<Np; i++){
+    pis-=pdegi[i];
+  }
+  for (i=0; i<Ki; i++){
+    pi[i]*=pis;
+  }
+  for (i=0; i<Np; i++){
+    pi[i]=pdegi[i];
+  }
   while (isamp < isamplesize) {
     /* Propose new theta */
+    /* Now the degree distribution model parameters */
+    for (i=0; i<Np; i++){
+      odegstar[i] = rnorm(odegi[i], dmuproposal);
+    }
+    /* Convert from odds to probabilities */
+    pis=1.;
+    for (i=0; i<Np; i++){
+      pdegstar[i] = exp(odegstar[i]);
+      pis+=pdegstar[i];
+    }
+    for (i=0; i<Np; i++){
+      pdegstar[i]/=pis;
+    }
+    /* Now the degree distribution (log) mean adn s.d. parameters */
     mustar = rnorm(mui, dmuproposal);
     sigma2star = sigma2i*exp(rnorm(0., dsigmaproposal));
     sigmastar = sqrt(sigma2star);
@@ -349,12 +419,22 @@ void MHpln (int *Nk, int *K,
 //           pithetastar,pithetai,qsigma2star,qsigma2i);
 //  }
     pstars=0.;
-    for (i=0; i<Ki; i++){
-      pstar[i] = poilog(i+1,mustar,sigmastar);
+    for (i=Np; i<Ki; i++){
+      pstar[i]=poilog(i+1,mustar,sigmastar);
       pstars+=pstar[i];
     }
     for (i=0; i<Ki; i++){
       pstar[i]/=pstars;
+    }
+    pstars=1.;
+    for (i=0; i<Np; i++){
+      pstars-=pdegstar[i];
+    }
+    for (i=0; i<Ki; i++){
+      pstar[i]*=pstars;
+    }
+    for (i=0; i<Np; i++){
+      pstar[i]=pdegstar[i];
     }
     for (i=0; i<Ki; i++){
      if(Nk[i]>0){
@@ -376,8 +456,12 @@ void MHpln (int *Nk, int *K,
     /* if we accept the proposed network */
     if (cutoff >= 0.0 || log(unif_rand()) < cutoff) { 
       /* Make proposed changes */
-      sigmai = sigmastar;
+      for (i=0; i<Np; i++){
+        odegi[i] = odegstar[i];
+        pdegi[i] = pdegstar[i];
+      }
       mui    = mustar;
+      sigmai = sigmastar;
       sigma2i = sigma2star;
       qsigma2i = qsigma2star;
       pithetai = pithetastar;
@@ -389,6 +473,9 @@ void MHpln (int *Nk, int *K,
         /* record statistics for posterity */
         musample[isamp]=mui;
         sigmasample[isamp]=sigmai;
+        for (i=0; i<Np; i++){
+          psample[i]=pdegi[i];
+        }
         isamp++;
         if (*fVerbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d MH samples...\n", isamp);
       }

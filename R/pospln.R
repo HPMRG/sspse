@@ -5,6 +5,7 @@ poswest<-function(s,maxN=4*length(s),
                   df.mean.prior=1, df.sd.prior=5,
                   muproposal=0.01, 
                   sigmaproposal=0.1, 
+                  Np=1,
                   samplesize=10,burnin=0,interval=1,burnintheta=500,
                   seed=NULL,
                   verbose=TRUE){
@@ -14,6 +15,7 @@ poswest<-function(s,maxN=4*length(s),
     sigma0 <- sqrt(log(1+sd.prior.degree*sd.prior.degree/(mean.prior.degree*mean.prior.degree)))
     mu0 <- log(mean.prior.degree)-0.5*sigma0*sigma0
     if(!is.null(seed))  set.seed(as.integer(seed))
+    dimsample <- 4+Np
     Cret <- .C("gspps",
               pop=as.integer(c(s,rep(0,maxN-n))),
               nk=as.integer(nk),
@@ -24,15 +26,17 @@ poswest<-function(s,maxN=4*length(s),
               interval=as.integer(interval),
               mu0=as.double(mu0), df.mean.prior=as.double(df.mean.prior),
               sigma0=as.double(sigma0), df.sd.prior=as.double(df.sd.prior),
+              Npi=as.integer(Np),
               muproposal=as.double(muproposal),
               sigmaproposal=as.double(sigmaproposal),
               N=as.integer(N),
               maxN=as.integer(maxN),
-              sample=double(samplesize*4),
+              sample=double(samplesize*dimsample),
               burnintheta=as.integer(burnintheta),
               fVerbose=as.integer(verbose))
-    Cret$sample<-matrix(Cret$sample,nrow=samplesize,ncol=4,byrow=TRUE)
-    colnames(Cret$sample) <- c("N","mu","sigma","degree1")
+    Cret$sample<-matrix(Cret$sample,nrow=samplesize,ncol=dimsample,byrow=TRUE)
+    colnames(Cret$sample) <- c("N","mu","sigma","degree1",
+      paste("pdeg",1:Np,sep=""))
     Cret$sample[,"mu"] <- exp(Cret$sample[,"mu"]+0.5*Cret$sample[,"sigma"]*Cret$sample[,"sigma"])
     Cret$sample[,"sigma"] <- Cret$sample[,"mu"]*sqrt(exp(Cret$sample[,"sigma"]*Cret$sample[,"sigma"])-1)
     Cret$Nk<-Cret$nk/sum(Cret$nk)
@@ -165,6 +169,7 @@ posteriorsize<-function(s,
                   df.mean.prior=1,df.sd.prior=5,
                   muproposal=0.01, 
                   sigmaproposal=0.1, 
+                  Np=1,
                   samplesize=1000,burnin=100,interval=1,burnintheta=500,
                   parallel=1, seed=NULL,
                   verbose=TRUE){
@@ -174,7 +179,7 @@ posteriorsize<-function(s,
       Cret <- poswest(s=s,N=N,K=K,nk=nk,n=n,maxN=maxN,
                       mean.prior.degree=mean.prior.degree,df.mean.prior=df.mean.prior,
                       sd.prior.degree=sd.prior.degree,df.sd.prior=df.sd.prior,
-                      sigmaproposal=sigmaproposal, 
+                      sigmaproposal=sigmaproposal, Np=Np,
                       samplesize=samplesize,burnin=burnin,interval=interval,
 		      burnintheta=burnintheta,
                       seed=seed)
@@ -218,7 +223,7 @@ posteriorsize<-function(s,
       s=s,N=N,K=K,nk=nk,n=n,maxN=maxN,
       mean.prior.degree=mean.prior.degree,df.mean.prior=df.mean.prior,
       sd.prior.degree=sd.prior.degree,df.sd.prior=df.sd.prior,
-      sigmaproposal=sigmaproposal, 
+      sigmaproposal=sigmaproposal, Np=Np,
       samplesize=samplesize.parallel,burnin=burnin,interval=interval,
       burnintheta=burnintheta)
 #
@@ -230,7 +235,8 @@ posteriorsize<-function(s,
      Cret$sample <- rbind(Cret$sample,z$sample)
      Cret$samplesize <- samplesize
     }
-    colnames(Cret$sample) <- c("N","mu","sigma","degree1")
+    colnames(Cret$sample) <- c("N","mu","sigma","degree1",
+      paste("pdeg",1:Np,sep=""))
     endrun <- burnin+interval*(samplesize-1)
     attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
     attr(Cret$sample, "class") <- "mcmc"
