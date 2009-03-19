@@ -143,8 +143,8 @@ void gsppsdis (int *pop, int *dis,
       p1is+=p1i[i];
     }
     for (i=0; i<Ki; i++){
-      p0i[i]/=p0is;
-      p1i[i]/=p1is;
+      p0i[i]=p0i[i]/p0is;
+      p1i[i]=p1i[i]/p1is;
     }
     p0is=1.;
     p1is=1.;
@@ -155,8 +155,8 @@ void gsppsdis (int *pop, int *dis,
       p1is-=pdeg1i[i];
     }
     for (i=0; i<Ki; i++){
-      p0i[i]*=p0is;
-      p1i[i]*=p1is;
+      p0i[i]=p0i[i]*p0is;
+      p1i[i]=p1i[i]*p1is;
     }
     for (i=0; i<Np0; i++){
       p0i[i]=pdeg0i[i];
@@ -389,8 +389,8 @@ void MHdis (int *Nk0, int *Nk1, int *totdis, int *K,
     p1is+=p1i[i];
   }
   for (i=0; i<Ki; i++){
-    p0i[i]/=p0is;
-    p1i[i]/=p1is;
+    p0i[i]=p0i[i]/p0is;
+    p1i[i]=p1i[i]/p1is;
   }
   p0is=1.;
   p1is=1.;
@@ -401,8 +401,8 @@ void MHdis (int *Nk0, int *Nk1, int *totdis, int *K,
     p1is-=pdeg1i[i];
   }
   for (i=0; i<Ki; i++){
-    p0i[i]*=p0is;
-    p1i[i]*=p1is;
+    p0i[i]=p0i[i]*p0is;
+    p1i[i]=p1i[i]*p1is;
   }
   for (i=0; i<Np0; i++){
     p0i[i]=pdeg0i[i];

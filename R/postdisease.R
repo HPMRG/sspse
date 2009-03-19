@@ -10,7 +10,7 @@ posdis<-function(s,dis,maxN=4*length(s),
                   df.mean.prior=1, df.sd.prior=5,
                   muproposal=0.01, 
                   sigmaproposal=0.1, 
-                  Np0=1, Np1=1,
+                  Np0=0, Np1=0,
                   samplesize=10,burnin=0,interval=1,burnintheta=500,
                   seed=NULL,
                   verbose=TRUE){
@@ -48,15 +48,22 @@ posdis<-function(s,dis,maxN=4*length(s),
               burnintheta=as.integer(burnintheta),
               fVerbose=as.integer(verbose))
     Cret$sample<-matrix(Cret$sample,nrow=samplesize,ncol=dimsample,byrow=TRUE)
-print(Cret$sample)
-    colnames(Cret$sample) <- c("N","mu0","mu1","sigma0","sigma1","degree1",
-      "beta","disease.count",
-      paste("p0deg",1:Np0,sep=""),paste("p1deg",1:Np1,sep=""))
+    degnames <- NULL
+    if(Np0>0){degnames <- c(degnames,paste("p0deg",1:Np0,sep=""))}
+    if(Np1>0){degnames <- c(degnames,paste("p1deg",1:Np1,sep=""))}
+    colnamessample <- c("N","mu0","mu1","sigma0","sigma1","degree1",
+                        "beta","disease.count")
+    if(length(degnames)>0){
+     colnames(Cret$sample) <- c(colnamessample, degnames)
+    }else{
+     colnames(Cret$sample) <- colnamessample
+    }
     Cret$sample<-cbind(Cret$sample,Cret$sample[,"disease.count"]/Cret$sample[,"N"])
-    colnames(Cret$sample) <- c("N","mu0","mu1","sigma0","sigma1","degree1",
-      "beta","disease.count",
-      paste("p0deg",1:Np0,sep=""),paste("p1deg",1:Np1,sep=""),
-      "disease")
+    if(length(degnames)>0){
+     colnames(Cret$sample) <- c(colnamessample,degnames,"disease")
+    }else{
+     colnames(Cret$sample) <- c(colnamessample,"disease")
+    }
     Cret$sample[,"mu0"] <- exp(Cret$sample[,"mu0"]+0.5*Cret$sample[,"sigma0"]*Cret$sample[,"sigma0"])
     Cret$sample[,"mu1"] <- exp(Cret$sample[,"mu1"]+0.5*Cret$sample[,"sigma1"]*Cret$sample[,"sigma1"])
     Cret$sample[,"sigma0"] <- Cret$sample[,"mu0"]*sqrt(exp(Cret$sample[,"sigma0"]*Cret$sample[,"sigma0"])-1)
@@ -128,7 +135,7 @@ posteriordisease<-function(s,dis,
                   df.mean.prior=1,df.sd.prior=5,
                   muproposal=0.01, 
                   sigmaproposal=0.1, 
-                  Np0=1, Np1=1,
+                  Np0=0, Np1=0,
                   samplesize=1000,burnin=100,interval=1,burnintheta=500,
                   parallel=1, seed=NULL,
                   verbose=TRUE){
@@ -213,9 +220,16 @@ posteriordisease<-function(s,dis,
     stopCluster(cl)
     if(getClusterOption("type")=="PVM") .PVM.exit()
   }
-  colnames(Cret$sample) <- c("N","mu0","mu1","sigma0","sigma1","degree1",
-    "beta","disease.count",
-    paste("p0deg",1:Np0,sep=""),paste("p1deg",1:Np1,sep=""), "disease")
+  degnames <- NULL
+  if(Np0>0){degnames <- c(degnames,paste("p0deg",1:Np0,sep=""))}
+  if(Np0>1){degnames <- c(degnames,paste("p1deg",1:Np1,sep=""))}
+  colnamessample <- c("N","mu0","mu1","sigma0","sigma1","degree1",
+                      "beta","disease.count")
+  if(length(degnames)>0){
+   colnames(Cret$sample) <- c(colnamessample,degnames,"disease")
+  }else{
+   colnames(Cret$sample) <- c(colnamessample,"disease")
+  }
   Cret$MAP <- apply(Cret$sample,2,mapfn)
   Cret$N <- c(Cret$MAP["N"], 
               mean(Cret$sample[,"N"]),

@@ -30,8 +30,8 @@ sppssample<-function(counts,sizes,n){
    ss
 }
 
-sppssamplei<-function(s,n){
-  sample(x=(1:length(s)),size=n,prob=s,replace=FALSE)
+sppssamplei<-function(pop,n){
+  sample(x=(1:length(pop)),size=n,prob=pop,replace=FALSE)
 }
 
 roundstoc<-function(vec){# takes a vector and makes it integers, keeping the total the same

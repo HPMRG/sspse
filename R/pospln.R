@@ -5,7 +5,7 @@ poswest<-function(s,maxN=4*length(s),
                   df.mean.prior=1, df.sd.prior=5,
                   muproposal=0.01, 
                   sigmaproposal=0.1, 
-                  Np=1,
+                  Np=0,
                   samplesize=10,burnin=0,interval=1,burnintheta=500,
                   seed=NULL,
                   verbose=TRUE){
@@ -35,8 +35,15 @@ poswest<-function(s,maxN=4*length(s),
               burnintheta=as.integer(burnintheta),
               fVerbose=as.integer(verbose))
     Cret$sample<-matrix(Cret$sample,nrow=samplesize,ncol=dimsample,byrow=TRUE)
-    colnames(Cret$sample) <- c("N","mu","sigma","degree1",
-      paste("pdeg",1:Np,sep=""))
+    degnames <- NULL
+    if(Np0>0){degnames <- c(degnames,paste("p0deg",1:Np0,sep=""))}
+    if(Np1>0){degnames <- c(degnames,paste("p1deg",1:Np1,sep=""))}
+    colnamessample <- c("N","mu0","mu1","sigma0","sigma1","degree1")
+    if(length(degnames)>0){
+     colnames(Cret$sample) <- c(colnamessample, degnames)
+    }else{
+     colnames(Cret$sample) <- colnamessample
+    }
     Cret$sample[,"mu"] <- exp(Cret$sample[,"mu"]+0.5*Cret$sample[,"sigma"]*Cret$sample[,"sigma"])
     Cret$sample[,"sigma"] <- Cret$sample[,"mu"]*sqrt(exp(Cret$sample[,"sigma"]*Cret$sample[,"sigma"])-1)
     Cret$Nk<-Cret$nk/sum(Cret$nk)
@@ -169,7 +176,7 @@ posteriorsize<-function(s,
                   df.mean.prior=1,df.sd.prior=5,
                   muproposal=0.01, 
                   sigmaproposal=0.1, 
-                  Np=1,
+                  Np=0,
                   samplesize=1000,burnin=100,interval=1,burnintheta=500,
                   parallel=1, seed=NULL,
                   verbose=TRUE){
@@ -251,8 +258,15 @@ posteriorsize<-function(s,
      Cret$sample <- rbind(Cret$sample,z$sample)
      Cret$samplesize <- samplesize
     }
-    colnames(Cret$sample) <- c("N","mu","sigma","degree1",
-      paste("pdeg",1:Np,sep=""))
+    degnames <- NULL
+    if(Np0>0){degnames <- c(degnames,paste("p0deg",1:Np0,sep=""))}
+    if(Np1>0){degnames <- c(degnames,paste("p1deg",1:Np1,sep=""))}
+    colnamessample <- c("N","mu0","mu1","sigma0","sigma1","degree1")
+    if(length(degnames)>0){
+     colnames(Cret$sample) <- c(colnamessample, degnames)
+    }else{
+     colnames(Cret$sample) <- colnamessample
+    }
     
     ### Coda package which does MCMC diagnostics, requires certain attributes of MCMC sample
     endrun <- burnin+interval*(samplesize-1)
