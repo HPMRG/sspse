@@ -38,7 +38,7 @@ poswest<-function(s,maxN=4*length(s),
     Cret$sample<-matrix(Cret$sample,nrow=samplesize,ncol=dimsample,byrow=TRUE)
     degnames <- NULL
     if(Np>0){degnames <- c(degnames,paste("pdeg",1:Np,sep=""))}
-    colnamessample <- c("N","mu0","mu1","sigma0","sigma1","degree1")
+    colnamessample <- c("N","mu","sigma","degree1")
     if(length(degnames)>0){
      colnames(Cret$sample) <- c(colnamessample, degnames)
     }else{
@@ -265,7 +265,7 @@ posteriorsize<-function(s,
     Cret$ppos<-Cret$ppos/Nparallel
     degnames <- NULL
     if(Np>0){degnames <- c(degnames,paste("pdeg",1:Np,sep=""))}
-    colnamessample <- c("N","mu0","mu1","sigma0","sigma1","degree1")
+    colnamessample <- c("N","mu","sigma","degree1")
     if(length(degnames)>0){
      colnames(Cret$sample) <- c(colnamessample, degnames)
     }else{
