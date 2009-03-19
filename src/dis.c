@@ -19,6 +19,7 @@ void gsppsdis (int *pop, int *dis,
             double *sigmaproposal, 
             int *N, int *maxN, 
             double *sample, 
+            double *p0pos, double *p1pos, 
             int *burnintheta,
             int *fVerbose
               ) {
@@ -28,7 +29,7 @@ void gsppsdis (int *pop, int *dis,
   double mu, mu0i, mu1i, pbeta, beta, sigma0i, sigma1i;
   double dkappa0, ddf0, dmu0, dmu1, dsigma0, dsigma1, dmuproposal, dsigmaproposal;
   int tU, popi, imaxN, itotdis0, itotdis;
-  double r, gamma0rt, gamma1rt, p0is, p1is;
+  double r, gamma0rt, gamma1rt, p0is, p1is, N0d, N1d;
 
   GetRNGstate();  /* R function enabling uniform RNG */
 
@@ -76,6 +77,8 @@ void gsppsdis (int *pop, int *dis,
      Nk0pos[i]=0;
      Nk1[i]=nk1[i];
      Nk1pos[i]=0;
+     p0pos[i]=0.;
+     p1pos[i]=0.;
   }
   tU=0;
   for (i=ni; i<Ni; i++){
@@ -190,7 +193,7 @@ void gsppsdis (int *pop, int *dis,
 //  if (*fVerbose) Rprintf("Ni %d lpm[imaxN-1] %f lpm[Ni] %f\n", Ni, lpm[imaxN-1],
 //  lpm[Ni]);
 //  }
-    Ni+= ni;
+    Ni += ni;
     if(Ni >= imaxN) Ni = imaxN-1;
 
 //  if (*fVerbose) Rprintf("step %d Ni %d itotdis %d beta %f mu0 %f mu1 %f s0 %f r %f\n",
@@ -256,9 +259,17 @@ void gsppsdis (int *pop, int *dis,
       for (i=0; i<Np1; i++){
         sample[isamp*dimsample+8+Np0+i]=pdeg1i[i];
       }
+//    N0d=0.;
       for (i=0; i<Ki; i++){
         Nk0pos[i]=Nk0pos[i]+Nk0[i];
         Nk1pos[i]=Nk1pos[i]+Nk1[i];
+//      N0d+=Nk0[i];
+      }
+//      N1d=Ni-N0d;
+      N1d=(double)Ni;
+      for (i=0; i<Ki; i++){
+        p0pos[i]+=(Nk0[i]/N1d);
+        p1pos[i]+=(Nk1[i]/N1d);
       }
       isamp++;
       if (*fVerbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d samples...\n", isamp);
@@ -270,6 +281,8 @@ void gsppsdis (int *pop, int *dis,
   for (i=0; i<Ki; i++){
     nk0[i]=Nk0pos[i];
     nk1[i]=Nk1pos[i];
+    p0pos[i]=p0pos[i]/isamp;
+    p1pos[i]=p1pos[i]/isamp;
   }
   PutRNGstate();  /* Disable RNG before returning */
   free(psample);

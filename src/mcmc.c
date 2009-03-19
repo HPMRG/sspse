@@ -19,6 +19,7 @@ void gspps (int *pop,
             double *sigmaproposal, 
             int *N, int *maxN, 
             double *sample, 
+            double *ppos, 
             int *burnintheta,
 	    int *fVerbose
 			 ) {
@@ -66,6 +67,7 @@ void gspps (int *pop,
   for (i=0; i<Ki; i++){
      Nk[i]=nk[i];
      Nkpos[i]=0;
+     ppos[i]=0.;
   }
   tU=0;
   for (i=ni; i<Ni; i++){
@@ -178,6 +180,7 @@ void gspps (int *pop,
       }
       for (i=0; i<Ki; i++){
         Nkpos[i]=Nkpos[i]+Nk[i];
+        ppos[i]+=((Nk[i]*1.)/Ni);
       }
       isamp++;
       if (*fVerbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d samples...\n", isamp);
@@ -186,6 +189,7 @@ void gspps (int *pop,
   }
   for (i=0; i<Ki; i++){
     nk[i]=Nkpos[i];
+    ppos[i]/=isamp;
   }
   PutRNGstate();  /* Disable RNG before returning */
   free(pi);

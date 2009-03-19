@@ -32,12 +32,12 @@ poswest<-function(s,maxN=4*length(s),
               N=as.integer(N),
               maxN=as.integer(maxN),
               sample=double(samplesize*dimsample),
+              ppos=double(K),
               burnintheta=as.integer(burnintheta),
               fVerbose=as.integer(verbose))
     Cret$sample<-matrix(Cret$sample,nrow=samplesize,ncol=dimsample,byrow=TRUE)
     degnames <- NULL
-    if(Np0>0){degnames <- c(degnames,paste("p0deg",1:Np0,sep=""))}
-    if(Np1>0){degnames <- c(degnames,paste("p1deg",1:Np1,sep=""))}
+    if(Np>0){degnames <- c(degnames,paste("pdeg",1:Np,sep=""))}
     colnamessample <- c("N","mu0","mu1","sigma0","sigma1","degree1")
     if(length(degnames)>0){
      colnames(Cret$sample) <- c(colnamessample, degnames)
@@ -253,14 +253,18 @@ posteriorsize<-function(s,
     ### Snow returns a list of length parallel where each element is the return of each poswest
     ### Following loops combines the separate MCMC samples into 1 using rbind, creating a matrix
     Cret <- outlist[[1]]
-    for(i in (2 : length(outlist))){
+    Cret$samplesize <- samplesize
+    Nparallel <- length(outlist)
+    for(i in (2 : Nparallel)){
      z <- outlist[[i]]
      Cret$sample <- rbind(Cret$sample,z$sample)
-     Cret$samplesize <- samplesize
+     Cret$nk<-Cret$nk+z$nk
+     Cret$ppos<-Cret$ppos+z$ppos
     }
+    Cret$nk<-Cret$nk/Nparallel
+    Cret$ppos<-Cret$ppos/Nparallel
     degnames <- NULL
-    if(Np0>0){degnames <- c(degnames,paste("p0deg",1:Np0,sep=""))}
-    if(Np1>0){degnames <- c(degnames,paste("p1deg",1:Np1,sep=""))}
+    if(Np>0){degnames <- c(degnames,paste("pdeg",1:Np,sep=""))}
     colnamessample <- c("N","mu0","mu1","sigma0","sigma1","degree1")
     if(length(degnames)>0){
      colnames(Cret$sample) <- c(colnamessample, degnames)

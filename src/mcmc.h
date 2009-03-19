@@ -31,6 +31,7 @@ void gspps (int *pop,
             double *sigmaproposal, 
             int *N, int *maxN, 
             double *sample, 
+	    double *ppos,
             int *burnintheta,
 	    int *fVerbose
 			 );

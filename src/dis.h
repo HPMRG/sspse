@@ -31,6 +31,7 @@ void gsppsdis (int *pop, int *dis,
             double *sigmaproposal, 
             int *N, int *maxN, 
             double *sample, 
+            double *p0pos, double *p1pos, 
             int *burnintheta,
 	    int *fVerbose
 			 );

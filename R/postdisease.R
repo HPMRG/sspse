@@ -45,6 +45,7 @@ posdis<-function(s,dis,maxN=4*length(s),
               N=as.integer(N),
               maxN=as.integer(maxN),
               sample=double(samplesize*dimsample),
+              p0pos=double(K), p1pos=double(K),
               burnintheta=as.integer(burnintheta),
               fVerbose=as.integer(verbose))
     Cret$sample<-matrix(Cret$sample,nrow=samplesize,ncol=dimsample,byrow=TRUE)
@@ -206,11 +207,20 @@ posteriordisease<-function(s,dis,
 #   Process the results
 #
     Cret <- outlist[[1]]
-    for(i in (2 : length(outlist))){
+    Nparallel <- length(outlist)
+    Cret$samplesize <- samplesize
+    for(i in (2 : Nparallel)){
      z <- outlist[[i]]
      Cret$sample <- rbind(Cret$sample,z$sample)
-     Cret$samplesize <- samplesize
+     Cret$Nk0<-Cret$Nk0+z$Nk0
+     Cret$Nk1<-Cret$Nk1+z$Nk1
+     Cret$p0pos<-Cret$p0pos+z$p0pos
+     Cret$p1pos<-Cret$p1pos+z$p1pos
     }
+    Cret$Nk0<-Cret$Nk0/Nparallel
+    Cret$Nk1<-Cret$Nk1/Nparallel
+    Cret$p0pos<-Cret$p0pos/Nparallel
+    Cret$p1pos<-Cret$p1pos/Nparallel
     endrun <- burnin+interval*(samplesize)
     attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
     attr(Cret$sample, "class") <- "mcmc"
