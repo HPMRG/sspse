@@ -232,7 +232,7 @@ posteriordisease<-function(s,dis,
   }
   degnames <- NULL
   if(Np0>0){degnames <- c(degnames,paste("p0deg",1:Np0,sep=""))}
-  if(Np0>1){degnames <- c(degnames,paste("p1deg",1:Np1,sep=""))}
+  if(Np1>0){degnames <- c(degnames,paste("p1deg",1:Np1,sep=""))}
   colnamessample <- c("N","mu0","mu1","sigma0","sigma1","degree1",
                       "beta","disease.count")
   if(length(degnames)>0){
