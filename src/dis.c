@@ -29,7 +29,7 @@ void gsppsdis (int *pop, int *dis,
   double mu, mu0i, mu1i, pbeta, beta, sigma0i, sigma1i;
   double dkappa0, ddf0, dmu0, dmu1, dsigma0, dsigma1, dmuproposal, dsigmaproposal;
   int tU, popi, imaxN, itotdis0, itotdis;
-  double r, gamma0rt, gamma1rt, p0is, p1is, N0d, N1d;
+  double r, gamma0rt, gamma1rt, p0is, p1is, Nd;
 
   GetRNGstate();  /* R function enabling uniform RNG */
 
@@ -266,10 +266,10 @@ void gsppsdis (int *pop, int *dis,
 //      N0d+=Nk0[i];
       }
 //      N1d=Ni-N0d;
-      N1d=(double)Ni;
+      Nd=(double)Ni;
       for (i=0; i<Ki; i++){
-        p0pos[i]+=(Nk0[i]/N1d);
-        p1pos[i]+=(Nk1[i]/N1d);
+        p0pos[i]+=(Nk0[i]/Nd);
+        p1pos[i]+=(Nk1[i]/Nd);
       }
       isamp++;
       if (*fVerbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d samples...\n", isamp);

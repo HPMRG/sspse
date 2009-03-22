@@ -5,22 +5,23 @@ beginsnow<-function(parallel=1, type="PVM", verbose=TRUE){
 #   Start PVM if necessary
 #
 #   setDefaultClusterOptions(type="PVM")
-    if(getClusterOption("type")=="PVM") {
-     if(verbose)
-     {
+    if(getClusterOption("type")=="PVM"){
+     if(verbose){
       cat("Engaging warp drive using PVM ...\n")
      }
      require(rpvm)
      PVM.running <- try(.PVM.config(), silent = TRUE)
-     if(inherits(PVM.running, "try-error"))
-     {
+     if(inherits(PVM.running, "try-error")){
       hostfile <- paste(Sys.getenv("HOME"), "/.xpvm_hosts", sep = "")
-      if(file.exists(hostfile){.PVM.start.pvmd(hostfile)}else{.PVM.start.pvmd()}
+      if(file.exists(hostfile)){
+       .PVM.start.pvmd(hostfile)
+      }else{
+       .PVM.start.pvmd()
+      }
       cat("no problem... PVM started by size...\n")
      }
     }else{
-     if(verbose)
-     {
+     if(verbose){
       cat("Engaging warp drive using MPI ...\n")
      }
     }
