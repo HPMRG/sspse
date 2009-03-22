@@ -197,45 +197,7 @@ posteriorsize<-function(s,
   }
   ### since running job in parallel, start pvm (if not already running)
   else{
-    ### snow is wrapper for MPI or PVM (mosix only has PVM)
-    require(snow)
-#
-#   Start PVM if necessary
-#
-#   setDefaultClusterOptions(type="PVM")
-    if(getClusterOption("type")=="PVM") {
-     if(verbose)
-     {
-      cat("Engaging warp drive using PVM ...\n")
-     }
-     require(rpvm)
-     PVM.running <- try(.PVM.config(), silent = TRUE)
-     if(inherits(PVM.running, "try-error"))
-     {
-      hostfile <- paste(Sys.getenv("HOME"), "/.xpvm_hosts", sep = "")
-      .PVM.start.pvmd(hostfile)
-      cat("no problem... PVM started by size...\n")
-     }
-    }else{
-     if(verbose)
-     {
-      cat("Engaging warp drive using MPI ...\n")
-     }
-    }
-#
-#   Start Cluster
-#
-    ### Snow commands to set up cluster
-    cl <- makeCluster(parallel)
-    ### initialize parallel random number streams
-    clusterSetupRNG(cl)
-    ### start each virtual machine with size library loaded
-    clusterEvalQ(cl, library(size))
-#
-#   Run the jobs with rpvm or Rmpi
-#
-    ### make sure that R has printed out console messages before go parallel
-    flush.console()
+    cl <- beginsnow(parallel)
     ### divide the samplesize by the number of parallel runs (number of MCMC samples)
     samplesize.parallel=round(samplesize/parallel)
     ### cluster call, send following to each of the virtual machines, poswest function
@@ -290,8 +252,7 @@ posteriorsize<-function(s,
     }
     
     ### stop cluster and PVM (in case PVM is flakey)
-    stopCluster(cl)
-    if(getClusterOption("type")=="PVM") .PVM.exit()
+    endsnow(cl)
   }
   ### return result
   Cret

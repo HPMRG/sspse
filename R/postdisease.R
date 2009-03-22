@@ -159,40 +159,7 @@ posteriordisease<-function(s,dis,
 		      burnintheta=burnintheta,
                       seed=seed)
   }else{
-    require(snow)
-#
-#   Start PVM if necessary
-#
-#   setDefaultClusterOptions(type="PVM")
-    if(getClusterOption("type")=="PVM") {
-     if(verbose)
-     {
-      cat("Engaging warp drive using PVM ...\n")
-     }
-     require(rpvm)
-     PVM.running <- try(.PVM.config(), silent = TRUE)
-     if(inherits(PVM.running, "try-error"))
-     {
-      hostfile <- paste(Sys.getenv("HOME"), "/.xpvm_hosts", sep = "")
-      .PVM.start.pvmd(hostfile)
-      cat("no problem... PVM started by size...\n")
-     }
-    }else{
-     if(verbose)
-     {
-      cat("Engaging warp drive using MPI ...\n")
-     }
-    }
-#
-#   Start Cluster
-#
-    cl <- makeCluster(parallel)
-    clusterSetupRNG(cl)
-    clusterEvalQ(cl, library(size))
-#
-#   Run the jobs with rpvm or Rmpi
-#
-    flush.console()
+    cl <- beginsnow(parallel)
     samplesize.parallel=round(samplesize/parallel)
     outlist <- clusterCall(cl, posdis,
       s=s,dis=dis,N=N,K=K,nk0=nk0,nk1=nk1,n=n,maxN=maxN,
@@ -227,8 +194,7 @@ posteriordisease<-function(s,dis,
     if(verbose){
      cat("parallel samplesize=", parallel,"by", samplesize.parallel,"\n")
     }
-    stopCluster(cl)
-    if(getClusterOption("type")=="PVM") .PVM.exit()
+    endsnow(cl)
   }
   degnames <- NULL
   if(Np0>0){degnames <- c(degnames,paste("p0deg",1:Np0,sep=""))}

@@ -20,40 +20,7 @@ margposteriorsize<-function(N=trunc(length(s)*seq(1.1,4,length=10)+1),
                        return.all=return.all,parallel=parallel,
 		       maxit=maxit,method=method,trace=trace,temp=temp)
   }else{
-    require(snow)
-#
-#   Start PVM if necessary
-#
-#   setDefaultClusterOptions(type="PVM")
-    if(getClusterOption("type")=="PVM") {
-     if(verbose)
-     {
-      cat("Engaging warp drive using PVM ...\n")
-     }
-     require(rpvm)
-     PVM.running <- try(.PVM.config(), silent = TRUE)
-     if(inherits(PVM.running, "try-error"))
-     {
-      hostfile <- paste(Sys.getenv("HOME"), "/.xpvm_hosts", sep = "")
-      .PVM.start.pvmd(hostfile)
-      cat("no problem... PVM started by size...\n")
-     }
-    }else{
-     if(verbose)
-     {
-      cat("Engaging warp drive using MPI ...\n")
-     }
-    }
-#
-#   Start Cluster
-#
-    cl <- makeCluster(parallel)
-    clusterSetupRNG(cl)
-    clusterEvalQ(cl, library(size))
-#
-#   Run the jobs with rpvm or Rmpi
-#
-    flush.console()
+    cl <- beginsnow(parallel)
     outlist <- clusterApplyLB(cl, as.list(N), margposN,
       s=s,K=K,prob=prob,M=M,n=n,return.all=FALSE,parallel=1)
 #
@@ -64,8 +31,7 @@ margposteriorsize<-function(N=trunc(length(s)*seq(1.1,4,length=10)+1),
     if(verbose){
      cat("parallel samplesize=", parallel,"by", M,"\n")
     }
-    stopCluster(cl)
-    if(getClusterOption("type")=="PVM") .PVM.exit()
+    endsnow(cl)
   }
   if(return.all){
     Cret
@@ -156,40 +122,7 @@ margposN<-function(N, s,
               M=as.integer(M),
               unpos=as.double(0))
   }else{
-    require(snow)
-#
-#   Start PVM if necessary
-#
-#   setDefaultClusterOptions(type="PVM")
-    if(getClusterOption("type")=="PVM") {
-     if(verbose)
-     {
-      cat("Engaging warp drive using PVM ...\n")
-     }
-     require(rpvm)
-     PVM.running <- try(.PVM.config(), silent = TRUE)
-     if(inherits(PVM.running, "try-error"))
-     {
-      hostfile <- paste(Sys.getenv("HOME"), "/.xpvm_hosts", sep = "")
-      .PVM.start.pvmd(hostfile)
-      cat("no problem... PVM started by size...\n")
-     }
-    }else{
-     if(verbose)
-     {
-      cat("Engaging warp drive using MPI ...\n")
-     }
-    }
-#
-#   Start Cluster
-#
-    cl <- makeCluster(parallel)
-    clusterSetupRNG(cl)
-    clusterEvalQ(cl, library(size))
-#
-#   Run the jobs with rpvm or Rmpi
-#
-    flush.console()
+    cl <- beginsnow(parallel)
     MCsamplesize.parallel=round(M/parallel)
     outlist <- clusterCall(cl, margposN,
       s=s,N=N,K=K,prob=prob,M=MCsamplesize.parallel,n=n,qprob=qprob,
@@ -206,8 +139,7 @@ margposN<-function(N, s,
     if(verbose){
      cat("parallel samplesize=", parallel,"by", MCsamplesize.parallel,"\n")
     }
-    stopCluster(cl)
-    if(getClusterOption("type")=="PVM") .PVM.exit()
+    endsnow(cl)
   }
   Cret$Nmle <- sum(Cret$Nk)
   if(return.all){
@@ -319,40 +251,7 @@ discretemleN<-function(N,s,
     Cret$Nkmle <- Cret$Nk
     Cret$lbound <- lbound
   }else{
-    require(snow)
-#
-#   Start PVM if necessary
-#
-#   setDefaultClusterOptions(type="PVM")
-    if(getClusterOption("type")=="PVM") {
-     if(verbose)
-     {
-      cat("Engaging warp drive using PVM ...\n")
-     }
-     require(rpvm)
-     PVM.running <- try(.PVM.config(), silent = TRUE)
-     if(inherits(PVM.running, "try-error"))
-     {
-      hostfile <- paste(Sys.getenv("HOME"), "/.xpvm_hosts", sep = "")
-      .PVM.start.pvmd(hostfile)
-      cat("no problem... PVM started by size...\n")
-     }
-    }else{
-     if(verbose)
-     {
-      cat("Engaging warp drive using MPI ...\n")
-     }
-    }
-#
-#   Start Cluster
-#
-    cl <- makeCluster(parallel)
-    clusterSetupRNG(cl)
-    clusterEvalQ(cl, library(size))
-#
-#   Run the jobs with rpvm or Rmpi
-#
-    flush.console()
+    cl <- beginsnow(parallel)
     MCsamplesize.parallel=round(M/parallel)
     outlist <- clusterCall(cl, discretemleN,
       s=s,N=N,K=K,M=MCsamplesize.parallel,n=n,Nkmle.start=Nkmle.start,
@@ -371,8 +270,7 @@ discretemleN<-function(N,s,
     if(verbose){
      cat("parallel samplesize=", parallel,"by", MCsamplesize.parallel,"\n")
     }
-    stopCluster(cl)
-    if(getClusterOption("type")=="PVM") .PVM.exit()
+    endsnow(cl)
   }
   Cret$lbound <- lbound
   Cret$Nmle <- sum(Cret$Nk)
@@ -446,40 +344,7 @@ discretemleNimpute<-function(N,s,
               M=as.integer(M),
               mllik=as.double(0))
   }else{
-    require(snow)
-#
-#   Start PVM if necessary
-#
-#   setDefaultClusterOptions(type="PVM")
-    if(getClusterOption("type")=="PVM") {
-     if(verbose)
-     {
-      cat("Engaging warp drive using PVM ...\n")
-     }
-     require(rpvm)
-     PVM.running <- try(.PVM.config(), silent = TRUE)
-     if(inherits(PVM.running, "try-error"))
-     {
-      hostfile <- paste(Sys.getenv("HOME"), "/.xpvm_hosts", sep = "")
-      .PVM.start.pvmd(hostfile)
-      cat("no problem... PVM started by size...\n")
-     }
-    }else{
-     if(verbose)
-     {
-      cat("Engaging warp drive using MPI ...\n")
-     }
-    }
-#
-#   Start Cluster
-#
-    cl <- makeCluster(parallel)
-    clusterSetupRNG(cl)
-    clusterEvalQ(cl, library(size))
-#
-#   Run the jobs with rpvm or Rmpi
-#
-    flush.console()
+    cl <- beginsnow(parallel)
     MCsamplesize.parallel=round(M/parallel)
     outlist <- clusterCall(cl, discretemleNimpute,
       s=s,N=N,nsim=nsim,K=K,M=MCsamplesize.parallel,qprob=qprob,
@@ -498,8 +363,7 @@ discretemleNimpute<-function(N,s,
     if(verbose){
      cat("parallel samplesize=", parallel,"by", MCsamplesize.parallel,"\n")
     }
-    stopCluster(cl)
-    if(getClusterOption("type")=="PVM") .PVM.exit()
+    endsnow(cl)
   }
   Cret$Nmle <- sum(Cret$Nkmle)
   if(return.all){
@@ -527,40 +391,7 @@ discretemle<-function(N=trunc(length(s)*seq(1.1,4,length=10)+1),
                 Nkmle.start=Nkmle.start,maxit=maxit,method=method,trace=trace,temp=temp,
 		return.all=return.all,parallel=parallel)
   }else{
-    require(snow)
-#
-#   Start PVM if necessary
-#
-#   setDefaultClusterOptions(type="PVM")
-    if(getClusterOption("type")=="PVM") {
-     if(verbose)
-     {
-      cat("Engaging warp drive using PVM ...\n")
-     }
-     require(rpvm)
-     PVM.running <- try(.PVM.config(), silent = TRUE)
-     if(inherits(PVM.running, "try-error"))
-     {
-      hostfile <- paste(Sys.getenv("HOME"), "/.xpvm_hosts", sep = "")
-      .PVM.start.pvmd(hostfile)
-      cat("no problem... PVM started by size...\n")
-     }
-    }else{
-     if(verbose)
-     {
-      cat("Engaging warp drive using MPI ...\n")
-     }
-    }
-#
-#   Start Cluster
-#
-    cl <- makeCluster(parallel)
-    clusterSetupRNG(cl)
-    clusterEvalQ(cl, library(size))
-#
-#   Run the jobs with rpvm or Rmpi
-#
-    flush.console()
+    cl <- beginsnow(parallel)
     outlist <- clusterApplyLB(cl, as.list(N), discretemleN,
       s=s,K=K,M=M,n=n,Nkmle.start=Nkmle.start,return.all=TRUE,parallel=1,maxit=maxit,method=method,
       trace=trace,temp=temp)
@@ -581,8 +412,7 @@ discretemle<-function(N=trunc(length(s)*seq(1.1,4,length=10)+1),
       Cret$mllik <- z$mllik
      }
     }
-    stopCluster(cl)
-    if(getClusterOption("type")=="PVM") .PVM.exit()
+    endsnow(cl)
   }
   Cret$Nmle <- sum(Cret$Nmle)
   if(return.all){
@@ -658,40 +488,7 @@ discretemleimpute<-function(N=trunc(length(s)*seq(1.1,4,length=10)+1),
                 maxit=maxit,method=method,trace=trace,temp=temp,
 		return.all=return.all,parallel=parallel)
   }else{
-    require(snow)
-#
-#   Start PVM if necessary
-#
-#   setDefaultClusterOptions(type="PVM")
-    if(getClusterOption("type")=="PVM") {
-     if(verbose)
-     {
-      cat("Engaging warp drive using PVM ...\n")
-     }
-     require(rpvm)
-     PVM.running <- try(.PVM.config(), silent = TRUE)
-     if(inherits(PVM.running, "try-error"))
-     {
-      hostfile <- paste(Sys.getenv("HOME"), "/.xpvm_hosts", sep = "")
-      .PVM.start.pvmd(hostfile)
-      cat("no problem... PVM started by size...\n")
-     }
-    }else{
-     if(verbose)
-     {
-      cat("Engaging warp drive using MPI ...\n")
-     }
-    }
-#
-#   Start Cluster
-#
-    cl <- makeCluster(parallel)
-    clusterSetupRNG(cl)
-    clusterEvalQ(cl, library(size))
-#
-#   Run the jobs with rpvm or Rmpi
-#
-    flush.console()
+    cl <- beginsnow(parallel)
     outlist <- clusterApplyLB(cl, as.list(N), discretemleNimpute,
       s=s,nsim=nsim,K=K,M=M,n=n,return.all=TRUE,parallel=1,
       maxit=maxit,method=method,trace=trace,temp=temp)
@@ -712,8 +509,7 @@ discretemleimpute<-function(N=trunc(length(s)*seq(1.1,4,length=10)+1),
       Cret$mllik <- z$mllik
      }
     }
-    stopCluster(cl)
-    if(getClusterOption("type")=="PVM") .PVM.exit()
+    endsnow(cl)
   }
   if(return.all){
     Cret
