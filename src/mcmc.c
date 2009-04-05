@@ -55,8 +55,8 @@ void gspps (int *pop,
   int *Nk = (int *) malloc(sizeof(int) * Ki);
   int *Nkpos = (int *) malloc(sizeof(int) * Ki);
   double *lpm = (double *) malloc(sizeof(double) * imaxN);
-  double *pdegi = (double *) malloc(sizeof(double) * Np);
-  double *psample = (double *) malloc(sizeof(double) * Np);
+  double *pdegi = (double *) malloc(sizeof(double) * (Np+1));
+  double *psample = (double *) malloc(sizeof(double) * (Np+1));
   double *musample = (double *) malloc(sizeof(double));
   double *sigmasample = (double *) malloc(sizeof(double));
 
@@ -106,7 +106,7 @@ void gspps (int *pop,
       pi[i]=poilog(i+1,mui,sigmai);
       pis+=pi[i];
     }
-    for (i=0; i<Ki; i++){
+    for (i=Np; i<Ki; i++){
       pi[i]/=pis;
     }
     pis=1.;
@@ -243,7 +243,7 @@ void gsppsN (int *pop,
   int *b = (int *) malloc(sizeof(int) * ni);
   int *Nk = (int *) malloc(sizeof(int) * Ki);
   double *phi = (double *) malloc(sizeof(double) * ni);
-  double *psample = (double *) malloc(sizeof(double) * Np);
+  double *psample = (double *) malloc(sizeof(double) * (Np+1));
   double *musample = (double *) malloc(sizeof(double));
   double *sigmasample = (double *) malloc(sizeof(double));
   b[ni-1]=pop[ni-1];
@@ -337,10 +337,10 @@ void MHpln (int *Nk, int *K,
   Np=(*Npi);
   double *pstar = (double *) malloc(sizeof(double) * Ki);
   double *pi = (double *) malloc(sizeof(double) * Ki);
-  double *odegstar = (double *) malloc(sizeof(double) * Np);
-  double *odegi = (double *) malloc(sizeof(double) * Np);
-  double *pdegstar = (double *) malloc(sizeof(double) * Np);
-  double *pdegi = (double *) malloc(sizeof(double) * Np);
+  double *odegstar = (double *) malloc(sizeof(double) * (Np+1));
+  double *odegi = (double *) malloc(sizeof(double) * (Np+1));
+  double *pdegstar = (double *) malloc(sizeof(double) * (Np+1));
+  double *pdegi = (double *) malloc(sizeof(double) * (Np+1));
 
   Ni=(*N);
   isamplesize=(*samplesize);
@@ -359,7 +359,7 @@ void MHpln (int *Nk, int *K,
   pis=1.;
   for (i=0; i<Np; i++){
     pdegi[i] = psample[i];
-    pis-= pdegi[i];
+    pis-=pdegi[i];
   }
   for (i=0; i<Np; i++){
     odegi[i] = log(pdegi[i]/pis);
@@ -374,18 +374,18 @@ void MHpln (int *Nk, int *K,
     pi[i]=poilog(i+1,mui,sigmai);
     pis+=pi[i];
   }
-  for (i=0; i<Ki; i++){
+  for (i=Np; i<Ki; i++){
     pi[i]/=pis;
   }
   pis=1.;
   for (i=0; i<Np; i++){
     pis-=pdegi[i];
   }
-  for (i=0; i<Ki; i++){
-    pi[i]*=pis;
-  }
   for (i=0; i<Np; i++){
     pi[i]=pdegi[i];
+  }
+  for (i=Np; i<Ki; i++){
+    pi[i]*=pis;
   }
   while (isamp < isamplesize) {
     /* Propose new theta */
@@ -427,23 +427,23 @@ void MHpln (int *Nk, int *K,
       pstar[i]=poilog(i+1,mustar,sigmastar);
       pstars+=pstar[i];
     }
-    for (i=0; i<Ki; i++){
+    for (i=Np; i<Ki; i++){
       pstar[i]/=pstars;
     }
     pstars=1.;
     for (i=0; i<Np; i++){
       pstars-=pdegstar[i];
     }
-    for (i=0; i<Ki; i++){
-      pstar[i]*=pstars;
-    }
     for (i=0; i<Np; i++){
       pstar[i]=pdegstar[i];
+    }
+    for (i=Np; i<Ki; i++){
+      pstar[i]*=pstars;
     }
     for (i=0; i<Ki; i++){
      if(Nk[i]>0){
       lp = log(pstar[i]/pi[i]);
-      if((lp > -100.) && (lp<100.)){ip += (Nk[i]*lp);}
+      if(abs(lp)<100.){ip += (Nk[i]*lp);}
      }
 //    Rprintf("%d %f\n", i, log(poilog(s[i],mustar,sigmastar)/poilog(s[i],mui,sigmai)));
     }

@@ -1,7 +1,7 @@
 poswest<-function(s,maxN=4*length(s),
                   K=2*max(s), nk=tabulate(s,nbin=K), n=length(s),
 		  N=maxN/2,
-                  mean.prior.degree=7, sd.prior.degree=2.2,
+                  mean.prior.degree=7, sd.prior.degree=3,
                   df.mean.prior=1, df.sd.prior=5,
                   muproposal=0.01, 
                   sigmaproposal=0.1, 
@@ -12,7 +12,7 @@ poswest<-function(s,maxN=4*length(s),
     #this function takes a vector of population sizes and a vector s of 
     #sequential sizes of sampled units and returns a log likelihood value
     #s values must all be positive integers
-    sigma0 <- sqrt(log(1+sd.prior.degree*sd.prior.degree/(mean.prior.degree*mean.prior.degree)))
+    sigma0 <- sqrt(log(1+(sd.prior.degree*sd.prior.degree-mean.prior.degree)/(mean.prior.degree*mean.prior.degree)))
     mu0 <- log(mean.prior.degree)-0.5*sigma0*sigma0
     if(!is.null(seed))  set.seed(as.integer(seed))
     dimsample <- 4+Np
@@ -44,8 +44,11 @@ poswest<-function(s,maxN=4*length(s),
     }else{
      colnames(Cret$sample) <- colnamessample
     }
+    # Expectation and s.d. of log-normal
     Cret$sample[,"mu"] <- exp(Cret$sample[,"mu"]+0.5*Cret$sample[,"sigma"]*Cret$sample[,"sigma"])
     Cret$sample[,"sigma"] <- Cret$sample[,"mu"]*sqrt(exp(Cret$sample[,"sigma"]*Cret$sample[,"sigma"])-1)
+    # Expectation and s.d. of Poisson-log-normal
+    Cret$sample[,"sigma"] <- sqrt(Cret$sample[,"mu"]+Cret$sample[,"sigma"]*Cret$sample[,"sigma"])
     Cret$Nk<-Cret$nk/sum(Cret$nk)
     endrun <- burnin+interval*(samplesize-1)
     attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
@@ -59,7 +62,7 @@ poswest<-function(s,maxN=4*length(s),
 }
 poswestN<-function(s,N,
                  K=max(s), nk=tabulate(s,nbin=K), n=length(s),
-                 mean.prior.degree=7, sd.prior.degree=2.2,
+                 mean.prior.degree=7, sd.prior.degree=3,
                  df.mean.prior=1, df.sd.prior=5,
                  muproposal=0.01, 
                  sigmaproposal=0.1, 
@@ -69,7 +72,7 @@ poswestN<-function(s,N,
     #this function takes a vector of population sizes and a vector s of 
     #sequential sizes of sampled units and returns a log likelihood value
     #s values must all be positive integers
-    sigma0 <- sqrt(log(1+sd.prior.degree*sd.prior.degree/(mean.prior.degree*mean.prior.degree)))
+    sigma0 <- sqrt(log(1+(sd.prior.degree*sd.prior.degree-mean.prior.degree)/(mean.prior.degree*mean.prior.degree)))
     mu0 <- log(mean.prior.degree)-0.5*sigma0*sigma0
     if(!is.null(seed))  set.seed(as.integer(seed))
     Cret <- .C("gsppsN",
@@ -96,7 +99,7 @@ poswestN<-function(s,N,
     Cret
 }
 pospln<-function(pop, K=max(pop),
-                 mean.prior.degree=7, sd.prior.degree=2.2,
+                 mean.prior.degree=7, sd.prior.degree=3,
                  df.mean.prior=1, df.sd.prior=5,
                  muproposal=0.01, 
                  sigmaproposal=0.1, 
@@ -106,7 +109,7 @@ pospln<-function(pop, K=max(pop),
     #this function takes a vector of population sizes and a vector s of 
     #sequential sizes of sampled units and returns a log likelihood value
     #s values must all be positive integers
-    sigma0 <- sqrt(log(1+sd.prior.degree*sd.prior.degree/(mean.prior.degree*mean.prior.degree)))
+    sigma0 <- sqrt(log(1+(sd.prior.degree*sd.prior.degree-mean.prior.degree)/(mean.prior.degree*mean.prior.degree)))
     mu0 <- log(mean.prior.degree)-0.5*sigma0*sigma0
     if(!is.null(seed))  set.seed(as.integer(seed))
     Nk <- tabulate(pop,nbin=K)
@@ -129,21 +132,24 @@ pospln<-function(pop, K=max(pop),
               fVerbose=as.integer(verbose))
     Cret$sample <- cbind(Cret$musample, Cret$sigmasample)
     colnames(Cret$sample) <- c("mu","sigma")
+    # Expectation and s.d. of log-normal
     Cret$sample[,"mu"] <- exp(Cret$sample[,"mu"]+0.5*Cret$sample[,"sigma"]*Cret$sample[,"sigma"])
     Cret$sample[,"sigma"] <- Cret$sample[,"mu"]*sqrt(exp(Cret$sample[,"sigma"]*Cret$sample[,"sigma"])-1)
+    # Expectation and s.d. of Poisson-log-normal
+    Cret$sample[,"sigma"] <- sqrt(Cret$sample[,"mu"]+Cret$sample[,"sigma"]*Cret$sample[,"sigma"])
     endrun <- burnin+interval*(samplesize-1)
     attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
     attr(Cret$sample, "class") <- "mcmc"
     Cret
 }
-priorpln<-function(mean.prior.degree=7, sd.prior.degree=2.2,
+priorpln<-function(mean.prior.degree=7, sd.prior.degree=3,
                  df.mean.prior=1,df.sd.prior=5,
                  muproposal=0.01, 
                  sigmaproposal=0.1, 
                  samplesize=1000,burnin=0,interval=1,
                  seed=NULL,
                  verbose=TRUE){
-    sigma0 <- sqrt(log(1+sd.prior.degree*sd.prior.degree/(mean.prior.degree*mean.prior.degree)))
+    sigma0 <- sqrt(log(1+(sd.prior.degree*sd.prior.degree-mean.prior.degree)/(mean.prior.degree*mean.prior.degree)))
     mu0 <- log(mean.prior.degree)-0.5*sigma0*sigma0
     musample <- rep(0,samplesize)
     sigmasample <- rep(0,samplesize)
@@ -161,8 +167,11 @@ priorpln<-function(mean.prior.degree=7, sd.prior.degree=2.2,
               fVerbose=as.integer(verbose))
     Cret$sample <- cbind(Cret$musample, Cret$sigmasample)
     colnames(Cret$sample) <- c("mu","sigma")
+    # Expectation and s.d. of log-normal
     Cret$sample[,"mu"] <- exp(Cret$sample[,"mu"]+0.5*Cret$sample[,"sigma"]*Cret$sample[,"sigma"])
     Cret$sample[,"sigma"] <- Cret$sample[,"mu"]*sqrt(exp(Cret$sample[,"sigma"]*Cret$sample[,"sigma"])-1)
+    # Expectation and s.d. of Poisson-log-normal
+    Cret$sample[,"sigma"] <- sqrt(Cret$sample[,"mu"]+Cret$sample[,"sigma"]*Cret$sample[,"sigma"])
     endrun <- burnin+interval*(samplesize-1)
     attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
     attr(Cret$sample, "class") <- "mcmc"
@@ -172,7 +181,7 @@ posteriorsize<-function(s,
                   maxN=4*length(s),
                   K=2*max(s), nk=tabulate(s,nbin=K), n=length(s),
 		  N=0.5*maxN,
-                  mean.prior.degree=7, sd.prior.degree=2.2,
+                  mean.prior.degree=7, sd.prior.degree=3,
                   df.mean.prior=1,df.sd.prior=5,
                   muproposal=0.01, 
                   sigmaproposal=0.1, 
@@ -182,7 +191,7 @@ posteriorsize<-function(s,
                   verbose=TRUE){
   ### takes mean and standard deviation of the prior lognormal distribution and computes the corresponding
   ### mean and standard deviation of the underlying normal
-  sigma0 <- sqrt(log(1+sd.prior.degree*sd.prior.degree/(mean.prior.degree*mean.prior.degree)))
+  sigma0 <- sqrt(log(1+(sd.prior.degree*sd.prior.degree-mean.prior.degree)/(mean.prior.degree*mean.prior.degree)))
   mu0 <- log(mean.prior.degree)-0.5*sigma0*sigma0
   
   ### are we running the job in parallel (parallel > 1), if not just call poswest
