@@ -134,6 +134,7 @@
      int limit=100;
      double reltol=0.001;
      double abstol=0.00001;
+     sig = sig * sig;
      lenw = 4 * limit;
      iwork =   (int *) Calloc(limit, int);
      work = (double *) Calloc(lenw,  double);
