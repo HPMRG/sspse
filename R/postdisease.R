@@ -75,11 +75,15 @@ posdis<-function(s,dis,maxN=4*length(s),
     endrun <- burnin+interval*(samplesize-1)
     attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
     attr(Cret$sample, "class") <- "mcmc"
-    mapfn <- function(x){
-      posdensN <- density(x)
-      posdensN$x[which.max(posdensN$y)]
+    require(locfit, quietly=TRUE)
+    mapfn <- function(x,lbound=min(x),ubound=max(x)){
+      posdensN <- locfit(~ lp(x),xlim=c(lbound,ubound))
+      locx <- seq(lbound,ubound,length=2000)
+      locy <- predict(posdensN,newdata=locx)
+      locx[which.max(locy)]
     }
     Cret$MAP <- apply(Cret$sample,2,mapfn)
+    Cret$MAP["N"] <- mapfn(Cret$sample[,"N"],lbound=n,ubound=maxN)
     Cret
 }
 priordis<-function(mean0.prior.degree=7,mean1.prior.degree=7,
@@ -144,9 +148,12 @@ posteriordisease<-function(s,dis,
   sigma1 <- sqrt(log(1+sd.prior.degree*sd.prior.degree/(mean1.prior.degree*mean1.prior.degree)))
   mu0 <- log(mean0.prior.degree)-0.5*sigma0*sigma0
   mu1 <- log(mean1.prior.degree)-0.5*sigma1*sigma1
-  mapfn <- function(x){
-    posdensN <- density(x)
-    posdensN$x[which.max(posdensN$y)]
+  require(locfit, quietly=TRUE)
+  mapfn <- function(x,lbound=min(x),ubound=max(x)){
+    posdensN <- locfit(~ lp(x),xlim=c(lbound,ubound))
+    locx <- seq(lbound,ubound,length=2000)
+    locy <- predict(posdensN,newdata=locx)
+    locx[which.max(locy)]
   }
   if(parallel==1){
       Cret <- posdis(s=s,dis=dis,N=N,K=K,nk0=nk0,nk1=nk1,n=n,maxN=maxN,
@@ -207,6 +214,7 @@ posteriordisease<-function(s,dis,
    colnames(Cret$sample) <- c(colnamessample,"disease")
   }
   Cret$MAP <- apply(Cret$sample,2,mapfn)
+  Cret$MAP["N"] <- mapfn(Cret$sample[,"N"],lbound=n,ubound=maxN)
   Cret$N <- c(Cret$MAP["N"], 
               mean(Cret$sample[,"N"]),
               median(Cret$sample[,"N"]),

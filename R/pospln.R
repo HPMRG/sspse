@@ -70,13 +70,17 @@ posteriorsize<-function(s,
     attr(Cret$sample, "class") <- "mcmc"
     
     ### define function that will compute mode of a sample
-    mapfn <- function(x){
-      posdensN <- density(x)
-      posdensN$x[which.max(posdensN$y)]
+    require(locfit, quietly=TRUE)
+    mapfn <- function(x,lbound=min(x),ubound=max(x)){
+      posdensN <- locfit(~ lp(x),xlim=c(lbound,ubound))
+      locx <- seq(lbound,ubound,length=2000)
+      locy <- predict(posdensN,newdata=locx)
+      locx[which.max(locy)]
     }
     
     ### compute modes of posterior samples,Maximum A Posterior (MAP) values N, mu, sigma, degree1
     Cret$MAP <- apply(Cret$sample,2,mapfn)
+    Cret$MAP["N"] <- mapfn(Cret$sample[,"N"],lbound=n,ubound=maxN)
     if(verbose){
      cat("parallel samplesize=", parallel,"by", samplesize.parallel,"\n")
     }
@@ -146,7 +150,16 @@ poswest<-function(s,maxN=4*length(s),
       posdensN <- density(x)
       posdensN$x[which.max(posdensN$y)]
     }
+    require(locfit, quietly=TRUE)
+    mapfn <- function(x,lbound=min(x),ubound=max(x)){
+      posdensN <- locfit(~ lp(x),xlim=c(lbound,ubound))
+      locx <- seq(lbound,ubound,length=2000)
+      locy <- predict(posdensN,newdata=locx)
+      locx[which.max(locy)]
+    }
     Cret$MAP <- apply(Cret$sample,2,mapfn)
+    Cret$MAP["N"] <- mapfn(Cret$sample[,"N"],lbound=n,ubound=maxN)
+#   Cret$MAP <- apply(Cret$sample,2,mapfn,lbound=n,ubound=maxN)
     Cret
 }
 poswestN<-function(s,N,

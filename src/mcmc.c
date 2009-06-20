@@ -89,19 +89,16 @@ void gspps (int *pop,
   step = -iburnin;
   while (isamp < isamplesize) {
     /* Draw new theta */
-//    if (*fVerbose && isamp>=57) Rprintf("In %d samples...\n", isamp);
     MHpln(Nk,K,mu0,kappa0,sigma0,df0,muproposal,sigmaproposal,
           &Ni, &Np, psample,
 	  musample, sigmasample, &getone, &staken, burnintheta, &intervalone, 
 	  &fVerboseMHpln);
-//    if (*fVerbose && isamp>=57) Rprintf("In %d samples...\n", isamp);
 
     for (i=0; i<Np; i++){
       pdegi[i] = psample[i];
     }
     mui=musample[0];
     sigmai=sigmasample[0];
-//    if (*fVerbose && isamp>=57) Rprintf("In %d samples...\n", isamp);
 
     /* First find the degree distribution */
     pis=0.;
@@ -143,7 +140,6 @@ void gspps (int *pop,
     while(gammart > lpm[Ni]){Ni++;}
     Ni+= ni;
     if(Ni >= imaxN) Ni = imaxN-1;
-//    if (*fVerbose && isamp>=57) Rprintf("In %d samples...\n", isamp);
 		    
     /* Draw phis */
     tU=0;
@@ -160,7 +156,6 @@ void gspps (int *pop,
     for (i=0; i<Ki; i++){
       Nk[i]=nk[i];
     }
-//    if (*fVerbose && isamp>=57) Rprintf("In %d samples...\n", isamp);
     for (i=ni; i<Ni; i++){
       /* Propose unseen size for unit i */
       mu = exp(rnorm(mui, sigmai));
@@ -174,7 +169,6 @@ void gspps (int *pop,
       }
       while((popi == 0) || (log(1.0-unif_rand()) > -r*popi)){
        mu = exp(rnorm(mui, sigmai));
-//      if (*fVerbose && isamp>=57) Rprintf("mui %f sigmai %f -r*popi %f i %d popi %d mu %f \n", mui, sigmai, -r*popi, i, popi, mu);
        if(mu < 5.*Ki){
          popi=rpois(mu);
          if(popi < 0){popi=0;}
@@ -187,7 +181,6 @@ void gspps (int *pop,
       pop[i]=popi;
       Nk[popi-1]=Nk[popi-1]+1;
     }
-//    if (*fVerbose && isamp>=57) Rprintf("In %d samples...\n", isamp);
     if (step > 0 && step==(iinterval*(step/iinterval))) { 
       /* record statistics for posterity */
       sample[isamp*dimsample  ]=(double)(Ni);
@@ -207,13 +200,11 @@ void gspps (int *pop,
     }
     step++;
   }
-//if (*fVerbose) Rprintf("Save %d samples...\n", isamp);
   for (i=0; i<Ki; i++){
     nk[i]=Nkpos[i];
     ppos[i]/=isamp;
   }
   PutRNGstate();  /* Disable RNG before returning */
-//if (*fVerbose) Rprintf("Return %d samples...\n", isamp);
   free(pi);
   free(b);
   free(Nk);
@@ -221,7 +212,6 @@ void gspps (int *pop,
   free(lpm);
   free(musample);
   free(sigmasample);
-//if (*fVerbose) Rprintf("Return %d samples...\n", isamp);
 }
 
 void gsppsN (int *pop,
@@ -444,30 +434,15 @@ void MHpln (int *Nk, int *K,
 
     /* Calculate ratio */
     ip = pithetastar-pithetai;
-//  if (*fVerbose){
-  if(sigma2star > 1000) {
-    Rprintf("mustar %f sigmastar %f\n", mustar, sigmastar);
-    Rprintf("pithetastar %f pithetai %f qsigma2star %f qsigmai %f\n",
-           pithetastar,pithetai,qsigma2star,qsigma2i);
-  }
-//    if(logK-mustar < 4.0*sigmastar){
-     pstars=0.;
-     for (i=Np; i<Ki; i++){
+    pstars=0.;
+    for (i=Np; i<Ki; i++){
       pstar[i]=poilog(i+1,mustar,sigmastar);
-//      pstars+=pstar[i];
-  if(sigma2star > 1000) {
-    Rprintf("i %d pstar[i] %f pstars %f zero %f Np %d Ki %d\n", i,pstar[i],pstars,poilog(0,mustar,sigmastar),Np,Ki); }
-     }
-     pstars=1.-poilog(0,mustar,sigmastar);
-     for (i=Np; i<Ki; i++){
-      pstar[i]/=pstars;
-     }
-//  }else{
-//   for (i=Np; i<(Ki-1); i++){
-//    pstar[i]=0.0;
-//   }
-//   pstar[Ki-1]=1.0;
-//  }
+//    pstars+=pstar[i];
+    }
+    pstars=1.-poilog(0,mustar,sigmastar);
+    for (i=Np; i<Ki; i++){
+     pstar[i]/=pstars;
+    }
     pstars=1.;
     for (i=0; i<Np; i++){
       pstars-=pdegstar[i];
