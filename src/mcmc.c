@@ -104,8 +104,9 @@ void gspps (int *pop,
     pis=0.;
     for (i=Np; i<Ki; i++){
       pi[i]=poilog(i+1,mui,sigmai);
-      pis+=pi[i];
+//    pis+=pi[i];
     }
+    pis=1.-poilog(0,mui,sigmai);
     for (i=Np; i<Ki; i++){
       pi[i]/=pis;
     }
@@ -158,15 +159,8 @@ void gspps (int *pop,
     }
     for (i=ni; i<Ni; i++){
       /* Propose unseen size for unit i */
-      mu = exp(rnorm(mui, sigmai));
       /* Use rejection sampling */
-      if(mu < 5.*Ki){
-        popi=rpois(mu);
-        if(popi < 0){popi=0;}
-      }else{
-    if (*fVerbose) Rprintf("mu > 5.*Ki; mu %f K %d\n", mu, Ki);
-        popi=0;
-      }
+      popi=0;
       while((popi == 0) || (log(1.0-unif_rand()) > -r*popi)){
        mu = exp(rnorm(mui, sigmai));
        if(mu < 5.*Ki){
@@ -294,13 +288,18 @@ void gsppsN (int *pop,
       /* Propose unseen size for unit i */
       mu = exp(rnorm(musample[0], sigmasample[0]));
       /* Use rejection sampling */
-      popi=rpois(mu);
-      while(log(1.0-unif_rand()) > -r*popi){
-       popi=rpois(mu);
+      popi=0;
+      while((popi == 0) || (log(1.0-unif_rand()) > -r*popi)){
+       if(mu < 5.*Ki){
+        popi=rpois(mu);
+        if(popi < 0){popi=0;}
+       }else{
+        popi=0;
+       }
       }
       if(popi > Ki){popi=Ki;}
       pop[i]=popi;
-      Nk[popi]=Nk[popi]+1;
+      Nk[popi-1]=Nk[popi-1]+1;
 //    if (*fVerbose) Rprintf("Ni %d ni %d mu %f pop[i] %d r %f\n", Ni, ni, mu, pop[i], r);
     }
 		    

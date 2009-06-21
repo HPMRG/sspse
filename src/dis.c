@@ -139,12 +139,14 @@ void gsppsdis (int *pop, int *dis,
     p1is=0.;
     for (i=Np0; i<Ki; i++){
       p0i[i]=poilog(i+1,mu0i,sigma0i);
-      p0is+=p0i[i];
+//    p0is+=p0i[i];
     }
+    p0is=1.-poilog(0,mu0i,sigma0i);
     for (i=Np1; i<Ki; i++){
       p1i[i]=poilog(i+1,mu1i,sigma1i);
-      p1is+=p1i[i];
+//    p1is+=p1i[i];
     }
+    p1is=1.-poilog(0,mu1i,sigma1i);
     for (i=0; i<Ki; i++){
       p0i[i]=p0i[i]/p0is;
       p1i[i]=p1i[i]/p1is;
@@ -227,7 +229,12 @@ void gsppsdis (int *pop, int *dis,
           mu = exp(rnorm(musample[0], sigmasample[0]));
         }
         /* Now propose unseen size for unit i based on disease status */
-        popi=rpois(mu);
+        if(mu < 5.*Ki){
+          popi=rpois(mu);
+          if(popi < 0){popi=0;}
+        }else{
+          popi=0;
+        }
       }
       if(popi > Ki){popi=Ki;}
       pop[i]=popi;
@@ -395,12 +402,14 @@ void MHdis (int *Nk0, int *Nk1, int *totdis, int *K,
   p1is=0.;
   for (i=Np0; i<Ki; i++){
     p0i[i]=poilog(i+1,mu0i,sigma0i);
-    p0is+=p0i[i];
+//  p0is+=p0i[i];
   }
+  p0is=1.-poilog(0,mu0i,sigma0i);
   for (i=Np1; i<Ki; i++){
     p1i[i]=poilog(i+1,mu1i,sigma1i);
-    p1is+=p1i[i];
+//  p1is+=p1i[i];
   }
+  p1is=1.-poilog(0,mu1i,sigma1i);
   for (i=0; i<Ki; i++){
     p0i[i]=p0i[i]/p0is;
     p1i[i]=p1i[i]/p1is;
@@ -492,12 +501,14 @@ void MHdis (int *Nk0, int *Nk1, int *totdis, int *K,
     p1stars=0.;
     for (i=Np0; i<Ki; i++){
       p0star[i]=poilog(i+1,mu0star,sigma0star);
-      p0stars+=p0star[i];
+//    p0stars+=p0star[i];
     }
+    p0stars=1.-poilog(0,mu0star,sigma0star);
     for (i=Np1; i<Ki; i++){
       p1star[i]=poilog(i+1,mu1star,sigma1star);
-      p1stars+=p1star[i];
+//    p1stars+=p1star[i];
     }
+    p1stars=1.-poilog(0,mu1star,sigma1star);
     for (i=0; i<Ki; i++){
       p0star[i]/=p0stars;
       p1star[i]/=p1stars;
