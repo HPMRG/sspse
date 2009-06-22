@@ -12,8 +12,8 @@ posteriorsize<-function(s,
                   verbose=TRUE){
   ### takes mean and standard deviation of the prior lognormal distribution and computes the corresponding
   ### mean and standard deviation of the underlying normal
-  sigma0 <- sqrt(log(1+(sd.prior.degree*sd.prior.degree-mean.prior.degree)/(mean.prior.degree*mean.prior.degree)))
-  mu0 <- log(mean.prior.degree)-0.5*sigma0*sigma0
+  # sigma0 <- sqrt(log(1+(sd.prior.degree*sd.prior.degree-mean.prior.degree)/(mean.prior.degree*mean.prior.degree)))
+  # mu0 <- log(mean.prior.degree)-0.5*sigma0*sigma0
   
   ### are we running the job in parallel (parallel > 1), if not just call poswest
   if(parallel==1){
@@ -137,7 +137,7 @@ poswest<-function(s,maxN=4*length(s),
     }else{
      colnames(Cret$sample) <- colnamessample
     }
-    # Expectation and s.d. of log-normal
+    # Expectation and s.d. of normal from log-normal
     Cret$sample[,"mu"] <- exp(Cret$sample[,"mu"]+0.5*Cret$sample[,"sigma"]*Cret$sample[,"sigma"])
     Cret$sample[,"sigma"] <- Cret$sample[,"mu"]*sqrt(exp(Cret$sample[,"sigma"]*Cret$sample[,"sigma"])-1)
     # Expectation and s.d. of Poisson-log-normal
@@ -234,7 +234,7 @@ pospln<-function(pop, K=max(pop),
               fVerbose=as.integer(verbose))
     Cret$sample <- cbind(Cret$musample, Cret$sigmasample)
     colnames(Cret$sample) <- c("mu","sigma")
-    # Expectation and s.d. of log-normal
+    # Expectation and s.d. of normal from log-normal
     Cret$sample[,"mu"] <- exp(Cret$sample[,"mu"]+0.5*Cret$sample[,"sigma"]*Cret$sample[,"sigma"])
     Cret$sample[,"sigma"] <- Cret$sample[,"mu"]*sqrt(exp(Cret$sample[,"sigma"]*Cret$sample[,"sigma"])-1)
     # Expectation and s.d. of Poisson-log-normal

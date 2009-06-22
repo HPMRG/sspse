@@ -65,10 +65,14 @@ posdis<-function(s,dis,maxN=4*length(s),
     }else{
      colnames(Cret$sample) <- c(colnamessample,"disease")
     }
+    # Expectation and s.d. of log-normal
     Cret$sample[,"mu0"] <- exp(Cret$sample[,"mu0"]+0.5*Cret$sample[,"sigma0"]*Cret$sample[,"sigma0"])
     Cret$sample[,"mu1"] <- exp(Cret$sample[,"mu1"]+0.5*Cret$sample[,"sigma1"]*Cret$sample[,"sigma1"])
     Cret$sample[,"sigma0"] <- Cret$sample[,"mu0"]*sqrt(exp(Cret$sample[,"sigma0"]*Cret$sample[,"sigma0"])-1)
     Cret$sample[,"sigma1"] <- Cret$sample[,"mu1"]*sqrt(exp(Cret$sample[,"sigma1"]*Cret$sample[,"sigma1"])-1)
+    # Expectation and s.d. of Poisson-log-normal
+    Cret$sample[,"sigma0"] <- sqrt(Cret$sample[,"mu0"]+Cret$sample[,"sigma0"]*Cret$sample[,"sigma0"])
+    Cret$sample[,"sigma1"] <- sqrt(Cret$sample[,"mu1"]+Cret$sample[,"sigma1"]*Cret$sample[,"sigma1"])
     aaa <- sum(Cret$nk0+Cret$nk1)
     Cret$Nk0<-Cret$nk0/aaa
     Cret$Nk1<-Cret$nk1/aaa
