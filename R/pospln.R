@@ -4,8 +4,8 @@ posteriorsize<-function(s,
 		  N=0.5*maxN,
                   mean.prior.degree=7, sd.prior.degree=3,
                   df.mean.prior=1,df.sd.prior=5,
-                  muproposal=0.01, 
-                  sigmaproposal=0.1, 
+                  muproposal=0.25, 
+                  sigmaproposal=0.15, 
                   Np=0,
                   samplesize=1000,burnin=100,interval=1,burnintheta=500,
                   parallel=1, seed=NULL,
@@ -72,7 +72,7 @@ posteriorsize<-function(s,
     ### define function that will compute mode of a sample
     require(locfit, quietly=TRUE)
     mapfn <- function(x,lbound=min(x),ubound=max(x)){
-      posdensN <- locfit(~ lp(x),xlim=c(lbound,ubound))
+      posdensN <- locfit(~ lp(x,maxk=500),xlim=c(lbound,ubound))
       locx <- seq(lbound,ubound,length=2000)
       locy <- predict(posdensN,newdata=locx)
       locx[which.max(locy)]
@@ -88,6 +88,9 @@ posteriorsize<-function(s,
     ### stop cluster and PVM (in case PVM is flakey)
     endsnow(cl)
   }
+  if(Cret$ppos[length(Cret$ppos)] > 0.01){
+   warning("There is a non-trivial proportion of the posterior mass on very high degrees. This may indicate convergence problems in the MCMC.")
+  }
   ### return result
   Cret
 }
@@ -96,8 +99,8 @@ poswest<-function(s,maxN=4*length(s),
 		  N=maxN/2,
                   mean.prior.degree=7, sd.prior.degree=3,
                   df.mean.prior=1, df.sd.prior=5,
-                  muproposal=0.01, 
-                  sigmaproposal=0.1, 
+                  muproposal=0.25, 
+                  sigmaproposal=0.15, 
                   Np=0,
                   samplesize=10,burnin=0,interval=1,burnintheta=500,
                   seed=NULL,
@@ -166,8 +169,8 @@ poswestN<-function(s,N,
                  K=max(s), nk=tabulate(s,nbin=K), n=length(s),
                  mean.prior.degree=7, sd.prior.degree=3,
                  df.mean.prior=1, df.sd.prior=5,
-                 muproposal=0.01, 
-                 sigmaproposal=0.1, 
+                 muproposal=0.25, 
+                 sigmaproposal=0.15, 
                  samplesize=10,burnin=0,interval=1,burnintheta=500,
                  seed=NULL,
                  verbose=TRUE){
@@ -203,8 +206,8 @@ poswestN<-function(s,N,
 pospln<-function(pop, K=max(pop),
                  mean.prior.degree=7, sd.prior.degree=3,
                  df.mean.prior=1, df.sd.prior=5,
-                 muproposal=0.01, 
-                 sigmaproposal=0.1, 
+                 muproposal=0.25, 
+                 sigmaproposal=0.15, 
                  samplesize=1000,burnin=0,interval=1,
                  seed=NULL,
                  verbose=TRUE){
@@ -246,8 +249,8 @@ pospln<-function(pop, K=max(pop),
 }
 priorpln<-function(mean.prior.degree=7, sd.prior.degree=3,
                  df.mean.prior=1,df.sd.prior=5,
-                 muproposal=0.01, 
-                 sigmaproposal=0.1, 
+                 muproposal=0.25, 
+                 sigmaproposal=0.15, 
                  samplesize=1000,burnin=0,interval=1,
                  seed=NULL,
                  verbose=TRUE){

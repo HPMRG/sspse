@@ -18,7 +18,7 @@
 
 #define rsclinvchisq(df,scale) ((scale)*(df)/(rchisq(df)))
 
-double poilog(int x, double my, double sig);
+double poilog(int x, double mu, double sig);
 void gspps (int *pop,
             int *nk, 
             int *K, 
