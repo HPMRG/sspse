@@ -8,9 +8,10 @@ posteriornbinom<-function(s,
                   sigmaproposal=0.15, 
                   Np=0,
                   samplesize=1000,burnin=100,interval=1,burnintheta=500,
-		  mean.prior.size=N, sd.prior.size=ceiling(sqrt(mean.prior.size)*3),
+		  mean.prior.size=N, sd.prior.size=N,
                   parallel=1, seed=NULL,
                   verbose=TRUE){
+#		  mean.prior.size=N, sd.prior.size=ceiling(sqrt(mean.prior.size)*3),
   
   ### are we running the job in parallel (parallel > 1), if not just call posnbinom
   if(parallel==1){
@@ -106,9 +107,10 @@ posnbinom<-function(s,maxN=4*length(s),
                   sigmaproposal=0.15, 
                   Np=0,
                   samplesize=10,burnin=0,interval=1,burnintheta=500,
-		  mean.prior.size=N, sd.prior.size=ceiling(sqrt(mean.prior.size)*3),
+		  mean.prior.size=N, sd.prior.size=N,
                   seed=NULL,
                   verbose=TRUE){
+#		  mean.prior.size=N, sd.prior.size=ceiling(sqrt(mean.prior.size)*3),
     #this function takes a vector of population sizes and a vector s of 
     #sequential sizes of sampled units and returns a log likelihood value
     #s values must all be positive integers
