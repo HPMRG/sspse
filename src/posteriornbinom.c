@@ -171,14 +171,18 @@ void gnbinom (int *pop,
       /* In the next 9 lines a Negative Binomial (popi) is chosen with */
       /* mean mui and standard deviation sigmai */
        mu = mui*mui / (sigmai*sigmai - mui);
-       mu = rgamma(mu, mui / mu);
+       if(mu < 0.0){
+        mu = mui;
+       }else{
+        mu = rgamma(mu, mui / mu);
+       }
        if(mu < 5.*Ki){
          popi=rpois(mu);
          if(popi < 0){popi=0;}
-       }else{
+        }else{
     if (*fVerbose) Rprintf("mu > 5.*Ki; mu %f K %d\n", mu, Ki);
-         popi=0;
-       }
+          popi=0;
+        }
       }
       if(popi > Ki){popi=Ki;}
       pop[i]=popi;

@@ -20,7 +20,8 @@ posteriorsize<-function(s,
       Cret <- poswest(s=s,N=N,K=K,nk=nk,n=n,maxN=maxN,
                       mean.prior.degree=mean.prior.degree,df.mean.prior=df.mean.prior,
                       sd.prior.degree=sd.prior.degree,df.sd.prior=df.sd.prior,
-                      sigmaproposal=sigmaproposal, Np=Np,
+		      muproposal=muproposal, sigmaproposal=sigmaproposal,
+		      Np=Np,
                       samplesize=samplesize,burnin=burnin,interval=interval,
 		      burnintheta=burnintheta,
                       seed=seed)
@@ -36,7 +37,8 @@ posteriorsize<-function(s,
       s=s,N=N,K=K,nk=nk,n=n,maxN=maxN,
       mean.prior.degree=mean.prior.degree,df.mean.prior=df.mean.prior,
       sd.prior.degree=sd.prior.degree,df.sd.prior=df.sd.prior,
-      sigmaproposal=sigmaproposal, Np=Np,
+      muproposal=muproposal, sigmaproposal=sigmaproposal,
+      Np=Np,
       samplesize=samplesize.parallel,burnin=burnin,interval=interval,
       burnintheta=burnintheta)
 #
@@ -76,6 +78,10 @@ posteriorsize<-function(s,
       locx <- seq(lbound,ubound,length=2000)
       locy <- predict(posdensN,newdata=locx)
       locx[which.max(locy)]
+    }
+    mapfn <- function(x,lbound=min(x),ubound=max(x)){
+      posdensN <- density(x, from=lbound, to=ubound)
+      posdensN$x[which.max(posdensN$y)]
     }
     
     ### compute modes of posterior samples,Maximum A Posterior (MAP) values N, mu, sigma, degree1
@@ -160,9 +166,14 @@ poswest<-function(s,maxN=4*length(s),
       locy <- predict(posdensN,newdata=locx)
       locx[which.max(locy)]
     }
+    mapfn <- function(x,lbound=min(x),ubound=max(x)){
+      posdensN <- density(x, from=lbound, to=ubound)
+      posdensN$x[which.max(posdensN$y)]
+    }
+    
+    ### compute modes of posterior samples,Maximum A Posterior (MAP) values N, mu, sigma, degree1
     Cret$MAP <- apply(Cret$sample,2,mapfn)
     Cret$MAP["N"] <- mapfn(Cret$sample[,"N"],lbound=n,ubound=maxN)
-#   Cret$MAP <- apply(Cret$sample,2,mapfn,lbound=n,ubound=maxN)
     Cret
 }
 poswestN<-function(s,N,
