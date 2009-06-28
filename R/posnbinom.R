@@ -1,4 +1,4 @@
-pospln<-function(s,maxN=4*length(s),
+posnbinom<-function(s,maxN=4*length(s),
                   K=2*max(s), nk=tabulate(s,nbin=K), n=length(s),
 		  N=maxN/2,
                   mean.prior.degree=7, sd.prior.degree=3,
@@ -17,18 +17,11 @@ pospln<-function(s,maxN=4*length(s),
     sigma0 <- sd.prior.degree
     mu0 <- mean.prior.degree
     if(!is.null(seed))  set.seed(as.integer(seed))
-    #
-    # Transform observed mean parametrization to log-normal
-    # parametrization
-    #
-    sigma0 <- sqrt(log(1+(sd.prior.degree*sd.prior.degree-mean.prior.degree)/(mean.prior.degree*mean.prior.degree)))
-    mu0 <- log(mean.prior.degree)-0.5*sigma0*sigma0
-    #
     dimsample <- 4+Np
     lpriorm <- dnbinommu(x=n+(1:maxN)-1,
                          mu=mean.prior.size, sd=sd.prior.size,
 			 log=TRUE)
-    Cret <- .C("gpln",
+    Cret <- .C("gnbinom",
               pop=as.integer(c(s,rep(0,maxN-n))),
               nk=as.integer(nk),
               K=as.integer(K),
@@ -57,17 +50,6 @@ pospln<-function(s,maxN=4*length(s),
     }else{
      colnames(Cret$sample) <- colnamessample
     }
-    #
-    # Transform observed mean parametrization to log-normal
-    # parametrization
-    #
-    # Expectation and s.d. of normal from log-normal
-    #
-    Cret$sample[,"mu"] <- exp(Cret$sample[,"mu"]+0.5*Cret$sample[,"sigma"]*Cret$sample[,"sigma"])
-    Cret$sample[,"sigma"] <- Cret$sample[,"mu"]*sqrt(exp(Cret$sample[,"sigma"]*Cret$sample[,"sigma"])-1)
-    # Expectation and s.d. of Poisson-log-normal
-    Cret$sample[,"sigma"] <- sqrt(Cret$sample[,"mu"]+Cret$sample[,"sigma"]*Cret$sample[,"sigma"])
-    #
     Cret$Nk<-Cret$nk/sum(Cret$nk)
     endrun <- burnin+interval*(samplesize-1)
     attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
@@ -76,9 +58,26 @@ pospln<-function(s,maxN=4*length(s),
       posdensN <- density(x, from=lbound, to=ubound)
       posdensN$x[which.max(posdensN$y)]
     }
-    ### compute modes of posterior samples, Maximum A Posterior (MAP) values
-    ### for N, mu, sigma, degree1, etc
+    ### compute modes of posterior samples,Maximum A Posterior (MAP) values N, mu, sigma, degree1
     Cret$MAP <- apply(Cret$sample,2,mapfn)
     Cret$MAP["N"] <- mapfn(Cret$sample[,"N"],lbound=n,ubound=maxN)
     Cret
+}
+
+dnbinommu <- function(x, mu, sd, log=FALSE){
+    if (missing(mu)) {
+      stop("The mean of the Negative Binomial must be specified.")
+    }
+    if (missing(sd)) {
+      stop("The standard deviation of the Negative Binomial must be specified.")
+    }
+   out <- .C("dnbmu",
+            x=as.integer(x),
+            mu=as.double(mu),
+            sig=as.double(sd),
+            n=as.integer(length(x)),
+            give_log=as.integer(log),
+            val=double(length(x)),
+            PACKAGE="size")
+   return(out$val)
 }

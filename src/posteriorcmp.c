@@ -2,12 +2,12 @@
 /* Computation of the log-likelihood and marginal posterior of size*/
 /*******************************************************************/
 
-#include "posteriornbinom.h"
+#include "posteriorcmp.h"
 #include <R.h>
 #include <Rmath.h>
 #include <math.h>
 
-void gnbinom (int *pop,
+void gcmp (int *pop,
             int *nk, 
             int *K, 
             int *n, 
@@ -24,13 +24,14 @@ void gnbinom (int *pop,
             int *burnintheta,
 	    int *fVerbose
 			 ) {
-  int step, staken, getone=1, intervalone=1, fVerboseMHnbinom = 0;
+  int step, staken, getone=1, intervalone=1, fVerboseMHcmp = 0;
   int dimsample, Np;
   int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
   double mui, sigmai;
   double dkappa0, ddf0, dmu0, dsigma0, dmuproposal, dsigmaproposal;
-  int tU, popi, imaxN, give_log0=0;
+  int tU, popi, imaxN, give_log0=0, give_log1=1;
   double r, gammart, pis;
+  double errval=0.000001, lzcmp;
 
   GetRNGstate();  /* R function enabling uniform RNG */
 
@@ -90,10 +91,10 @@ void gnbinom (int *pop,
   step = -iburnin;
   while (isamp < isamplesize) {
     /* Draw new theta */
-    MHnbinom(Nk,K,mu0,kappa0,sigma0,df0,muproposal,sigmaproposal,
+    MHcmp(Nk,K,mu0,kappa0,sigma0,df0,muproposal,sigmaproposal,
           &Ni, &Np, psample,
 	  musample, sigmasample, &getone, &staken, burnintheta, &intervalone, 
-	  &fVerboseMHnbinom);
+	  &fVerboseMHcmp);
 
     for (i=0; i<Np; i++){
       pdegi[i] = psample[i];
@@ -101,13 +102,17 @@ void gnbinom (int *pop,
     mui=musample[0];
     sigmai=sigmasample[0];
 
+    lzcmp = zcmp(exp(mui), sigmai, errval, give_log1);
+//  Rprintf("mui %f sigmai %f lzcmp %f\n", mui, sigmai, lzcmp);
     /* First find the degree distribution */
     pis=0.;
     for (i=Np; i<Ki; i++){
-      pi[i]=nbmu(i+1,mui,sigmai,give_log0);
+      pi[i]=cmp(i+1,mui,sigmai,lzcmp,give_log0);
+//  Rprintf("i %d pi[i] %f\n", i, pi[i]);
 //    pis+=pi[i];
     }
-    pis=1.-nbmu(0,mui,sigmai,give_log0);
+//  Rprintf("isamp %d pis %f\n", isamp, pis);
+    pis=1.-cmp(0,mui,sigmai,lzcmp,give_log0);
     for (i=Np; i<Ki; i++){
       pi[i]/=pis;
     }
@@ -118,6 +123,7 @@ void gnbinom (int *pop,
     for (i=0; i<Ki; i++){
       pi[i]*=pis;
     }
+    // !!!!! Why this? For non-parametric piece
     for (i=0; i<Np; i++){
       pi[i]=pdegi[i];
     }
@@ -164,26 +170,25 @@ void gnbinom (int *pop,
       Nk[i]=nk[i];
     }
     // Set up pi for random draws
-//  pis=pi[0];
     for (i=1; i<Ki; i++){
-//    pis+=pi[i];
+//    Rprintf("i %d pi[i] %f\n", i, pi[i]);
       pi[i]=pi[i-1]+pi[i];
     }
     for (i=ni; i<Ni; i++){
       /* Propose unseen size for unit i */
       /* Use rejection sampling */
-      popi=10000000;
+      popi=1000000000;
       while(log(1.0-unif_rand()) > -r*popi){
        /* In the next 3 lines a CMP (popi) is chosen with */
        /* log-lambda mui and nu sigmai */
        popi = 1;
        gammart = pi[Ki-1] * unif_rand();
        while(gammart > pi[popi-1]){popi++;}
-//    Rprintf("pis %f popi %d pi[Ki-1] %f gammart %f\n", pis, popi, pi[Ki-1],gammart);
+//    Rprintf("popi %d pi[Ki-1] %f gammart %f\n", popi, pi[Ki-1],gammart);
       }
-      if(popi > Ki){popi=Ki;}
+      if(popi >= Ki){popi=Ki-1;}
       pop[i]=popi;
-//    Rprintf("popi %d done\n", popi);
+      if((popi <= 0) | (popi > Ki-1)) Rprintf("popi %d r %f\n", popi,r);
       Nk[popi-1]=Nk[popi-1]+1;
     }
     if (step > 0 && step==(iinterval*(step/iinterval))) { 
@@ -219,7 +224,7 @@ void gnbinom (int *pop,
   free(sigmasample);
 }
 
-void MHnbinom (int *Nk, int *K,
+void MHcmp (int *Nk, int *K,
 	    double *mu0, double *kappa0, 
             double *sigma0,  double *df0,
             double *muproposal, 
@@ -239,6 +244,7 @@ void MHnbinom (int *Nk, int *K,
   double pithetastar, pithetai;
   double dkappa0, rkappa0, ddf0, dmu0, logK;
   double dsigma0, dsigma20, dmuproposal, dsigmaproposal;
+  double errval=0.000001, lzcmp;
 
   GetRNGstate();  /* R function enabling uniform RNG */
 
@@ -279,12 +285,16 @@ void MHnbinom (int *Nk, int *K,
   sigma2i  = sigmai*sigmai;
   pithetai = dnorm(mui, dmu0, sigmai/rkappa0, give_log1);
   pithetai = pithetai+dsclinvchisq(sigma2i, ddf0, dsigma20);
+  lzcmp = zcmp(exp(mui), sigmai, errval, give_log1);
+//    Rprintf("mui %f sigmai %f lzcmp %f\n", mui, sigmai, lzcmp);
   pis=0.;
   for (i=Np; i<Ki; i++){
-   pi[i]=nbmu(i+1,mui,sigmai,give_log0);
+   pi[i]=cmp(i+1,mui,sigmai,lzcmp,give_log0);
+//    Rprintf("i %d pi[i] %f\n", i, pi[i]);
 // pis+=pi[i];
   }
-  pis=1.-nbmu(0,mui,sigmai,give_log0);
+  pis=1.-cmp(0,mui,sigmai,lzcmp,give_log0);
+//    Rprintf("pis %f\n", pis);
   for (i=Np; i<Ki; i++){
    pi[i]/=pis;
   }
@@ -330,12 +340,14 @@ void MHnbinom (int *Nk, int *K,
 
     /* Calculate ratio */
     ip = pithetastar-pithetai;
+    lzcmp = zcmp(exp(mustar), sigmastar, errval, give_log1);
+//    Rprintf("mustar %f sigmastar %f lzcmp %f\n", mustar, sigmastar, lzcmp);
     pstars=0.;
     for (i=Np; i<Ki; i++){
-      pstar[i]=nbmu(i+1,mustar,sigmastar,give_log0);
+      pstar[i]=cmp(i+1,mustar,sigmastar,lzcmp,give_log0);
 //    pstars+=pstar[i];
     }
-    pstars=1.-nbmu(0,mustar,sigmastar,give_log0);
+    pstars=1.-cmp(0,mustar,sigmastar,lzcmp,give_log0);
     for (i=Np; i<Ki; i++){
      pstar[i]/=pstars;
     }
@@ -354,7 +366,6 @@ void MHnbinom (int *Nk, int *K,
       lp = log(pstar[i]/pi[i]);
       if(abs(lp)<100.){ip += (Nk[i]*lp);}
      }
-//    Rprintf("%d %f\n", i, log(nbmu(s[i],mustar,sigmastar,give_log0)/nbmu(s[i],mui,sigmai,give_log0)));
     }
     /* The logic is to set exp(cutoff) = exp(ip) * qratio ,
     then let the MH probability equal min{exp(cutoff), 1.0}.
@@ -401,45 +412,79 @@ void MHnbinom (int *Nk, int *K,
   *staken = taken;
 }
 
-double nbmu(int x, double mu, double sig, int give_log)
+double cmp(int x, double llambda, double nu, double lzcmp, int give_log)
   {
      double dev;
-// Rprintf("x %d mu %f sig %f log %d\n", x, mu, sig, give_log);
-     dev = sig*sig-mu;
-     if(dev>0.0){
-      return( dnbinom_mu(((double)x),mu*mu/dev,mu,give_log) );
+     dev=x*llambda-nu*lgamma(x+1.0)-lzcmp;
+     if(give_log){
+      return( dev );
      }else{
-//    Rprintf("Warning: negative binomial parameters underdispersed.\n");
-      return( dpois(((double)x),mu,give_log) );
-//    if(give_log){
-//     return( -10000.0 );
-//    }else{
-//     return( 0.0 );
-//    }
+      return( exp(dev) );
      }
   }
-void dnbmu (int *x, double *mu, double *sig, int *n, int *give_log, double *val) {
-  int i;
-  double dev;
-  dev = (*sig)*(*sig)-(*mu);
-  if(dev>0.0){
-   for (i = 0; i < *n; i++){
-     val[i] = nbmu(x[i],*mu,*sig,*give_log);
-   }
-  }else{
-// Rprintf("Warning: negative binomial parameters underdispersed.\n");
-    for (i = 0; i < *n; i++){
-     val[i] = dpois((1.0*x[i]),*mu,*give_log);
-    }
-// if(give_log){
-//  for (i = 0; i < *n; i++){
-//   val[i] = -10000.0;
-//    return( dpois(((double)x),mu,give_log) );
-//  }
-// }else{
-//  for (i = 0; i < *n; i++){
-//   val[i] = 0.0;
-//  }
-// }
+
+double zcmp(double lambda, double nu, double err, int give_log)
+  {
+     double mj, z, aj;
+     int j;
+     z = 1.0 + lambda;
+     aj = lambda;
+     for (j = 2; j < 100; j++){
+       mj=lambda/pow((double)j,nu);
+       aj*=mj;
+       z+=aj;
+     }
+//Rprintf("cmp terms %d aj %f err %f\n", j, aj, err*(1-mj));
+//     while (aj < err*(1-mj) && j < 10000){
+//       j++;
+//       mj=lambda/pow((double)j,nu);
+//       aj*=mj;
+//       z+=aj;
+//     }
+//Rprintf("cmp terms %d aj %f err %f\n", j, aj, err*(1-mj));
+     if(give_log){
+      return( log(z) );
+     }else{
+      return( z );
+     }
   }
+
+void dcmp (int *x, double *lambda, double *nu, int *n, double *err, int *give_log, double *val) {
+  int i, give_log1=1;
+  double lzcmp;
+  lzcmp = zcmp(*lambda, *nu, *err, give_log1);
+//Rprintf("lzcmp %f \n", lzcmp);
+  for (i = 0; i < *n; i++){
+    val[i] = cmp(x[i], log(*lambda), *nu, lzcmp, *give_log);
+  }
+}
+
+void rcmp (int *x, double *lambda, double *nu, int *n, int *K, double *err) {
+  int i, Ki, ni, popi, give_log0=0, give_log1=1;
+  double gb, lzcmp, llambda;
+  double *pi = (double *) malloc(sizeof(double) * (*K));
+  lzcmp = zcmp(*lambda, *nu, *err, give_log1);
+  llambda = log(*lambda);
+  GetRNGstate();  /* R function enabling uniform RNG */
+  Ki = (*K);
+  ni = (*n);
+  for (i = 0; i < Ki; i++){
+    pi[i] = cmp(i, llambda, *nu, lzcmp, give_log0);
+  }
+  for (i=1; i< Ki; i++){
+    pi[i]=pi[i-1]+pi[i];
+  }
+  for (i = 0; i < ni; i++){
+   gb = pi[Ki-1] * unif_rand();
+   popi = 0;
+   while(gb > pi[popi]){popi++;}
+   x[i] = popi;
+  }
+  PutRNGstate();  /* Disable RNG before returning */
+  free(pi);
+}
+
+void vzcmp(double *lambda, double *nu, double *err, int *give_log, double *out)
+{
+*out = zcmp(*lambda, *nu, *err, *give_log);
 }

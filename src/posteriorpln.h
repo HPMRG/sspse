@@ -1,5 +1,5 @@
-#ifndef MCMC_H
-#define MCMC_H
+#ifndef POSTERIORPLN_H
+#define POSTERIORPLN_H
 
 /* I define Scale-Inverse-Chi-Square distribution Y with a scale parameter "scale"
    and degrees of freedom "df" as
@@ -19,7 +19,7 @@
 #define rsclinvchisq(df,scale) ((scale)*(df)/(rchisq(df)))
 
 double poilog(int x, double mu, double sig);
-void gspps (int *pop,
+void gpln (int *pop,
             int *nk, 
             int *K, 
             int *n, 
@@ -32,25 +32,11 @@ void gspps (int *pop,
             int *N, int *maxN, 
             double *sample, 
 	    double *ppos,
+	    double *lpriorm,
             int *burnintheta,
 	    int *fVerbose
 			 );
-void gsppsN (int *pop,
-            int *nk, 
-            int *K, 
-            int *n, 
-            int *samplesize, int *burnin, int *interval,
-            double *mu0, double *kappa0, 
-            double *sigma0,  double *df0,
-            int *Npi,
-            double *muproposal, 
-            double *sigmaproposal, 
-            int *N, 
-            int *sample, 
-            int *burnintheta,
-	    int *fVerbose
-			 );
-void MHplnorig (int *Nk, int *K,
+void MHpln (int *Nk, int *K,
 	    double *mu0, double *kappa0, 
             double *sigma0,  double *df0,
             double *muproposal, 
@@ -60,22 +46,4 @@ void MHplnorig (int *Nk, int *K,
             int *samplesize, int *staken, int *burnin, int *interval,
 	    int *fVerbose
 			 );
-void MHpriorpln (double *mu0, double *kappa0, 
-            double *sigma0,  double *df0,
-            double *muproposal, 
-            double *sigmaproposal, 
-            double *musample, double *sigmasample,
-            int *samplesize, int *staken, int *burnin, int *interval,
-	    int *fVerbose
-			 );
-void getinclC (int *N,
-            int *pop,
-            double *size, 
-            int *K, 
-            int *n, 
-            int *samplesize,
-            int *Nk,
-	    int *fVerbose
-			 );
-static void ProbSampleNoReplace(int n, double *p, int *perm, int nans, int *ans);
-#endif /* MCMC_H */
+#endif /* POSTERIORPLN_H */

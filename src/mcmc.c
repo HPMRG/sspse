@@ -89,7 +89,7 @@ void gspps (int *pop,
   step = -iburnin;
   while (isamp < isamplesize) {
     /* Draw new theta */
-    MHpln(Nk,K,mu0,kappa0,sigma0,df0,muproposal,sigmaproposal,
+    MHplnorig(Nk,K,mu0,kappa0,sigma0,df0,muproposal,sigmaproposal,
           &Ni, &Np, psample,
 	  musample, sigmasample, &getone, &staken, burnintheta, &intervalone, 
 	  &fVerboseMHpln);
@@ -265,7 +265,7 @@ void gsppsN (int *pop,
   step = -iburnin;
   while (isamp < isamplesize) {
     /* Draw new theta */
-    MHpln(Nk,K,mu0,kappa0,sigma0,df0,muproposal,sigmaproposal,N,
+    MHplnorig(Nk,K,mu0,kappa0,sigma0,df0,muproposal,sigmaproposal,N,
           &Np, psample,
 	  musample, sigmasample, &getone, &staken, burnintheta, &intervalone, 
 	  &fVerboseMHpln);
@@ -322,7 +322,7 @@ void gsppsN (int *pop,
   free(sigmasample);
 }
 
-void MHpln (int *Nk, int *K,
+void MHplnorig (int *Nk, int *K,
 	    double *mu0, double *kappa0, 
             double *sigma0,  double *df0,
             double *muproposal, 
@@ -366,7 +366,7 @@ void MHpln (int *Nk, int *K,
   dmu0=(*mu0);
   dsigmaproposal=(*sigmaproposal);
   dmuproposal=(*muproposal);
-  logK=log(1.0*Ki);
+  logK=log((double)Ki);
   isamp = taken = 0;
   step = -iburnin;
   pis=1.;

@@ -2,12 +2,12 @@
 /* Computation of the log-likelihood and marginal posterior of size*/
 /*******************************************************************/
 
-#include "posteriornbinom.h"
+#include "posteriorpln.h"
 #include <R.h>
 #include <Rmath.h>
 #include <math.h>
 
-void gnbinom (int *pop,
+void gpln (int *pop,
             int *nk, 
             int *K, 
             int *n, 
@@ -20,16 +20,16 @@ void gnbinom (int *pop,
             int *N, int *maxN, 
             double *sample, 
             double *ppos, 
-            double *lpriorm, 
+	    double *lpriorm,
             int *burnintheta,
 	    int *fVerbose
 			 ) {
-  int step, staken, getone=1, intervalone=1, fVerboseMHnbinom = 0;
+  int step, staken, getone=1, intervalone=1, fVerboseMHpln = 0;
   int dimsample, Np;
   int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
-  double mui, sigmai;
+  double mu, mui, sigmai;
   double dkappa0, ddf0, dmu0, dsigma0, dmuproposal, dsigmaproposal;
-  int tU, popi, imaxN, give_log0=0;
+  int tU, popi, imaxN;
   double r, gammart, pis;
 
   GetRNGstate();  /* R function enabling uniform RNG */
@@ -90,10 +90,10 @@ void gnbinom (int *pop,
   step = -iburnin;
   while (isamp < isamplesize) {
     /* Draw new theta */
-    MHnbinom(Nk,K,mu0,kappa0,sigma0,df0,muproposal,sigmaproposal,
+    MHpln(Nk,K,mu0,kappa0,sigma0,df0,muproposal,sigmaproposal,
           &Ni, &Np, psample,
 	  musample, sigmasample, &getone, &staken, burnintheta, &intervalone, 
-	  &fVerboseMHnbinom);
+	  &fVerboseMHpln);
 
     for (i=0; i<Np; i++){
       pdegi[i] = psample[i];
@@ -104,10 +104,10 @@ void gnbinom (int *pop,
     /* First find the degree distribution */
     pis=0.;
     for (i=Np; i<Ki; i++){
-      pi[i]=nbmu(i+1,mui,sigmai,give_log0);
+      pi[i]=poilog(i+1,mui,sigmai);
 //    pis+=pi[i];
     }
-    pis=1.-nbmu(0,mui,sigmai,give_log0);
+    pis=1.-poilog(0,mui,sigmai);
     for (i=Np; i<Ki; i++){
       pi[i]/=pis;
     }
@@ -163,27 +163,24 @@ void gnbinom (int *pop,
     for (i=0; i<Ki; i++){
       Nk[i]=nk[i];
     }
-    // Set up pi for random draws
-//  pis=pi[0];
-    for (i=1; i<Ki; i++){
-//    pis+=pi[i];
-      pi[i]=pi[i-1]+pi[i];
-    }
     for (i=ni; i<Ni; i++){
       /* Propose unseen size for unit i */
       /* Use rejection sampling */
-      popi=10000000;
-      while(log(1.0-unif_rand()) > -r*popi){
-       /* In the next 3 lines a CMP (popi) is chosen with */
-       /* log-lambda mui and nu sigmai */
-       popi = 1;
-       gammart = pi[Ki-1] * unif_rand();
-       while(gammart > pi[popi-1]){popi++;}
-//    Rprintf("pis %f popi %d pi[Ki-1] %f gammart %f\n", pis, popi, pi[Ki-1],gammart);
+      popi=0;
+      while((popi == 0) || (log(1.0-unif_rand()) > -r*popi)){
+      /* In the next 9 lines a Poisson-lognormal (popi) is chosen with */
+      /* (log) mean mui and (log) standard deviation sigmai */
+       mu = exp(rnorm(mui, sigmai));
+       if(mu < 5.*Ki){
+         popi=rpois(mu);
+         if(popi < 0){popi=0;}
+       }else{
+    if (*fVerbose) Rprintf("mu > 5.*Ki; mu %f K %d\n", mu, Ki);
+         popi=0;
+       }
       }
       if(popi > Ki){popi=Ki;}
       pop[i]=popi;
-//    Rprintf("popi %d done\n", popi);
       Nk[popi-1]=Nk[popi-1]+1;
     }
     if (step > 0 && step==(iinterval*(step/iinterval))) { 
@@ -219,7 +216,7 @@ void gnbinom (int *pop,
   free(sigmasample);
 }
 
-void MHnbinom (int *Nk, int *K,
+void MHpln (int *Nk, int *K,
 	    double *mu0, double *kappa0, 
             double *sigma0,  double *df0,
             double *muproposal, 
@@ -230,7 +227,7 @@ void MHnbinom (int *Nk, int *K,
 	    int *fVerbose
 			 ) {
   int Np;
-  int step, taken, give_log1=1, give_log0=0;
+  int step, taken, give_log1=1;
   int i, Ki, Ni, isamp, iinterval, isamplesize, iburnin;
   double ip, cutoff;
   double mustar, mui, lp;
@@ -281,10 +278,10 @@ void MHnbinom (int *Nk, int *K,
   pithetai = pithetai+dsclinvchisq(sigma2i, ddf0, dsigma20);
   pis=0.;
   for (i=Np; i<Ki; i++){
-   pi[i]=nbmu(i+1,mui,sigmai,give_log0);
+   pi[i]=poilog(i+1,mui,sigmai);
 // pis+=pi[i];
   }
-  pis=1.-nbmu(0,mui,sigmai,give_log0);
+  pis=1.-poilog(0,mui,sigmai);
   for (i=Np; i<Ki; i++){
    pi[i]/=pis;
   }
@@ -332,10 +329,10 @@ void MHnbinom (int *Nk, int *K,
     ip = pithetastar-pithetai;
     pstars=0.;
     for (i=Np; i<Ki; i++){
-      pstar[i]=nbmu(i+1,mustar,sigmastar,give_log0);
+      pstar[i]=poilog(i+1,mustar,sigmastar);
 //    pstars+=pstar[i];
     }
-    pstars=1.-nbmu(0,mustar,sigmastar,give_log0);
+    pstars=1.-poilog(0,mustar,sigmastar);
     for (i=Np; i<Ki; i++){
      pstar[i]/=pstars;
     }
@@ -354,7 +351,7 @@ void MHnbinom (int *Nk, int *K,
       lp = log(pstar[i]/pi[i]);
       if(abs(lp)<100.){ip += (Nk[i]*lp);}
      }
-//    Rprintf("%d %f\n", i, log(nbmu(s[i],mustar,sigmastar,give_log0)/nbmu(s[i],mui,sigmai,give_log0)));
+//    Rprintf("%d %f\n", i, log(poilog(s[i],mustar,sigmastar)/poilog(s[i],mui,sigmai)));
     }
     /* The logic is to set exp(cutoff) = exp(ip) * qratio ,
     then let the MH probability equal min{exp(cutoff), 1.0}.
@@ -399,47 +396,4 @@ void MHnbinom (int *Nk, int *K,
   free(pstar);
   PutRNGstate();  /* Disable RNG before returning */
   *staken = taken;
-}
-
-double nbmu(int x, double mu, double sig, int give_log)
-  {
-     double dev;
-// Rprintf("x %d mu %f sig %f log %d\n", x, mu, sig, give_log);
-     dev = sig*sig-mu;
-     if(dev>0.0){
-      return( dnbinom_mu(((double)x),mu*mu/dev,mu,give_log) );
-     }else{
-//    Rprintf("Warning: negative binomial parameters underdispersed.\n");
-      return( dpois(((double)x),mu,give_log) );
-//    if(give_log){
-//     return( -10000.0 );
-//    }else{
-//     return( 0.0 );
-//    }
-     }
-  }
-void dnbmu (int *x, double *mu, double *sig, int *n, int *give_log, double *val) {
-  int i;
-  double dev;
-  dev = (*sig)*(*sig)-(*mu);
-  if(dev>0.0){
-   for (i = 0; i < *n; i++){
-     val[i] = nbmu(x[i],*mu,*sig,*give_log);
-   }
-  }else{
-// Rprintf("Warning: negative binomial parameters underdispersed.\n");
-    for (i = 0; i < *n; i++){
-     val[i] = dpois((1.0*x[i]),*mu,*give_log);
-    }
-// if(give_log){
-//  for (i = 0; i < *n; i++){
-//   val[i] = -10000.0;
-//    return( dpois(((double)x),mu,give_log) );
-//  }
-// }else{
-//  for (i = 0; i < *n; i++){
-//   val[i] = 0.0;
-//  }
-// }
-  }
 }
