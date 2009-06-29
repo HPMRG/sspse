@@ -14,8 +14,6 @@ pospln<-function(s,maxN=4*length(s),
     #this function takes a vector of population sizes and a vector s of 
     #sequential sizes of sampled units and returns a log likelihood value
     #s values must all be positive integers
-    sigma0 <- sd.prior.degree
-    mu0 <- mean.prior.degree
     if(!is.null(seed))  set.seed(as.integer(seed))
     #
     # Transform observed mean parametrization to log-normal

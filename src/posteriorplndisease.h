@@ -1,5 +1,5 @@
-#ifndef POSTERIORCMP_H
-#define POSTERIORCMP_H
+#ifndef POSTERIORPLNDISEASE_H
+#define POSTERIORPLNDISEASE_H
 
 /* I define Scale-Inverse-Chi-Square distribution Y with a scale parameter "scale"
    and degrees of freedom "df" as
@@ -18,31 +18,32 @@
 
 #define rsclinvchisq(df,scale) ((scale)*(df)/(rchisq(df)))
 
-void gcmp (int *pop,
-            int *nk, 
+double poilog(int x, double my, double sig);
+void gplndisease (int *pop, int *dis,
+            int *nk0, int *nk1, 
             int *K, 
             int *n, 
             int *samplesize, int *burnin, int *interval,
-            double *mu0, double *kappa0, 
-            double *sigma0,  double *df0,
-            int *Npi,
-	    double *muproposal, 
+            double *mu0, double *mu1, double *kappa0, 
+            double *sigma0,  double *sigma1, double *df0,
+	    int *Np0i, int *Np1i,
+            double *muproposal, 
             double *sigmaproposal, 
             int *N, int *maxN, 
             double *sample, 
-	    double *ppos,
+            double *p0pos, double *p1pos, 
 	    double *lpriorm,
             int *burnintheta,
 	    int *fVerbose
 			 );
-void MHcmp (int *Nk, int *K,
-	    double *mu0, double *kappa0, 
-            double *sigma0,  double *df0,
+void MHplndisease (int *Nk0, int *Nk1, int *totdis, int *K,
+	    double *mu0, double *mu1, double *kappa0, 
+            double *sigma0,  double *sigma1, double *df0,
             double *muproposal, 
             double *sigmaproposal, 
-            int *N, int *Npi, double *psample,
-            double *musample, double *sigmasample,
+            int *N, int *Np0i, int *Np1i, double *psample,
+            double *musample, double *betasample, double *sigmasample,
             int *samplesize, int *staken, int *burnin, int *interval,
 	    int *fVerbose
 			 );
-#endif /* POSTERIORCMP_H */
+#endif /* POSTERIORPLNDISEASE_H */

@@ -9,7 +9,7 @@ posteriorsize<-function(s,
                   Np=0,
                   samplesize=1000,burnin=100,interval=1,burnintheta=500,
 		  mean.prior.size=N, sd.prior.size=N,
-		  distribution=c("nbinom","pln","cmp"),
+		  distribution=c("cmp","nbinom","pln"),
                   parallel=1, seed=NULL,
                   verbose=TRUE){
 #
@@ -19,7 +19,7 @@ posteriorsize<-function(s,
                   nbinom=posnbinom,
                   pln=pospln,
 		  cmp=poscmp,
-		  nbinom)
+		  poscmp)
   ### are we running the job in parallel (parallel > 1), if not just 
   #   call the degree specific function
   if(parallel==1){

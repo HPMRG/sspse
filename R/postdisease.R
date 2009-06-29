@@ -132,7 +132,7 @@ priordis<-function(mean0.prior.degree=7,mean1.prior.degree=7,
     attr(Cret$sample, "class") <- "mcmc"
     Cret
 }
-posteriordisease<-function(s,dis,
+posteriordisease.orig<-function(s,dis,
                   maxN=4*length(s),
                   K=2*max(s), n=length(s),
 		  nk0=tabulate(s[dis==0],nbin=K),
