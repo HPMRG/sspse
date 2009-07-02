@@ -80,9 +80,9 @@ posteriordisease<-function(s,dis,
      colnamessample <- c(colnamessample, c("lambda0","nu0","lambda1","nu1"))
     }
     colnames(Cret$sample) <- colnamessample
+    endrun <- burnin+interval*(samplesize)
     attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
     attr(Cret$sample, "class") <- "mcmc"
-    endrun <- burnin+interval*(samplesize)
     ### define function that will compute mode of a sample
     mapfn <- function(x,lbound=min(x),ubound=max(x)){
       posdensN <- density(x, from=lbound, to=ubound)
