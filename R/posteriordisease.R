@@ -13,6 +13,8 @@ posteriordisease<-function(s,dis,
                   Np0=0, Np1=0,
                   samplesize=1000,burnin=100,interval=1,burnintheta=500,
 		  mean.prior.size=N, sd.prior.size=N,
+		  mode.prior.sample.proportion=NULL,
+		  median.prior.size=NULL,
 		  distribution=c("cmp","nbinom","pln"),
                   parallel=1, seed=NULL,
                   verbose=TRUE){
@@ -33,6 +35,8 @@ posteriordisease<-function(s,dis,
                       samplesize=samplesize,burnin=burnin,interval=interval,
 		      burnintheta=burnintheta,
 		      mean.prior.size=mean.prior.size, sd.prior.size=sd.prior.size,
+		      mode.prior.sample.proportion=mode.prior.sample.proportion,
+		      median.prior.size=median.prior.size,
                       seed=seed)
   }else{
     cl <- beginsnow(parallel)
@@ -47,7 +51,9 @@ posteriordisease<-function(s,dis,
       Np0=Np0,Np1=Np1,
       samplesize=samplesize.parallel,burnin=burnin,interval=interval,
       burnintheta=burnintheta,
-      mean.prior.size=mean.prior.size, sd.prior.size=sd.prior.size)
+      mean.prior.size=mean.prior.size, sd.prior.size=sd.prior.size,
+      mode.prior.sample.proportion=mode.prior.sample.proportion,
+      median.prior.size=median.prior.size)
 #
 #   Process the results
 #
@@ -111,6 +117,8 @@ posteriordisease<-function(s,dis,
    warning("There is a non-trivial proportion of the posterior mass on very high degrees for diseased nodes. This may indicate convergence problems in the MCMC.")
   }
   Cret$distribution <- distribution
+  Cret$mode.prior.sample.proportion <- mode.prior.sample.proportion
+  Cret$median.prior.size <- median.prior.size
   ### return result
   Cret
 }

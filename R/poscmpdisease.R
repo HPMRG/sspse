@@ -13,6 +13,8 @@ poscmpdisease<-function(s,dis,maxN=4*length(s),
                   Np0=0, Np1=0,
                   samplesize=10,burnin=0,interval=1,burnintheta=500,
 		  mean.prior.size=N, sd.prior.size=N,
+		  mode.prior.sample.proportion=NULL,
+		  median.prior.size=NULL,
                   seed=NULL,
                   verbose=TRUE){
     #this function takes a vector of population sizes and a vector s of 
@@ -30,9 +32,26 @@ poscmpdisease<-function(s,dis,maxN=4*length(s),
     mu1 <- log(out$lambda)
     sigma1 <- out$nu
     dimsample <- 8+Np0+Np1
-    lpriorm <- dnbinommu(x=n+(1:maxN)-1,
-                         mu=mean.prior.size, sd=sd.prior.size,
-			 log=TRUE)
+    if(is.null(mode.prior.sample.proportion)&is.null(median.prior.size)){
+     if(sd.prior.size>0){
+      lpriorm <- dnbinommu(x=n+(1:maxN)-1,
+                           mu=mean.prior.size, sd=sd.prior.size,
+			   log=TRUE)
+     }else{
+      lpriorm <- rep(0,maxN)
+     }
+    }else{
+     if(!is.null(mode.prior.sample.proportion)){
+      # next mean
+      # beta <- (1-mean.prior.sample.proportion)/mean.prior.sample.proportion
+      # next mode sample proportion
+      beta <- 2/mode.prior.sample.proportion - 1
+     }else{
+      beta <- -log(2)/log(1-n/median.prior.size)
+     }
+     x <- (1:maxN)
+     lpriorm <- log(beta*n)+(beta-1)*log(x)-(beta+1)*log(x+n)
+    }
     Cret <- .C("gcmpdisease",
               pop=as.integer(c(s,rep(0,maxN-n))),
               dis=as.integer(c(dis,rep(0,maxN-n))),
