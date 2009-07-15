@@ -232,6 +232,8 @@ void gcmpdisease (int *pop, int *dis,
     for (i=ni; i<Ni; i++){
       /* Use rejection sampling */
       popi=1000000;
+      while(popi >= Ki){
+      popi=1000000;
       while((log(1.0-unif_rand()) > -r*popi)){
         /* First propose unseen disease status for unit i */
         popi = 1;
@@ -251,7 +253,8 @@ void gcmpdisease (int *pop, int *dis,
           while(gamma0rt > p0i[popi-1]){popi++;}
         }
       }
-      if(popi >= Ki){popi=Ki-1;}
+      }
+//    if(popi >= Ki){popi=Ki-1;}
       pop[i]=popi;
       if(dis[i]==1){
         Nk1[popi-1]=Nk1[popi-1]+1;

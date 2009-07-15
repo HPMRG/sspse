@@ -63,21 +63,3 @@ posnbinom<-function(s,maxN=4*length(s),
     Cret$MAP["N"] <- mapfn(Cret$sample[,"N"],lbound=n,ubound=maxN)
     Cret
 }
-
-dnbinommu <- function(x, mu, sd, log=FALSE){
-    if (missing(mu)) {
-      stop("The mean of the Negative Binomial must be specified.")
-    }
-    if (missing(sd)) {
-      stop("The standard deviation of the Negative Binomial must be specified.")
-    }
-   out <- .C("dnbmu",
-            x=as.integer(x),
-            mu=as.double(mu),
-            sig=as.double(sd),
-            n=as.integer(length(x)),
-            give_log=as.integer(log),
-            val=double(length(x)),
-            PACKAGE="size")
-   return(out$val)
-}

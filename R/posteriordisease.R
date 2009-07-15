@@ -1,9 +1,9 @@
 posteriordisease<-function(s,dis,
-                  maxN=4*length(s),
+                  maxN=NULL,
                   K=2*max(s), n=length(s),
 		  nk0=tabulate(s[dis==0],nbin=K),
 		  nk1=tabulate(s[dis==1],nbin=K),
-		  N=0.5*maxN,
+		  N=NULL,
                   mean0.prior.degree=7,
                   mean1.prior.degree=7,
 		  sd.prior.degree=3,
@@ -12,9 +12,11 @@ posteriordisease<-function(s,dis,
                   sigmaproposal=0.15, 
                   Np0=0, Np1=0,
                   samplesize=1000,burnin=100,interval=1,burnintheta=500,
-		  mean.prior.size=N, sd.prior.size=N,
-		  mode.prior.sample.proportion=NULL,
+		  priordistribution=c("cmp","nbinom","pln"),
+		  mean.prior.size=NULL, sd.prior.size=N,
+		  mode.prior.sample.proportion=0.5,
 		  median.prior.size=NULL,
+		  mode.prior.size=NULL,
 		  distribution=c("cmp","nbinom","pln"),
                   parallel=1, seed=NULL,
                   verbose=TRUE){
@@ -24,6 +26,10 @@ posteriordisease<-function(s,dis,
                   pln=posplndisease,
 		  cmp=poscmpdisease,
 		  poscmpdisease)
+  priordistribution=match.arg(priordistribution)
+  if(priordistribution=="nbinom" && missing(mean.prior.size)){
+    mean.prior.size<-N
+  }
   if(parallel==1){
       Cret <- posfn(s=s,dis=dis,N=N,K=K,nk0=nk0,nk1=nk1,n=n,maxN=maxN,
                       mean0.prior.degree=mean0.prior.degree,
@@ -34,9 +40,11 @@ posteriordisease<-function(s,dis,
                       Np0=Np0,Np1=Np1,
                       samplesize=samplesize,burnin=burnin,interval=interval,
 		      burnintheta=burnintheta,
+		      priordistribution=priordistribution,
 		      mean.prior.size=mean.prior.size, sd.prior.size=sd.prior.size,
 		      mode.prior.sample.proportion=mode.prior.sample.proportion,
 		      median.prior.size=median.prior.size,
+		      mode.prior.size=mode.prior.size,
                       seed=seed)
   }else{
     cl <- beginsnow(parallel)
@@ -51,9 +59,11 @@ posteriordisease<-function(s,dis,
       Np0=Np0,Np1=Np1,
       samplesize=samplesize.parallel,burnin=burnin,interval=interval,
       burnintheta=burnintheta,
+      priordistribution=priordistribution,
       mean.prior.size=mean.prior.size, sd.prior.size=sd.prior.size,
       mode.prior.sample.proportion=mode.prior.sample.proportion,
-      median.prior.size=median.prior.size)
+      median.prior.size=median.prior.size,
+      mode.prior.size=mode.prior.size)
 #
 #   Process the results
 #
@@ -95,7 +105,7 @@ posteriordisease<-function(s,dis,
       posdensN$x[which.max(posdensN$y)]
     }
     Cret$MAP <- apply(Cret$sample,2,mapfn)
-    Cret$MAP["N"] <- mapfn(Cret$sample[,"N"],lbound=n,ubound=maxN)
+    Cret$MAP["N"] <- mapfn(Cret$sample[,"N"],lbound=n,ubound=Cret$maxN)
     if(verbose){
      cat("parallel samplesize=", parallel,"by", samplesize.parallel,"\n")
     }
@@ -105,10 +115,12 @@ posteriordisease<-function(s,dis,
               mean(Cret$sample[,"N"]),
               median(Cret$sample[,"N"]),
 	      quantile(Cret$sample[,"N"],c(0.025,0.975)))
+  names(Cret$N) <- c("MAP","Mean AP","Median AP","P025","P975")
   Cret$disease <- c(Cret$MAP["disease"], 
               mean(Cret$sample[,"disease"]),
               median(Cret$sample[,"disease"]),
 	      quantile(Cret$sample[,"disease"],c(0.025,0.975)))
+  names(Cret$disease) <- c("MAP","Mean AP","Median AP","P025","P975")
   #
   if(Cret$p0pos[length(Cret$p0pos)] > 0.01){
    warning("There is a non-trivial proportion of the posterior mass on very high degrees for non-diseased nodes. This may indicate convergence problems in the MCMC.")
@@ -117,8 +129,8 @@ posteriordisease<-function(s,dis,
    warning("There is a non-trivial proportion of the posterior mass on very high degrees for diseased nodes. This may indicate convergence problems in the MCMC.")
   }
   Cret$distribution <- distribution
-  Cret$mode.prior.sample.proportion <- mode.prior.sample.proportion
-  Cret$median.prior.size <- median.prior.size
+  Cret$priordistribution <- priordistribution
+  Cret$mean.prior.size <- mean.prior.size
   ### return result
   Cret
 }
