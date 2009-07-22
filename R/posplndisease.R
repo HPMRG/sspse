@@ -1,9 +1,9 @@
-posplndisease<-function(s,dis,maxN=4*length(s),
+posplndisease<-function(s,dis,
+                  maxN=NULL,
                   K=2*max(s), 
 		  nk0=tabulate(s[dis==0],nbin=K),
 		  nk1=tabulate(s[dis==1],nbin=K),
 		  n=length(s),
-		  N=maxN/2,
                   mean0.prior.degree=7, 
                   mean1.prior.degree=7, 
 		  sd.prior.degree=3,
@@ -12,7 +12,7 @@ posplndisease<-function(s,dis,maxN=4*length(s),
                   sigmaproposal=0.15, 
                   Np0=0, Np1=0,
                   samplesize=10,burnin=0,interval=1,burnintheta=500,
-		  mean.prior.size=N, sd.prior.size=N,
+		  mean.prior.size=NULL, sd.prior.size=NULL,
                   seed=NULL,
                   verbose=TRUE){
     #this function takes a vector of population sizes and a vector s of 
@@ -28,12 +28,17 @@ posplndisease<-function(s,dis,maxN=4*length(s),
     mu0 <- log(mean0.prior.degree)-0.5*sigma0*sigma0
     mu1 <- log(mean1.prior.degree)-0.5*sigma1*sigma1
     dimsample <- 8+Np0+Np1
-    lpriorm <- dnbinommu(x=n+(1:maxN)-1,
-                         mu=mean.prior.size, sd=sd.prior.size,
-			 log=TRUE)
+    #
+    prior <- dspprior(n=n,
+		  priordistribution="nbinom",
+		  mean.prior.size=mean.prior.size,
+		  sd.prior.size=sd.prior.size,
+                  maxN=maxN,
+                  log=TRUE,
+                  verbose=verbose)
     Cret <- .C("gplndisease",
-              pop=as.integer(c(s,rep(0,maxN-n))),
-              dis=as.integer(c(dis,rep(0,maxN-n))),
+              pop=as.integer(c(s,rep(0,prior$maxN-n))),
+              dis=as.integer(c(dis,rep(0,prior$maxN-n))),
               nk0=as.integer(nk0),
               nk1=as.integer(nk1),
               K=as.integer(K),
@@ -50,11 +55,11 @@ posplndisease<-function(s,dis,maxN=4*length(s),
 	      Np1i=as.integer(Np1),
               muproposal=as.double(muproposal),
               sigmaproposal=as.double(sigmaproposal),
-              N=as.integer(N),
-              maxN=as.integer(maxN),
+              N=as.integer(prior$N),
+              maxN=as.integer(prior$maxN),
               sample=double(samplesize*dimsample),
               p0pos=double(K), p1pos=double(K),
-              lpriorm=as.double(lpriorm),
+              lpriorm=as.double(prior$lprior),
               burnintheta=as.integer(burnintheta),
               fVerbose=as.integer(verbose))
     Cret$sample<-matrix(Cret$sample,nrow=samplesize,ncol=dimsample,byrow=TRUE)
@@ -98,6 +103,6 @@ posplndisease<-function(s,dis,maxN=4*length(s),
       posdensN$x[which.max(posdensN$y)]
     }
     Cret$MAP <- apply(Cret$sample,2,mapfn)
-    Cret$MAP["N"] <- mapfn(Cret$sample[,"N"],lbound=n,ubound=maxN)
+    Cret$MAP["N"] <- mapfn(Cret$sample[,"N"],lbound=n,ubound=prior$maxN)
     Cret
 }

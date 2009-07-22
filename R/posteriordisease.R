@@ -3,7 +3,6 @@ posteriordisease<-function(s,dis,
                   K=2*max(s), n=length(s),
 		  nk0=tabulate(s[dis==0],nbin=K),
 		  nk1=tabulate(s[dis==1],nbin=K),
-		  N=NULL,
                   mean0.prior.degree=7,
                   mean1.prior.degree=7,
 		  sd.prior.degree=3,
@@ -12,8 +11,8 @@ posteriordisease<-function(s,dis,
                   sigmaproposal=0.15, 
                   Np0=0, Np1=0,
                   samplesize=1000,burnin=100,interval=1,burnintheta=500,
-		  priordistribution=c("cmp","nbinom","pln"),
-		  mean.prior.size=NULL, sd.prior.size=N,
+		  priordistribution=c("cmp","nbinom","pln","flat"),
+		  mean.prior.size=NULL, sd.prior.size=NULL,
 		  mode.prior.sample.proportion=0.5,
 		  median.prior.size=NULL,
 		  mode.prior.size=NULL,
@@ -28,10 +27,10 @@ posteriordisease<-function(s,dis,
 		  poscmpdisease)
   priordistribution=match.arg(priordistribution)
   if(priordistribution=="nbinom" && missing(mean.prior.size)){
-    mean.prior.size<-N
+    stop("You need to specify 'mean.prior.size', and possibly 'sd.prior.size' if you use the 'nbinom' prior.") 
   }
   if(parallel==1){
-      Cret <- posfn(s=s,dis=dis,N=N,K=K,nk0=nk0,nk1=nk1,n=n,maxN=maxN,
+      Cret <- posfn(s=s,dis=dis,K=K,nk0=nk0,nk1=nk1,n=n,maxN=maxN,
                       mean0.prior.degree=mean0.prior.degree,
                       mean1.prior.degree=mean1.prior.degree,
 		      df.mean.prior=df.mean.prior,
@@ -50,7 +49,7 @@ posteriordisease<-function(s,dis,
     cl <- beginsnow(parallel)
     samplesize.parallel=round(samplesize/parallel)
     outlist <- clusterCall(cl, posfn,
-      s=s,dis=dis,N=N,K=K,nk0=nk0,nk1=nk1,n=n,maxN=maxN,
+      s=s,dis=dis,K=K,nk0=nk0,nk1=nk1,n=n,maxN=maxN,
       mean0.prior.degree=mean0.prior.degree,
       mean1.prior.degree=mean1.prior.degree,
       df.mean.prior=df.mean.prior,

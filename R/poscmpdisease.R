@@ -4,7 +4,6 @@ poscmpdisease<-function(s,dis,
 		  nk0=tabulate(s[dis==0],nbin=K),
 		  nk1=tabulate(s[dis==1],nbin=K),
 		  n=length(s),
-		  N=NULL,
                   mean0.prior.degree=7, 
                   mean1.prior.degree=7, 
 		  sd.prior.degree=3,
@@ -13,8 +12,8 @@ poscmpdisease<-function(s,dis,
                   sigmaproposal=0.15, 
                   Np0=0, Np1=0,
                   samplesize=10,burnin=0,interval=1,burnintheta=500,
-		  priordistribution=c("cmp","nbinom","pln"),
-		  mean.prior.size=NULL, sd.prior.size=N,
+		  priordistribution=c("cmp","nbinom","pln","flat"),
+		  mean.prior.size=NULL, sd.prior.size=NULL,
 		  mode.prior.sample.proportion=0.5,
 		  median.prior.size=NULL,
 		  mode.prior.size=NULL,
@@ -37,79 +36,19 @@ poscmpdisease<-function(s,dis,
     dimsample <- 8+Np0+Np1
     #
     priordistribution=match.arg(priordistribution)
-    if(priordistribution=="nbinom" && is.null(mean.prior.size)){
-      mean.prior.size<-N
-    }
-    lpriorm <- switch(priordistribution,
-     nbinomial={
-               if(is.null(maxN)){
-                 maxN <- min(50000,ceiling(qnbinommu(p=0.995,
-                                mu=mean.prior.size, sd=sd.prior.size)))
-	       }
-               if(is.null(N)){
-                 maxN <- min(50000,ceiling(qnbinommu(p=0.5,
-                                mu=mean.prior.size, sd=sd.prior.size)))
-	       }
-               lpriorm <- dnbinommu(x=n+(1:maxN)-1,
-                                    mu=mean.prior.size, sd=sd.prior.size,
-			            log=TRUE)
-               },
-          flat={
-               if(is.null(maxN)){
-                 maxN <- 10*length(s)
-	       }
-               if(is.null(N)){
-                 N <- 0.5*maxN
-	       }
-               lpriorm <- rep(0,maxN)
-               },
-           cmp={
-               if(!is.null(mode.prior.sample.proportion)){
-                beta <- 2/mode.prior.sample.proportion - 1
-	       }
-               if(!is.null(median.prior.size)){
-                beta <- -log(2)/log(1-n/median.prior.size)
-               }
-               if(!is.null(mean.prior.size)){
-                beta <- (1-mean.prior.size)/mean.prior.size
-               }
-               if(!is.null(mode.prior.size)){
-                beta <- 2*mode.prior.size/n - 1
-	       }
-               median.prior.size <- n/(1-0.5^(1/beta))
-               mode.prior.size <- n*(beta+1)/2
-               mode.prior.sample.proportion <- 2/(beta+1)
-               if(is.null(maxN)){maxN <- min(50000,ceiling( n/(1-0.90^(1/beta)) ))}
-               if(is.null(N)){N <- min(50000,ceiling( n/(1-0.5^(1/beta)) ))}
-               x <- (1:maxN)
-	       if(verbose){cat(paste("The maximum prior range is",maxN))}
-               lpriorm <- log(beta*n)+(beta-1)*log(x)-(beta+1)*log(x+n)
-               },
-               {
-               if(!is.null(mode.prior.sample.proportion)){
-                beta <- 2/mode.prior.sample.proportion - 1
-	       }
-               if(!is.null(median.prior.size)){
-                beta <- -log(2)/log(1-n/median.prior.size)
-               }
-               if(!is.null(mean.prior.size)){
-                beta <- (1-mean.prior.size)/mean.prior.size
-               }
-               if(!is.null(mode.prior.size)){
-                beta <- 2*mode.prior.size/n - 1
-	       }
-               median.prior.size <- n/(1-0.5^(1/beta))
-               mode.prior.size <- n*(beta+1)/2
-               mode.prior.sample.proportion <- 2/(beta+1)
-               if(is.null(maxN)){maxN <- min(50000,ceiling( n/(1-0.90^(1/beta)) ))}
-               if(is.null(N)){N <- min(50000, ceiling( n/(1-0.5^(1/beta)) ))}
-	       if(verbose){cat(paste("The maximum prior range is",maxN))}
-               x <- (1:maxN)
-               lpriorm <- log(beta*n)+(beta-1)*log(x)-(beta+1)*log(x+n)
-	       })
+    prior <- dspprior(n=n,
+		  priordistribution=priordistribution,
+		  mean.prior.size=mean.prior.size,
+		  sd.prior.size=sd.prior.size,
+		  mode.prior.sample.proportion=mode.prior.sample.proportion,
+		  median.prior.size=median.prior.size,
+		  mode.prior.size=mode.prior.size,
+                  maxN=maxN,
+                  log=TRUE,
+                  verbose=verbose)
     Cret <- .C("gcmpdisease",
-              pop=as.integer(c(s,rep(0,maxN-n))),
-              dis=as.integer(c(dis,rep(0,maxN-n))),
+              pop=as.integer(c(s,rep(0,prior$maxN-n))),
+              dis=as.integer(c(dis,rep(0,prior$maxN-n))),
               nk0=as.integer(nk0),
               nk1=as.integer(nk1),
               K=as.integer(K),
@@ -126,11 +65,11 @@ poscmpdisease<-function(s,dis,
 	      Np1i=as.integer(Np1),
               muproposal=as.double(muproposal),
               sigmaproposal=as.double(sigmaproposal),
-              N=as.integer(N),
-              maxN=as.integer(maxN),
+              N=as.integer(prior$N),
+              maxN=as.integer(prior$maxN),
               sample=double(samplesize*dimsample),
               p0pos=double(K), p1pos=double(K),
-              lpriorm=as.double(lpriorm),
+              lpriorm=as.double(prior$lprior),
               burnintheta=as.integer(burnintheta),
               fVerbose=as.integer(verbose))
     Cret$sample<-matrix(Cret$sample,nrow=samplesize,ncol=dimsample,byrow=TRUE)
@@ -176,12 +115,91 @@ poscmpdisease<-function(s,dis,
       posdensN$x[which.max(posdensN$y)]
     }
     Cret$MAP <- apply(Cret$sample,2,mapfn)
-    Cret$MAP["N"] <- mapfn(Cret$sample[,"N"],lbound=n,ubound=maxN)
+    Cret$MAP["N"] <- mapfn(Cret$sample[,"N"],lbound=n,ubound=prior$maxN)
     Cret$MAP["disease"] <- mapfn(Cret$sample[,"disease"],lbound=0,ubound=1)
-    Cret$maxN <- maxN
-    Cret$mode.prior.size <- mode.prior.size
-    Cret$median.prior.size <- median.prior.size
-    Cret$mode.prior.sample.proportion <- mode.prior.sample.proportion
-    Cret$N <- N
+    Cret$maxN <- prior$maxN
+    Cret$mode.prior.size <- prior$mode.prior.size
+    Cret$median.prior.size <- prior$median.prior.size
+    Cret$mode.prior.sample.proportion <- prior$mode.prior.sample.proportion
+    Cret$N <- prior$N
     Cret
+}
+dspprior<-function(n,
+		  priordistribution=c("cmp","nbinom","pln","flat"),
+		  mean.prior.size=NULL, sd.prior.size=NULL,
+		  mode.prior.sample.proportion=0.5,
+		  median.prior.size=NULL,
+		  mode.prior.size=NULL,
+                  maxN=NULL,
+                  log=FALSE,
+                  verbose=TRUE){
+  priordistribution=match.arg(priordistribution)
+  if(priordistribution=="nbinom" && is.null(mean.prior.size)){
+    mean.prior.size<-N
+  }
+  N <- NULL
+  beta <- NULL
+  lpriorm <- switch(priordistribution,
+    nbinom={
+      if(is.null(sd.prior.size)){sd.prior.size <- mean.prior.size}
+      if(is.null(maxN)){
+        maxN <- min(50000,ceiling(qnbinommu(p=0.995,
+                    mu=mean.prior.size, sd=sd.prior.size)))
+      }
+      if(is.null(N)){
+        maxN <- min(50000,ceiling(qnbinommu(p=0.5,
+                    mu=mean.prior.size, sd=sd.prior.size)))
+      }
+      lpriorm <- dnbinommu(x=n+(1:maxN)-1,
+                           mu=mean.prior.size, sd=sd.prior.size,
+                           log=log)
+      lpriorm
+     },
+    flat={
+      if(is.null(maxN)){
+        maxN <- 10*length(s)
+      }
+      if(is.null(N)){
+        N <- 0.5*maxN
+      }
+      if(log){
+       lpriorm <- rep(0,maxN)
+      }else{
+       lpriorm <- rep(1/maxN,maxN)
+      }
+      lpriorm
+     },
+    cmp={
+     if(!is.null(mode.prior.sample.proportion)){
+      beta <- 2/mode.prior.sample.proportion - 1
+     }
+     if(!is.null(median.prior.size)){
+      beta <- -log(2)/log(1-n/median.prior.size)
+     }
+     if(!is.null(mean.prior.size)){
+      beta <- (1-mean.prior.size)/mean.prior.size
+     }
+     if(!is.null(mode.prior.size)){
+      beta <- 2*mode.prior.size/n - 1
+     }
+     median.prior.size <- n/(1-0.5^(1/beta))
+     mode.prior.size <- n*(beta+1)/2
+     mode.prior.sample.proportion <- 2/(beta+1)
+     if(is.null(maxN)){maxN <- min(50000,ceiling( n/(1-0.90^(1/beta)) ))}
+     if(is.null(N)){N <- min(50000,ceiling( n/(1-0.5^(1/beta)) ))}
+     x <- (1:maxN)
+     lpriorm <- log(beta*n)+(beta-1)*log(x)-(beta+1)*log(x+n)
+     if(!log){
+      lpriorm <- exp(lpriorm)
+     }
+     lpriorm
+     }
+    )
+    if(verbose){cat(paste("The maximum prior range is",n+maxN,"\n"))}
+    list(x=n+x,lprior=lpriorm,N=N,maxN=maxN,
+         median.prior.size=median.prior.size,
+         mean.prior.size=mean.prior.size,
+         mode.prior.size=mode.prior.size,
+	 mode.prior.sample.proportion=mode.prior.sample.proportion,
+	 beta=beta)
 }
