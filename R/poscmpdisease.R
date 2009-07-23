@@ -12,9 +12,10 @@ poscmpdisease<-function(s,dis,
                   sigmaproposal=0.15, 
                   Np0=0, Np1=0,
                   samplesize=10,burnin=0,interval=1,burnintheta=500,
-		  priordistribution=c("cmp","nbinom","pln","flat"),
+		  priorsizedistribution=c("cmp","nbinom","pln","flat"),
 		  mean.prior.size=NULL, sd.prior.size=NULL,
 		  mode.prior.sample.proportion=0.5,
+		  median.prior.sample.proportion=NULL,
 		  median.prior.size=NULL,
 		  mode.prior.size=NULL,
                   seed=NULL,
@@ -35,12 +36,13 @@ poscmpdisease<-function(s,dis,
     sigma1 <- out$nu
     dimsample <- 8+Np0+Np1
     #
-    priordistribution=match.arg(priordistribution)
-    prior <- dspprior(n=n,
-		  priordistribution=priordistribution,
+    priorsizedistribution=match.arg(priorsizedistribution)
+    prior <- dsizeprior(n=n,
+		  type=priorsizedistribution,
 		  mean.prior.size=mean.prior.size,
 		  sd.prior.size=sd.prior.size,
 		  mode.prior.sample.proportion=mode.prior.sample.proportion,
+		  median.prior.sample.proportion=median.prior.sample.proportion,
 		  median.prior.size=median.prior.size,
 		  mode.prior.size=mode.prior.size,
                   maxN=maxN,
@@ -124,22 +126,23 @@ poscmpdisease<-function(s,dis,
     Cret$N <- prior$N
     Cret
 }
-dspprior<-function(n,
-		  priordistribution=c("cmp","nbinom","pln","flat"),
+dsizeprior<-function(n,
+		  type=c("proportion","nbinom","pln","flat"),
 		  mean.prior.size=NULL, sd.prior.size=NULL,
 		  mode.prior.sample.proportion=0.5,
+		  median.prior.sample.proportion=NULL,
 		  median.prior.size=NULL,
 		  mode.prior.size=NULL,
                   maxN=NULL,
                   log=FALSE,
                   verbose=TRUE){
-  priordistribution=match.arg(priordistribution)
-  if(priordistribution=="nbinom" && is.null(mean.prior.size)){
+  priorsizedistribution=match.arg(type)
+  if(priorsizedistribution=="nbinom" && is.null(mean.prior.size)){
     mean.prior.size<-N
   }
   N <- NULL
   beta <- NULL
-  lpriorm <- switch(priordistribution,
+  lpriorm <- switch(priorsizedistribution,
     nbinom={
       if(is.null(sd.prior.size)){sd.prior.size <- mean.prior.size}
       if(is.null(maxN)){
@@ -169,9 +172,12 @@ dspprior<-function(n,
       }
       lpriorm
      },
-    cmp={
+    proportion={
      if(!is.null(mode.prior.sample.proportion)){
       beta <- 2/mode.prior.sample.proportion - 1
+     }
+     if(!is.null(median.prior.sample.proportion)){
+      beta <- -log(2)/log(1-median.prior.sample.proportion)
      }
      if(!is.null(median.prior.size)){
       beta <- -log(2)/log(1-n/median.prior.size)
@@ -201,5 +207,6 @@ dspprior<-function(n,
          mean.prior.size=mean.prior.size,
          mode.prior.size=mode.prior.size,
 	 mode.prior.sample.proportion=mode.prior.sample.proportion,
+	 median.prior.sample.proportion=median.prior.sample.proportion,
 	 beta=beta)
 }

@@ -9,13 +9,13 @@ posteriorsize<-function(s,
                   Np=0,
                   samplesize=1000,burnin=100,interval=1,burnintheta=500,
 		  mean.prior.size=N, sd.prior.size=N,
-		  distribution=c("cmp","nbinom","pln"),
+		  degreedistribution=c("cmp","nbinom","pln"),
                   parallel=1, seed=NULL,
                   verbose=TRUE){
 #
 #		  mean.prior.size=N, sd.prior.size=ceiling(sqrt(mean.prior.size)*3),
-  distribution=match.arg(distribution)
-  posfn <- switch(distribution,
+  degreedistribution=match.arg(degreedistribution)
+  posfn <- switch(degreedistribution,
                   nbinom=posnbinom,
                   pln=pospln,
 		  cmp=poscmp,
@@ -71,7 +71,7 @@ posteriorsize<-function(s,
     if(length(degnames)>0){
      colnamessample <- c(colnamessample, degnames)
     }
-    if(distribution=="cmp"){
+    if(degreedistribution=="cmp"){
      colnamessample <- c(colnamessample, c("lambda","nu"))
     }
     colnames(Cret$sample) <- colnamessample
@@ -101,7 +101,7 @@ posteriorsize<-function(s,
   if(Cret$ppos[length(Cret$ppos)] > 0.01){
    warning("There is a non-trivial proportion of the posterior mass on very high degrees. This may indicate convergence problems in the MCMC.")
   }
-  Cret$distribution <- distribution
+  Cret$degreedistribution <- degreedistribution
   ### return result
   Cret
 }

@@ -11,22 +11,22 @@ posteriordisease<-function(s,dis,
                   sigmaproposal=0.15, 
                   Np0=0, Np1=0,
                   samplesize=1000,burnin=100,interval=1,burnintheta=500,
-		  priordistribution=c("cmp","nbinom","pln","flat"),
+		  priorsizedistribution=c("proportion","nbinom","pln","flat"),
 		  mean.prior.size=NULL, sd.prior.size=NULL,
 		  mode.prior.sample.proportion=0.5,
 		  median.prior.size=NULL,
 		  mode.prior.size=NULL,
-		  distribution=c("cmp","nbinom","pln"),
+		  degreedistribution=c("cmp","nbinom","pln"),
                   parallel=1, seed=NULL,
                   verbose=TRUE){
-  distribution=match.arg(distribution)
-  posfn <- switch(distribution,
+  degreedistribution=match.arg(degreedistribution)
+  posfn <- switch(degreedistribution,
                   nbinom=posnbinomdisease,
                   pln=posplndisease,
 		  cmp=poscmpdisease,
 		  poscmpdisease)
-  priordistribution=match.arg(priordistribution)
-  if(priordistribution=="nbinom" && missing(mean.prior.size)){
+  priorsizedistribution=match.arg(priorsizedistribution)
+  if(priorsizedistribution=="nbinom" && missing(mean.prior.size)){
     stop("You need to specify 'mean.prior.size', and possibly 'sd.prior.size' if you use the 'nbinom' prior.") 
   }
   if(parallel==1){
@@ -39,7 +39,7 @@ posteriordisease<-function(s,dis,
                       Np0=Np0,Np1=Np1,
                       samplesize=samplesize,burnin=burnin,interval=interval,
 		      burnintheta=burnintheta,
-		      priordistribution=priordistribution,
+		      priorsizedistribution=priorsizedistribution,
 		      mean.prior.size=mean.prior.size, sd.prior.size=sd.prior.size,
 		      mode.prior.sample.proportion=mode.prior.sample.proportion,
 		      median.prior.size=median.prior.size,
@@ -58,7 +58,7 @@ posteriordisease<-function(s,dis,
       Np0=Np0,Np1=Np1,
       samplesize=samplesize.parallel,burnin=burnin,interval=interval,
       burnintheta=burnintheta,
-      priordistribution=priordistribution,
+      priorsizedistribution=priorsizedistribution,
       mean.prior.size=mean.prior.size, sd.prior.size=sd.prior.size,
       mode.prior.sample.proportion=mode.prior.sample.proportion,
       median.prior.size=median.prior.size,
@@ -91,7 +91,7 @@ posteriordisease<-function(s,dis,
     }else{
      colnamessample <- c(colnamessample,"disease")
     }
-    if(distribution=="cmp"){
+    if(degreedistribution=="cmp"){
      colnamessample <- c(colnamessample, c("lambda0","nu0","lambda1","nu1"))
     }
     colnames(Cret$sample) <- colnamessample
@@ -127,8 +127,8 @@ posteriordisease<-function(s,dis,
   if(Cret$p1pos[length(Cret$p1pos)] > 0.01){
    warning("There is a non-trivial proportion of the posterior mass on very high degrees for diseased nodes. This may indicate convergence problems in the MCMC.")
   }
-  Cret$distribution <- distribution
-  Cret$priordistribution <- priordistribution
+  Cret$degreedistribution <- degreedistribution
+  Cret$priorsizedistribution <- priorsizedistribution
   Cret$mean.prior.size <- mean.prior.size
   ### return result
   Cret
