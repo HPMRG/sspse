@@ -29,7 +29,7 @@ posplndisease<-function(s,dis,
     mu1 <- log(mean1.prior.degree)-0.5*sigma1*sigma1
     dimsample <- 8+Np0+Np1
     #
-    prior <- dspprior(n=n,
+    prior <- dsizeprior(n=n,
 		  priordistribution="nbinom",
 		  mean.prior.size=mean.prior.size,
 		  sd.prior.size=sd.prior.size,
