@@ -76,11 +76,15 @@ posteriordisease<-function(s,dis,
      Cret$Nk1<-Cret$Nk1+z$Nk1
      Cret$p0pos<-Cret$p0pos+z$p0pos
      Cret$p1pos<-Cret$p1pos+z$p1pos
+     Cret$ppos<-Cret$ppos+z$ppos
     }
     Cret$Nk0<-Cret$Nk0/Nparallel
     Cret$Nk1<-Cret$Nk1/Nparallel
     Cret$p0pos<-Cret$p0pos/Nparallel
     Cret$p1pos<-Cret$p1pos/Nparallel
+    Cret$ppos<-Cret$ppos/Nparallel
+    Cret$predictive.degree<-Cret$ppos
+    Cret$ppos<-NULL
     degnames <- NULL
     if(Np0>0){degnames <- c(degnames,paste("p0deg",1:Np0,sep=""))}
     if(Np1>0){degnames <- c(degnames,paste("p1deg",1:Np1,sep=""))}
@@ -126,6 +130,9 @@ posteriordisease<-function(s,dis,
   }
   if(Cret$p1pos[length(Cret$p1pos)] > 0.01){
    warning("There is a non-trivial proportion of the posterior mass on very high degrees for diseased nodes. This may indicate convergence problems in the MCMC.")
+  }
+  if(Cret$predictive.degree[length(Cret$predictive.degree)] > 0.01){
+   warning("There is a non-trivial proportion of the posterior mass on very high degree nodes. This may indicate convergence problems in the MCMC.")
   }
   Cret$degreedistribution <- degreedistribution
   Cret$priorsizedistribution <- priorsizedistribution
@@ -181,6 +188,7 @@ posdis<-function(s,dis,maxN=4*length(s),
               maxN=as.integer(maxN),
               sample=double(samplesize*dimsample),
               p0pos=double(K), p1pos=double(K),
+              ppos=double(K),
               burnintheta=as.integer(burnintheta),
               fVerbose=as.integer(verbose))
     Cret$sample<-matrix(Cret$sample,nrow=samplesize,ncol=dimsample,byrow=TRUE)

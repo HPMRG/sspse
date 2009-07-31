@@ -67,7 +67,7 @@ posteriorsize<-function(s,
 #
 #   Process the results
 #
-    ### Snow returns a list of length parallel where each element is the return of each posnbinom
+    ### Snow returns a list of length parallel where each element is the return of each posfn
     ### Following loops combines the separate MCMC samples into 1 using rbind, creating a matrix
     Cret <- outlist[[1]]
     Cret$samplesize <- samplesize
@@ -80,6 +80,8 @@ posteriorsize<-function(s,
     }
     Cret$nk<-Cret$nk/Nparallel
     Cret$ppos<-Cret$ppos/Nparallel
+    Cret$predictive.degree<-Cret$ppos
+    Cret$ppos<-NULL
     degnames <- NULL
     if(Np>0){degnames <- c(degnames,paste("pdeg",1:Np,sep=""))}
     colnamessample <- c("N","mu","sigma","degree1")
@@ -119,7 +121,7 @@ posteriorsize<-function(s,
 	      quantile(Cret$sample[,"N"],c(0.025,0.975)))
   names(Cret$N) <- c("MAP","Mean AP","Median AP","P025","P975")
   #
-  if(Cret$ppos[length(Cret$ppos)] > 0.01){
+  if(Cret$predictive.degree[length(Cret$predictive.degree)] > 0.01){
    warning("There is a non-trivial proportion of the posterior mass on very high degrees. This may indicate convergence problems in the MCMC.")
   }
   Cret$degreedistribution <- degreedistribution
