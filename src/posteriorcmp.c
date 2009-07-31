@@ -25,13 +25,13 @@ void gcmp (int *pop,
             int *burnintheta,
 	    int *fVerbose
 			 ) {
-  int step, staken, getone=1, intervalone=1, fVerboseMHcmp = 0;
   int dimsample, Np;
+  int step, staken, getone=1, intervalone=1, fVerboseMHcmp = 0;
   int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
   double mui, sigmai;
   double dkappa0, ddf0, dmu0, dsigma0, dmuproposal, dsigmaproposal;
   int tU, popi, imaxN, give_log0=0, give_log1=1;
-  double r, gammart, pis;
+  double r, gammart, pis, Nd;
   double errval=0.000001, lzcmp;
 
   GetRNGstate();  /* R function enabling uniform RNG */
@@ -103,10 +103,11 @@ void gcmp (int *pop,
     mui=musample[0];
     sigmai=sigmasample[0];
 
-    lzcmp = zcmp(exp(mui), sigmai, errval, give_log1);
-//  Rprintf("mui %f sigmai %f lzcmp %f\n", mui, sigmai, lzcmp);
+    /* Draw new N */
+
     /* First find the degree distribution */
     pis=0.;
+    lzcmp = zcmp(exp(mui), sigmai, errval, give_log1);
     for (i=Np; i<Ki; i++){
       pi[i]=cmp(i+1,mui,sigmai,lzcmp,give_log0);
 //  Rprintf("i %d pi[i] %f\n", i, pi[i]);
@@ -114,7 +115,7 @@ void gcmp (int *pop,
     }
 //  Rprintf("isamp %d pis %f\n", isamp, pis);
     pis=1.-cmp(0,mui,sigmai,lzcmp,give_log0);
-    for (i=Np; i<Ki; i++){
+    for (i=0; i<Ki; i++){
       pi[i]/=pis;
     }
     pis=1.;
@@ -176,25 +177,29 @@ void gcmp (int *pop,
       pi[i]=pi[i-1]+pi[i];
     }
     for (i=ni; i<Ni; i++){
-      /* Propose unseen size for unit i */
       /* Use rejection sampling */
-      popi=1000000000;
-      while(log(1.0-unif_rand()) > -r*popi){
-       /* In the next 3 lines a CMP (popi) is chosen with */
-       /* log-lambda mui and nu sigmai */
-       popi = 1;
-       gammart = pi[Ki-1] * unif_rand();
-       while(gammart > pi[popi-1]){popi++;}
-//    Rprintf("popi %d pi[Ki-1] %f gammart %f\n", popi, pi[Ki-1],gammart);
+      popi=1000000;
+      while(popi >= Ki){
+       popi=1000000;
+       while(log(1.0-unif_rand()) > -r*popi){
+        /* Now propose unseen size for unit i */
+        /* In the next two lines a popi is chosen */
+        /* with parameters mui and sigmai */
+        popi = 1;
+        gammart = pi[Ki-1] * unif_rand();
+        while(gammart > pi[popi-1]){popi++;}
+//      Rprintf("popi %d pi[Ki-1] %f gammart %f\n", popi, pi[Ki-1],gammart);
+       }
       }
-      if(popi >= Ki){popi=Ki-1;}
+//    if(popi >= Ki){popi=Ki-1;}
       pop[i]=popi;
-      if((popi <= 0) | (popi > Ki-1)) Rprintf("popi %d r %f\n", popi,r);
+//    if((popi <= 0) | (popi > Ki-1)) Rprintf("popi %d r %f\n", popi,r);
       Nk[popi-1]=Nk[popi-1]+1;
     }
     if (step > 0 && step==(iinterval*(step/iinterval))) { 
       /* record statistics for posterity */
-      sample[isamp*dimsample  ]=(double)(Ni);
+      Nd=(double)Ni;
+      sample[isamp*dimsample  ]=Nd;
       sample[isamp*dimsample+1]=mui;
       sample[isamp*dimsample+2]=sigmai;
       sample[isamp*dimsample+3]=(double)(Nk[0]);
@@ -203,20 +208,22 @@ void gcmp (int *pop,
       }
       for (i=0; i<Ki; i++){
         Nkpos[i]=Nkpos[i]+Nk[i];
-        ppos[i]+=((Nk[i]*1.)/Ni);
+        ppos[i]+=((Nk[i]*1.)/Nd);
       }
       isamp++;
       if (*fVerbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d samples...\n", isamp);
-      if (*fVerbose) Rprintf("Taken %d samples...\n", isamp);
+//    if (*fVerbose) Rprintf("Taken %d samples...\n", isamp);
     }
     step++;
   }
   for (i=0; i<Ki; i++){
     nk[i]=Nkpos[i];
-    ppos[i]/=isamp;
+    ppos[i]/=((double)isamp);
   }
   PutRNGstate();  /* Disable RNG before returning */
   free(pi);
+  free(psample);
+  free(pdegi);
   free(b);
   free(Nk);
   free(Nkpos);
@@ -243,7 +250,7 @@ void MHcmp (int *Nk, int *K,
   double pis, pstars;
   double sigmastar, sigmai, sigma2star, sigma2i, qsigma2star, qsigma2i;
   double pithetastar, pithetai;
-  double dkappa0, rkappa0, ddf0, dmu0, logK;
+  double dkappa0, rkappa0, ddf0, dmu0;
   double dsigma0, dsigma20, dmuproposal, dsigmaproposal;
   double errval=0.000001, lzcmp;
 
@@ -253,10 +260,10 @@ void MHcmp (int *Nk, int *K,
   Np=(*Npi);
   double *pstar = (double *) malloc(sizeof(double) * Ki);
   double *pi = (double *) malloc(sizeof(double) * Ki);
-  double *odegstar = (double *) malloc(sizeof(double) * (Np+1));
-  double *odegi = (double *) malloc(sizeof(double) * (Np+1));
-  double *pdegstar = (double *) malloc(sizeof(double) * (Np+1));
-  double *pdegi = (double *) malloc(sizeof(double) * (Np+1));
+  double *odegstar = (double *) malloc(sizeof(double) * Np);
+  double *odegi = (double *) malloc(sizeof(double) * Np);
+  double *pdegstar = (double *) malloc(sizeof(double) * Np);
+  double *pdegi = (double *) malloc(sizeof(double) * Np);
 
   Ni=(*N);
   isamplesize=(*samplesize);
@@ -270,7 +277,6 @@ void MHcmp (int *Nk, int *K,
   dmu0=(*mu0);
   dsigmaproposal=(*sigmaproposal);
   dmuproposal=(*muproposal);
-  logK=log((double)Ki);
   isamp = taken = 0;
   step = -iburnin;
   pis=1.;
@@ -303,12 +309,13 @@ void MHcmp (int *Nk, int *K,
   for (i=0; i<Np; i++){
     pis-=pdegi[i];
   }
+  for (i=Np; i<Ki; i++){
+    pi[i]=pi[i]*pis;
+  }
   for (i=0; i<Np; i++){
     pi[i]=pdegi[i];
   }
-  for (i=Np; i<Ki; i++){
-    pi[i]*=pis;
-  }
+  // Now do the MCMC updates (starting with the burnin updates)
   while (isamp < isamplesize) {
     /* Propose new theta */
     /* Now the degree distribution model parameters */
@@ -330,7 +337,7 @@ void MHcmp (int *Nk, int *K,
     sigmastar = sqrt(sigma2star);
     /* Check for magnitude */
 
-  if(sigma2star > 1000) Rprintf("%f %f %f %f %f\n", mustar, dmu0, sigma2star, dkappa0, sigma2i);
+//  if(sigma2star > 1000) Rprintf("%f %f %f %f %f\n", mustar, dmu0, sigma2star, dkappa0, sigma2i);
     /* Calculate pieces of the posterior. */
     qsigma2star = dnorm(log(sigma2star/sigma2i)/dsigmaproposal,0.,1.,give_log1)
                   -log(dsigmaproposal*sigma2star);
@@ -356,16 +363,16 @@ void MHcmp (int *Nk, int *K,
     for (i=0; i<Np; i++){
       pstars-=pdegstar[i];
     }
-    for (i=0; i<Np; i++){
-      pstar[i]=pdegstar[i];
-    }
     for (i=Np; i<Ki; i++){
       pstar[i]*=pstars;
+    }
+    for (i=0; i<Np; i++){
+      pstar[i]=pdegstar[i];
     }
     for (i=0; i<Ki; i++){
      if(Nk[i]>0){
       lp = log(pstar[i]/pi[i]);
-      if(abs(lp)<100.){ip += (Nk[i]*lp);}
+      if((lp > -100.) && (lp<100.)){ip += (Nk[i]*lp);}
      }
     }
     /* The logic is to set exp(cutoff) = exp(ip) * qratio ,
@@ -409,6 +416,10 @@ void MHcmp (int *Nk, int *K,
   }
   free(pi);
   free(pstar);
+  free(odegi);
+  free(odegstar);
+  free(pdegi);
+  free(pdegstar);
   PutRNGstate();  /* Disable RNG before returning */
   *staken = taken;
 }

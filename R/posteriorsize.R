@@ -1,25 +1,32 @@
 posteriorsize<-function(s,
-                  maxN=4*length(s),
-                  K=2*max(s), nk=tabulate(s,nbin=K), n=length(s),
-		  N=0.5*maxN,
+                  maxN=NULL,
+                  K=2*max(s), n=length(s),
+                  nk=tabulate(s,nbin=K),
                   mean.prior.degree=7, sd.prior.degree=3,
                   df.mean.prior=1,df.sd.prior=5,
                   muproposal=0.1, 
                   sigmaproposal=0.15, 
                   Np=0,
                   samplesize=1000,burnin=100,interval=1,burnintheta=500,
-		  mean.prior.size=N, sd.prior.size=N,
+		  priorsizedistribution=c("proportion","nbinom","pln","flat"),
+		  mean.prior.size=NULL, sd.prior.size=NULL,
+		  mode.prior.sample.proportion=0.5,
+		  median.prior.size=NULL,
+		  mode.prior.size=NULL,
 		  degreedistribution=c("cmp","nbinom","pln"),
                   parallel=1, seed=NULL,
                   verbose=TRUE){
 #
-#		  mean.prior.size=N, sd.prior.size=ceiling(sqrt(mean.prior.size)*3),
   degreedistribution=match.arg(degreedistribution)
   posfn <- switch(degreedistribution,
                   nbinom=posnbinom,
                   pln=pospln,
 		  cmp=poscmp,
 		  poscmp)
+  priorsizedistribution=match.arg(priorsizedistribution)
+  if(priorsizedistribution=="nbinom" && missing(mean.prior.size)){
+    stop("You need to specify 'mean.prior.size', and possibly 'sd.prior.size' if you use the 'nbinom' prior.") 
+  }
   ### are we running the job in parallel (parallel > 1), if not just 
   #   call the degree specific function
   if(parallel==1){
@@ -30,7 +37,11 @@ posteriorsize<-function(s,
 		    Np=Np,
                     samplesize=samplesize,burnin=burnin,interval=interval,
 		    burnintheta=burnintheta,
+		    priorsizedistribution=priorsizedistribution,
 		    mean.prior.size=mean.prior.size, sd.prior.size=sd.prior.size,
+		    mode.prior.sample.proportion=mode.prior.sample.proportion,
+		    median.prior.size=median.prior.size,
+		    mode.prior.size=mode.prior.size,
                     seed=seed)
   }
   ### since running job in parallel, start pvm (if not already running)
@@ -48,7 +59,11 @@ posteriorsize<-function(s,
       Np=Np,
       samplesize=samplesize.parallel,burnin=burnin,interval=interval,
       burnintheta=burnintheta,
-      mean.prior.size=mean.prior.size, sd.prior.size=sd.prior.size)
+      priorsizedistribution=priorsizedistribution,
+      mean.prior.size=mean.prior.size, sd.prior.size=sd.prior.size,
+      mode.prior.sample.proportion=mode.prior.sample.proportion,
+      median.prior.size=median.prior.size,
+      mode.prior.size=mode.prior.size)
 #
 #   Process the results
 #
@@ -77,7 +92,8 @@ posteriorsize<-function(s,
     colnames(Cret$sample) <- colnamessample
     
     ### Coda package which does MCMC diagnostics, requires certain attributes of MCMC sample
-    endrun <- burnin+interval*(samplesize-1)
+    endrun <- burnin+interval*(samplesize)
+#!?   endrun <- burnin+interval*(samplesize-1)
     attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
     attr(Cret$sample, "class") <- "mcmc"
     
@@ -89,7 +105,7 @@ posteriorsize<-function(s,
     
     ### compute modes of posterior samples,Maximum A Posterior (MAP) values N, mu, sigma, degree1
     Cret$MAP <- apply(Cret$sample,2,mapfn)
-    Cret$MAP["N"] <- mapfn(Cret$sample[,"N"],lbound=n,ubound=maxN)
+    Cret$MAP["N"] <- mapfn(Cret$sample[,"N"],lbound=n,ubound=Cret$maxN)
     if(verbose){
      cat("parallel samplesize=", parallel,"by", samplesize.parallel,"\n")
     }
@@ -97,11 +113,18 @@ posteriorsize<-function(s,
     ### stop cluster and PVM (in case PVM is flakey)
     endsnow(cl)
   }
+  Cret$N <- c(Cret$MAP["N"], 
+              mean(Cret$sample[,"N"]),
+              median(Cret$sample[,"N"]),
+	      quantile(Cret$sample[,"N"],c(0.025,0.975)))
+  names(Cret$N) <- c("MAP","Mean AP","Median AP","P025","P975")
   #
   if(Cret$ppos[length(Cret$ppos)] > 0.01){
    warning("There is a non-trivial proportion of the posterior mass on very high degrees. This may indicate convergence problems in the MCMC.")
   }
   Cret$degreedistribution <- degreedistribution
+  Cret$priorsizedistribution <- priorsizedistribution
+  Cret$mean.prior.size <- mean.prior.size
   ### return result
   Cret
 }
