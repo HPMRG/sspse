@@ -71,6 +71,7 @@ poscmpdisease<-function(s,dis,
               maxN=as.integer(prior$maxN),
               sample=double(samplesize*dimsample),
               p0pos=double(K), p1pos=double(K),
+              ppos=double(K), 
               lpriorm=as.double(prior$lprior),
               burnintheta=as.integer(burnintheta),
               fVerbose=as.integer(verbose))

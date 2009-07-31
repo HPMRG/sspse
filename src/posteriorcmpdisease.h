@@ -31,10 +31,12 @@ void gcmpdisease (int *pop, int *dis,
             int *N, int *maxN, 
             double *sample, 
             double *p0pos, double *p1pos, 
+            double *ppos, 
 	    double *lpriorm,
             int *burnintheta,
 	    int *fVerbose
 			 );
+
 void MHcmpdisease (int *Nk0, int *Nk1, int *totdis, int *K,
 	    double *mu0, double *mu1, double *kappa0, 
             double *sigma0,  double *sigma1, double *df0,

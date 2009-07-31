@@ -28,7 +28,7 @@ void gcmp (int *pop,
   int dimsample, Np;
   int step, staken, getone=1, intervalone=1, fVerboseMHcmp = 0;
   int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
-  double mui, sigmai;
+  double mui, sigmai, dsamp;
   double dkappa0, ddf0, dmu0, dsigma0, dmuproposal, dsigmaproposal;
   int tU, popi, imaxN, give_log0=0, give_log1=1;
   double r, gammart, pis, Nd;
@@ -216,9 +216,10 @@ void gcmp (int *pop,
     }
     step++;
   }
+  dsamp=((double)isamp);
   for (i=0; i<Ki; i++){
     nk[i]=Nkpos[i];
-    ppos[i]/=((double)isamp);
+    ppos[i]/=dsamp;
   }
   PutRNGstate();  /* Disable RNG before returning */
   free(pi);

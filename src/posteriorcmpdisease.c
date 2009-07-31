@@ -21,6 +21,7 @@ void gcmpdisease (int *pop, int *dis,
             int *N, int *maxN, 
             double *sample, 
             double *p0pos, double *p1pos, 
+            double *ppos, 
 	    double *lpriorm,
             int *burnintheta,
             int *fVerbose
@@ -28,7 +29,7 @@ void gcmpdisease (int *pop, int *dis,
   int dimsample, Np0, Np1;
   int step, staken, getone=1, intervalone=1, fVerboseMHdisease = 0;
   int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
-  double mu0i, mu1i, pbeta, beta, sigma0i, sigma1i;
+  double mu0i, mu1i, pbeta, beta, sigma0i, sigma1i, dsamp;
   double dkappa0, ddf0, dmu0, dmu1, dsigma0, dsigma1, dmuproposal, dsigmaproposal;
   int tU, popi, imaxN, itotdis0, itotdis, give_log0=0, give_log1=1;
   double r, gamma0rt, gamma1rt, p0is, p1is, Nd;
@@ -82,6 +83,7 @@ void gcmpdisease (int *pop, int *dis,
      Nk1pos[i]=0;
      p0pos[i]=0.;
      p1pos[i]=0.;
+     ppos[i]=0.;
   }
   tU=0;
   for (i=ni; i<Ni; i++){
@@ -292,6 +294,8 @@ void gcmpdisease (int *pop, int *dis,
         Nk1pos[i]=Nk1pos[i]+Nk1[i];
         p0pos[i]+=(Nk0[i]/Nd);
         p1pos[i]+=(Nk1[i]/Nd);
+        ppos[i]+=(Nk0[i]+Nk1[i])/Nd;
+//
 //      N0d+=Nk0[i];
 //      N1d=Ni-N0d;
       }
@@ -302,11 +306,13 @@ void gcmpdisease (int *pop, int *dis,
     }
     step++;
   }
+  dsamp=((double)isamp);
   for (i=0; i<Ki; i++){
     nk0[i]=Nk0pos[i];
     nk1[i]=Nk1pos[i];
-    p0pos[i]=p0pos[i]/((double)isamp);
-    p1pos[i]=p1pos[i]/((double)isamp);
+    p0pos[i]=p0pos[i]/dsamp;
+    p1pos[i]=p1pos[i]/dsamp;
+    ppos[i]=ppos[i]/dsamp;
   }
   PutRNGstate();  /* Disable RNG before returning */
   free(psample);
