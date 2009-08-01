@@ -12,7 +12,12 @@ posplndisease<-function(s,dis,
                   sigmaproposal=0.15, 
                   Np0=0, Np1=0,
                   samplesize=10,burnin=0,interval=1,burnintheta=500,
+		  priorsizedistribution=c("proportion","nbinom","pln","flat"),
 		  mean.prior.size=NULL, sd.prior.size=NULL,
+		  mode.prior.sample.proportion=0.5,
+		  median.prior.sample.proportion=NULL,
+		  median.prior.size=NULL,
+		  mode.prior.size=NULL,
                   seed=NULL,
                   verbose=TRUE){
     #this function takes a vector of population sizes and a vector s of 
@@ -29,10 +34,15 @@ posplndisease<-function(s,dis,
     mu1 <- log(mean1.prior.degree)-0.5*sigma1*sigma1
     dimsample <- 8+Np0+Np1
     #
+    priorsizedistribution=match.arg(priorsizedistribution)
     prior <- dsizeprior(n=n,
-		  priordistribution="nbinom",
+		  type=priorsizedistribution,
 		  mean.prior.size=mean.prior.size,
 		  sd.prior.size=sd.prior.size,
+		  mode.prior.sample.proportion=mode.prior.sample.proportion,
+		  median.prior.sample.proportion=median.prior.sample.proportion,
+		  median.prior.size=median.prior.size,
+		  mode.prior.size=mode.prior.size,
                   maxN=maxN,
                   log=TRUE,
                   verbose=verbose)
@@ -59,6 +69,7 @@ posplndisease<-function(s,dis,
               maxN=as.integer(prior$maxN),
               sample=double(samplesize*dimsample),
               p0pos=double(K), p1pos=double(K),
+              ppos=double(K), 
               lpriorm=as.double(prior$lprior),
               burnintheta=as.integer(burnintheta),
               fVerbose=as.integer(verbose))
@@ -92,17 +103,32 @@ posplndisease<-function(s,dis,
     # Expectation and s.d. of Poisson-log-normal
     Cret$sample[,"sigma0"] <- sqrt(Cret$sample[,"mu0"]+Cret$sample[,"sigma0"]*Cret$sample[,"sigma0"])
     Cret$sample[,"sigma1"] <- sqrt(Cret$sample[,"mu1"]+Cret$sample[,"sigma1"]*Cret$sample[,"sigma1"])
-    aaa <- sum(Cret$nk0+Cret$nk1)
-    Cret$Nk0<-Cret$nk0/aaa
-    Cret$Nk1<-Cret$nk1/aaa
-    endrun <- burnin+interval*(samplesize-1)
-    attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
-    attr(Cret$sample, "class") <- "mcmc"
-    mapfn <- function(x,lbound=min(x),ubound=max(x)){
-      posdensN <- density(x, from=lbound, to=ubound)
-      posdensN$x[which.max(posdensN$y)]
-    }
-    Cret$MAP <- apply(Cret$sample,2,mapfn)
-    Cret$MAP["N"] <- mapfn(Cret$sample[,"N"],lbound=n,ubound=prior$maxN)
-    Cret
+    #
+    Cret$predictive.degree.count0<-Cret$nk0
+    Cret$predictive.degree.count1<-Cret$nk1
+    Cret$nk0 <- NULL
+    Cret$nk1 <- NULL
+    Cret$predictive.degree0<-Cret$p0pos
+    Cret$p0pos<-NULL
+    Cret$predictive.degree1<-Cret$p1pos
+    Cret$p1pos<-NULL
+    Cret$predictive.degree<-Cret$ppos
+    Cret$ppos<-NULL
+    #
+  endrun <- burnin+interval*(samplesize-1)
+  attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
+  attr(Cret$sample, "class") <- "mcmc"
+   mapfn <- function(x,lbound=min(x),ubound=max(x)){
+     posdensN <- density(x, from=lbound, to=ubound)
+     posdensN$x[which.max(posdensN$y)]
+   }
+   Cret$MAP <- apply(Cret$sample,2,mapfn)
+   Cret$MAP["N"] <- mapfn(Cret$sample[,"N"],lbound=n,ubound=prior$maxN)
+   Cret$MAP["disease"] <- mapfn(Cret$sample[,"disease"],lbound=0,ubound=1)
+   Cret$maxN <- prior$maxN
+   Cret$mode.prior.size <- prior$mode.prior.size
+   Cret$median.prior.size <- prior$median.prior.size
+   Cret$mode.prior.sample.proportion <- prior$mode.prior.sample.proportion
+   Cret$N <- prior$N
+   Cret
 }

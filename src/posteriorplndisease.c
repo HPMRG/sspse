@@ -20,6 +20,7 @@ void gplndisease (int *pop, int *dis,
             int *N, int *maxN, 
             double *sample, 
             double *p0pos, double *p1pos, 
+            double *ppos, 
 	    double *lpriorm,
             int *burnintheta,
             int *fVerbose
@@ -27,9 +28,9 @@ void gplndisease (int *pop, int *dis,
   int dimsample, Np0, Np1;
   int step, staken, getone=1, intervalone=1, fVerboseMHdisease = 0;
   int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
-  double mu0i, mu1i, pbeta, beta, sigma0i, sigma1i;
+  double mu0i, mu1i, pbeta, beta, sigma0i, sigma1i, dsamp;
   double dkappa0, ddf0, dmu0, dmu1, dsigma0, dsigma1, dmuproposal, dsigmaproposal;
-  int tU, popi, imaxN, itotdis0, itotdis;
+  int tU, popi, imaxN, itotdis0, itotdis, give_log0=0, give_log1=1;
   double r, gamma0rt, gamma1rt, p0is, p1is, Nd;
 
   GetRNGstate();  /* R function enabling uniform RNG */
@@ -80,6 +81,7 @@ void gplndisease (int *pop, int *dis,
      Nk1pos[i]=0;
      p0pos[i]=0.;
      p1pos[i]=0.;
+     ppos[i]=0.;
   }
   tU=0;
   for (i=ni; i<Ni; i++){
@@ -182,7 +184,7 @@ void gplndisease (int *pop, int *dis,
     // N = m + n
     // Compute (log) P(m | \theta and data and \Psi)
     for (i=0; i<imaxN; i++){
-     lpm[i]=lgamma(ni+i+1.)-lgamma(i+1)+i*gamma0rt;
+     lpm[i]=lgamma(ni+i+1.)-lgamma(i+1.)+i*gamma0rt;
      //  Add in the (log) prior on m: P(m)
      lpm[i]=lpm[i]+lpriorm[i];
      if(lpm[i] > tU) tU = lpm[i];
@@ -226,9 +228,12 @@ void gplndisease (int *pop, int *dis,
       p1i[i]=p1i[i-1]+p1i[i];
     }
     for (i=ni; i<Ni; i++){
+      /* Propose unseen size for unit i */
       /* Use rejection sampling */
       popi=1000000;
-      while((log(1.0-unif_rand()) > -r*popi)){
+      while(popi >= Ki){
+       popi=1000000;
+       while((log(1.0-unif_rand()) > -r*popi)){
         /* First propose unseen disease status for unit i */
         popi = 1;
         if(unif_rand() < pbeta){
@@ -246,8 +251,9 @@ void gplndisease (int *pop, int *dis,
           gamma0rt = p0i[Ki-1] * unif_rand();
           while(gamma0rt > p0i[popi-1]){popi++;}
         }
+       }
       }
-      if(popi >= Ki){popi=Ki-1;}
+//    if(popi >= Ki){popi=Ki-1;}
       pop[i]=popi;
       if(dis[i]==1){
         Nk1[popi-1]=Nk1[popi-1]+1;
@@ -263,7 +269,8 @@ void gplndisease (int *pop, int *dis,
     if (step > 0 && step==(iinterval*(step/iinterval))) { 
       /* record statistics for posterity */
 //    if (*fVerbose) Rprintf("isamp %d pop[501] %d\n", isamp, pop[501]);
-      sample[isamp*dimsample  ]=(double)(Ni);
+      Nd=(double)Ni;
+      sample[isamp*dimsample  ]=Nd;
       sample[isamp*dimsample+1]=mu0i;
       sample[isamp*dimsample+2]=mu1i;
       sample[isamp*dimsample+3]=sigma0i;
@@ -281,13 +288,12 @@ void gplndisease (int *pop, int *dis,
       for (i=0; i<Ki; i++){
         Nk0pos[i]=Nk0pos[i]+Nk0[i];
         Nk1pos[i]=Nk1pos[i]+Nk1[i];
-//      N0d+=Nk0[i];
-      }
-//      N1d=Ni-N0d;
-      Nd=(double)Ni;
-      for (i=0; i<Ki; i++){
         p0pos[i]+=(Nk0[i]/Nd);
         p1pos[i]+=(Nk1[i]/Nd);
+        ppos[i]+=(Nk0[i]+Nk1[i])/Nd;
+//
+//      N0d+=Nk0[i];
+//      N1d=Ni-N0d;
       }
       isamp++;
       if (*fVerbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d samples...\n", isamp);
@@ -296,11 +302,13 @@ void gplndisease (int *pop, int *dis,
     }
     step++;
   }
+  dsamp=((double)isamp);
   for (i=0; i<Ki; i++){
     nk0[i]=Nk0pos[i];
     nk1[i]=Nk1pos[i];
-    p0pos[i]=p0pos[i]/isamp;
-    p1pos[i]=p1pos[i]/isamp;
+    p0pos[i]=p0pos[i]/dsamp;
+    p1pos[i]=p1pos[i]/dsamp;
+    ppos[i]=ppos[i]/dsamp;
   }
   PutRNGstate();  /* Disable RNG before returning */
   free(psample);
@@ -330,7 +338,7 @@ void MHplndisease (int *Nk0, int *Nk1, int *totdis, int *K,
 	    int *fVerbose
 			 ) {
   int Np0, Np1;
-  int step, taken, give_log1=1;
+  int step, taken, give_log0=0, give_log1=1;
   int i, Ki, Ni, isamp, iinterval, isamplesize, iburnin, itotdis;
   double ip, cutoff;
   double mu0star, mu1star, mu0i, mu1i, lp;
@@ -520,8 +528,10 @@ void MHplndisease (int *Nk0, int *Nk1, int *totdis, int *K,
 //    p1stars+=p1star[i];
     }
     p1stars=1.-poilog(0,mu1star,sigma1star);
-    for (i=0; i<Ki; i++){
+    for (i=Np0; i<Ki; i++){
       p0star[i]/=p0stars;
+    }
+    for (i=Np1; i<Ki; i++){
       p1star[i]/=p1stars;
     }
     p0stars=1.;
@@ -532,8 +542,10 @@ void MHplndisease (int *Nk0, int *Nk1, int *totdis, int *K,
     for (i=0; i<Np1; i++){
       p1stars-=pdeg1star[i];
     }
-    for (i=0; i<Ki; i++){
+    for (i=Np0; i<Ki; i++){
       p0star[i]*=p0stars;
+    }
+    for (i=Np1; i<Ki; i++){
       p1star[i]*=p1stars;
     }
     for (i=0; i<Np0; i++){

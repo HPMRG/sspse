@@ -72,19 +72,18 @@ posteriordisease<-function(s,dis,
     for(i in (2 : Nparallel)){
      z <- outlist[[i]]
      Cret$sample <- rbind(Cret$sample,z$sample)
-     Cret$Nk0<-Cret$Nk0+z$Nk0
-     Cret$Nk1<-Cret$Nk1+z$Nk1
-     Cret$p0pos<-Cret$p0pos+z$p0pos
-     Cret$p1pos<-Cret$p1pos+z$p1pos
-     Cret$ppos<-Cret$ppos+z$ppos
+     Cret$predictive.degree.count0<-Cret$predictive.degree.count0+z$predictive.degree.count0
+     Cret$predictive.degree.count1<-Cret$predictive.degree.count1+z$predictive.degree.count1
+     Cret$predictive.degree0<-Cret$predictive.degree0+z$predictive.degree0
+     Cret$predictive.degree1<-Cret$predictive.degree1+z$predictive.degree1
+     Cret$predictive.degree<-Cret$predictive.degree+z$predictive.degree
     }
-    Cret$Nk0<-Cret$Nk0/Nparallel
-    Cret$Nk1<-Cret$Nk1/Nparallel
-    Cret$p0pos<-Cret$p0pos/Nparallel
-    Cret$p1pos<-Cret$p1pos/Nparallel
-    Cret$ppos<-Cret$ppos/Nparallel
-    Cret$predictive.degree<-Cret$ppos
-    Cret$ppos<-NULL
+    Cret$predictive.degree.count0<-Cret$predictive.degree.count0/Nparallel
+    Cret$predictive.degree.count1<-Cret$predictive.degree.count1/Nparallel
+    Cret$predictive.degree0<-Cret$predictive.degree0/Nparallel
+    Cret$predictive.degree1<-Cret$predictive.degree1/Nparallel
+    Cret$predictive.degree<-Cret$predictive.degree/Nparallel
+    #
     degnames <- NULL
     if(Np0>0){degnames <- c(degnames,paste("p0deg",1:Np0,sep=""))}
     if(Np1>0){degnames <- c(degnames,paste("p1deg",1:Np1,sep=""))}
@@ -125,10 +124,10 @@ posteriordisease<-function(s,dis,
 	      quantile(Cret$sample[,"disease"],c(0.025,0.975)))
   names(Cret$disease) <- c("MAP","Mean AP","Median AP","P025","P975")
   #
-  if(Cret$p0pos[length(Cret$p0pos)] > 0.01){
+  if(Cret$predictive.degree0[length(Cret$predictive.degree0)] > 0.01){
    warning("There is a non-trivial proportion of the posterior mass on very high degrees for non-diseased nodes. This may indicate convergence problems in the MCMC.")
   }
-  if(Cret$p1pos[length(Cret$p1pos)] > 0.01){
+  if(Cret$predictive.degree1[length(Cret$predictive.degree1)] > 0.01){
    warning("There is a non-trivial proportion of the posterior mass on very high degrees for diseased nodes. This may indicate convergence problems in the MCMC.")
   }
   if(Cret$predictive.degree[length(Cret$predictive.degree)] > 0.01){
@@ -140,7 +139,7 @@ posteriordisease<-function(s,dis,
   ### return result
   Cret
 }
-posdis<-function(s,dis,maxN=4*length(s),
+posdis.old<-function(s,dis,maxN=4*length(s),
                   K=2*max(s), 
 		  nk0=tabulate(s[dis==0],nbin=K),
 		  nk1=tabulate(s[dis==1],nbin=K),
@@ -216,9 +215,9 @@ posdis<-function(s,dis,maxN=4*length(s),
     # Expectation and s.d. of Poisson-log-normal
     Cret$sample[,"sigma0"] <- sqrt(Cret$sample[,"mu0"]+Cret$sample[,"sigma0"]*Cret$sample[,"sigma0"])
     Cret$sample[,"sigma1"] <- sqrt(Cret$sample[,"mu1"]+Cret$sample[,"sigma1"]*Cret$sample[,"sigma1"])
-    aaa <- sum(Cret$nk0+Cret$nk1)
-    Cret$Nk0<-Cret$nk0/aaa
-    Cret$Nk1<-Cret$nk1/aaa
+#   aaa <- sum(Cret$nk0+Cret$nk1)
+#   Cret$Nk0<-Cret$nk0/aaa
+#   Cret$Nk1<-Cret$nk1/aaa
     endrun <- burnin+interval*(samplesize-1)
     attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
     attr(Cret$sample, "class") <- "mcmc"

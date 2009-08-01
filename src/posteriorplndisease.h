@@ -32,6 +32,7 @@ void gplndisease (int *pop, int *dis,
             int *N, int *maxN, 
             double *sample, 
             double *p0pos, double *p1pos, 
+	    double *ppos,
 	    double *lpriorm,
             int *burnintheta,
 	    int *fVerbose

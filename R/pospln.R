@@ -66,7 +66,9 @@ pospln<-function(s,maxN=4*length(s),
     # Expectation and s.d. of Poisson-log-normal
     Cret$sample[,"sigma"] <- sqrt(Cret$sample[,"mu"]+Cret$sample[,"sigma"]*Cret$sample[,"sigma"])
     #
-    Cret$Nk<-Cret$nk/sum(Cret$nk)
+#   Cret$Nk<-Cret$nk/sum(Cret$nk)
+    Cret$predictive.degree.count<-Cret$nk
+    Cret$nk<-NULL
     endrun <- burnin+interval*(samplesize-1)
     attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
     attr(Cret$sample, "class") <- "mcmc"

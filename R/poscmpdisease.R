@@ -107,23 +107,32 @@ poscmpdisease<-function(s,dis,
     # Transform to mean value parametrization 
     Cret$sample[,c("mu0","sigma0")] <- t(apply(Cret$sample[,c("mu0","sigma0")],1,cmp.mu))
     Cret$sample[,c("mu1","sigma1")] <- t(apply(Cret$sample[,c("mu1","sigma1")],1,cmp.mu))
-    aaa <- sum(Cret$nk0+Cret$nk1)
-    Cret$Nk0<-Cret$nk0/aaa
-    Cret$Nk1<-Cret$nk1/aaa
-    endrun <- burnin+interval*(samplesize-1)
-    attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
-    attr(Cret$sample, "class") <- "mcmc"
-    mapfn <- function(x,lbound=min(x),ubound=max(x)){
-      posdensN <- density(x, from=lbound, to=ubound)
-      posdensN$x[which.max(posdensN$y)]
-    }
-    Cret$MAP <- apply(Cret$sample,2,mapfn)
-    Cret$MAP["N"] <- mapfn(Cret$sample[,"N"],lbound=n,ubound=prior$maxN)
-    Cret$MAP["disease"] <- mapfn(Cret$sample[,"disease"],lbound=0,ubound=1)
-    Cret$maxN <- prior$maxN
-    Cret$mode.prior.size <- prior$mode.prior.size
-    Cret$median.prior.size <- prior$median.prior.size
-    Cret$mode.prior.sample.proportion <- prior$mode.prior.sample.proportion
-    Cret$N <- prior$N
-    Cret
+#   aaa <- sum(Cret$nk0+Cret$nk1)
+    Cret$predictive.degree.count0<-Cret$nk0
+    Cret$predictive.degree.count1<-Cret$nk1
+    Cret$nk0 <- NULL
+    Cret$nk1 <- NULL
+    Cret$predictive.degree0<-Cret$p0pos
+    Cret$p0pos<-NULL
+    Cret$predictive.degree1<-Cret$p1pos
+    Cret$p1pos<-NULL
+    Cret$predictive.degree<-Cret$ppos
+    Cret$ppos<-NULL
+    #
+  endrun <- burnin+interval*(samplesize-1)
+  attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
+  attr(Cret$sample, "class") <- "mcmc"
+   mapfn <- function(x,lbound=min(x),ubound=max(x)){
+     posdensN <- density(x, from=lbound, to=ubound)
+     posdensN$x[which.max(posdensN$y)]
+   }
+   Cret$MAP <- apply(Cret$sample,2,mapfn)
+   Cret$MAP["N"] <- mapfn(Cret$sample[,"N"],lbound=n,ubound=prior$maxN)
+   Cret$MAP["disease"] <- mapfn(Cret$sample[,"disease"],lbound=0,ubound=1)
+   Cret$maxN <- prior$maxN
+   Cret$mode.prior.size <- prior$mode.prior.size
+   Cret$median.prior.size <- prior$median.prior.size
+   Cret$mode.prior.sample.proportion <- prior$mode.prior.sample.proportion
+   Cret$N <- prior$N
+   Cret
 }

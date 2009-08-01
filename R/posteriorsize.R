@@ -82,6 +82,9 @@ posteriorsize<-function(s,
     Cret$ppos<-Cret$ppos/Nparallel
     Cret$predictive.degree<-Cret$ppos
     Cret$ppos<-NULL
+    Cret$predictive.degree.count<-Cret$nk
+    Cret$nk<-NULL
+    #
     degnames <- NULL
     if(Np>0){degnames <- c(degnames,paste("pdeg",1:Np,sep=""))}
     colnamessample <- c("N","mu","sigma","degree1")
