@@ -30,7 +30,7 @@ posteriorsize<-function(s,
   ### are we running the job in parallel (parallel > 1), if not just 
   #   call the degree specific function
   if(parallel==1){
-      Cret <- posfn(s=s,N=N,K=K,nk=nk,n=n,maxN=maxN,
+      Cret <- posfn(s=s,K=K,nk=nk,n=n,maxN=maxN,
                     mean.prior.degree=mean.prior.degree,df.mean.prior=df.mean.prior,
                     sd.prior.degree=sd.prior.degree,df.sd.prior=df.sd.prior,
                     muproposal=muproposal, sigmaproposal=sigmaproposal, 
@@ -52,7 +52,7 @@ posteriorsize<-function(s,
     ### cluster call, send following to each of the virtual machines, posnbinom function
     ### with it's arguments
     outlist <- clusterCall(cl, posfn,
-      s=s,N=N,K=K,nk=nk,n=n,maxN=maxN,
+      s=s,K=K,nk=nk,n=n,maxN=maxN,
       mean.prior.degree=mean.prior.degree,df.mean.prior=df.mean.prior,
       sd.prior.degree=sd.prior.degree,df.sd.prior=df.sd.prior,
       muproposal=muproposal, sigmaproposal=sigmaproposal, 

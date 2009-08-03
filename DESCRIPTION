@@ -1,11 +1,11 @@
 Package: size
-Version: 0.1
-Date: 2009-02-05
-Title:  Estimate the Population Size from Respondent Driven Sampling
+Version: 0.2
+Date: 2009-07-31
+Title:  Estimating Hidden Population Size using Respondent Driven Sampling Data
 Author: Krista J. Gile <krista.gile@nuffield.ox.ac.uk>,
         Mark S. Handcock <handcock@stat.washington.edu>
 Maintainer: Krista J. Gile <krista.gile@nuffield.ox.ac.uk>
 Suggests: network
-Description: An integrated set of tools to analyze respondent-driven sampling data. In particular it estimates network size.  "size" is a part of the "statnet" suite of packages for network analysis.  For a list of functions type: help(package='size')
+Description: An integrated set of tools to analyze respondent-driven sampling data. In particular it estimates population size.  "size" is a part of the "statnet" suite of packages for network analysis.  For a list of functions type: help(package='size')
 License: file LICENSE
 URL: http://statnet.org

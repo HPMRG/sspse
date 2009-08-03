@@ -14,7 +14,7 @@ void gplndisease (int *pop, int *dis,
             int *samplesize, int *burnin, int *interval,
             double *mu0, double *mu1, double *kappa0, 
             double *sigma0,  double *sigma1, double *df0,
-	    int *Np0i, int *Np1i,
+	    int *Np0, int *Np1,
             double *muproposal, 
             double *sigmaproposal, 
             int *N, int *maxN, 
@@ -25,7 +25,7 @@ void gplndisease (int *pop, int *dis,
             int *burnintheta,
             int *fVerbose
               ) {
-  int dimsample, Np0, Np1;
+  int dimsample, Nnp0, Nnp1;
   int step, staken, getone=1, intervalone=1, fVerboseMHdisease = 0;
   int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
   double mu0i, mu1i, pbeta, beta, sigma0i, sigma1i, dsamp;
@@ -42,8 +42,8 @@ void gplndisease (int *pop, int *dis,
   isamplesize=(*samplesize);
   iinterval=(*interval);
   iburnin=(*burnin);
-  Np0=(*Np0i);
-  Np1=(*Np1i);
+  Nnp0=(*Nnp0);
+  Nnp1=(*Nnp1);
   dkappa0=(*kappa0);
   ddf0=(*df0);
   dsigma0=(*sigma0);
@@ -53,7 +53,7 @@ void gplndisease (int *pop, int *dis,
   dsigmaproposal=(*sigmaproposal);
   dmuproposal=(*muproposal);
 
-  dimsample=8+Np0+Np1;
+  dimsample=8+Nnp0+Nnp1;
 
   double *p0i = (double *) malloc(sizeof(double) * Ki);
   double *p1i = (double *) malloc(sizeof(double) * Ki);
@@ -63,9 +63,9 @@ void gplndisease (int *pop, int *dis,
   int *Nk1 = (int *) malloc(sizeof(int) * Ki);
   int *Nk1pos = (int *) malloc(sizeof(int) * Ki);
   double *lpm = (double *) malloc(sizeof(double) * imaxN);
-  double *pdeg0i = (double *) malloc(sizeof(double) * Np0);
-  double *pdeg1i = (double *) malloc(sizeof(double) * Np1);
-  double *psample = (double *) malloc(sizeof(double) * (Np0+Np1));
+  double *pdeg0i = (double *) malloc(sizeof(double) * Nnp0);
+  double *pdeg1i = (double *) malloc(sizeof(double) * Nnp1);
+  double *psample = (double *) malloc(sizeof(double) * (Nnp0+Nnp1));
   double *musample = (double *) malloc(sizeof(double) * 2);
   double *betasample = (double *) malloc(sizeof(double));
   double *sigmasample = (double *) malloc(sizeof(double) * 2);
@@ -100,11 +100,11 @@ void gplndisease (int *pop, int *dis,
   }
 
   betasample[0] = -1.386294;
-  for (i=0; i<Np0; i++){
+  for (i=0; i<Nnp0; i++){
      psample[i    ] = 0.01;
   }
-  for (i=0; i<Np1; i++){
-     psample[i+Np0]=0.01;
+  for (i=0; i<Nnp1; i++){
+     psample[i+Nnp0]=0.01;
   }
   musample[0] = dmu0;
   musample[1] = dmu1;
@@ -117,18 +117,18 @@ void gplndisease (int *pop, int *dis,
     /* Draw new theta */
     MHplndisease(Nk0,Nk1,&itotdis,K,mu0,mu1,kappa0,sigma0,sigma1,df0,
           muproposal, sigmaproposal,
-	  &Ni, &Np0, &Np1, psample, 
+	  &Ni, &Nnp0, &Nnp1, psample, 
 	  musample, betasample, sigmasample, &getone, &staken, 
 	  burnintheta, &intervalone, 
 	  &fVerboseMHdisease);
 
     beta=betasample[0];
     pbeta=exp(beta)/(1.+exp(beta));
-    for (i=0; i<Np0; i++){
+    for (i=0; i<Nnp0; i++){
       pdeg0i[i] = psample[i];
     }
-    for (i=0; i<Np1; i++){
-      pdeg1i[i] = psample[i+Np0];
+    for (i=0; i<Nnp1; i++){
+      pdeg1i[i] = psample[i+Nnp0];
     }
     mu0i=musample[0];
     mu1i=musample[1];
@@ -140,11 +140,11 @@ void gplndisease (int *pop, int *dis,
     /* First find the degree distribution */
     p0is=0.;
     p1is=0.;
-    for (i=Np0; i<Ki; i++){
+    for (i=Nnp0; i<Ki; i++){
       p0i[i]=poilog(i+1,mu0i,sigma0i);
     }
     p0is=1.-poilog(0,mu0i,sigma0i);
-    for (i=Np1; i<Ki; i++){
+    for (i=Nnp1; i<Ki; i++){
       p1i[i]=poilog(i+1,mu1i,sigma1i);
 //    p1is+=p1i[i];
     }
@@ -155,20 +155,20 @@ void gplndisease (int *pop, int *dis,
     }
     p0is=1.;
     p1is=1.;
-    for (i=0; i<Np0; i++){
+    for (i=0; i<Nnp0; i++){
       p0is-=pdeg0i[i];
     }
-    for (i=0; i<Np1; i++){
+    for (i=0; i<Nnp1; i++){
       p1is-=pdeg1i[i];
     }
     for (i=0; i<Ki; i++){
       p0i[i]=p0i[i]*p0is;
       p1i[i]=p1i[i]*p1is;
     }
-    for (i=0; i<Np0; i++){
+    for (i=0; i<Nnp0; i++){
       p0i[i]=pdeg0i[i];
     }
-    for (i=0; i<Np1; i++){
+    for (i=0; i<Nnp1; i++){
       p1i[i]=pdeg1i[i];
     }
     gamma0rt=0.;
@@ -278,11 +278,11 @@ void gplndisease (int *pop, int *dis,
       sample[isamp*dimsample+5]=(double)(Nk0[0]+Nk1[0]);
       sample[isamp*dimsample+6]=beta;
       sample[isamp*dimsample+7]=(double)(itotdis);
-      for (i=0; i<Np0; i++){
+      for (i=0; i<Nnp0; i++){
         sample[isamp*dimsample+8+i]=pdeg0i[i];
       }
-      for (i=0; i<Np1; i++){
-        sample[isamp*dimsample+8+Np0+i]=pdeg1i[i];
+      for (i=0; i<Nnp1; i++){
+        sample[isamp*dimsample+8+Nnp0+i]=pdeg1i[i];
       }
 //    N0d=0.;
       for (i=0; i<Ki; i++){
@@ -332,12 +332,12 @@ void MHplndisease (int *Nk0, int *Nk1, int *totdis, int *K,
             double *sigma0,  double *sigma1, double *df0,
             double *muproposal, 
             double *sigmaproposal, 
-            int *N, int *Np0i, int *Np1i, double *psample,
+            int *N, int *Nnp0, int *Nnp1, double *psample,
             double *musample, double *betasample, double *sigmasample,
             int *samplesize, int *staken, int *burnin, int *interval,
 	    int *fVerbose
 			 ) {
-  int Np0, Np1;
+  int Nnp0, Nnp1;
   int step, taken, give_log0=0, give_log1=1;
   int i, Ki, Ni, isamp, iinterval, isamplesize, iburnin, itotdis;
   double ip, cutoff;
@@ -354,20 +354,20 @@ void MHplndisease (int *Nk0, int *Nk1, int *totdis, int *K,
   GetRNGstate();  /* R function enabling uniform RNG */
 
   Ki=(*K);
-  Np0=(*Np0i);
-  Np1=(*Np1i);
+  Nnp0=(*Np0);
+  Nnp1=(*Np1);
   double *p0star = (double *) malloc(sizeof(double) * Ki);
   double *p0i = (double *) malloc(sizeof(double) * Ki);
   double *p1star = (double *) malloc(sizeof(double) * Ki);
   double *p1i = (double *) malloc(sizeof(double) * Ki);
-  double *odeg0star = (double *) malloc(sizeof(double) * Np0);
-  double *odeg0i = (double *) malloc(sizeof(double) * Np0);
-  double *odeg1star = (double *) malloc(sizeof(double) * Np1);
-  double *odeg1i = (double *) malloc(sizeof(double) * Np1);
-  double *pdeg0star = (double *) malloc(sizeof(double) * Np0);
-  double *pdeg0i = (double *) malloc(sizeof(double) * Np0);
-  double *pdeg1star = (double *) malloc(sizeof(double) * Np1);
-  double *pdeg1i = (double *) malloc(sizeof(double) * Np1);
+  double *odeg0star = (double *) malloc(sizeof(double) * Nnp0);
+  double *odeg0i = (double *) malloc(sizeof(double) * Nnp0);
+  double *odeg1star = (double *) malloc(sizeof(double) * Nnp1);
+  double *odeg1i = (double *) malloc(sizeof(double) * Nnp1);
+  double *pdeg0star = (double *) malloc(sizeof(double) * Nnp0);
+  double *pdeg0i = (double *) malloc(sizeof(double) * Nnp0);
+  double *pdeg1star = (double *) malloc(sizeof(double) * Nnp1);
+  double *pdeg1i = (double *) malloc(sizeof(double) * Nnp1);
 
   Ni=(*N);
   isamplesize=(*samplesize);
@@ -392,18 +392,18 @@ void MHplndisease (int *Nk0, int *Nk1, int *totdis, int *K,
   betai = betasample[0];
   p0is=1.;
   p1is=1.;
-  for (i=0; i<Np0; i++){
+  for (i=0; i<Nnp0; i++){
     pdeg0i[i] = psample[i];
     p0is-= pdeg0i[i];
   }
-  for (i=0; i<Np1; i++){
-    pdeg1i[i] = psample[i+Np0];
+  for (i=0; i<Nnp1; i++){
+    pdeg1i[i] = psample[i+Nnp0];
     p1is-= pdeg1i[i];
   }
-  for (i=0; i<Np0; i++){
+  for (i=0; i<Nnp0; i++){
     odeg0i[i] = log(pdeg0i[i]/p0is);
   }
-  for (i=0; i<Np1; i++){
+  for (i=0; i<Nnp1; i++){
     odeg1i[i] = log(pdeg1i[i]/p1is);
   }
   mu0i = musample[0];
@@ -419,12 +419,12 @@ void MHplndisease (int *Nk0, int *Nk1, int *totdis, int *K,
   pithetai = pithetai+dsclinvchisq(sigma12i, ddf0, dsigma12);
   p0is=0.;
   p1is=0.;
-  for (i=Np0; i<Ki; i++){
+  for (i=Nnp0; i<Ki; i++){
     p0i[i]=poilog(i+1,mu0i,sigma0i);
 //  p0is+=p0i[i];
   }
   p0is=1.-poilog(0,mu0i,sigma0i);
-  for (i=Np1; i<Ki; i++){
+  for (i=Nnp1; i<Ki; i++){
     p1i[i]=poilog(i+1,mu1i,sigma1i);
 //  p1is+=p1i[i];
   }
@@ -435,20 +435,20 @@ void MHplndisease (int *Nk0, int *Nk1, int *totdis, int *K,
   }
   p0is=1.;
   p1is=1.;
-  for (i=0; i<Np0; i++){
+  for (i=0; i<Nnp0; i++){
     p0is-=pdeg0i[i];
   }
-  for (i=0; i<Np1; i++){
+  for (i=0; i<Nnp1; i++){
     p1is-=pdeg1i[i];
   }
   for (i=0; i<Ki; i++){
     p0i[i]=p0i[i]*p0is;
     p1i[i]=p1i[i]*p1is;
   }
-  for (i=0; i<Np0; i++){
+  for (i=0; i<Nnp0; i++){
     p0i[i]=pdeg0i[i];
   }
-  for (i=0; i<Np1; i++){
+  for (i=0; i<Nnp1; i++){
     p1i[i]=pdeg1i[i];
   }
 
@@ -460,27 +460,27 @@ void MHplndisease (int *Nk0, int *Nk1, int *totdis, int *K,
     betastar = rnorm(betai, dmuproposal);
     pbeta = exp(betastar)/(1.+exp(betastar));
     /* Now the degree distribution model parameters */
-    for (i=0; i<Np0; i++){
+    for (i=0; i<Nnp0; i++){
       odeg0star[i] = rnorm(odeg0i[i], dmuproposal);
     }
-    for (i=0; i<Np1; i++){
+    for (i=0; i<Nnp1; i++){
       odeg1star[i] = rnorm(odeg1i[i], dmuproposal);
     }
     /* Convert from odds to probabilities */
     p0is=1.;
     p1is=1.;
-    for (i=0; i<Np0; i++){
+    for (i=0; i<Nnp0; i++){
       pdeg0star[i] = exp(odeg0star[i]);
       p0is+=pdeg0star[i];
     }
-    for (i=0; i<Np1; i++){
+    for (i=0; i<Nnp1; i++){
       pdeg1star[i] = exp(odeg1star[i]);
       p1is+=pdeg1star[i];
     }
-    for (i=0; i<Np0; i++){
+    for (i=0; i<Nnp0; i++){
       pdeg0star[i]/=p0is;
     }
-    for (i=0; i<Np1; i++){
+    for (i=0; i<Nnp1; i++){
       pdeg1star[i]/=p1is;
     }
     /* Now the degree distribution (log) mean adn s.d. parameters */
@@ -518,40 +518,40 @@ void MHplndisease (int *Nk0, int *Nk1, int *totdis, int *K,
 //           pithetastar,pithetai,qsigma2star,qsigma2i);
     p0stars=0.;
     p1stars=0.;
-    for (i=Np0; i<Ki; i++){
+    for (i=Nnp0; i<Ki; i++){
       p0star[i]=poilog(i+1,mu0star,sigma0star);
 //    p0stars+=p0star[i];
     }
     p0stars=1.-poilog(0,mu0star,sigma0star);
-    for (i=Np1; i<Ki; i++){
+    for (i=Nnp1; i<Ki; i++){
       p1star[i]=poilog(i+1,mu1star,sigma1star);
 //    p1stars+=p1star[i];
     }
     p1stars=1.-poilog(0,mu1star,sigma1star);
-    for (i=Np0; i<Ki; i++){
+    for (i=Nnp0; i<Ki; i++){
       p0star[i]/=p0stars;
     }
-    for (i=Np1; i<Ki; i++){
+    for (i=Nnp1; i<Ki; i++){
       p1star[i]/=p1stars;
     }
     p0stars=1.;
     p1stars=1.;
-    for (i=0; i<Np0; i++){
+    for (i=0; i<Nnp0; i++){
       p0stars-=pdeg0star[i];
     }
-    for (i=0; i<Np1; i++){
+    for (i=0; i<Nnp1; i++){
       p1stars-=pdeg1star[i];
     }
-    for (i=Np0; i<Ki; i++){
+    for (i=Nnp0; i<Ki; i++){
       p0star[i]*=p0stars;
     }
-    for (i=Np1; i<Ki; i++){
+    for (i=Nnp1; i<Ki; i++){
       p1star[i]*=p1stars;
     }
-    for (i=0; i<Np0; i++){
+    for (i=0; i<Nnp0; i++){
       p0star[i]=pdeg0star[i];
     }
-    for (i=0; i<Np1; i++){
+    for (i=0; i<Nnp1; i++){
       p1star[i]=pdeg1star[i];
     }
     for (i=0; i<Ki; i++){
@@ -576,11 +576,11 @@ void MHplndisease (int *Nk0, int *Nk1, int *totdis, int *K,
     if (cutoff >= 0.0 || log(unif_rand()) < cutoff) { 
       /* Make proposed changes */
       betai = betastar;
-      for (i=0; i<Np0; i++){
+      for (i=0; i<Nnp0; i++){
         odeg0i[i] = odeg0star[i];
         pdeg0i[i] = pdeg0star[i];
       }
-      for (i=0; i<Np1; i++){
+      for (i=0; i<Nnp1; i++){
         odeg1i[i] = odeg1star[i];
         pdeg1i[i] = pdeg1star[i];
       }
@@ -608,11 +608,11 @@ void MHplndisease (int *Nk0, int *Nk1, int *totdis, int *K,
         musample[2*isamp]=mu0i;
         musample[2*isamp+1]=mu1i;
         betasample[isamp]=betai;
-        for (i=0; i<Np0; i++){
+        for (i=0; i<Nnp0; i++){
           psample[i    ]=pdeg0i[i];
         }
-        for (i=0; i<Np1; i++){
-          psample[i+Np0]=pdeg1i[i];
+        for (i=0; i<Nnp1; i++){
+          psample[i+Nnp0]=pdeg1i[i];
         }
         isamp++;
         if (*fVerbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d samples...\n", isamp);
