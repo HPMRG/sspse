@@ -1,9 +1,9 @@
-\name{posteriorsize}
-\alias{posteriorsize}
+\name{posteriordisease}
+\alias{posteriordisease}
 %\title{Bayesian inference for the population size based on RDS data}
-\title{Estimating hidden population size using RDS data}
+\title{Estimating hidden population size using RDS degree and disease status data}
 \description{
-\code{\link{posteriorsize}} computes the 
+\code{\link{posteriordisease}} computes the 
 posterior distribution of the population size based on data
 collected by Respondent Driven Sampling. The approach approximates the
 RDS via the Sequential Sampling model of Gile (2008). 
@@ -11,8 +11,8 @@ It uses the order of selection of the sample to
 provide information on the distribution of network sizes 
 over the population members. 
 
-It does not use the disease states of the sampled individuals to improve the
-estimation.  See \code{\link{posteriordisease}} for a version that uses the
+It also uses the disease states of the sampled individuals to improve the
+estimation.  See \code{\link{posteriorsize}} for a version that uses the
 sample of degrees only. 
 
 %By default, the probability that a randomly chosen
@@ -20,11 +20,12 @@ sample of degrees only.
 %with specified (hyper)parameters.
 }
 \usage{
- posteriorsize(s,
-                  mean.prior.degree=7,
+ posteriordisease(s,dis,
+                  mean0.prior.degree=7,
+                  mean1.prior.degree=7,
                   sd.prior.degree=3,
                   df.mean.prior=1,df.sd.prior=5,
-                  Np=0,
+                  Np0=0, Np1=0,
                   samplesize=1000,burnin=100,interval=1,burnintheta=500,
                   priorsizedistribution=c("proportion","nbinom","pln","flat"),
                   mean.prior.size=NULL, sd.prior.size=NULL,
@@ -34,7 +35,8 @@ sample of degrees only.
                   degreedistribution=c("cmp","nbinom","pln"),
                   maxN=NULL,
                   K=2*max(s), n=length(s),
-                  nk=tabulate(s,nbin=K),
+                  nk0=tabulate(s[dis==0],nbin=K),
+                  nk1=tabulate(s[dis==1],nbin=K),
                   muproposal=0.1,
                   sigmaproposal=0.15,
                   parallel=1, seed=NULL,
@@ -43,14 +45,29 @@ sample of degrees only.
 \arguments{
   \item{s}{vector of integers; the vector of degrees from the RDS in order 
     they are recorded.}
-  \item{mean.prior.degree}{scalar; A hyper parameter being the mean degree for the prior
-    distribution for a randomly chosen person. The prior has this
+  \item{dis}{vector of integers; the vector of disease states from the RDS in order 
+    they are recorded. A value of 1 means diseased; 0 means non-diseased.}
+  \item{mean0.prior.degree}{scalar; A hyper parameter being the mean degree for the prior
+    distribution for a randomly chosen non-diseased person. The prior has this
     mean.}
-  \item{sd.prior.degree}{scalar;  A hyper parameter being the standard deviation of the degree for a randomly chosen person.  The prior has this standard deviation.}
+  \item{mean1.prior.degree}{scalar;  A hyper parameter being the mean degree for the prior
+    distribution for a randomly chosen diseased person. The prior has this
+    mean.}
+  \item{sd.prior.degree}{scalar;  A hyper parameter being the standard deviation of the degree for 
+    a randomly chosen person. It is the same for diseased and
+non-diseased. The prior has this standard deviation.}
   \item{df.mean.prior}{scalar;  A hyper parameter being the degrees-of-freedom of the prior for the mean. This gives the equivalent sample size that would contain the same amount of information inherent in the prior.}
   \item{df.sd.prior}{scalar;  A hyper parameter being the degrees-of-freedom of the prior for the standard deviation. This gives the equivalent sample size that would contain the same amount of information inherent in the prior for the standard deviation.}
-  \item{Np}{integer; The overall degree distribution 
-  is a mixture of the \code{1:Np} rates and a parametric
+  \item{Np0}{integer; The overall degree distribution of the
+  non-diseased is a mixture of the \code{1:Np} rates and a parametric
+  degree distribution model truncated below Np. Thus the model
+  fits the proportions of the
+population with degree \code{1:Np} each with a separate parameter. This
+should adjust for an lack-of-fit of the parametric degree
+distribution model  at lower degrees, although it also changes
+the model away from the parametric degree distribution model.}
+  \item{Np1}{integer; The overall degree distribution of the
+  diseased is a mixture of the \code{1:Np} rates and a parametric
   degree distribution model truncated below Np. Thus the model
   fits the proportions of the
 population with degree \code{1:Np} each with a separate parameter. This
@@ -81,9 +98,10 @@ The default is \code{proportion}.}
   \item{maxN}{integer; maximum possible population size. By default this is determined from an upper quantile of the prior distribution.}
   \item{K}{count; the maximum degree for an individual. This is usually
 calculated as twice the maximum observed degree.}
-  \item{nk}{vector; the vector of counts for the number of people in the sample
+  \item{nk0}{vector; the vector of counts for the number of non-diseased people in the sample
 with degree k. This is usually computed from \eqn{s} automatically and not
 usually specified by the user.}
+  \item{nk1}{vector; the vector of counts for the number of diseased people in the sample with degree k. This is usually computed from \eqn{s} automatically and not usually specified by the user.}
   \item{muproposal}{scalar; The standard deviation of the proposal distribution for the mean degree.}
   \item{sigmaproposal}{scalar; The standard deviation of the proposal
 distribution for the standard deviation of the degree.}
@@ -99,9 +117,10 @@ The default is 1, that is not to use parallel processing.}
   }
 }
 
-\value{\code{\link{posteriorsize}} returns a list
+\value{\code{\link{posteriordisease}} returns a list
   consisting of the following elements:
   \item{pop}{vector; The final posterior draw for the degrees of the population. The first \eqn{n} at the sample and the reminder are non-sequenced. The length of the output vector is \code{maxN}, but only the first \code{N} degrees are relevant (the vector is padded by zeros.}
+  \item{dis}{vector; The final posterior draw for the disease states of the population. The first \eqn{n} at the sample and the reminder are non-sequenced. The length of the output vector is \code{maxN}, but only the first \code{N} degrees are relevant (the vector is padded by zeros.}
   \item{K}{count; the maximum degree for an individual. This is usually
 calculated as twice the maximum observed degree.}
   \item{n}{count; the sample size.}
@@ -109,13 +128,27 @@ calculated as twice the maximum observed degree.}
   \item{burnin}{count; the number of proposals before any MCMC sampling
     is done. It typically is set to a fairly large number.}
   \item{interval}{count; the number of proposals between sampled statistics.}
-  \item{mu}{scalar; The hyper parameter \code{mean.prior.degree} 
-being the mean degree for the prior distribution for a randomly chosen person. The prior has this mean.}
-  \item{sigma}{scalar;  The hyper parameter \code{sd.prior.degree} being the standard deviation of the degree for 
-    a randomly chosen person. The prior has this standard deviation.}
+  \item{mu0}{scalar; The hyper parameter \code{mean0.prior.degree} 
+being the mean degree for the prior distribution for a randomly chosen non-diseased person. The prior has this mean.}
+  \item{mu1}{scalar; The hyper parameter \code{mean1.prior.degree} 
+being the mean degree for the prior distribution for a randomly chosen non-diseased person. The prior has this mean.}
+  \item{sigma1}{scalar;  The hyper parameter \code{sd.prior.degree} being the standard deviation of the degree for 
+    a randomly chosen person. It is the same for diseased and
+non-diseased. The prior has this standard deviation.}
+  \item{sigma2}{scalar;  The hyper parameter \code{sd.prior.degree} being the standard deviation of the degree for 
+    a randomly chosen person. It is the same for diseased and
+non-diseased. The prior has this standard deviation.}
   \item{df.sd.prior}{scalar;  A hyper parameter being the degrees-of-freedom of the prior for the standard deviation. This gives the equivalent sample size that would contain the same amount of information inherent in the prior for the standard deviation.}
-  \item{Np}{integer; The overall degree distribution
-  is a mixture of the \code{1:Np} rates and a parametric
+  \item{Np0}{integer; The overall degree distribution of the
+  non-diseased is a mixture of the \code{1:Np} rates and a parametric
+  degree distribution model truncated below Np. Thus the model
+  fits the proportions of the
+population with degree \code{1:Np} each with a separate parameter. This
+should adjust for an lack-of-fit of the parametric degree
+distribution model  at lower degrees, although it also changes
+the model away from the parametric degree distribution model.}
+  \item{Np1}{integer; The overall degree distribution of the
+  diseased is a mixture of the \code{1:Np} rates and a parametric
   degree distribution model truncated below Np. Thus the model
   fits the proportions of the
 population with degree \code{1:Np} each with a separate parameter. This
@@ -139,12 +172,29 @@ for the N. That is, the upper point on a 95\% probability interval.}
  \item{sample}{matrix of dimension \code{samplesize}\eqn{\times} \code{10} matrix of summary statistics from the posterior. this is also an object of class \code{mcmc} so it can be plotted and summarized via the \code{mcmc.diagnostics} function in the \code{ergm} package (and also the \code{coda} package). The statistics are:
    \describe{
       \item{\code{N}}{population size.}
-      \item{mu}{scalar; The mean degree for the prior distribution for a randomly chosen person. The prior has this mean.}
-      \item{sigma}{scalar; The standard deviation of the degree for 
-    a randomly chosen person. The prior has this standard deviation.}
+      \item{mu0}{scalar; The mean degree for the prior distribution for a randomly chosen non-diseased person. The prior has this mean.}
+      \item{mu1}{scalar; The mean degree for the prior distribution for a randomly chosen non-diseased person. The prior has this mean.}
+      \item{sigma1}{scalar; The standard deviation of the degree for 
+    a randomly chosen person. It is the same for diseased and
+non-diseased. The prior has this standard deviation.}
+      \item{sigma2}{scalar; The standard deviation of the degree for 
+    a randomly chosen person. It is the same for diseased and
+non-diseased. The prior has this standard deviation.}
       \item{degree1}{scalar; the number of nodes of degree 1 in the population (it is assumed all nodes have degree 1 or more).}
-      \item{lambda}{scalar; This is only present for the \code{cmp} model. It is the \eqn{\lambda} parameter in the standard parametrization of the Conway-Maxwell-Poisson model for the degree distribution.}
-      \item{nu}{scalar; This is only present for the \code{cmp} model. It is the \eqn{\nu} parameter in the standard parametrization of the Conway-Maxwell-Poisson model for the degree distribution.}
+      \item{beta}{scalar; the log-odds of a randomly chosen person having the
+disease disease is the proportion of people in the population with disease status 1.}
+      \item{disease.count}{integer; the number of people in the population with disease status 1.}
+      \item{disease}{scalar; the proportion of people in the population with disease status 1.}
+      \item{lambda0}{scalar; This is only present for the \code{cmp} model. It is the \eqn{\lambda} parameter in the standard parametrization of the Conway-Maxwell-Poisson model for the non-diseased degree distribution.}
+      \item{nu0}{scalar; This is only present for the \code{cmp} model. It is the \eqn{\nu} parameter in the standard parametrization of the Conway-Maxwell-Poisson model for the non-diseased degree distribution.}
+      \item{lambda1}{scalar; This is only present for the \code{cmp} model. It is the \eqn{\lambda} parameter in the standard parametrization of the Conway-Maxwell-Poisson model for the diseased degree distribution.}
+      \item{nu1}{scalar; This is only present for the \code{cmp} model. It is the \eqn{\nu} parameter in the standard parametrization of the Conway-Maxwell-Poisson model for the diseased degree distribution.}
+%      \item{\code{P025}}{the 2.5th percentile of the (posterior) distribution
+%for the proportion of people in the population with disease status 1. 
+%That is, the lower point on a 95\% probability interval.}
+%      \item{\code{P975}}{the 97.5th percentile of the (posterior) distribution
+%for the proportion of people in the population with disease status 1. 
+%That is, the upper point on a 95\% probability interval.}
      }
 }
   \item{lpriorm}{vector; the vector of (log) prior probabilities on each value
@@ -154,10 +204,22 @@ sub-step for the degree distribution parameters (\eqn{\theta}) before any MCMC s
   \item{fVerbose}{logical; if this is
     \code{TRUE}, the program printed out additional
     information, including goodness of fit statistics.}
-  \item{predictive.degree.count}{vector; a vector of length the maximum degree (\code{K}) (by default \code{K=2*max(sample degree)}). 
-  The \code{k}th entry is the posterior predictive number persons with degree \code{k}.
+  \item{predictive.degree.count0}{vector; a vector of length the maximum degree (\code{K}) (by default \code{K=2*max(sample degree)}). 
+  The \code{k}th entry is the posterior predictive number of non-diseased persons with degree \code{k}.
     That is, it is the posterior predictive distribution of the number of
-people with each degree in the population.}
+non-diseased with each degree in the population.}
+  \item{predictive.degree.count1}{vector; a vector of length the maximum degree (\code{K}) (by default \code{K=2*max(sample degree)}). 
+  The \code{k}th entry is the posterior predictive number of diseased persons with degree \code{k}.
+    That is, it is the posterior predictive distribution of the number of
+diseased with each degree in the population.}
+  \item{predictive.degree0}{vector; a vector of length the maximum degree (\code{K}) (by default \code{K=2*max(sample degree)}). 
+  The \code{k}th entry is the posterior predictive proportion of non-diseased persons with degree \code{k}.
+    That is, it is the posterior predictive distribution of the proportion of
+non-diseased with each degree in the population.}
+  \item{predictive.degree1}{vector; a vector of length the maximum degree (\code{K}) (by default \code{K=2*max(sample degree)}). 
+  The \code{k}th entry is the posterior predictive proportion of diseased persons with degree \code{k}.
+    That is, it is the posterior predictive distribution of the proportion of
+diseased with each degree in the population.}
   \item{predictive.degree}{vector; a vector of length the maximum degree (\code{K}) (by default \code{K=2*max(sample degree)}). 
   The \code{k}th entry is the posterior predictive proportion of persons with degree \code{k}.
     That is, it is the posterior predictive distribution of the proportion of
@@ -165,17 +227,38 @@ people with each degree in the population.}
  \item{MAP}{vector of length 10 of MAP estimates corresponding to the output \code{sample}. These are:
    \describe{
       \item{\code{N}}{population size.}
-      \item{mu}{scalar; The mean degree for the prior distribution for a randomly chosen person. The prior has this mean.}
-      \item{sigma}{scalar; The standard deviation of the degree for 
-    a randomly chosen person. The prior has this standard deviation.}
+      \item{mu0}{scalar; The mean degree for the prior distribution for a randomly chosen non-diseased person. The prior has this mean.}
+      \item{mu1}{scalar; The mean degree for the prior distribution for a randomly chosen non-diseased person. The prior has this mean.}
+      \item{sigma1}{scalar; The standard deviation of the degree for 
+    a randomly chosen person. It is the same for diseased and
+non-diseased. The prior has this standard deviation.}
+      \item{sigma2}{scalar; The standard deviation of the degree for 
+    a randomly chosen person. It is the same for diseased and
+non-diseased. The prior has this standard deviation.}
       \item{degree1}{scalar; the number of nodes of degree 1 in the population (it is assumed all nodes have degree 1 or more).}
-      \item{lambda}{scalar; This is only present for the \code{cmp} model. It is the \eqn{\lambda} parameter in the standard parametrization of the Conway-Maxwell-Poisson model for the degree distribution.}
-      \item{nu}{scalar; This is only present for the \code{cmp} model. It is the \eqn{\nu} parameter in the standard parametrization of the Conway-Maxwell-Poisson model for the degree distribution.}
+      \item{beta}{scalar; the log-odds of a randomly chosen person having the
+disease disease is the proportion of people in the population with disease status 1.}
+      \item{disease.count}{integer; the number of people in the population with disease status 1.}
+      \item{disease}{scalar; the proportion of people in the population with disease status 1.}
+      \item{lambda0}{scalar; This is only present for the \code{cmp} model. It is the \eqn{\lambda} parameter in the standard parametrization of the Conway-Maxwell-Poisson model for the non-diseased degree distribution.}
+      \item{nu0}{scalar; This is only present for the \code{cmp} model. It is the \eqn{\nu} parameter in the standard parametrization of the Conway-Maxwell-Poisson model for the non-diseased degree distribution.}
+      \item{lambda1}{scalar; This is only present for the \code{cmp} model. It is the \eqn{\lambda} parameter in the standard parametrization of the Conway-Maxwell-Poisson model for the diseased degree distribution.}
+      \item{nu1}{scalar; This is only present for the \code{cmp} model. It is the \eqn{\nu} parameter in the standard parametrization of the Conway-Maxwell-Poisson model for the diseased degree distribution.}
      }
   }
   \item{mode.prior.sample.proportion}{scalar; A hyperparameter being the mode of the prior distribution on the sample proportion \eqn{n/N}.}
   \item{median.prior.size}{scalar; A hyperparameter being the mode of the prior distribution on the population size.}
   \item{mode.prior.size}{scalar; A hyperparameter being the mode of the prior distribution on the population size.}
+  \item{disease}{vector of length 5; summary statistics for the posterior disease prevalence. 
+   \describe{
+      \item{\code{MAP}}{maximum aposteriori value of N}
+      \item{\code{Mean AP}}{mean aposteriori value of N}
+      \item{\code{P025}}{the 2.5th percentile of the (posterior) distribution
+for the N. That is, the lower point on a 95\% probability interval.}
+      \item{\code{P975}}{the 97.5th percentile of the (posterior) distribution
+for the N. That is, the upper point on a 95\% probability interval.}
+   }
+  }
 % \item{mean.prior.size}{scalar; A hyperparameter being the mean of the prior distribution on the population size.}
   \item{degreedistribution}{count; the parametric distribution to
   use for the individual network sizes (i.e., degrees). The
@@ -268,7 +351,7 @@ pop<-sample(1:K, size=N0, replace = TRUE, prob = probs)
 s<-sample(pop, size=n, replace = FALSE, prob = pop)
 dis<-sample(1*(pop>quantile(pop,0.2)), size=n, replace = TRUE, prob = pop)
  
-out <- posteriorsize(s=s,dis=dis)
+out <- posteriordisease(s=s,dis=dis)
 out
 prob <- exp(out$logprob)/sum(exp(out$logprob))
 x <- n+seq(along=out$lpriorm)
