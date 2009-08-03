@@ -49,11 +49,12 @@ computed.}
   \item{N}{scalar; a starting value for the population size computed from the
 prior.}
   \item{maxN}{integer; maximum possible population size. By default this is determined from an upper quantile of the prior distribution.}
-  \item{median.prior.size}{scalar; A hyperparameter being the mode of the prior distribution on the population size.}
   \item{mean.prior.size}{scalar; A hyperparameter being the mean of the prior distribution on the population size.}
 % \item{sd.prior.size}{scalar; A hyperparameter being the standard deviation of the prior distribution on the population size.}
   \item{mode.prior.size}{scalar; A hyperparameter being the mode of the prior distribution on the population size.}
   \item{mode.prior.sample.proportion}{scalar; A hyperparameter being the mode of the prior distribution on the sample proportion \eqn{n/N}.}
+  \item{median.prior.size}{scalar; A hyperparameter being the mode of the prior distribution on the population size.}
+  \item{beta}{scalar; A hyperparameter being the second parameter of the Beta distribuion that is a component of the prior distribution on the sample proportion \eqn{n/N}.}
   \item{type}{character; the type of parametric distribution to use for the prior on population size. The options are \code{proportion}
 (for a prior on the sample proportion (i.e. \eqn{n/N}), 
 \code{nbinom} (Negative-Binomial), \code{pln} (Poisson-log-normal),

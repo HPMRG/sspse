@@ -27,7 +27,7 @@ sample of degrees only.
                   df.mean.prior=1,df.sd.prior=5,
                   Np0=0, Np1=0,
                   samplesize=1000,burnin=100,interval=1,burnintheta=500,
-                  priorsizedistribution=c("proportion","nbinom","pln","flat"),
+                  priorsizedistribution=c("proportion","nbinom","pln","flat","continuous"),
                   mean.prior.size=NULL, sd.prior.size=NULL,
                   mode.prior.sample.proportion=0.5,
                   median.prior.size=NULL,
@@ -82,8 +82,9 @@ the model away from the parametric degree distribution model.}
 sub-step for the degree distribution parameters (\eqn{\theta}) before any MCMC sampling is done. It typically is set to a modestly large number.}
   \item{priorsizedistribution}{character; the type of parametric distribution to use for the prior on population size. The options are \code{proportion}
 (for a prior on the sample proportion (i.e. \eqn{n/N}), 
-\code{nbinom} (Negative-Binomial), \code{pln} (Poisson-log-normal) 
-and \code{flat} (uniform).
+\code{nbinom} (Negative-Binomial), \code{pln} (Poisson-log-normal),
+\code{flat} (uniform),
+and \code{continuous} (the continuous version of \code{proportion}).The default is \code{proportion}.
 The default is \code{proportion}.}
   \item{mean.prior.size}{scalar; A hyperparameter being the mean of the prior distribution on the population size.}
   \item{sd.prior.size}{scalar; A hyperparameter being the standard deviation of the prior distribution on the population size.}
@@ -267,8 +268,9 @@ for the N. That is, the upper point on a 95\% probability interval.}
   Negative-Binomial, and Poisson-log-normal. The default is \code{cmp}.}
   \item{priorsizedistribution}{character; the type of parametric distribution to use for the prior on population size. The options are \code{proportion}
 (for a prior on the sample proportion (i.e. \eqn{n/N}), 
-\code{nbinom} (Negative-Binomial), \code{pln} (Poisson-log-normal) 
-and \code{flat} (uniform).
+\code{nbinom} (Negative-Binomial), \code{pln} (Poisson-log-normal),
+\code{flat} (uniform),
+and \code{continuous} (the continuous version of \code{proportion}).The default is \code{proportion}.
 The default is \code{proportion}.
 }
 

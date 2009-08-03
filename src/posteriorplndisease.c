@@ -42,8 +42,8 @@ void gplndisease (int *pop, int *dis,
   isamplesize=(*samplesize);
   iinterval=(*interval);
   iburnin=(*burnin);
-  Nnp0=(*Nnp0);
-  Nnp1=(*Nnp1);
+  Nnp0=(*Np0);
+  Nnp1=(*Np1);
   dkappa0=(*kappa0);
   ddf0=(*df0);
   dsigma0=(*sigma0);
@@ -332,7 +332,7 @@ void MHplndisease (int *Nk0, int *Nk1, int *totdis, int *K,
             double *sigma0,  double *sigma1, double *df0,
             double *muproposal, 
             double *sigmaproposal, 
-            int *N, int *Nnp0, int *Nnp1, double *psample,
+            int *N, int *Np0, int *Np1, double *psample,
             double *musample, double *betasample, double *sigmasample,
             int *samplesize, int *staken, int *burnin, int *interval,
 	    int *fVerbose

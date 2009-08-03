@@ -9,9 +9,6 @@ dsizeprior<-function(n,
                   log=FALSE,
                   verbose=TRUE){
   priorsizedistribution=match.arg(type)
-  if(priorsizedistribution=="nbinom" && is.null(mean.prior.size)){
-    mean.prior.size<-N
-  }
   N <- NULL
   beta <- NULL
   lpriorm <- switch(priorsizedistribution,
@@ -105,6 +102,7 @@ dsizeprior<-function(n,
      lpriorm
      }
     )
+    if(is.null(N)){N <- mean(x)}
     if(verbose){cat(paste("The maximum prior population size is",n+maxN,"\n"))}
     list(x=n+x,lprior=lpriorm,N=N,maxN=maxN,
          median.prior.size=median.prior.size,
@@ -112,5 +110,6 @@ dsizeprior<-function(n,
          mode.prior.size=mode.prior.size,
 	 mode.prior.sample.proportion=mode.prior.sample.proportion,
 	 median.prior.sample.proportion=median.prior.sample.proportion,
-	 beta=beta)
+	 beta=beta,
+         type=type)
 }
