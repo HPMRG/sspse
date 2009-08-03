@@ -278,11 +278,11 @@ The default is \code{proportion}.
 }
 
 \section{Details on priors}{
-The best way to specify the prior is via the hyperparameter ''mode.prior.size''
+The best way to specify the prior is via the hyperparameter \code{mode.prior.size}
 which specifies the mode of the prior distribution on the population size.
-You can alternatively specify the hyperparameter ''median.prior.size''
+You can alternatively specify the hyperparameter \code{median.prior.size}
 which specifies the median of the prior distribution on the population size,
-or ''mode.prior.sample proportion'' which specifies the mode of the prior
+or \code{mode.prior.sample proportion} which specifies the mode of the prior
 distribution on the proportion of the population size in the sample.
 }
 
