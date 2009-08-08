@@ -33,7 +33,7 @@ void gcmp (int *pop,
 	    double *ppos,
 	    double *lpriorm,
             int *burnintheta,
-	    int *fVerbose
+	    int *verbose
 			 );
 void MHcmp (int *Nk, int *K,
 	    double *mu0, double *kappa0, 
@@ -43,6 +43,6 @@ void MHcmp (int *Nk, int *K,
             int *N, int *Npi, double *psample,
             double *musample, double *sigmasample,
             int *samplesize, int *staken, int *burnin, int *interval,
-	    int *fVerbose
+	    int *verbose
 			 );
 #endif /* POSTERIORCMP_H */

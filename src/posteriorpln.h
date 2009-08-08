@@ -34,7 +34,7 @@ void gpln (int *pop,
 	    double *ppos,
 	    double *lpriorm,
             int *burnintheta,
-	    int *fVerbose
+	    int *verbose
 			 );
 void MHpln (int *Nk, int *K,
 	    double *mu0, double *kappa0, 
@@ -44,6 +44,6 @@ void MHpln (int *Nk, int *K,
             int *N, int *Npi, double *psample,
             double *musample, double *sigmasample,
             int *samplesize, int *staken, int *burnin, int *interval,
-	    int *fVerbose
+	    int *verbose
 			 );
 #endif /* POSTERIORPLN_H */

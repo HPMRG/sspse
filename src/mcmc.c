@@ -21,9 +21,9 @@ void gspps (int *pop,
             double *sample, 
             double *ppos, 
             int *burnintheta,
-	    int *fVerbose
+	    int *verbose
 			 ) {
-  int step, staken, getone=1, intervalone=1, fVerboseMHpln = 0;
+  int step, staken, getone=1, intervalone=1, verboseMHpln = 0;
   int dimsample, Np;
   int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
   double mu, mui, sigmai;
@@ -92,7 +92,7 @@ void gspps (int *pop,
     MHplnorig(Nk,K,mu0,kappa0,sigma0,df0,muproposal,sigmaproposal,
           &Ni, &Np, psample,
 	  musample, sigmasample, &getone, &staken, burnintheta, &intervalone, 
-	  &fVerboseMHpln);
+	  &verboseMHpln);
 
     for (i=0; i<Np; i++){
       pdegi[i] = psample[i];
@@ -167,7 +167,7 @@ void gspps (int *pop,
          popi=rpois(mu);
          if(popi < 0){popi=0;}
        }else{
-    if (*fVerbose) Rprintf("mu > 5.*Ki; mu %f K %d\n", mu, Ki);
+    if (*verbose) Rprintf("mu > 5.*Ki; mu %f K %d\n", mu, Ki);
          popi=0;
        }
       }
@@ -189,8 +189,8 @@ void gspps (int *pop,
         ppos[i]+=((Nk[i]*1.)/Ni);
       }
       isamp++;
-      if (*fVerbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d samples...\n", isamp);
-      if (*fVerbose) Rprintf("Taken %d samples...\n", isamp);
+      if (*verbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d samples...\n", isamp);
+      if (*verbose) Rprintf("Taken %d samples...\n", isamp);
     }
     step++;
   }
@@ -221,10 +221,10 @@ void gsppsN (int *pop,
             int *N,
             int *sample, 
             int *burnintheta,
-	    int *fVerbose
+	    int *verbose
 			 ) {
   int Np;
-  int step, staken, getone=1, intervalone=1, fVerboseMHpln = 0;
+  int step, staken, getone=1, intervalone=1, verboseMHpln = 0;
   int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
   double mu;
   double dkappa0, ddf0, dmu0, dsigma0, dmuproposal, dsigmaproposal;
@@ -268,7 +268,7 @@ void gsppsN (int *pop,
     MHplnorig(Nk,K,mu0,kappa0,sigma0,df0,muproposal,sigmaproposal,N,
           &Np, psample,
 	  musample, sigmasample, &getone, &staken, burnintheta, &intervalone, 
-	  &fVerboseMHpln);
+	  &verboseMHpln);
     tU=0;
     for (i=ni; i<Ni; i++){
       tU+=pop[i];
@@ -300,17 +300,17 @@ void gsppsN (int *pop,
       if(popi > Ki){popi=Ki;}
       pop[i]=popi;
       Nk[popi-1]=Nk[popi-1]+1;
-//    if (*fVerbose) Rprintf("Ni %d ni %d mu %f pop[i] %d r %f\n", Ni, ni, mu, pop[i], r);
+//    if (*verbose) Rprintf("Ni %d ni %d mu %f pop[i] %d r %f\n", Ni, ni, mu, pop[i], r);
     }
 		    
     if (step > 0 && step==(iinterval*(step/iinterval))) { 
       /* record statistics for posterity */
-      if (*fVerbose) Rprintf("isamp %d pop[501] %d\n", isamp, pop[501]);
+      if (*verbose) Rprintf("isamp %d pop[501] %d\n", isamp, pop[501]);
       for (i=0; i<Ni; i++){
         sample[isamp*Ni+i]=pop[i];
       }
       isamp++;
-      if (*fVerbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d samples...\n", isamp);
+      if (*verbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d samples...\n", isamp);
     }
     step++;
   }
@@ -330,7 +330,7 @@ void MHplnorig (int *Nk, int *K,
             int *N, int *Npi, double *psample,
             double *musample, double *sigmasample,
             int *samplesize, int *staken, int *burnin, int *interval,
-	    int *fVerbose
+	    int *verbose
 			 ) {
   int Np;
   int step, taken, give_log=1;
@@ -462,11 +462,11 @@ void MHplnorig (int *Nk, int *K,
     /* The logic is to set exp(cutoff) = exp(ip) * qratio ,
     then let the MH probability equal min{exp(cutoff), 1.0}.
     But we'll do it in log space instead.  */
-//  if (*fVerbose)
+//  if (*verbose)
 //    Rprintf("Now proposing %d MH steps %f ip1...\n", step, ip);
     cutoff = ip + qsigma2i-qsigma2star;
       
-//  if (*fVerbose)
+//  if (*verbose)
 //    Rprintf("Now proposing %d MH steps %f cutoff...\n", step, cutoff);
 
     /* if we accept the proposed network */
@@ -493,7 +493,7 @@ void MHplnorig (int *Nk, int *K,
           psample[i]=pdegi[i];
         }
         isamp++;
-        if (*fVerbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d MH samples...\n", isamp);
+        if (*verbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d MH samples...\n", isamp);
       }
     }
     step++;
@@ -510,7 +510,7 @@ void MHpriorpln (double *mu0, double *kappa0,
             double *sigmaproposal, 
             double *musample, double *sigmasample,
             int *samplesize, int *staken, int *burnin, int *interval,
-	    int *fVerbose
+	    int *verbose
 			 ) {
   int step, taken, give_log=1;
   int isamp, iinterval, isamplesize, iburnin;
@@ -565,7 +565,7 @@ void MHpriorpln (double *mu0, double *kappa0,
       
     /* if we accept the proposed network */
     if (cutoff >= 0.0 || log(unif_rand()) < cutoff) { 
-//    if (*fVerbose) {
+//    if (*verbose) {
 //     sigmai = exp(mustar+0.5*sigmastar);
 //     sigmai = exp(mustar+0.5*sigmastar);
 //     if(sigmai > 12.){
@@ -578,14 +578,14 @@ void MHpriorpln (double *mu0, double *kappa0,
       mui    = mustar;
       sigma2i = sigma2star;
       pithetai = pithetastar;
-//    if (*fVerbose) Rprintf("step %d mui %f sigmai %f\n", step, mui, sigmai);
+//    if (*verbose) Rprintf("step %d mui %f sigmai %f\n", step, mui, sigmai);
       taken++;
       if (step > 0 && step==(iinterval*(step/iinterval))) { 
         /* record statistics for posterity */
         musample[isamp]=mui;
         sigmasample[isamp]=sigmai;
         isamp++;
-        if (*fVerbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d MH samples...\n", isamp);
+        if (*verbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d MH samples...\n", isamp);
       }
     }
     step++;
@@ -601,7 +601,7 @@ void getinclC (int *N,
             int *n, 
             int *samplesize,
             int *Nk,
-	    int *fVerbose
+	    int *verbose
 			 ) {
   int i, ni, Ni, Ki, isamp, isamplesize;
 
@@ -641,7 +641,7 @@ void getinclC (int *N,
     for(i = 0 ; i < ni ; i++){
       Nk[pop[samp[i]-1]]++;
     }
-    if (*fVerbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d samples...\n", isamp);
+    if (*verbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d samples...\n", isamp);
   }
   PutRNGstate();  /* Disable RNG before returning */
   free(samp);

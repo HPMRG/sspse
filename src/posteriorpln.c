@@ -22,10 +22,10 @@ void gpln (int *pop,
             double *ppos, 
             double *lpriorm, 
             int *burnintheta,
-	    int *fVerbose
+	    int *verbose
 			 ) {
   int dimsample, Np;
-  int step, staken, getone=1, intervalone=1, fVerboseMHpln = 0;
+  int step, staken, getone=1, intervalone=1, verboseMHpln = 0;
   int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
   double mui, sigmai, dsamp;
   double dkappa0, ddf0, dmu0, dsigma0, dmuproposal, dsigmaproposal;
@@ -93,7 +93,7 @@ void gpln (int *pop,
     MHpln(Nk,K,mu0,kappa0,sigma0,df0,muproposal,sigmaproposal,
           &Ni, &Np, psample,
 	  musample, sigmasample, &getone, &staken, burnintheta, &intervalone, 
-	  &fVerboseMHpln);
+	  &verboseMHpln);
 
     for (i=0; i<Np; i++){
       pdegi[i] = psample[i];
@@ -208,8 +208,8 @@ void gpln (int *pop,
         ppos[i]+=((Nk[i]*1.)/Nd);
       }
       isamp++;
-      if (*fVerbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d samples...\n", isamp);
-//    if (*fVerbose) Rprintf("Taken %d samples...\n", isamp);
+      if (*verbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d samples...\n", isamp);
+//    if (*verbose) Rprintf("Taken %d samples...\n", isamp);
     }
     step++;
   }
@@ -238,7 +238,7 @@ void MHpln (int *Nk, int *K,
             int *N, int *Npi, double *psample,
             double *musample, double *sigmasample,
             int *samplesize, int *staken, int *burnin, int *interval,
-	    int *fVerbose
+	    int *verbose
 			 ) {
   int Np;
   int step, taken, give_log1=1, give_log0=0;
@@ -370,11 +370,11 @@ void MHpln (int *Nk, int *K,
     /* The logic is to set exp(cutoff) = exp(ip) * qratio ,
     then let the MH probability equal min{exp(cutoff), 1.0}.
     But we'll do it in log space instead.  */
-//  if (*fVerbose)
+//  if (*verbose)
 //    Rprintf("Now proposing %d MH steps %f ip1...\n", step, ip);
     cutoff = ip + qsigma2i-qsigma2star;
       
-//  if (*fVerbose)
+//  if (*verbose)
 //    Rprintf("Now proposing %d MH steps %f cutoff...\n", step, cutoff);
 
     /* if we accept the proposed network */
@@ -401,7 +401,7 @@ void MHpln (int *Nk, int *K,
           psample[i]=pdegi[i];
         }
         isamp++;
-        if (*fVerbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d MH samples...\n", isamp);
+        if (*verbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d MH samples...\n", isamp);
       }
     }
     step++;

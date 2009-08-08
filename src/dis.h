@@ -33,7 +33,7 @@ void gsppsdis (int *pop, int *dis,
             double *sample, 
             double *p0pos, double *p1pos, 
             int *burnintheta,
-	    int *fVerbose
+	    int *verbose
 			 );
 void MHdis (int *Nk0, int *Nk1, int *totdis, int *K,
 	    double *mu0, double *mu1, double *kappa0, 
@@ -43,7 +43,7 @@ void MHdis (int *Nk0, int *Nk1, int *totdis, int *K,
             int *N, int *Np0i, int *Np1i, double *psample,
             double *musample, double *betasample, double *sigmasample,
             int *samplesize, int *staken, int *burnin, int *interval,
-	    int *fVerbose
+	    int *verbose
 			 );
 void MHpriordis (double *mu0, double *mu1, double *kappa0, 
             double *sigma0,  double *sigma1, double *df0,
@@ -51,6 +51,6 @@ void MHpriordis (double *mu0, double *mu1, double *kappa0,
             double *sigmaproposal, 
             double *musample, double *betasample, double *sigmasample,
             int *samplesize, int *staken, int *burnin, int *interval,
-	    int *fVerbose
+	    int *verbose
 			 );
 #endif /* DIS_H */

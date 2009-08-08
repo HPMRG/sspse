@@ -21,10 +21,10 @@ void gsppsdis (int *pop, int *dis,
             double *sample, 
             double *p0pos, double *p1pos, 
             int *burnintheta,
-            int *fVerbose
+            int *verbose
               ) {
   int dimsample, Np0, Np1;
-  int step, staken, getone=1, intervalone=1, fVerboseMHdis = 0;
+  int step, staken, getone=1, intervalone=1, verboseMHdis = 0;
   int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
   double mu, mu0i, mu1i, pbeta, beta, sigma0i, sigma1i;
   double dkappa0, ddf0, dmu0, dmu1, dsigma0, dsigma1, dmuproposal, dsigmaproposal;
@@ -117,7 +117,7 @@ void gsppsdis (int *pop, int *dis,
 	  &Ni, &Np0, &Np1, psample, 
 	  musample, betasample, sigmasample, &getone, &staken, 
 	  burnintheta, &intervalone, 
-	  &fVerboseMHdis);
+	  &verboseMHdis);
 
     beta=betasample[0];
     pbeta=exp(beta)/(1.+exp(beta));
@@ -192,13 +192,13 @@ void gsppsdis (int *pop, int *dis,
     gamma0rt = lpm[imaxN-1] * unif_rand();
     Ni = 0;
     while(gamma0rt > lpm[Ni]){Ni++;}
-//  if (*fVerbose) Rprintf("Ni %d lpm[imaxN-1] %f lpm[Ni] %f\n", Ni, lpm[imaxN-1],
+//  if (*verbose) Rprintf("Ni %d lpm[imaxN-1] %f lpm[Ni] %f\n", Ni, lpm[imaxN-1],
 //  lpm[Ni]);
 //  }
     Ni += ni;
     if(Ni >= imaxN) Ni = imaxN-1;
 
-//  if (*fVerbose) Rprintf("step %d Ni %d itotdis %d beta %f mu0 %f mu1 %f s0 %f r %f\n",
+//  if (*verbose) Rprintf("step %d Ni %d itotdis %d beta %f mu0 %f mu1 %f s0 %f r %f\n",
 //  step, Ni, itotdis, betasample[0], musample[0], musample[1], sigmasample[0], r);
 
     /* Draw phis */
@@ -251,7 +251,7 @@ void gsppsdis (int *pop, int *dis,
 		    
     if (step > 0 && step==(iinterval*(step/iinterval))) { 
       /* record statistics for posterity */
-//    if (*fVerbose) Rprintf("isamp %d pop[501] %d\n", isamp, pop[501]);
+//    if (*verbose) Rprintf("isamp %d pop[501] %d\n", isamp, pop[501]);
       sample[isamp*dimsample  ]=(double)(Ni);
       sample[isamp*dimsample+1]=mu0i;
       sample[isamp*dimsample+2]=mu1i;
@@ -279,9 +279,9 @@ void gsppsdis (int *pop, int *dis,
         p1pos[i]+=(Nk1[i]/Nd);
       }
       isamp++;
-      if (*fVerbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d samples...\n", isamp);
-//    if (*fVerbose) Rprintf("r %f gammart %f\n", r, gammart);
-//    if (*fVerbose) Rprintf("Ni %d lpm[0] %f imaxN %d\n", Ni, lpm[0], imaxN);
+      if (*verbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d samples...\n", isamp);
+//    if (*verbose) Rprintf("r %f gammart %f\n", r, gammart);
+//    if (*verbose) Rprintf("Ni %d lpm[0] %f imaxN %d\n", Ni, lpm[0], imaxN);
     }
     step++;
   }
@@ -316,7 +316,7 @@ void MHdis (int *Nk0, int *Nk1, int *totdis, int *K,
             int *N, int *Np0i, int *Np1i, double *psample,
             double *musample, double *betasample, double *sigmasample,
             int *samplesize, int *staken, int *burnin, int *interval,
-	    int *fVerbose
+	    int *verbose
 			 ) {
   int Np0, Np1;
   int step, taken, give_log=1;
@@ -575,7 +575,7 @@ void MHdis (int *Nk0, int *Nk1, int *totdis, int *K,
         p1i[i] = p1star[i];
       }
       taken++;
-//  if (*fVerbose)
+//  if (*verbose)
 //    Rprintf("Taken %d MH steps...\n", taken);
 //    }
       if (step > 0 && step==(iinterval*(step/iinterval))) { 
@@ -592,7 +592,7 @@ void MHdis (int *Nk0, int *Nk1, int *totdis, int *K,
           psample[i+Np0]=pdeg1i[i];
         }
         isamp++;
-        if (*fVerbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d samples...\n", isamp);
+        if (*verbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d samples...\n", isamp);
       }
     }
     step++;
@@ -619,7 +619,7 @@ void MHpriordis (double *mu0, double *mu1, double *kappa0,
             double *sigmaproposal, 
             double *musample, double *betasample, double *sigmasample,
             int *samplesize, int *staken, int *burnin, int *interval,
-	    int *fVerbose
+	    int *verbose
 			 ) {
   int step, taken, give_log=1;
   int isamp, iinterval, isamplesize, iburnin;
@@ -705,7 +705,7 @@ void MHpriordis (double *mu0, double *mu1, double *kappa0,
       sigma02i = sigma02star;
       sigma12i = sigma12star;
       pithetai = pithetastar;
-//    if (*fVerbose) Rprintf("step %d mu0i %f sigmai %f\n", step, mu0i, sigmai);
+//    if (*verbose) Rprintf("step %d mu0i %f sigmai %f\n", step, mu0i, sigmai);
       taken++;
       if (step > 0 && step==(iinterval*(step/iinterval))) { 
         /* record statistics for posterity */
@@ -715,7 +715,7 @@ void MHpriordis (double *mu0, double *mu1, double *kappa0,
         sigmasample[2*isamp]=sigma0i;
         sigmasample[2*isamp+1]=sigma1i;
         isamp++;
-        if (*fVerbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d MH samples...\n", isamp);
+        if (*verbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d MH samples...\n", isamp);
       }
     }
     step++;

@@ -35,7 +35,7 @@ void gplndisease (int *pop, int *dis,
 	    double *ppos,
 	    double *lpriorm,
             int *burnintheta,
-	    int *fVerbose
+	    int *verbose
 			 );
 void MHplndisease (int *Nk0, int *Nk1, int *totdis, int *K,
 	    double *mu0, double *mu1, double *kappa0, 
@@ -45,6 +45,6 @@ void MHplndisease (int *Nk0, int *Nk1, int *totdis, int *K,
             int *N, int *Np0, int *Np1, double *psample,
             double *musample, double *betasample, double *sigmasample,
             int *samplesize, int *staken, int *burnin, int *interval,
-	    int *fVerbose
+	    int *verbose
 			 );
 #endif /* POSTERIORPLNDISEASE_H */

@@ -34,7 +34,7 @@ void gcmpdisease (int *pop, int *dis,
             double *ppos, 
 	    double *lpriorm,
             int *burnintheta,
-	    int *fVerbose
+	    int *verbose
 			 );
 
 void MHcmpdisease (int *Nk0, int *Nk1, int *totdis, int *K,
@@ -45,6 +45,6 @@ void MHcmpdisease (int *Nk0, int *Nk1, int *totdis, int *K,
             int *N, int *Nnp0, int *Nnp1, double *psample,
             double *musample, double *betasample, double *sigmasample,
             int *samplesize, int *staken, int *burnin, int *interval,
-	    int *fVerbose
+	    int *verbose
 			 );
 #endif /* POSTERIORCMPDISEASE_H */

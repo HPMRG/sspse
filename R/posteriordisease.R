@@ -191,7 +191,7 @@ posdis.old<-function(s,dis,maxN=4*length(s),
               p0pos=double(K), p1pos=double(K),
               ppos=double(K),
               burnintheta=as.integer(burnintheta),
-              fVerbose=as.integer(verbose))
+              verbose=as.integer(verbose))
     Cret$sample<-matrix(Cret$sample,nrow=samplesize,ncol=dimsample,byrow=TRUE)
     degnames <- NULL
     if(Np0>0){degnames <- c(degnames,paste("p0deg",1:Np0,sep=""))}

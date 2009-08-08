@@ -203,7 +203,7 @@ disease disease is the proportion of people in the population with disease statu
 of \eqn{m=N-n} - that is, the number of unobserved members of the population.}
   \item{burnintheta}{count; the number of proposals in the Metropolis-Hastings
 sub-step for the degree distribution parameters (\eqn{\theta}) before any MCMC sampling is done. It typically is set to a modestly large number.}
-  \item{fVerbose}{logical; if this is
+  \item{verbose}{logical; if this is
     \code{TRUE}, the program printed out additional
     information, including goodness of fit statistics.}
   \item{predictive.degree.count0}{vector; a vector of length the maximum degree (\code{K}) (by default \code{K=2*max(sample degree)}). 
