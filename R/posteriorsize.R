@@ -102,6 +102,10 @@ posteriorsize<-function(s,
     attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
     attr(Cret$sample, "class") <- "mcmc"
     
+    ### Remove the padding from the last draws from the populations of degrees
+    Nlastpos <- Cret$sample[nrow(Cret$sample),"N"]
+    Cret$pop<-Cret$pop[1:Nlastpop]
+
     ### define function that will compute mode of a sample
     mapfn <- function(x,lbound=min(x),ubound=max(x)){
       posdensN <- density(x, from=lbound, to=ubound)

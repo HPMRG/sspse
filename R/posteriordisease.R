@@ -139,6 +139,8 @@ posteriordisease<-function(s,dis,
   ### return result
   Cret
 }
+
+#Older
 posdis.old<-function(s,dis,maxN=4*length(s),
                   K=2*max(s), 
 		  nk0=tabulate(s[dis==0],nbin=K),
@@ -221,6 +223,10 @@ posdis.old<-function(s,dis,maxN=4*length(s),
     endrun <- burnin+interval*(samplesize-1)
     attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
     attr(Cret$sample, "class") <- "mcmc"
+    Nlastpos <- Cret$sample[nrow(Cret$sample),"N"]
+    ### Remove the padding from the last draws from the populations of degrees and disease states
+    Cret$pop<-Cret$pop[1:Nlastpop]
+    Cret$dis<-Cret$dis[1:Nlastpop]
     require(locfit, quietly=TRUE)
     mapfn <- function(x,lbound=min(x),ubound=max(x)){
       posdensN <- locfit(~ lp(x),xlim=c(lbound,ubound))

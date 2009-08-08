@@ -120,8 +120,8 @@ The default is 1, that is not to use parallel processing.}
 
 \value{\code{\link{posteriordisease}} returns a list
   consisting of the following elements:
-  \item{pop}{vector; The final posterior draw for the degrees of the population. The first \eqn{n} at the sample and the reminder are non-sequenced. The length of the output vector is \code{maxN}, but only the first \code{N} degrees are relevant (the vector is padded by zeros.}
-  \item{dis}{vector; The final posterior draw for the disease states of the population. The first \eqn{n} at the sample and the reminder are non-sequenced. The length of the output vector is \code{maxN}, but only the first \code{N} degrees are relevant (the vector is padded by zeros.}
+  \item{pop}{vector; The final posterior draw for the degrees of the population. The first \eqn{n} are the sample in sequence and the reminder are non-sequenced.}
+  \item{dis}{vector; The final posterior draw for the disease states of the population. The first \eqn{n} are the sample in sequence and the reminder are non-sequenced.}
   \item{K}{count; the maximum degree for an individual. This is usually
 calculated as twice the maximum observed degree.}
   \item{n}{count; the sample size.}
@@ -141,18 +141,19 @@ non-diseased. The prior has this standard deviation.}
 non-diseased. The prior has this standard deviation.}
   \item{df.sd.prior}{scalar;  A hyper parameter being the degrees-of-freedom of the prior for the standard deviation. This gives the equivalent sample size that would contain the same amount of information inherent in the prior for the standard deviation.}
   \item{Np0}{integer; The overall degree distribution of the
-  non-diseased is a mixture of the \code{1:Np} rates and a parametric
-  degree distribution model truncated below Np. Thus the model
+  non-diseased is a mixture of individual proportions for 
+  \code{1:Np0} and a parametric
+  degree distribution model truncated below \code{Np0}. Thus the model
   fits the proportions of the
-population with degree \code{1:Np} each with a separate parameter. This
+population with degree \code{1:Np0} each with a separate parameter. This
 should adjust for an lack-of-fit of the parametric degree
 distribution model  at lower degrees, although it also changes
 the model away from the parametric degree distribution model.}
   \item{Np1}{integer; The overall degree distribution of the
-  diseased is a mixture of the \code{1:Np} rates and a parametric
-  degree distribution model truncated below Np. Thus the model
+  diseased is a mixture of the \code{1:Np1} rates and a parametric
+  degree distribution model truncated below \code{Np1}. Thus the model
   fits the proportions of the
-population with degree \code{1:Np} each with a separate parameter. This
+population with degree \code{1:Np1} each with a separate parameter. This
 should adjust for an lack-of-fit of the parametric degree
 distribution model  at lower degrees, although it also changes
 the model away from the parametric degree distribution model.}
