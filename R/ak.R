@@ -191,7 +191,7 @@ getincl.raw<-function(size,
               n=as.integer(n),
               samplesize=as.integer(M),
               Nk=as.integer(Nk),
-              fVerbose=as.integer(verbose))
+              verbose=as.integer(verbose))
     Cret
 }
 
@@ -263,7 +263,7 @@ getinclC<-function(classes,props,n,nsamp,nsampsamp){
               n=as.integer(nsamp),
               samplesize=as.integer(nsampsamp),
               Nk=as.integer(classes),
-              fVerbose=as.integer(0))
+              verbose=as.integer(0))
 # list(degvec=classes,pvec=Cret$Nk/(nbyclass*nsampsamp),nbyclass=nbyclass)
   Ninf <- Cret$Nk
   Ninf[Ninf==0] <- 1

@@ -18,6 +18,7 @@ poscmpdisease<-function(s,dis,
 		  median.prior.sample.proportion=NULL,
 		  median.prior.size=NULL,
 		  mode.prior.size=NULL,
+                  effective.prior.df=1,
                   seed=NULL,
                   verbose=TRUE){
     #this function takes a vector of population sizes and a vector s of 
@@ -45,6 +46,7 @@ poscmpdisease<-function(s,dis,
 		  median.prior.sample.proportion=median.prior.sample.proportion,
 		  median.prior.size=median.prior.size,
 		  mode.prior.size=mode.prior.size,
+                  effective.prior.df=effective.prior.df,
                   maxN=maxN,
                   log=TRUE,
                   verbose=verbose)
@@ -74,7 +76,7 @@ poscmpdisease<-function(s,dis,
               ppos=double(K), 
               lpriorm=as.double(prior$lprior),
               burnintheta=as.integer(burnintheta),
-              fVerbose=as.integer(verbose))
+              verbose=as.integer(verbose))
     Cret$sample<-matrix(Cret$sample,nrow=samplesize,ncol=dimsample,byrow=TRUE)
     degnames <- NULL
     if(Np0>0){degnames <- c(degnames,paste("p0deg",1:Np0,sep=""))}
@@ -131,6 +133,7 @@ poscmpdisease<-function(s,dis,
    Cret$MAP["disease"] <- mapfn(Cret$sample[,"disease"],lbound=0,ubound=1)
    Cret$maxN <- prior$maxN
    Cret$mode.prior.size <- prior$mode.prior.size
+   Cret$effective.prior.df <- prior$effective.prior.df
    Cret$median.prior.size <- prior$median.prior.size
    Cret$mode.prior.sample.proportion <- prior$mode.prior.sample.proportion
    Cret$N <- prior$N

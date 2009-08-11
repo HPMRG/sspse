@@ -13,6 +13,7 @@ posteriorsize<-function(s,
 		  mode.prior.sample.proportion=0.5,
 		  median.prior.size=NULL,
 		  mode.prior.size=NULL,
+                  effective.prior.df=1,
 		  degreedistribution=c("cmp","nbinom","pln"),
                   parallel=1, seed=NULL,
                   verbose=TRUE){
@@ -42,6 +43,7 @@ posteriorsize<-function(s,
 		    mode.prior.sample.proportion=mode.prior.sample.proportion,
 		    median.prior.size=median.prior.size,
 		    mode.prior.size=mode.prior.size,
+                    effective.prior.df=effective.prior.df,
                     seed=seed)
   }
   ### since running job in parallel, start pvm (if not already running)
@@ -63,7 +65,8 @@ posteriorsize<-function(s,
       mean.prior.size=mean.prior.size, sd.prior.size=sd.prior.size,
       mode.prior.sample.proportion=mode.prior.sample.proportion,
       median.prior.size=median.prior.size,
-      mode.prior.size=mode.prior.size)
+      mode.prior.size=mode.prior.size,
+      effective.prior.df=effective.prior.df)
 #
 #   Process the results
 #

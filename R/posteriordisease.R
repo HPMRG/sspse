@@ -10,6 +10,7 @@ posteriordisease<-function(s,dis,
 		  mode.prior.sample.proportion=0.5,
 		  median.prior.size=NULL,
 		  mode.prior.size=NULL,
+                  effective.prior.df=1,
 		  degreedistribution=c("cmp","nbinom","pln"),
                   maxN=NULL,
                   K=2*max(s), n=length(s),
@@ -44,6 +45,7 @@ posteriordisease<-function(s,dis,
 		      mode.prior.sample.proportion=mode.prior.sample.proportion,
 		      median.prior.size=median.prior.size,
 		      mode.prior.size=mode.prior.size,
+                      effective.prior.df=effective.prior.df,
                       seed=seed)
   }else{
     cl <- beginsnow(parallel)
@@ -62,7 +64,8 @@ posteriordisease<-function(s,dis,
       mean.prior.size=mean.prior.size, sd.prior.size=sd.prior.size,
       mode.prior.sample.proportion=mode.prior.sample.proportion,
       median.prior.size=median.prior.size,
-      mode.prior.size=mode.prior.size)
+      mode.prior.size=mode.prior.size,
+      effective.prior.df=effective.prior.df)
 #
 #   Process the results
 #
