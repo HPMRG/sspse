@@ -16,6 +16,7 @@ collected by Respondent Driven Sampling.
    median.prior.sample.proportion=NULL,
    median.prior.size=NULL,
    mode.prior.size=NULL,
+   effective.prior.df=1,
    maxN=NULL,
    log=FALSE,
    verbose=TRUE)
@@ -52,6 +53,7 @@ prior.}
   \item{mean.prior.size}{scalar; A hyperparameter being the mean of the prior distribution on the population size.}
 % \item{sd.prior.size}{scalar; A hyperparameter being the standard deviation of the prior distribution on the population size.}
   \item{mode.prior.size}{scalar; A hyperparameter being the mode of the prior distribution on the population size.}
+  \item{effective.prior.df}{scalar; A hyperparameter being the effective number of samples worth of information represented in the prior distribution on the population size. By default this is 1, but it can be greater (or less!) to allow for different levels of uncertainty.}
   \item{mode.prior.sample.proportion}{scalar; A hyperparameter being the mode of the prior distribution on the sample proportion \eqn{n/N}.}
   \item{median.prior.size}{scalar; A hyperparameter being the mode of the prior distribution on the population size.}
   \item{beta}{scalar; A hyperparameter being the second parameter of the Beta distribuion that is a component of the prior distribution on the sample proportion \eqn{n/N}.}

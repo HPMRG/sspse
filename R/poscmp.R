@@ -12,7 +12,7 @@ poscmp<-function(s,maxN=NULL,
 		  median.prior.sample.proportion=NULL,
 		  median.prior.size=NULL,
 		  mode.prior.size=NULL,
-                  effective.prior.df=1,
+		  effective.prior.df=1,
                   seed=NULL,
                   verbose=TRUE){
     #this function takes a vector of population sizes and a vector s of 

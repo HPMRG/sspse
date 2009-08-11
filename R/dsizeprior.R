@@ -5,6 +5,7 @@ dsizeprior<-function(n,
 		  median.prior.sample.proportion=NULL,
 		  median.prior.size=NULL,
 		  mode.prior.size=NULL,
+		  effective.prior.df=1,
                   maxN=NULL,
                   log=FALSE,
                   verbose=TRUE){
@@ -102,6 +103,16 @@ dsizeprior<-function(n,
      lpriorm
      }
     )
+    if(effective.prior.df!=1){
+     if(log){
+      lpriorm <- exp(lpriorm*effective.prior.df)
+      lpriorm <- lprior/sum(lpriorm)
+      lpriorm <- log(lpriorm)
+     }else{
+      lpriorm <- lpriorm^effective.prior.df
+      lpriorm <- lpriorm/sum(lpriorm)
+     }
+    }
     if(is.null(N)){N <- mean(x)}
     if(verbose){cat(paste("The maximum prior population size is",n+maxN,"\n"))}
     list(x=n+x,lprior=lpriorm,N=N,maxN=maxN,
@@ -111,5 +122,6 @@ dsizeprior<-function(n,
 	 mode.prior.sample.proportion=mode.prior.sample.proportion,
 	 median.prior.sample.proportion=median.prior.sample.proportion,
 	 beta=beta,
+	 effective.prior.df=effective.prior.df,
          type=type)
 }

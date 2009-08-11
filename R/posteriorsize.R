@@ -13,7 +13,7 @@ posteriorsize<-function(s,
 		  mode.prior.sample.proportion=0.5,
 		  median.prior.size=NULL,
 		  mode.prior.size=NULL,
-                  effective.prior.df=1,
+		  effective.prior.df=1,
 		  degreedistribution=c("cmp","nbinom","pln"),
                   parallel=1, seed=NULL,
                   verbose=TRUE){

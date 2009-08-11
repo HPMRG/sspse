@@ -32,6 +32,7 @@ sample of degrees only.
                   mode.prior.sample.proportion=0.5,
                   median.prior.size=NULL,
                   mode.prior.size=NULL,
+		  effective.prior.df=1,
                   degreedistribution=c("cmp","nbinom","pln"),
                   maxN=NULL,
                   K=2*max(s), n=length(s),
@@ -91,6 +92,7 @@ The default is \code{proportion}.}
   \item{mode.prior.sample.proportion}{scalar; A hyperparameter being the mode of the prior distribution on the sample proportion \eqn{n/N}.}
   \item{median.prior.size}{scalar; A hyperparameter being the mode of the prior distribution on the population size.}
   \item{mode.prior.size}{scalar; A hyperparameter being the mode of the prior distribution on the population size.}
+  \item{effective.prior.df}{scalar; A hyperparameter being the effective number of samples worth of information represented in the prior distribution on the population size. By default this is 1, but it can be greater (or less!) to allow for different levels of uncertainty.}
   \item{degreedistribution}{count; the parametric distribution to
   use for the individual network sizes (i.e., degrees). The
   options are \code{cmp}, \code{nbinom}, and \code{pln}.
