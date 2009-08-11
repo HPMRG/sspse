@@ -18,11 +18,7 @@ poscmpdisease<-function(s,dis,
 		  median.prior.sample.proportion=NULL,
 		  median.prior.size=NULL,
 		  mode.prior.size=NULL,
-<<<<<<< .mine
 		  effective.prior.df=1,
-=======
-                  effective.prior.df=1,
->>>>>>> .r182
                   seed=NULL,
                   verbose=TRUE){
     #this function takes a vector of population sizes and a vector s of 
