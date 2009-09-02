@@ -306,6 +306,7 @@ void gcmpdisease (int *pop, int *dis,
     }
     step++;
   }
+// Organize and return
   dsamp=((double)isamp);
   for (i=0; i<Ki; i++){
     nk0[i]=Nk0pos[i];

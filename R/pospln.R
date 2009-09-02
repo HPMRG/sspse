@@ -67,7 +67,7 @@ pospln<-function(s,maxN=4*length(s),
     Cret$sample[,"sigma"] <- sqrt(Cret$sample[,"mu"]+Cret$sample[,"sigma"]*Cret$sample[,"sigma"])
     #
 #   Cret$Nk<-Cret$nk/sum(Cret$nk)
-    Cret$predictive.degree.count<-Cret$nk
+    Cret$predictive.degree.count<-Cret$nk / samplesize
     Cret$nk<-NULL
     endrun <- burnin+interval*(samplesize-1)
     attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)

@@ -85,7 +85,7 @@ posteriorsize<-function(s,
     Cret$ppos<-Cret$ppos/Nparallel
     Cret$predictive.degree<-Cret$ppos
     Cret$ppos<-NULL
-    Cret$predictive.degree.count<-Cret$nk
+    Cret$predictive.degree.count<-Cret$nk / samplesize
     Cret$nk<-NULL
     #
     degnames <- NULL

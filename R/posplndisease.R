@@ -106,8 +106,8 @@ posplndisease<-function(s,dis,
     Cret$sample[,"sigma0"] <- sqrt(Cret$sample[,"mu0"]+Cret$sample[,"sigma0"]*Cret$sample[,"sigma0"])
     Cret$sample[,"sigma1"] <- sqrt(Cret$sample[,"mu1"]+Cret$sample[,"sigma1"]*Cret$sample[,"sigma1"])
     #
-    Cret$predictive.degree.count0<-Cret$nk0
-    Cret$predictive.degree.count1<-Cret$nk1
+    Cret$predictive.degree.count0<-Cret$nk0 / samplesize
+    Cret$predictive.degree.count1<-Cret$nk1 / samplesize
     Cret$nk0 <- NULL
     Cret$nk1 <- NULL
     Cret$predictive.degree0<-Cret$p0pos

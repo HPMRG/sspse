@@ -83,7 +83,7 @@ poscmp<-function(s,maxN=NULL,
     Cret$sample[,c("mu","sigma")] <- t(apply(Cret$sample[,c("mu","sigma")],1,cmp.mu))
     #
 #   Cret$Nk<-Cret$nk/sum(Cret$nk)
-    Cret$predictive.degree.count<-Cret$nk
+    Cret$predictive.degree.count<-Cret$nk / samplesize
     Cret$nk<-NULL
     endrun <- burnin+interval*(samplesize-1)
     attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)

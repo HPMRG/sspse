@@ -110,8 +110,8 @@ poscmpdisease<-function(s,dis,
     Cret$sample[,c("mu0","sigma0")] <- t(apply(Cret$sample[,c("mu0","sigma0")],1,cmp.mu))
     Cret$sample[,c("mu1","sigma1")] <- t(apply(Cret$sample[,c("mu1","sigma1")],1,cmp.mu))
 #   aaa <- sum(Cret$nk0+Cret$nk1)
-    Cret$predictive.degree.count0<-Cret$nk0
-    Cret$predictive.degree.count1<-Cret$nk1
+    Cret$predictive.degree.count0<-Cret$nk0 / samplesize
+    Cret$predictive.degree.count1<-Cret$nk1 / samplesize
     Cret$nk0 <- NULL
     Cret$nk1 <- NULL
     Cret$predictive.degree0<-Cret$p0pos
