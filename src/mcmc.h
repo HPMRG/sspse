@@ -68,14 +68,4 @@ void MHpriorpln (double *mu0, double *kappa0,
             int *samplesize, int *staken, int *burnin, int *interval,
 	    int *verbose
 			 );
-void getinclC (int *N,
-            int *pop,
-            double *size, 
-            int *K, 
-            int *n, 
-            int *samplesize,
-            int *Nk,
-	    int *verbose
-			 );
-static void ProbSampleNoReplace(int n, double *p, int *perm, int nans, int *ans);
 #endif /* MCMC_H */
