@@ -18,25 +18,32 @@ double cmp(int x, double llambda, double nu, double lzcmp, int give_log)
      }
   }
 
-double zcmp(double lambda, double nu, double err, int give_log)
+double zcmp(double lambda, double nu, double err, int K, int give_log)
   {
      double mj, z, aj;
      int j;
      z = 1.0 + lambda;
      aj = lambda;
-     for (j = 2; j < 100; j++){
+     for (j = 2; j < K; j++){
        mj=lambda/pow((double)j,nu);
        aj*=mj;
        z+=aj;
      }
 //Rprintf("cmp terms %d aj %f err %f\n", j, aj, err*(1-mj));
-//     while (aj < err*(1-mj) && j < 10000){
-//       j++;
-//       mj=lambda/pow((double)j,nu);
-//       aj*=mj;
-//       z+=aj;
-//     }
-//Rprintf("cmp terms %d aj %f err %f\n", j, aj, err*(1-mj));
+//   while (aj < err*(1.-mj) && j < 1000){
+     while (aj > err*z && j < 1000){
+       j++;
+       mj=lambda/pow((double)j,nu);
+       aj*=mj;
+       z+=aj;
+     }
+//
+//   Add approx to remainder term
+     mj=lambda/pow((double)(j+1),nu);
+     aj*=mj;
+     z+=(aj/(1.-mj));
+Rprintf("cmp terms %d aj %f err %f bdd %f\n", j, aj, err*(1-mj), aj/(1.-mj));
+//
      if(give_log){
       return( log(z) );
      }else{

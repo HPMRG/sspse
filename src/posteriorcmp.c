@@ -107,7 +107,7 @@ void gcmp (int *pop,
 
     /* First find the degree distribution */
     pis=0.;
-    lzcmp = zcmp(exp(mui), sigmai, errval, give_log1);
+    lzcmp = zcmp(exp(mui), sigmai, errval, Ki, give_log1);
     for (i=Np; i<Ki; i++){
       pi[i]=cmp(i+1,mui,sigmai,lzcmp,give_log0);
 //  Rprintf("i %d pi[i] %f\n", i, pi[i]);
@@ -293,7 +293,7 @@ void MHcmp (int *Nk, int *K,
   sigma2i  = sigmai*sigmai;
   pithetai = dnorm(mui, dmu0, sigmai/rkappa0, give_log1);
   pithetai = pithetai+dsclinvchisq(sigma2i, ddf0, dsigma20);
-  lzcmp = zcmp(exp(mui), sigmai, errval, give_log1);
+  lzcmp = zcmp(exp(mui), sigmai, errval, Ki, give_log1);
 //    Rprintf("mui %f sigmai %f lzcmp %f\n", mui, sigmai, lzcmp);
   pis=0.;
   for (i=Np; i<Ki; i++){
@@ -349,7 +349,7 @@ void MHcmp (int *Nk, int *K,
 
     /* Calculate ratio */
     ip = pithetastar-pithetai;
-    lzcmp = zcmp(exp(mustar), sigmastar, errval, give_log1);
+    lzcmp = zcmp(exp(mustar), sigmastar, errval, Ki, give_log1);
 //    Rprintf("mustar %f sigmastar %f lzcmp %f\n", mustar, sigmastar, lzcmp);
     pstars=0.;
     for (i=Np; i<Ki; i++){
