@@ -13,12 +13,12 @@ posteriordisease<-function(s,dis,
 		  effective.prior.df=1,
 		  degreedistribution=c("cmp","nbinom","pln"),
                   maxN=NULL,
-                  K=2*max(s), n=length(s),
+                  K=round(quantile(s,0.80)), n=length(s),
 		  nk0=tabulate(s[dis==0],nbin=K),
 		  nk1=tabulate(s[dis==1],nbin=K),
                   muproposal=0.1, 
                   sigmaproposal=0.15, 
-                  parallel=1, seed=NULL,
+                  parallel=1, seed=NULL, dispersion=0.5,
                   verbose=TRUE){
   degreedistribution=match.arg(degreedistribution)
   posfn <- switch(degreedistribution,
@@ -30,6 +30,7 @@ posteriordisease<-function(s,dis,
   if(priorsizedistribution=="nbinom" && missing(mean.prior.size)){
     stop("You need to specify 'mean.prior.size', and possibly 'sd.prior.size' if you use the 'nbinom' prior.") 
   }
+  cat("K = ",K,"\n")
   if(parallel==1){
       Cret <- posfn(s=s,dis=dis,K=K,nk0=nk0,nk1=nk1,n=n,maxN=maxN,
                       mean0.prior.degree=mean0.prior.degree,
@@ -46,7 +47,8 @@ posteriordisease<-function(s,dis,
 		      median.prior.size=median.prior.size,
 		      mode.prior.size=mode.prior.size,
                       effective.prior.df=effective.prior.df,
-                      seed=seed)
+                      seed=seed,
+		      dispersion=dispersion)
   }else{
     cl <- beginsnow(parallel)
     samplesize.parallel=round(samplesize/parallel)
@@ -65,7 +67,8 @@ posteriordisease<-function(s,dis,
       mode.prior.sample.proportion=mode.prior.sample.proportion,
       median.prior.size=median.prior.size,
       mode.prior.size=mode.prior.size,
-      effective.prior.df=effective.prior.df)
+      effective.prior.df=effective.prior.df,
+      dispersion=dispersion)
 #
 #   Process the results
 #
@@ -126,6 +129,11 @@ posteriordisease<-function(s,dis,
               median(Cret$sample[,"disease"]),
 	      quantile(Cret$sample[,"disease"],c(0.025,0.975)))
   names(Cret$disease) <- c("MAP","Mean AP","Median AP","P025","P975")
+  Cret$disease.count <- c(Cret$MAP["disease.count"], 
+              mean(Cret$sample[,"disease.count"]),
+              median(Cret$sample[,"disease.count"]),
+	      quantile(Cret$sample[,"disease.count"],c(0.025,0.975)))
+  names(Cret$disease.count) <- c("MAP","Mean AP","Median AP","P025","P975")
   #
   if(Cret$predictive.degree0[length(Cret$predictive.degree0)] > 0.01){
    warning("There is a non-trivial proportion of the posterior mass on very high degrees for non-diseased nodes. This may indicate convergence problems in the MCMC.")

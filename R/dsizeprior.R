@@ -26,6 +26,8 @@ dsizeprior<-function(n,
       lpriorm <- dnbinommu(x=n+(1:maxN)-1,
                            mu=mean.prior.size, sd=sd.prior.size,
                            log=log)
+      x <- 0:(maxN-1)
+      if(is.null(median.prior.size)) median.prior.size <- maxN/2
       lpriorm
      },
     flat={
@@ -35,11 +37,19 @@ dsizeprior<-function(n,
       if(is.null(N)){
         N <- 0.5*maxN
       }
+      if(is.null(mode.prior.size)){
+        mode.prior.size <- 0
+      }
       if(log){
        lpriorm <- rep(0,maxN)
       }else{
        lpriorm <- rep(1/maxN,maxN)
+       if(mode.prior.size > n){
+        lpriorm[1:(mode.prior.size-n)] <- 0
+       }
       }
+      x <- 0:(maxN-1)
+      if(is.null(median.prior.size)) median.prior.size <- maxN/2
       lpriorm
      },
     continuous={

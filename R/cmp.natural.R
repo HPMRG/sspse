@@ -1,8 +1,11 @@
-cmp.natural <- function (mx,sdx,K=1000) 
+cmp.natural <- function (mx,sdx,K=1000,guess=NULL) 
 {
 #   natural is log(lambda), -nu
     options(warn = -1)
-    result = optim(par=c(log(mx), 0), fn=function(p,mx,sdx,K) {
+    if(is.null(guess)){
+      guess = c(2*log(mx+0.25), log(2))
+    }
+    result = optim(par=guess, fn=function(p,mx,sdx,K) {
         j <- 0:K
         a <- dcmp(x=j, lambda=exp(p[1]), nu=exp(p[2]), err=0.000001)
 	sqrt(abs(sum(a*j)^2-mx*mx)+abs(sum(a*j*j)-sdx*sdx-mx*mx))

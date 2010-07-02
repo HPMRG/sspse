@@ -34,6 +34,8 @@ void gcmpdisease (int *pop, int *dis,
             double *ppos, 
 	    double *lpriorm,
             int *burnintheta,
+	    double *lambdad,
+	    double *nud,
 	    int *verbose
 			 );
 

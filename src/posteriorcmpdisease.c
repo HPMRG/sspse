@@ -24,15 +24,16 @@ void gcmpdisease (int *pop, int *dis,
             double *ppos, 
 	    double *lpriorm,
             int *burnintheta,
+	    double *lambdad,
+	    double *nud,
             int *verbose
               ) {
   int dimsample, Nnp0, Nnp1;
   int step, staken, getone=1, intervalone=1, verboseMHdisease = 0;
-  int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
+  int i, j, compute, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
   double mu0i, mu1i, pbeta, beta, sigma0i, sigma1i, dsamp;
   double dkappa0, ddf0, dmu0, dmu1, dsigma0, dsigma1, dmuproposal, dsigmaproposal;
-  int tU, popi, imaxN, itotdis0, itotdis, give_log0=0, give_log1=1;
-  int sizei;
+  int tU, sizei, imaxN, itotdis0, itotdis, give_log0=0, give_log1=1;
   double r, gamma0rt, gamma1rt, p0is, p1is, Nd;
   double gammart, temp;
   double errval=0.000001, lzcmp;
@@ -61,6 +62,8 @@ void gcmpdisease (int *pop, int *dis,
 
   double *p0i = (double *) malloc(sizeof(double) * Ki);
   double *p1i = (double *) malloc(sizeof(double) * Ki);
+  double *pd = (double *) malloc(sizeof(double) * ni);
+  int *d = (int *) malloc(sizeof(int) * ni);
   int *b = (int *) malloc(sizeof(int) * ni);
   int *Nk0 = (int *) malloc(sizeof(int) * Ki);
   int *Nk0pos = (int *) malloc(sizeof(int) * Ki);
@@ -74,6 +77,9 @@ void gcmpdisease (int *pop, int *dis,
   double *betasample = (double *) malloc(sizeof(double));
   double *sigmasample = (double *) malloc(sizeof(double) * 2);
 
+  for (i=0; i<ni; i++){
+    d[i]=pop[i];
+  }
   b[ni-1]=pop[ni-1];
   for (i=(ni-2); i>=0; i--){
     b[i]=b[i+1]+pop[i];
@@ -91,7 +97,7 @@ void gcmpdisease (int *pop, int *dis,
   for (i=ni; i<Ni; i++){
     tU+=pop[i];
   }
-  /* Draw phis */
+  /* Draw initial phis */
   r=0.;
   itotdis0=0;
   for (i=0; i<ni; i++){
@@ -148,22 +154,25 @@ void gcmpdisease (int *pop, int *dis,
     p0is=0.;
     p1is=0.;
     lzcmp = zcmp(exp(mu0i), sigma0i, errval, Ki, give_log1);
+    if(lzcmp < -100000.0){continue;}
     p0i[Nnp0]=cmp(Nnp0+1,mu0i,sigma0i,lzcmp,give_log0);
-    for (i=Nnp0; i<Ki; i++){
+    for (i=Nnp0+1; i<Ki; i++){
 //    p0i[i]=cmp(i+1,mu0i,sigma0i,lzcmp,give_log0);
-      p0i[i]=p0i[i-1]*mu0i/pow((double)i,sigma0i);
+      p0i[i]=p0i[i-1]*exp(mu0i-sigma0i*log((double)(i+1)));
+// Rprintf("i %d ss %e c %e lzcmp %e\n", i, p0i[i], cmp(i+1,mu0i,sigma0i,lzcmp,give_log0),lzcmp);
     }
 //  p0is=1.-cmp(0,mu0i,sigma0i,lzcmp,give_log0);
-    p0is=1.-exp(-sigma0i-lzcmp);
+    p0is=1.-exp(-lzcmp);
     lzcmp = zcmp(exp(mu1i), sigma1i, errval, Ki, give_log1);
-    p1i[Nnp1]=cmp(Nnp1+1,mu1i,sigma1i,lzcmp,Ki,give_log0);
-    for (i=Nnp1; i<Ki; i++){
+    if(lzcmp < -100000.0){continue;}
+    p1i[Nnp1]=cmp(Nnp1+1,mu1i,sigma1i,lzcmp,give_log0);
+    for (i=Nnp1+1; i<Ki; i++){
 //    p1i[i]=cmp(i+1,mu1i,sigma1i,lzcmp,give_log0);
-      p1i[i]=p1i[i-1]*mu1i/pow((double)i,sigma1i);
+      p1i[i]=p1i[i-1]*exp(mu1i-sigma1i*log((double)(i+1)));
 //    p1is+=p1i[i];
     }
 //  p1is=1.-cmp(0,mu1i,sigma1i,lzcmp,give_log0);
-    p1is=1.-exp(-sigma1i-lzcmp);
+    p1is=1.-exp(-lzcmp);
     for (i=0; i<Ki; i++){
       p0i[i]=p0i[i]/p0is;
       p1i[i]=p1i[i]/p1is;
@@ -222,6 +231,58 @@ void gcmpdisease (int *pop, int *dis,
 //  if (*verbose) Rprintf("step %d Ni %d itotdis %d beta %f mu0 %f mu1 %f s0 %f r %f\n",
 //  step, Ni, itotdis, betasample[0], musample[0], musample[1], sigmasample[0], r);
 
+    for (i=0; i<Ki; i++){
+      nk0[i]=0;
+      nk1[i]=0;
+    }
+
+    /* Draw true degrees (sizes) based on the reported degrees*/
+    /* First find the reported degree distribution */
+    for (j=0; j<Ki; j++){
+     compute=0;
+     for (i=0; i<ni; i++){if(pop[i]==(j+1)){compute=1;}}
+     if(compute==1){
+      if(dis[j]==1){
+       for (i=0; i<Ki; i++){
+        lzcmp = zcmp(exp(lambdad[i]),nud[i], errval, Ki, give_log1);
+        pd[i]=p1i[i]*cmp(pop[j]+1,lambdad[i],nud[i],lzcmp,give_log0);
+       }
+      }else{
+       for (i=0; i<Ki; i++){
+        lzcmp = zcmp(exp(lambdad[i]),nud[i], errval, Ki, give_log1);
+        pd[i]=p0i[i]*cmp(pop[j]+1,lambdad[i],nud[i],lzcmp,give_log0);
+//
+// Rprintf("i %d pd[i] %f, p0i[i] %f, pop[i] %d lambdad[i] %f nud[i] %f \n", i, pd[i], p0i[i], pop[i], lambdad[i],nud[i]);
+       }
+      }
+      // Set up pd to be cumulative for the random draws
+      for (i=1; i<Ki; i++){
+       pd[i]=pd[i-1]+pd[i];
+      }
+      for (i=0; i<ni; i++){
+       if(pop[i]==(j+1)){
+        /* Now propose the true size for unit i based on reported size and disease status */
+        /* In the next three lines a sizei is chosen */
+        sizei=1;
+        temp = pd[Ki-1] * unif_rand();
+        while(temp > pd[sizei-1]){sizei++;}
+        if(dis[i]==1){
+          nk1[sizei-1]=nk1[sizei-1]+1;
+        }else{
+          nk0[sizei-1]=nk0[sizei-1]+1;
+        }
+        d[i]=sizei;
+       }
+      }
+     }
+    }
+    b[ni-1]=d[ni-1];
+    for (i=(ni-2); i>=0; i--){
+      b[i]=b[i+1]+d[i];
+    }
+// Rprintf("j %d d[j] %d pd[Ki-1] %f\n", j, d[j], pd[Ki-1]);
+
+    /* Draw unobserved degrees sizes */
     /* Draw phis */
     tU=0;
     for (i=ni; i<Ni; i++){
@@ -237,7 +298,7 @@ void gcmpdisease (int *pop, int *dis,
       Nk0[i]=nk0[i];
       Nk1[i]=nk1[i];
     }
-    // Set up pi for random draws
+    // Set up p0i and p1i to be cumulative for the random draws
     for (i=1; i<Ki; i++){
       p0i[i]=p0i[i-1]+p0i[i];
       p1i[i]=p1i[i-1]+p1i[i];
@@ -256,14 +317,16 @@ void gcmpdisease (int *pop, int *dis,
           /* Now propose unseen size for unit i based on disease status */
           /* In the next two lines a sizei is chosen */
           /* with parameters mu1i and sigma1i */
-          temp = p1i[Ki-1] * unif_rand();
+//        temp = p1i[Ki-1] * unif_rand();
+          temp = unif_rand();
           while(temp > p1i[sizei-1]){sizei++;}
         }else{
           dis[i]=0;
           /* Now propose unseen size for unit i based on non-disease status */
           /* In the next two lines a sizei is chosen */
           /* with parameters mu0i and sigma0i */
-          temp = p0i[Ki-1] * unif_rand();
+//        temp = p0i[Ki-1] * unif_rand();
+          temp = unif_rand();
           while(temp > p0i[sizei-1]){sizei++;}
         }
        }
@@ -438,22 +501,22 @@ void MHcmpdisease (int *Nk0, int *Nk1, int *totdis, int *K,
   p1is=0.;
   lzcmp = zcmp(exp(mu0i), sigma0i, errval, Ki, give_log1);
   p0i[Nnp0]=cmp(Nnp0+1,mu0i,sigma0i,lzcmp,give_log0);
-  for (i=Nnp0; i<Ki; i++){
+  for (i=Nnp0+1; i<Ki; i++){
 //  p0i[i]=cmp(i+1,mu0i,sigma0i,lzcmp,give_log0);
-    p0i[i]=p0i[i-1]*mu0i/pow((double)i,sigma0i);
+    p0i[i]=p0i[i-1]*exp(mu0i-sigma0i*log((double)(i+1)));
 //  p0is+=p0i[i];
   }
 //p0is=1.-cmp(0,mu0i,sigma0i,lzcmp,give_log0);
-  p0is=1.-exp(-sigma0i-lzcmp);
+  p0is=1.-exp(-lzcmp);
   lzcmp = zcmp(exp(mu1i), sigma1i, errval, Ki, give_log1);
   p1i[Nnp1]=cmp(Nnp1+1,mu1i,sigma1i,lzcmp,give_log0);
-  for (i=Nnp1; i<Ki; i++){
+  for (i=Nnp1+1; i<Ki; i++){
 //  p1i[i]=cmp(i+1,mu1i,sigma1i,lzcmp,give_log0);
-    p1i[i]=p1i[i-1]*mu1i/pow((double)i,sigma1i);
+    p1i[i]=p1i[i-1]*exp(mu1i-sigma1i*log((double)(i+1)));
 //  p1is+=p1i[i];
   }
 //p1is=1.-cmp(0,mu1i,sigma1i,lzcmp,give_log0);
-  p1is=1.-exp(-sigma1i-lzcmp);
+  p1is=1.-exp(-lzcmp);
   for (i=0; i<Ki; i++){
     p0i[i]=p0i[i]/p0is;
     p1i[i]=p1i[i]/p1is;
@@ -476,6 +539,15 @@ void MHcmpdisease (int *Nk0, int *Nk1, int *totdis, int *K,
   for (i=0; i<Nnp1; i++){
     p1i[i]=pdeg1i[i];
   }
+  // Bin last group
+  p0is=1.;
+  p1is=1.;
+  for (i=0; i<(Ki-1); i++){
+    p0is-=p0i[i];
+    p1is-=p1i[i];
+  }
+  p0i[Ki-1]=p0is;
+  p1i[Ki-1]=p1is;
 
   // Now do the MCMC updates (starting with the burnin updates)
   while (isamp < isamplesize) {
@@ -544,23 +616,25 @@ void MHcmpdisease (int *Nk0, int *Nk1, int *totdis, int *K,
     p0stars=0.;
     p1stars=0.;
     lzcmp = zcmp(exp(mu0star), sigma0star, errval, Ki, give_log1);
+    if(lzcmp < -100000.0){continue;}
     p0star[Nnp0]=cmp(Nnp0+1,mu0star,sigma0star,lzcmp,give_log0);
     for (i=Nnp0+1; i<Ki; i++){
 //    p0star[i]=cmp(i+1,mu0star,sigma0star,lzcmp,give_log0);
-      p0star[i]=p0star[i-1]*mu0star/pow((double)i,sigma0star);
+      p0star[i]=p0star[i-1]*exp(mu0star-sigma0star*log((double)(i+1)));
 //    p0stars+=p0star[i];
     }
 //  p0stars=1.-cmp(0,mu0star,sigma0star,lzcmp,give_log0);
-    p0stars=1.-exp(-sigma0star-lzcmp);
+    p0stars=1.-exp(-lzcmp);
     lzcmp = zcmp(exp(mu1star), sigma1star, errval, Ki, give_log1);
+    if(lzcmp < -100000.0){continue;}
     p1star[Nnp1]=cmp(Nnp1+1,mu1star,sigma1star,lzcmp,give_log0);
-    for (i=Nnp1; i<Ki; i++){
+    for (i=Nnp1+1; i<Ki; i++){
 //    p1star[i]=cmp(i+1,mu1star,sigma1star,lzcmp,give_log0);
-      p1star[i]=p1star[i-1]*mu1star/pow((double)i,sigma1star);
+      p1star[i]=p1star[i-1]*exp(mu1star-sigma1star*log((double)(i+1)));
 //    p1stars+=p1star[i];
     }
 //  p1stars=1.-cmp(0,mu1star,sigma1star,lzcmp,give_log0);
-    p1stars=1.-exp(-sigma1star-lzcmp);
+    p1stars=1.-exp(-lzcmp);
     for (i=Nnp0; i<Ki; i++){
       p0star[i]/=p0stars;
     }
@@ -587,6 +661,16 @@ void MHcmpdisease (int *Nk0, int *Nk1, int *totdis, int *K,
     for (i=0; i<Nnp1; i++){
       p1star[i]=pdeg1star[i];
     }
+    // Bin last group
+    p0stars=1.;
+    p1stars=1.;
+    for (i=0; i<(Ki-1); i++){
+      p0stars-=p0star[i];
+      p1stars-=p1star[i];
+    }
+    p0star[Ki-1]=p0stars;
+    p1star[Ki-1]=p1stars;
+
     for (i=0; i<Ki; i++){
      if(Nk0[i]>0){
       lp = log(p0star[i]/p0i[i]);

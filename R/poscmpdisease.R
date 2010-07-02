@@ -20,11 +20,16 @@ poscmpdisease<-function(s,dis,
 		  mode.prior.size=NULL,
 		  effective.prior.df=1,
                   seed=NULL,
+                  dispersion=0.5,
                   verbose=TRUE){
     #this function takes a vector of population sizes and a vector s of 
     #sequential sizes of sampled units and returns a log likelihood value
     #s values must all be positive integers
     if(!is.null(seed))  set.seed(as.integer(seed))
+    #
+    # Cap the maximum degree to K
+    #
+    s[s>K] <- K
     #
     # Transform observed mean parametrization to log-normal
     # parametrization
@@ -35,6 +40,21 @@ poscmpdisease<-function(s,dis,
     out <- cmp.natural(mean1.prior.degree, sd.prior.degree)
     mu1 <- log(out$lambda)
     sigma1 <- out$nu
+    #
+    lambdad <- rep(0,K)
+    nud <- rep(0,K)
+    out <- list(lambda=1,nu=1)
+    map <- dispersion*(1:K)
+    map <- dispersion*c(0.2,0.2,0.4,0.4,0.4,1,1,1,1,3,3,3,3,3,5,((16:K)-16)+6)
+    for(i in 1:K){
+     out <- cmp.natural(i, map[i], guess=c(log(out$lambda),log(out$nu)))
+#    out <- cmp.natural(i, dispersion*i**1.5, guess=c(log(out$lambda),log(out$nu)))
+     lambdad[i] <- log(out$lambda)
+     nud[i] <- out$nu
+    }
+#   pairs(cbind(1:K,lambdad,nud))
+    print(cbind(1:K,lambdad,nud))
+    #
     dimsample <- 8+Np0+Np1
     #
     priorsizedistribution=match.arg(priorsizedistribution)
@@ -76,6 +96,8 @@ poscmpdisease<-function(s,dis,
               ppos=double(K), 
               lpriorm=as.double(prior$lprior),
               burnintheta=as.integer(burnintheta),
+              lambdad=as.double(lambdad),
+              nud=as.double(nud),
               verbose=as.integer(verbose))
     Cret$sample<-matrix(Cret$sample,nrow=samplesize,ncol=dimsample,byrow=TRUE)
     degnames <- NULL
