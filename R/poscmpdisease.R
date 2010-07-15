@@ -43,17 +43,20 @@ poscmpdisease<-function(s,dis,
     #
     lambdad <- rep(0,K)
     nud <- rep(0,K)
-    out <- list(lambda=1,nu=1)
-    map <- dispersion*(1:K)
-    map <- dispersion*c(0.2,0.2,0.4,0.4,0.4,1,1,1,1,3,3,3,3,3,5,((16:K)-16)+6)
-    for(i in 1:K){
-     out <- cmp.natural(i, map[i], guess=c(log(out$lambda),log(out$nu)))
-#    out <- cmp.natural(i, dispersion*i**1.5, guess=c(log(out$lambda),log(out$nu)))
-     lambdad[i] <- log(out$lambda)
-     nud[i] <- out$nu
+    if(dispersion!=0){
+#    out <- list(lambda=1,nu=1)
+     out <- list(lambda=8,nu=8)
+     map <- dispersion*(1:K)
+#    map <- dispersion*c(0.2,0.2,0.4,0.4,0.4,1,1,1,1,3,3,3,3,3,5,((16:K)-16)+6)
+     for(i in 1:K){
+      out <- cmp.natural(i, map[i], guess=c(log(out$lambda),log(out$nu)))
+#     out <- cmp.natural(i, dispersion*i**1.5, guess=c(log(out$lambda),log(out$nu)))
+      lambdad[i] <- log(out$lambda)
+      nud[i] <- out$nu
+     }
+#    pairs(cbind(1:K,lambdad,nud))
+     print(cbind(1:K,lambdad,nud))
     }
-#   pairs(cbind(1:K,lambdad,nud))
-    print(cbind(1:K,lambdad,nud))
     #
     dimsample <- 8+Np0+Np1
     #

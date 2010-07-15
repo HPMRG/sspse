@@ -231,6 +231,7 @@ void gcmpdisease (int *pop, int *dis,
 //  if (*verbose) Rprintf("step %d Ni %d itotdis %d beta %f mu0 %f mu1 %f s0 %f r %f\n",
 //  step, Ni, itotdis, betasample[0], musample[0], musample[1], sigmasample[0], r);
 
+    if(abs(lambdad[0])>0.0000001){
     for (i=0; i<Ki; i++){
       nk0[i]=0;
       nk1[i]=0;
@@ -281,6 +282,7 @@ void gcmpdisease (int *pop, int *dis,
       b[i]=b[i+1]+d[i];
     }
 // Rprintf("j %d d[j] %d pd[Ki-1] %f\n", j, d[j], pd[Ki-1]);
+    }
 
     /* Draw unobserved degrees sizes */
     /* Draw phis */
@@ -388,6 +390,9 @@ void gcmpdisease (int *pop, int *dis,
     p0pos[i]=p0pos[i]/dsamp;
     p1pos[i]=p1pos[i]/dsamp;
     ppos[i]=ppos[i]/dsamp;
+  }
+  for (i=0; i<ni; i++){
+     pop[i]=d[i];
   }
   PutRNGstate();  /* Disable RNG before returning */
   free(psample);
