@@ -231,7 +231,10 @@ void gcmpdisease (int *pop, int *dis,
 //  if (*verbose) Rprintf("step %d Ni %d itotdis %d beta %f mu0 %f mu1 %f s0 %f r %f\n",
 //  step, Ni, itotdis, betasample[0], musample[0], musample[1], sigmasample[0], r);
 
-    if(abs(lambdad[0])>0.0000001){
+// Rprintf("lambdad[0] %f\n", lambdad[0]);
+// Rprintf("nud[0] %f\n", nud[0]);
+    if((fabs(lambdad[0])>0.0000001) | (fabs(nud[0])>0.0000001)){
+// Rprintf("lambdad[0] %f\n", lambdad[0]);
     for (i=0; i<Ki; i++){
       nk0[i]=0;
       nk1[i]=0;
@@ -244,16 +247,38 @@ void gcmpdisease (int *pop, int *dis,
      for (i=0; i<ni; i++){if(pop[i]==(j+1)){compute=1;}}
      if(compute==1){
       if(dis[j]==1){
+//      Next four lines for cmp reporting distribution
+//      for (i=0; i<Ki; i++){
+//       lzcmp = zcmp(exp(lambdad[i]),nud[i], errval, Ki, give_log1);
+//       pd[i]=p1i[i]*cmp(pop[j]+1,lambdad[i],nud[i],lzcmp,give_log0);
+//      }
+//     Next seven lines for proportional reporting distribution
+       gamma0rt = 1.0-(ni*0.5*(1.0/((double)(1.0+pop[j])) + 1.0/(1.0+pop[j]+1.0)));
+       gamma1rt = 1.0-(1.0*0.5*(1.0/(1.0+pop[j]-1.0) + 1.0/((double)(1.0+pop[j]))));
        for (i=0; i<Ki; i++){
-        lzcmp = zcmp(exp(lambdad[i]),nud[i], errval, Ki, give_log1);
-        pd[i]=p1i[i]*cmp(pop[j]+1,lambdad[i],nud[i],lzcmp,give_log0);
+        pd[i]   = pow(gamma0rt,lambdad[i]);
+        if(pop[j]>0){
+         pd[i] -= pow(gamma1rt,lambdad[i]);
+        }
+        pd[i]=p1i[i]*pd[i];
+// Rprintf("i %d pd[i] %f, p1i[i] %f, pop[i] %d lambdad[i] %f nud[i] %f \n", i, pd[i], p1i[i], pop[i], lambdad[i],nud[i]);
        }
       }else{
+//      Next four lines for cmp reporting distribution
+//       for (i=0; i<Ki; i++){
+//        lzcmp = zcmp(exp(lambdad[i]),nud[i], errval, Ki, give_log1);
+//        pd[i]=p0i[i]*cmp(pop[j]+1,lambdad[i],nud[i],lzcmp,give_log0);
+//       }
+//     Next seven lines for proportional reporting distribution
+       gamma0rt = 1.0-(1.0*0.5*(1.0/((double)(1.0+pop[j])) + 1.0/(1.0+pop[j]+1.0)));
+       gamma1rt = 1.0-(1.0*0.5*(1.0/(1.0+pop[j]-1.0) + 1.0/((double)(1.0+pop[j]))));
        for (i=0; i<Ki; i++){
-        lzcmp = zcmp(exp(lambdad[i]),nud[i], errval, Ki, give_log1);
-        pd[i]=p0i[i]*cmp(pop[j]+1,lambdad[i],nud[i],lzcmp,give_log0);
-//
-// Rprintf("i %d pd[i] %f, p0i[i] %f, pop[i] %d lambdad[i] %f nud[i] %f \n", i, pd[i], p0i[i], pop[i], lambdad[i],nud[i]);
+        pd[i]   = pow(gamma0rt,lambdad[i]);
+        if(pop[j]>0){
+         pd[i] -= pow(gamma1rt,lambdad[i]);
+        }
+        pd[i]=p0i[i]*pd[i];
+// Rprintf("i %d pd[i] %f, p0i[i] %f, pop[i] %d lambdad[i] %f nud[i] %f \n", i, log(pd[i]), p0i[i], pop[i], lambdad[i],nud[i]);
        }
       }
       // Set up pd to be cumulative for the random draws

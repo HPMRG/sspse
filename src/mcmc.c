@@ -455,7 +455,7 @@ void MHplnorig (int *Nk, int *K,
     for (i=0; i<Ki; i++){
      if(Nk[i]>0){
       lp = log(pstar[i]/pi[i]);
-      if(abs(lp)<100.){ip += (Nk[i]*lp);}
+      if(fabs(lp)<100.){ip += (Nk[i]*lp);}
      }
 //    Rprintf("%d %f\n", i, log(poilog(s[i],mustar,sigmastar)/poilog(s[i],mui,sigmai)));
     }
