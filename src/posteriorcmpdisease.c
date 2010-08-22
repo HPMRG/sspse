@@ -124,9 +124,11 @@ void gcmpdisease (int *pop, int *dis,
   isamp = 0;
   step = -iburnin;
   while (isamp < isamplesize) {
+
     /* Draw new theta */
     /* but less often than the other full conditionals */
     if (step == -iburnin || step==(10*(step/10))) { 
+// Rprintf("Ni %d itotdis %d K %d Nk0[0] %d Nk1[0] %d mu0 %f mu1 %f sigma0 %f sigma1\n", Ni, itotdis, *K, Nk0[0], Nk1[0],*mu0,*mu1,*sigma0,*sigma1);
     MHcmpdisease(Nk0,Nk1,&itotdis,K,mu0,mu1,kappa0,sigma0,sigma1,df0,
           muproposal, sigmaproposal,
 	  &Ni, &Nnp0, &Nnp1, psample, 
@@ -243,6 +245,7 @@ void gcmpdisease (int *pop, int *dis,
     /* Draw true degrees (sizes) based on the reported degrees*/
     /* First find the reported degree distribution */
     for (j=0; j<Ki; j++){
+//Rprintf("j %d pop[j] %d\n", j, pop[j]);
      compute=0;
      for (i=0; i<ni; i++){if(pop[i]==(j+1)){compute=1;}}
      if(compute==1){
@@ -253,15 +256,17 @@ void gcmpdisease (int *pop, int *dis,
 //       pd[i]=p1i[i]*cmp(pop[j]+1,lambdad[i],nud[i],lzcmp,give_log0);
 //      }
 //     Next seven lines for proportional reporting distribution
-       gamma0rt = 1.0-(ni*0.5*(1.0/((double)(1.0+pop[j])) + 1.0/(1.0+pop[j]+1.0)));
+       gamma0rt = 1.0-(1.0*0.5*(1.0/((double)(1.0+pop[j])) + 1.0/(1.0+pop[j]+1.0)));
        gamma1rt = 1.0-(1.0*0.5*(1.0/(1.0+pop[j]-1.0) + 1.0/((double)(1.0+pop[j]))));
        for (i=0; i<Ki; i++){
         pd[i]   = pow(gamma0rt,lambdad[i]);
         if(pop[j]>0){
          pd[i] -= pow(gamma1rt,lambdad[i]);
         }
+if((pd[i]<0.0 ) | (pd[i]>1.0)){ Rprintf("j %d pop[j] %d i %d pd[i] %f\n", j, pop[j],i, pd[i]);
+ Rprintf("i %d p1i[i] %f, gamma0rt %f gamma1rt %f \n", i, p1i[i],  gamma0rt,  gamma1rt);
+ }
         pd[i]=p1i[i]*pd[i];
-// Rprintf("i %d pd[i] %f, p1i[i] %f, pop[i] %d lambdad[i] %f nud[i] %f \n", i, pd[i], p1i[i], pop[i], lambdad[i],nud[i]);
        }
       }else{
 //      Next four lines for cmp reporting distribution
@@ -284,7 +289,9 @@ void gcmpdisease (int *pop, int *dis,
       // Set up pd to be cumulative for the random draws
       for (i=1; i<Ki; i++){
        pd[i]=pd[i-1]+pd[i];
+if((pd[i]<0.0 ) | (pd[i]>1.0)){ Rprintf("j %d pop[j] %d i %d pd[i] %f\n", j, pop[j],i, pd[i]);}
       }
+//Rprintf("i %d pd[i] %f\n", i, pd[i]);
       for (i=0; i<ni; i++){
        if(pop[i]==(j+1)){
         /* Now propose the true size for unit i based on reported size and disease status */
@@ -704,11 +711,11 @@ void MHcmpdisease (int *Nk0, int *Nk1, int *totdis, int *K,
     for (i=0; i<Ki; i++){
      if(Nk0[i]>0){
       lp = log(p0star[i]/p0i[i]);
-      if((lp > -100.) && (lp<100.)){ip += (Nk0[i]*lp);}
+      if(fabs(lp) < 100.){ip += (Nk0[i]*lp);}
      }
      if(Nk1[i]>0){
       lp = log(p1star[i]/p1i[i]);
-      if((lp > -100.) && (lp<100.)){ip += (Nk1[i]*lp);}
+      if(fabs(lp) < 100.){ip += (Nk1[i]*lp);}
      }
     }
 //    Rprintf("%f %f\n", lp, ip);
@@ -717,7 +724,7 @@ void MHcmpdisease (int *Nk0, int *Nk1, int *totdis, int *K,
     But we'll do it in log space instead.  */
     cutoff = ip + qsigma02i-qsigma02star + qsigma12i-qsigma12star;
       
-//    Rprintf("Now proposing %d MH steps %f cutoff...\n", step, cutoff);
+//  Rprintf("Now proposing %d MH steps %f cutoff...\n", step, cutoff);
 
     /* if we accept the proposed network */
     if (cutoff >= 0.0 || log(unif_rand()) < cutoff) { 

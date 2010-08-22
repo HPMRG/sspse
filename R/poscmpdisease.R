@@ -26,10 +26,12 @@ poscmpdisease<-function(s,dis,
     #sequential sizes of sampled units and returns a log likelihood value
     #s values must all be positive integers
     if(!is.null(seed))  set.seed(as.integer(seed))
-    #
-    # Cap the maximum degree to K
-    #
-    s[s>K] <- K
+    if(dispersion==0){
+     #
+     # Cap the maximum degree to K
+     #
+     s[s>K] <- K
+    }
     #
     # Transform observed mean parametrization to log-normal
     # parametrization
@@ -55,7 +57,7 @@ poscmpdisease<-function(s,dis,
         nud[i] <- out$nu
        }
 #      pairs(cbind(1:K,lambdad,nud))
-       print(cbind(1:K,lambdad,nud))
+#      print(cbind(1:K,lambdad,nud))
     }
     if(dispersion < 0) {
 #      proportion distribution
@@ -63,7 +65,7 @@ poscmpdisease<-function(s,dis,
        lambdad <- (2*(1:K)/(-dispersion) - 1)
 # Median
 #      lambdad <- -log(2)/log(1-1/((1:K)+1))
-       print(cbind(1:K,lambdad,nud))
+#      print(cbind(1:K,lambdad,nud))
     }
     #
     dimsample <- 8+Np0+Np1
