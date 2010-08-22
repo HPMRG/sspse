@@ -26,12 +26,10 @@ poscmpdisease<-function(s,dis,
     #sequential sizes of sampled units and returns a log likelihood value
     #s values must all be positive integers
     if(!is.null(seed))  set.seed(as.integer(seed))
-    if(dispersion==0){
-     #
-     # Cap the maximum degree to K
-     #
-     s[s>K] <- K
-    }
+    #
+    # Cap the maximum degree to K
+    #
+    s[s>K] <- K
     #
     # Transform observed mean parametrization to log-normal
     # parametrization
