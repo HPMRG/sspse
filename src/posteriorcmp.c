@@ -373,7 +373,7 @@ void MHcmp (int *Nk, int *K,
     for (i=0; i<Ki; i++){
      if(Nk[i]>0){
       lp = log(pstar[i]/pi[i]);
-      if((lp > -100.) && (lp<100.)){ip += (Nk[i]*lp);}
+      if(fabs(lp) < 100.){ip += (Nk[i]*lp);}
      }
     }
     /* The logic is to set exp(cutoff) = exp(ip) * qratio ,

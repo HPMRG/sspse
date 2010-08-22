@@ -534,11 +534,11 @@ void MHdis (int *Nk0, int *Nk1, int *totdis, int *K,
     for (i=0; i<Ki; i++){
      if(Nk0[i]>0){
       lp = log(p0star[i]/p0i[i]);
-      if((lp > -100.) && (lp<100.)){ip += (Nk0[i]*lp);}
+      if(fabs(lp) < 100.){ip += (Nk0[i]*lp);}
      }
      if(Nk1[i]>0){
       lp = log(p1star[i]/p1i[i]);
-      if((lp > -100.) && (lp<100.)){ip += (Nk1[i]*lp);}
+      if(fabs(lp) < 100.){ip += (Nk1[i]*lp);}
      }
     }
 //    Rprintf("%f %f\n", lp, ip);
