@@ -101,11 +101,14 @@ dsizeprior<-function(n,
      mode.prior.sample.proportion <- 2/(beta+1)
      if(is.null(maxN)){maxN <- min(50000,ceiling( n/(1-0.90^(1/beta)) ))}
      if(is.null(N)){N <- min(50000,ceiling( n/(1-0.5^(1/beta)) ))}
-     x <- 0:maxN
-     a <- 0.5*(n/(n+x) + n/(n+x+1))
-     priorm <- (1-a)^beta
-     lpriorm <- diff(priorm)
-     lpriorm[1] <- priorm[1]
+#    x <- 0:maxN
+#    a <- 0.5*(n/(n+x) + n/(n+x+1))
+#    priorm <- (1-a)^beta
+#    lpriorm <- diff(priorm)
+#    lpriorm[1] <- priorm[1]
+     x <- 0:(maxN-1) + n
+     lpriorm <- (1-n/(x+0.5))^beta - (1-n/(x-0.5))^beta
+     lpriorm[1] <- (1-n/(n+0.5))^beta
      if(log){
       lpriorm <- log(lpriorm)
      }

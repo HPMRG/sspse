@@ -34,6 +34,7 @@ void gcmpdisease (int *pop, int *dis,
   double mu0i, mu1i, pbeta, beta, sigma0i, sigma1i, dsamp;
   double dkappa0, ddf0, dmu0, dmu1, dsigma0, dsigma1, dmuproposal, dsigmaproposal;
   int tU, sizei, imaxN, itotdis0, itotdis, give_log0=0, give_log1=1;
+  int maxpop, ddis;
   double r, gamma0rt, gamma1rt, p0is, p1is, Nd;
   double gammart, temp;
   double errval=0.000001, lzcmp;
@@ -77,12 +78,16 @@ void gcmpdisease (int *pop, int *dis,
   double *betasample = (double *) malloc(sizeof(double));
   double *sigmasample = (double *) malloc(sizeof(double) * 2);
 
+  maxpop=0;
   for (i=0; i<ni; i++){
-    d[i]=pop[i];
+    if((pop[i]>0) && (pop[i] <= Ki)){ d[i]=pop[i];}
+    if(pop[i]==0){ d[i]=1;}
+    if(pop[i]>Ki){ d[i]=Ki;}
+    if(pop[i]>maxpop){maxpop=pop[i];}
   }
-  b[ni-1]=pop[ni-1];
+  b[ni-1]=d[ni-1];
   for (i=(ni-2); i>=0; i--){
-    b[i]=b[i+1]+pop[i];
+    b[i]=b[i+1]+d[i];
   }
   for (i=0; i<Ki; i++){
      Nk0[i]=nk0[i];
@@ -244,56 +249,56 @@ void gcmpdisease (int *pop, int *dis,
 
     /* Draw true degrees (sizes) based on the reported degrees*/
     /* First find the reported degree distribution */
-    for (j=0; j<Ki; j++){
+    for (j=0; j<=maxpop; j++){
+    for (ddis=0; ddis<2; ddis++){
 //Rprintf("j %d pop[j] %d\n", j, pop[j]);
      compute=0;
-     for (i=0; i<ni; i++){if(pop[i]==(j+1)){compute=1;}}
+     for (i=0; i<ni; i++){if((pop[i]==(j)) && (dis[i]==ddis)){compute=1;}}
      if(compute==1){
-      if(dis[j]==1){
+      if(ddis==1){
 //      Next four lines for cmp reporting distribution
-//      for (i=0; i<Ki; i++){
-//       lzcmp = zcmp(exp(lambdad[i]),nud[i], errval, Ki, give_log1);
-//       pd[i]=p1i[i]*cmp(pop[j]+1,lambdad[i],nud[i],lzcmp,give_log0);
-//      }
+      for (i=0; i<Ki; i++){
+       lzcmp = zcmp(exp(lambdad[i]),nud[i], errval, Ki, give_log1);
+       pd[i]=p1i[i]*cmp(j,lambdad[i],nud[i],lzcmp,give_log0);
+      }
 //     Next seven lines for proportional reporting distribution
-       gamma0rt = 1.0-(1.0*0.5*(1.0/((double)(1.0+pop[j])) + 1.0/(1.0+pop[j]+1.0)));
-       gamma1rt = 1.0-(1.0*0.5*(1.0/(1.0+pop[j]-1.0) + 1.0/((double)(1.0+pop[j]))));
-       for (i=0; i<Ki; i++){
-        pd[i]   = pow(gamma0rt,lambdad[i]);
-        if(pop[j]>0){
-         pd[i] -= pow(gamma1rt,lambdad[i]);
-        }
+//       for (i=0; i<Ki; i++){
+//        pd[i]   = pgamma(2.0*lambdad[i]/((j)+0.5),1.0,1.0,0,0);
+//        if((j)>0){
+//         pd[i] -= pgamma(2.0*lambdad[i]/((j)-0.5),1.0,1.0,0,0);
+//        }
 if((pd[i]<0.0 ) | (pd[i]>1.0)){ Rprintf("j %d pop[j] %d i %d pd[i] %f\n", j, pop[j],i, pd[i]);
  Rprintf("i %d p1i[i] %f, gamma0rt %f gamma1rt %f \n", i, p1i[i],  gamma0rt,  gamma1rt);
  }
-        pd[i]=p1i[i]*pd[i];
-       }
+//       if(j==75 & isamp == 4){
+////      for (i=0; i<100; i++){
+//Rprintf("j %d dis %d i %d l[i] %f pd[i] %f\n", j, ddis, i, lambdad[i], pd[i]);
+//}// }
+//      pd[i]=p1i[i]*pd[i];
+//       }
       }else{
 //      Next four lines for cmp reporting distribution
-//       for (i=0; i<Ki; i++){
-//        lzcmp = zcmp(exp(lambdad[i]),nud[i], errval, Ki, give_log1);
-//        pd[i]=p0i[i]*cmp(pop[j]+1,lambdad[i],nud[i],lzcmp,give_log0);
-//       }
-//     Next seven lines for proportional reporting distribution
-       gamma0rt = 1.0-(1.0*0.5*(1.0/((double)(1.0+pop[j])) + 1.0/(1.0+pop[j]+1.0)));
-       gamma1rt = 1.0-(1.0*0.5*(1.0/(1.0+pop[j]-1.0) + 1.0/((double)(1.0+pop[j]))));
        for (i=0; i<Ki; i++){
-        pd[i]   = pow(gamma0rt,lambdad[i]);
-        if(pop[j]>0){
-         pd[i] -= pow(gamma1rt,lambdad[i]);
-        }
-        pd[i]=p0i[i]*pd[i];
-// Rprintf("i %d pd[i] %f, p0i[i] %f, pop[i] %d lambdad[i] %f nud[i] %f \n", i, log(pd[i]), p0i[i], pop[i], lambdad[i],nud[i]);
+        lzcmp = zcmp(exp(lambdad[i]),nud[i], errval, Ki, give_log1);
+        pd[i]=p0i[i]*cmp(j,lambdad[i],nud[i],lzcmp,give_log0);
        }
+//     Next seven lines for proportional reporting distribution
+//       for (i=0; i<Ki; i++){
+//        pd[i]   = pgamma(2.0*lambdad[i]/((j)+0.5),1.0,1.0,0,0);
+//        if((j)>0){
+//         pd[i] -= pgamma(2.0*lambdad[i]/((j)-0.5),1.0,1.0,0,0);
+//        }
+//      pd[i]=p0i[i]*pd[i];
+// Rprintf("i %d pd[i] %f, p0i[i] %f, pop[i] %d lambdad[i] %f nud[i] %f \n", i, log(pd[i]), p0i[i], pop[i], lambdad[i],nud[i]);
+//       }
       }
       // Set up pd to be cumulative for the random draws
       for (i=1; i<Ki; i++){
        pd[i]=pd[i-1]+pd[i];
 if((pd[i]<0.0 ) | (pd[i]>1.0)){ Rprintf("j %d pop[j] %d i %d pd[i] %f\n", j, pop[j],i, pd[i]);}
       }
-//Rprintf("i %d pd[i] %f\n", i, pd[i]);
       for (i=0; i<ni; i++){
-       if(pop[i]==(j+1)){
+       if((pop[i]==(j)) && (dis[i]==ddis)){
         /* Now propose the true size for unit i based on reported size and disease status */
         /* In the next three lines a sizei is chosen */
         sizei=1;
@@ -305,10 +310,11 @@ if((pd[i]<0.0 ) | (pd[i]>1.0)){ Rprintf("j %d pop[j] %d i %d pd[i] %f\n", j, pop
           nk0[sizei-1]=nk0[sizei-1]+1;
         }
         d[i]=sizei;
+//Rprintf("j %d dis %d sizei %d pd[Ki-1] %f\n", j, ddis, sizei, pd[Ki-1]);
        }
       }
-     }
-    }
+     } //compute
+    }} //for j and ddis
     b[ni-1]=d[ni-1];
     for (i=(ni-2); i>=0; i--){
       b[i]=b[i+1]+d[i];
