@@ -20,7 +20,7 @@ poscmpdisease<-function(s,dis,
 		  mode.prior.size=NULL,
 		  effective.prior.df=1,
                   seed=NULL,
-                  dispersion=0.5,
+                  dispersion=0,
                   verbose=TRUE){
     #this function takes a vector of population sizes and a vector s of 
     #sequential sizes of sampled units and returns a log likelihood value

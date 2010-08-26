@@ -1,11 +1,6 @@
 posteriorsize<-function(s,
-                  maxN=NULL,
-                  K=2*max(s), n=length(s),
-                  nk=tabulate(s,nbin=K),
                   mean.prior.degree=7, sd.prior.degree=3,
                   df.mean.prior=1,df.sd.prior=5,
-                  muproposal=0.1, 
-                  sigmaproposal=0.15, 
                   Np=0,
                   samplesize=1000,burnin=100,interval=1,burnintheta=500,
 		  priorsizedistribution=c("proportion","nbinom","pln","flat"),
@@ -15,7 +10,12 @@ posteriorsize<-function(s,
 		  mode.prior.size=NULL,
 		  effective.prior.df=1,
 		  degreedistribution=c("cmp","nbinom","pln"),
-                  parallel=1, seed=NULL,
+                  maxN=NULL,
+                  K=round(quantile(s,0.80)), n=length(s),
+                  nk=tabulate(s,nbin=K),
+                  muproposal=0.1, 
+                  sigmaproposal=0.15, 
+                  parallel=1, seed=NULL, dispersion=0,
                   verbose=TRUE){
 #
   degreedistribution=match.arg(degreedistribution)
@@ -44,7 +44,9 @@ posteriorsize<-function(s,
 		    median.prior.size=median.prior.size,
 		    mode.prior.size=mode.prior.size,
                     effective.prior.df=effective.prior.df,
-                    seed=seed)
+                    seed=seed,
+                    dispersion=dispersion)
+
   }
   ### since running job in parallel, start pvm (if not already running)
   else{
@@ -66,27 +68,24 @@ posteriorsize<-function(s,
       mode.prior.sample.proportion=mode.prior.sample.proportion,
       median.prior.size=median.prior.size,
       mode.prior.size=mode.prior.size,
-      effective.prior.df=effective.prior.df)
+      effective.prior.df=effective.prior.df,
+      dispersion=dispersion)
 #
 #   Process the results
 #
     ### Snow returns a list of length parallel where each element is the return of each posfn
     ### Following loops combines the separate MCMC samples into 1 using rbind, creating a matrix
     Cret <- outlist[[1]]
-    Cret$samplesize <- samplesize
     Nparallel <- length(outlist)
+    Cret$samplesize <- samplesize
     for(i in (2 : Nparallel)){
      z <- outlist[[i]]
      Cret$sample <- rbind(Cret$sample,z$sample)
-     Cret$nk<-Cret$nk+z$nk
-     Cret$ppos<-Cret$ppos+z$ppos
+     Cret$predictive.degree.count<-Cret$predictive.degree.count+z$predictive.degree.count
+     Cret$predictive.degree<-Cret$predictive.degree+z$predictive.degree
     }
-    Cret$nk<-Cret$nk/Nparallel
-    Cret$ppos<-Cret$ppos/Nparallel
-    Cret$predictive.degree<-Cret$ppos
-    Cret$ppos<-NULL
-    Cret$predictive.degree.count<-Cret$nk / samplesize
-    Cret$nk<-NULL
+    Cret$predictive.degree.count<-Cret$predictive.degree.count/Nparallel
+    Cret$predictive.degree<-Cret$predictive.degree/Nparallel
     #
     degnames <- NULL
     if(Np>0){degnames <- c(degnames,paste("pdeg",1:Np,sep=""))}
@@ -101,13 +100,12 @@ posteriorsize<-function(s,
     
     ### Coda package which does MCMC diagnostics, requires certain attributes of MCMC sample
     endrun <- burnin+interval*(samplesize)
-#!?   endrun <- burnin+interval*(samplesize-1)
     attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
     attr(Cret$sample, "class") <- "mcmc"
     
-    ### Remove the padding from the last draws from the populations of degrees
-    Nlastpos <- Cret$sample[nrow(Cret$sample),"N"]
-    Cret$pop<-Cret$pop[1:Nlastpop]
+#   ### Remove the padding from the last draws from the populations of degrees
+#   Nlastpos <- Cret$sample[nrow(Cret$sample),"N"]
+#   Cret$pop<-Cret$pop[1:Nlastpop]
 
     ### define function that will compute mode of a sample
     mapfn <- function(x,lbound=min(x),ubound=max(x)){

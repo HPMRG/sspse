@@ -14,18 +14,46 @@ poscmp<-function(s,maxN=NULL,
 		  mode.prior.size=NULL,
 		  effective.prior.df=1,
                   seed=NULL,
+                  dispersion=0,
                   verbose=TRUE){
     #this function takes a vector of population sizes and a vector s of 
     #sequential sizes of sampled units and returns a log likelihood value
     #s values must all be positive integers
     if(!is.null(seed))  set.seed(as.integer(seed))
+    if(dispersion == 0) {
+     #
+     # Cap the maximum degree to K
+     #
+     s[s>K] <- K
+    }
     #
     # Transform observed mean parametrization to log-normal
     # parametrization
     #
     out <- cmp.natural(mean.prior.degree, sd.prior.degree)
-    mu0 <- log(out$lambda)
-    sigma0 <- out$nu
+    mu <- log(out$lambda)
+    sigma <- out$nu
+    #
+    lambdad <- rep(dispersion,K)
+    nud <- rep(dispersion,K)
+    if(dispersion > 0) {
+       out <- list(lambda=8,nu=8)
+       map <- dispersion*(1:K)
+       for(i in 1:K){
+        out <- cmp.natural(i, map[i], guess=c(log(out$lambda),log(out$nu)))
+        lambdad[i] <- log(out$lambda)
+        nud[i] <- out$nu
+       }
+    }
+    if(dispersion < 0) {
+#      proportion distribution
+# Mode
+       lambdad <- (1:K)
+# Median
+#      lambdad <- -log(2)/log(1-1/((1:K)+1))
+#      print(cbind(1:K,lambdad,nud))
+    }
+    #
     dimsample <- 4+Np
     #
     priorsizedistribution=match.arg(priorsizedistribution)
@@ -49,9 +77,9 @@ poscmp<-function(s,maxN=NULL,
               samplesize=as.integer(samplesize),
               burnin=as.integer(burnin),
               interval=as.integer(interval),
-              mu0=as.double(mu0), df.mean.prior=as.double(df.mean.prior),
-              sigma0=as.double(sigma0), df.sd.prior=as.double(df.sd.prior),
-              Npi=as.integer(Np),
+              mu=as.double(mu), df.mean.prior=as.double(df.mean.prior),
+              sigma=as.double(sigma), df.sd.prior=as.double(df.sd.prior),
+              Np=as.integer(Np),
               muproposal=as.double(muproposal),
               sigmaproposal=as.double(sigmaproposal),
               N=as.integer(prior$N),
@@ -60,6 +88,8 @@ poscmp<-function(s,maxN=NULL,
               ppos=double(K),
               lpriorm=as.double(prior$lprior),
               burnintheta=as.integer(burnintheta),
+              lambdad=as.double(lambdad),
+              nud=as.double(nud),
               verbose=as.integer(verbose))
     Cret$sample<-matrix(Cret$sample,nrow=samplesize,ncol=dimsample,byrow=TRUE)
     degnames <- NULL
@@ -85,6 +115,8 @@ poscmp<-function(s,maxN=NULL,
 #   Cret$Nk<-Cret$nk/sum(Cret$nk)
     Cret$predictive.degree.count<-Cret$nk / samplesize
     Cret$nk<-NULL
+    Cret$predictive.degree<-Cret$ppos
+    Cret$ppos<-NULL
     endrun <- burnin+interval*(samplesize-1)
     attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
     attr(Cret$sample, "class") <- "mcmc"

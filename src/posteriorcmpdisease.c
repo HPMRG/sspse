@@ -181,8 +181,8 @@ void gcmpdisease (int *pop, int *dis,
 //  p1is=1.-cmp(0,mu1i,sigma1i,lzcmp,give_log0);
     p1is=1.-exp(-lzcmp);
     for (i=0; i<Ki; i++){
-      p0i[i]=p0i[i]/p0is;
-      p1i[i]=p1i[i]/p1is;
+      p0i[i]/=p0is;
+      p1i[i]/=p1is;
     }
     p0is=1.;
     p1is=1.;
@@ -193,8 +193,8 @@ void gcmpdisease (int *pop, int *dis,
       p1is-=pdeg1i[i];
     }
     for (i=0; i<Ki; i++){
-      p0i[i]=p0i[i]*p0is;
-      p1i[i]=p1i[i]*p1is;
+      p0i[i]*=p0is;
+      p1i[i]*=p1is;
     }
     for (i=0; i<Nnp0; i++){
       p0i[i]=pdeg0i[i];
@@ -217,7 +217,7 @@ void gcmpdisease (int *pop, int *dis,
     for (i=0; i<imaxN; i++){
      lpm[i]=lgamma(ni+i+1.)-lgamma(i+1.)+i*gammart;
      //  Add in the (log) prior on m: P(m)
-     lpm[i]=lpm[i]+lpriorm[i];
+     lpm[i]+=lpriorm[i];
      if(lpm[i] > tU) tU = lpm[i];
     }
     for (i=0; i<imaxN; i++){
@@ -232,6 +232,7 @@ void gcmpdisease (int *pop, int *dis,
 //  if (*verbose) Rprintf("Ni %d lpm[imaxN-1] %f lpm[Ni] %f\n", Ni, lpm[imaxN-1],
 //  lpm[Ni]);
 //  }
+    // Add back the sample size
     Ni += ni;
     if(Ni >= imaxN) Ni = imaxN-1;
 
@@ -297,6 +298,7 @@ if((pd[i]<0.0 ) | (pd[i]>1.0)){ Rprintf("j %d pop[j] %d i %d pd[i] %f\n", j, pop
        pd[i]=pd[i-1]+pd[i];
 if((pd[i]<0.0 ) | (pd[i]>1.0)){ Rprintf("j %d pop[j] %d i %d pd[i] %f\n", j, pop[j],i, pd[i]);}
       }
+      /* Draw unobserved degrees sizes */
       for (i=0; i<ni; i++){
        if((pop[i]==(j)) && (dis[i]==ddis)){
         /* Now propose the true size for unit i based on reported size and disease status */
@@ -322,7 +324,6 @@ if((pd[i]<0.0 ) | (pd[i]>1.0)){ Rprintf("j %d pop[j] %d i %d pd[i] %f\n", j, pop
 // Rprintf("j %d d[j] %d pd[Ki-1] %f\n", j, d[j], pd[Ki-1]);
     }
 
-    /* Draw unobserved degrees sizes */
     /* Draw phis */
     tU=0;
     for (i=ni; i<Ni; i++){
@@ -763,10 +764,10 @@ void MHcmpdisease (int *Nk0, int *Nk1, int *totdis, int *K,
 //    }
       if (step > 0 && step==(iinterval*(step/iinterval))) { 
         /* record statistics for posterity */
-        sigmasample[2*isamp]=sigma0i;
-        sigmasample[2*isamp+1]=sigma1i;
         musample[2*isamp]=mu0i;
         musample[2*isamp+1]=mu1i;
+        sigmasample[2*isamp]=sigma0i;
+        sigmasample[2*isamp+1]=sigma1i;
         betasample[isamp]=betai;
         for (i=0; i<Nnp0; i++){
           psample[i    ]=pdeg0i[i];
