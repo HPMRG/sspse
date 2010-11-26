@@ -6,8 +6,8 @@
 members. The prior for the class sizes is multinomial given the population size. The probability that a randomly chosen person has degree \eqn{k} is modeled as a Waring distribution with specified (hyper)parameters. 
 }
 \usage{
-margpossize(s,N=trunc(length(s)*seq(1.1,4,length=10)+1),K=(1:max(s)),
-          mu=5,rho=3,M=100000,
+margpossize(s,N=trunc(length(s)*seq(1.1,4,length=10)+1),K=max(s),
+          M=100000,
           parallel=1,seed=NULL, verbose=FALSE,
           n=tabulate(s,nbin=K),
           return.all=FALSE)
@@ -16,12 +16,12 @@ margpossize(s,N=trunc(length(s)*seq(1.1,4,length=10)+1),K=(1:max(s)),
   \item{s}{vector; the vector of degrees from the RDS in order they are recorded.}
   \item{N}{vector; a vector of population sizes to compute the marginal posterior (over the degree class sizes) for.} 
   \item{K}{count; the maximum degree for an individual.} 
-  \item{mu}{scalar; The mean for the prior distribution for a randomly chosen
-    person's degree. The prior is a Waring distribution with this mean.
-    By default for the mean is 5.}
-  \item{rho}{scalar; The scaling parameter for the prior distribution for a randomly chosen
-person's degree. The prior is a Waring distribution with this power-law scale.
-    By default for the scale is 3 (i.e., just not a variance).}
+% \item{mu}{scalar; The mean for the prior distribution for a randomly chosen
+%   person's degree. The prior is a Waring distribution with this mean.
+%   By default for the mean is 5.}
+% \item{rho}{scalar; The scaling parameter for the prior distribution for a randomly chosen
+% person's degree. The prior is a Waring distribution with this power-law scale.
+%   By default for the scale is 3 (i.e., just not a variance).}
   \item{M}{count; the number of Monte-Carlo samples of class sizes to draw to compute the marginal posterior. The default is 100000.
   }
   \item{parallel}{count; the number of parallel processes to run for the Monte-Carlo sample.  This uses PVM or MPI and requires the \code{snow} package and its dependencies to be installed.
@@ -53,9 +53,9 @@ returns the (log) marginal posterior value.}
   \item{K}{count; the maximum degree for an individual.} 
   \item{mu}{scalar; The mean for the prior distribution for a randomly chosen
     person's degree. The prior is a Waring distribution with this mean.}
-  \item{rho}{scalar; The scaling parameter for the prior distribution for a 
-randomly chosen person's degree. The prior is a Waring distribution with this 
-power-law scale.}
+%\item{rho}{scalar; The scaling parameter for the prior distribution for a 
+%a randomly chosen person's degree. The prior is a Waring distribution with 
+%this power-law scale.}
 }
 
 \references{
@@ -113,10 +113,11 @@ for(i in 1:n){
  rpop[s[i]] <- rpop[s[i]] - 1 
 }
 
-out <- margpossize(s=s,K=K,mu=mu,rho=rho,N=seq(180,320,length=10))
+#out <- margpossize(s=s,K=K,N=seq(180,320,length=10),rho=rho,mu=mu)
+out <- margpossize(s=s,K=K,N=seq(180,320,length=10))
 out
 prob <- exp(out$logprob)/sum(exp(out$logprob))
-pdf("bbb.pdf")
+pdf("temp.pdf")
 plot(x=out$N, y=prob)
 lines(x=out$N, y=prob)
 abline(v=N0)

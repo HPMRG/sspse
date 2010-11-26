@@ -190,7 +190,7 @@ getincl.raw<-function(size,
               K=as.integer(K),
               n=as.integer(n),
               samplesize=as.integer(M),
-              Nk=as.integer(Nk))
+              Nk=as.integer(Nk), PACKAGE="size")
 #             verbose=as.integer(verbose))
     Cret
 }

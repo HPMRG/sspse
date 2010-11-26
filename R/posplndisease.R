@@ -74,7 +74,7 @@ posplndisease<-function(s,dis,
               ppos=double(K), 
               lpriorm=as.double(prior$lprior),
               burnintheta=as.integer(burnintheta),
-              verbose=as.integer(verbose))
+              verbose=as.integer(verbose), PACKAGE="size")
     Cret$sample<-matrix(Cret$sample,nrow=samplesize,ncol=dimsample,byrow=TRUE)
     degnames <- NULL
     if(Np0>0){degnames <- c(degnames,paste("p0deg",1:Np0,sep=""))}

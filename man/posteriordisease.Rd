@@ -27,7 +27,7 @@ sample of degrees only.
                   df.mean.prior=1,df.sd.prior=5,
                   Np0=0, Np1=0,
                   samplesize=1000,burnin=100,interval=1,burnintheta=500,
-                  priorsizedistribution=c("proportion","nbinom","pln","flat","continuous"),
+                  priorsizedistribution=c("proportion","nbinom","pln","flat"),
                   mean.prior.size=NULL, sd.prior.size=NULL,
                   mode.prior.sample.proportion=0.5,
                   median.prior.size=NULL,
@@ -35,12 +35,13 @@ sample of degrees only.
 		  effective.prior.df=1,
                   degreedistribution=c("cmp","nbinom","pln"),
                   maxN=NULL,
-                  K=2*max(s), n=length(s),
+                  K=round(quantile(s, 0.8)), n=length(s),
                   nk0=tabulate(s[dis==0],nbin=K),
                   nk1=tabulate(s[dis==1],nbin=K),
                   muproposal=0.1,
                   sigmaproposal=0.15,
                   parallel=1, seed=NULL,
+                  dispersion=0,
                   verbose=TRUE)
 }
 \arguments{
@@ -101,6 +102,9 @@ The default is \code{proportion}.}
   \item{maxN}{integer; maximum possible population size. By default this is determined from an upper quantile of the prior distribution.}
   \item{K}{count; the maximum degree for an individual. This is usually
 calculated as twice the maximum observed degree.}
+  \item{n}{vector; the vector of counts for the number of people in the sample
+with degree k. This is usually computed from \eqn{s} automatically and not
+usually specified by the user.}
   \item{nk0}{vector; the vector of counts for the number of non-diseased people in the sample
 with degree k. This is usually computed from \eqn{s} automatically and not
 usually specified by the user.}
@@ -114,6 +118,8 @@ The default is 1, that is not to use parallel processing.}
    \code{NULL} to use whatever the state of the random number
    generator is at the time of the call.
   }
+  \item{dispersion}{scalar; dispersion to use in the reported network size
+      compared to the actual netowrk size}
   \item{verbose}{logical; if this is
     \code{TRUE}, the program will print out additional
     information, including goodness of fit statistics.
@@ -358,7 +364,7 @@ dis<-sample(1*(pop>quantile(pop,0.2)), size=n, replace = TRUE, prob = pop)
  
 out <- posteriordisease(s=s,dis=dis)
 out
-prob <- exp(out$logprob)/sum(exp(out$logprob))
+prob <- exp(out$lpriorm)/sum(exp(out$lpriorm))
 x <- n+seq(along=out$lpriorm)
 #pdf("bbb.pdf")
 plot(density(out$sample[,"N"]),

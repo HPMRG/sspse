@@ -47,7 +47,7 @@ posdis<-function(s,dis,maxN=4*length(s),
               sample=double(samplesize*dimsample),
               p0pos=double(K), p1pos=double(K),
               burnintheta=as.integer(burnintheta),
-              verbose=as.integer(verbose))
+              verbose=as.integer(verbose), PACKAGE="size")
     Cret$sample<-matrix(Cret$sample,nrow=samplesize,ncol=dimsample,byrow=TRUE)
     degnames <- NULL
     if(Np0>0){degnames <- c(degnames,paste("p0deg",1:Np0,sep=""))}
@@ -118,7 +118,7 @@ priordis<-function(mean0.prior.degree=7,mean1.prior.degree=7,
               staken=integer(1),
               burnin=as.integer(burnin),
               interval=as.integer(interval),
-              verbose=as.integer(verbose))
+              verbose=as.integer(verbose), PACKAGE="size")
     Cret$musample<-matrix(Cret$musample,nrow=samplesize,ncol=2,byrow=TRUE)
     Cret$sigmasample<-matrix(Cret$sigmasample,nrow=samplesize,ncol=2,byrow=TRUE)
     Cret$sample <- cbind(Cret$musample, Cret$sigmasample)

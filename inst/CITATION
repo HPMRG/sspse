@@ -1,6 +1,6 @@
 statnetauthors <- c("Mark S. Handcock", "David R. Hunter", "Carter T. Butts",
                     "Steven M. Goodreau", "Martina Morris")
-authors <- c("Krista J. Gile", Mark S. Handcock")
+authors <- c("Krista J. Gile", "Mark S. Handcock")
 projhomepage <- "http://statnet.org"
 
 statnettitle <- "statnet: Software Tools for the Statistical Modeling of Network Data"

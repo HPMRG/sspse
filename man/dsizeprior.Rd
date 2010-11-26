@@ -32,8 +32,10 @@ The default is \code{proportion}.}
   \item{mean.prior.size}{scalar; A hyperparameter being the mean of the prior distribution on the population size.}
   \item{sd.prior.size}{scalar; A hyperparameter being the standard deviation of the prior distribution on the population size.}
   \item{mode.prior.sample.proportion}{scalar; A hyperparameter being the mode of the prior distribution on the sample proportion \eqn{n/N}.}
+  \item{median.prior.sample.proportion}{scalar; A hyperparameter being the median of the prior distribution on the sample proportion \eqn{n/N}.}
   \item{median.prior.size}{scalar; A hyperparameter being the mode of the prior distribution on the population size.}
   \item{mode.prior.size}{scalar; A hyperparameter being the mode of the prior distribution on the population size.}
+  \item{effective.prior.df}{scalar; A hyperparameter being the effective number of samples worth of information represented in the prior distribution on the population size. By default this is 1, but it can be greater (or less!) to allow for different levels of uncertainty.}
   \item{maxN}{integer; maximum possible population size. By default this is determined from an upper quantile of the prior distribution.}
   \item{log}{logical; return the prior or the the logarithm of the prior.}
   \item{verbose}{logical; if this is

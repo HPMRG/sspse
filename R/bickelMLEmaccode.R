@@ -12,7 +12,7 @@ llhoodinC<-function(pop,s){
               s=as.integer(s),
               snk=as.integer(n),
               Nk=as.double(N),
-              llik=as.double(0))
+              llik=as.double(0), PACKAGE="size")
     Cret$llik
 }
 
@@ -29,7 +29,7 @@ unposf<-function(mu,rho,N,s,n=tabulate(s)){
               Nk=as.double(N),
               mu=as.double(mu),
               rho=as.double(rho),
-              unpos=as.double(0))
+              unpos=as.double(0), PACKAGE="size")
     Cret$unpos
 }
 
@@ -39,7 +39,7 @@ dwarC<-function(N,mu,rho){
               N=as.integer(N),
               mu=as.double(mu),
               rho=as.double(rho),
-              pmf=as.double(0))
+              pmf=as.double(0), PACKAGE="size")
     Cret$pmf
 }
 
@@ -69,7 +69,7 @@ llhoodinCs<-function(pop,s){
               n=as.integer(length(s)),
               s=as.integer(s),
               Nk=as.double(N),
-              llik=as.double(0))
+              llik=as.double(0), PACKAGE="size")
     Cret$llik
 }
 

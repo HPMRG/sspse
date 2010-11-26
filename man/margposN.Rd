@@ -6,23 +6,26 @@
 members. The prior for the class sizes is multinomial given the population size. The probability that a randomly chosen person has degree \eqn{k} is modeled as a Waring distribution with specified (hyper)parameters. 
 }
 \usage{
-margposN(N,K,s,mu=5,rho=3,M=100000,
+margposN(N,s,K=max(s),prob = rep(1/K, K),
+         M=100000,
          parallel=1,seed=NULL,verbose=FALSE, 
          n=tabulate(s,nbin=K),
+         qprob = NULL, maxit = 50000,
+         method = "Nelder-Mead", temp = 10, trace = 0,
          return.all=FALSE)
 }
 \arguments{
   \item{N}{count; the population size to compute the marginal posterior (over
 the degree class sizes).} 
-  \item{K}{count; the maximum degree for an individual.} 
   \item{s}{vector; the vector of degrees from the RDS in order they are
 recorded.}
-  \item{mu}{scalar; The mean for the prior distribution for a randomly chosen
-person's degree. The prior is a Waring distribution with this mean.
-    By default for the mean is 5.}
-  \item{rho}{scalar; The scaling parameter for the prior distribution for a randomly chosen
-person's degree. The prior is a Waring distribution with this power-law scale.
-    By default for the scale is 3 (i.e., just not a variance).}
+  \item{K}{count; the maximum degree for an individual.} 
+  \item{prob}{internal.} 
+% \item{mu}{scalar; The mean for the prior distribution for a randomly chosen
+%erson's degree. The prior is a Waring distribution with this mean.
+%   By default for the mean is 5.}
+% \item{rho}{scalar; The scaling parameter for the prior distribution for a randomly chosen person's degree. The prior is a Waring distribution with this power-law scale.
+%   By default for the scale is 3 (i.e., just not a variance).}
   \item{M}{count; the number of Monte-Carlo samples of class sizes to draw to compute the marginal posterior. The default is 100000.
   }
   \item{parallel}{count; the number of parallel processes to run for the Monte-Carlo sample.  This uses PVM or MPI and requires the \code{snow} package and its dependencies to be installed.
@@ -35,6 +38,11 @@ The default is 1, that is not to use parallel processing.
   \item{n}{vector; the vector of counts for the number of people in the sample
 with degree k. This is usually computed from \eqn{s} automatically and not
 usually specified by the user.}
+  \item{qprob}{internal.} 
+  \item{maxit}{See \code{optim}.} 
+  \item{method}{See \code{optim}.} 
+  \item{temp}{See \code{optim}.} 
+  \item{trace}{See \code{optim}.} 
   \item{return.all}{logical; if this is
     \code{TRUE}, the function will return a long-list of supplementary
 information in addition to the marginal posterior value. By default it only
@@ -105,6 +113,6 @@ for(i in 1:n){
  rpop[s[i]] <- rpop[s[i]] - 1 
 }
 
-margposN(N=N,K=K,s=s,mu=mu,rho=rho,M=10000)
+margposN(N=N,K=K,s=s,M=10000)
 }
 \keyword{models}

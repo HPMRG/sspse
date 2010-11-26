@@ -65,7 +65,7 @@ getinclC<-function(classes,props,n,nsamp,nsampsamp){
               K=as.integer(length(classes)),
               n=as.integer(nsamp),
               samplesize=as.integer(nsampsamp),
-              Nk=as.integer(classes))
+              Nk=as.integer(classes), PACKAGE="size")
 #             verbose=as.integer(0))
 # list(degvec=classes,pvec=Cret$Nk/(nbyclass*nsampsamp),nbyclass=nbyclass)
   Ninf <- Cret$Nk
@@ -145,7 +145,7 @@ getinclCstacked<-function(classes,props,n,nsamp,nsampsamp){
               K=as.integer(length(classes)),
               n=as.integer(nsamp),
               samplesize=as.integer(nsampsamp),
-              Nk=as.integer(classes))
+              Nk=as.integer(classes), PACKAGE="size")
   Ninf <- Cret$Nk
   Ninf[Ninf==0] <- 1
   Ninf <- Ninf/nbyclass

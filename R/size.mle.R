@@ -54,7 +54,7 @@ unposN<-function(prob,N,K,s,n=tabulate(s,nbin=K),M=100000){
               prob=as.double(prob),
               qprob=as.double(prob),
               M=as.integer(M),
-              unpos=as.double(0))
+              unpos=as.double(0), PACKAGE="size")
     Cret$unpos
     Cret
 }
@@ -95,7 +95,7 @@ margposN<-function(N, s,
        prob=as.double(prob),
        qprob=as.double(qprob),
        M=as.integer(M),
-       unpos=as.double(0))$unpos
+       unpos=as.double(0), PACKAGE="size")$unpos
   }
   if(is.null(qprob)){
    out <- N*n/sum(n)
@@ -120,7 +120,7 @@ margposN<-function(N, s,
               prob=as.double(prob),
               qprob=as.double(qprob),
               M=as.integer(M),
-              unpos=as.double(0))
+              unpos=as.double(0), PACKAGE="size")
   }else{
     cl <- beginsnow(parallel)
     MCsamplesize.parallel=round(M/parallel)
@@ -163,7 +163,7 @@ llhoodf<-function(N,s,n=tabulate(s,nbin=length(N)),verbose=TRUE){
               s=as.integer(s),
               nk=as.integer(n),
               Nk=as.double(N),
-              llik=as.double(0))
+              llik=as.double(0), PACKAGE="size")
     Cret$llik
 }
 discretemleN<-function(N,s,
@@ -195,7 +195,7 @@ discretemleN<-function(N,s,
         s=as.integer(s),
         nk=as.integer(n),
         Nk=as.double(N),
-        llik=as.double(0))$llik
+        llik=as.double(0), PACKAGE="size")$llik
     if(is.na(temp) || is.infinite(temp)) {temp <- -100000}
     temp
   }
@@ -246,7 +246,7 @@ discretemleN<-function(N,s,
               Nk=as.integer(n),
               qprob=as.double(qprob),
               M=as.integer(M),
-              mllik=as.double(0))
+              mllik=as.double(0), PACKAGE="size")
     Cret$llik <- Cret$mllik
     Cret$Nkmle <- Cret$Nk
     Cret$lbound <- lbound
@@ -293,7 +293,7 @@ discretemleNimpute<-function(N,s,
   if(!is.null(seed))  set.seed(as.integer(seed))
   ns <- length(s)/nsim
   if(is.null(n)){
-   n <- as.vector(apply(matrix(s,nrow=nsim,byrow=T),1,tabulate,nbin=K))
+   n <- as.vector(apply(matrix(s,nrow=nsim,byrow=TRUE),1,tabulate,nbin=K))
   }
   toN <- function(x,Ntot,nk){
     nk[nk!=0] <- (Ntot-sum(nk))*c(1,exp(x))/(1+sum(exp(x)))+nk[nk!=0]
@@ -313,7 +313,7 @@ discretemleNimpute<-function(N,s,
               s=as.integer(s),
               nk=as.integer(n),
               Nk=as.double(N),
-              llik=as.double(0))$llik
+              llik=as.double(0), PACKAGE="size")$llik
   }
   if(is.null(qprob)){
    cprob <- NULL
@@ -342,7 +342,7 @@ discretemleNimpute<-function(N,s,
               qprob=as.double(qprob),
               nsim=as.integer(nsim),
               M=as.integer(M),
-              mllik=as.double(0))
+              mllik=as.double(0), PACKAGE="size")
   }else{
     cl <- beginsnow(parallel)
     MCsamplesize.parallel=round(M/parallel)

@@ -5,7 +5,7 @@
 Estimating Hidden Population Size using Respondent Driven Sampling Data
 }
 \description{
-\code{\link{size}} is a collection of functions to 
+\pkg{size} is a collection of functions to 
 estimate population size and disease prevalence using 
 respondent-driven sampling data. 
 For a list of functions type: help(package='size')
@@ -41,13 +41,13 @@ For complete citation information, use\cr
 %This manual introduces software tools for the representation, visualization,
 %and analysis of network data that address each of these previous shortcomings.
 %The package relies on the \code{\link[network]{network}} package which allows networks to be
-%represented in \R. The \code{\link{size}} package allows maximum likelihood estimates of
+%represented in \R. The \pkg{size} package allows maximum likelihood estimates of
 %exponential random network models to be calculated using Markov Chain Monte
 %Carlo.  The package also provides tools for plotting networks, simulating
 %networks and assessing model goodness-of-fit.
 
 For detailed information on how to download and install the software,
-go to the \code{\link{size}} website:
+go to the \pkg{size} website:
 \url{http://statnet.org}.
 A tutorial, support newsgroup, references and links to further resources are provided there.
 }

@@ -68,7 +68,7 @@ margposteriorsize.origandgood<-function(s,N=trunc(length(s)*seq(1.1,4,length=10)
               NtotMLE=as.double(N),
               Nprior=as.integer(prob),
               Nmle=as.integer(round(Nmle)),
-              M=as.integer(M))
+              M=as.integer(M), PACKAGE="size")
 	      Cret$prob <- Cret$prob*prob/sprob
   }else{
     cl <- beginsnow(parallel)
@@ -171,7 +171,7 @@ margposteriorsizewar<-function(s,N=trunc(length(s)*seq(1.1,4,length=10)+1),
               Nmle=as.integer(round(Nmle)),
               mu=as.double(mu),
               rho=as.double(rho),
-              M=as.integer(M))
+              M=as.integer(M), PACKAGE="size")
   }else{
     cl <- beginsnow(parallel)
     MCsamplesize.parallel=round(M/parallel)
@@ -212,7 +212,7 @@ margposteriorsizewar<-function(s,N=trunc(length(s)*seq(1.1,4,length=10)+1),
 }
 margpossize<-function(s,N=trunc(length(s)*seq(1.1,4,length=10)+1),
           K=max(s),
-          mu=5,rho=3,M=100000,
+          M=100000,
           parallel=1,seed=NULL, verbose=FALSE, 
           n=tabulate(s,nbin=K),
           return.all=FALSE){
@@ -221,7 +221,7 @@ margpossize<-function(s,N=trunc(length(s)*seq(1.1,4,length=10)+1),
   }
   logprob <- N
   for(i in seq(along=N)){
-   logprob[i] <- margposN(N=N[i],K=K,s=s,mu=mu,rho=rho,M=M,
+   logprob[i] <- margposN(N=N[i],K=K,s=s,M=M, #mu=mu,rho=rho,
                parallel=parallel,seed=seed, verbose=verbose, 
                n=n, return.all=return.all)
    if(verbose) cat(paste("N=",N[i]," logprob=",logprob[i],"\n"))
@@ -245,7 +245,7 @@ unposNwar<-function(mu,rho,N,K,s,n=tabulate(s,nbin=K),M=100000){
               mu=as.double(mu),
               rho=as.double(rho),
               M=as.integer(M),
-              unpos=as.double(0))
+              unpos=as.double(0), PACKAGE="size")
     Cret$unpos
     Cret
 }

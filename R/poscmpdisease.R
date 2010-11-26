@@ -112,7 +112,7 @@ poscmpdisease<-function(s,dis,
               burnintheta=as.integer(burnintheta),
               lambdad=as.double(lambdad),
               nud=as.double(nud),
-              verbose=as.integer(verbose))
+              verbose=as.integer(verbose), PACKAGE="size")
     Cret$sample<-matrix(Cret$sample,nrow=samplesize,ncol=dimsample,byrow=TRUE)
     degnames <- NULL
     if(Np0>0){degnames <- c(degnames,paste("p0deg",1:Np0,sep=""))}

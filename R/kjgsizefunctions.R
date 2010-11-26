@@ -93,10 +93,10 @@ mleNest<-function(lst,start=NULL){
 }
 
 
-bins<-function(vec,breaks,maxval, below=T){
+bins<-function(vec,breaks,maxval, below=TRUE){
 #returns the vec re-coded to assign the values of vec to bins
 #defined by the values of breaks, with ranges of [ ) structure
-# unless below=F.  New values are bin means.
+# unless below=FALSE.  New values are bin means.
   newvec<-vec
   mini<-min(c(0,vec))
   maxi<-breaks[1]

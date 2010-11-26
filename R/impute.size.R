@@ -1,5 +1,5 @@
-impute.size <- function(y, topcode = F, fix100k = F, na.rm = T, 
-                   zero.to.na = T,
+impute.size <- function(y, topcode = FALSE, fix100k = FALSE, na.rm = TRUE, 
+                   zero.to.na = TRUE,
                    irule=c(0.25,        # 10 +/- 2.5
                            0.5,        # 20 +/- 2.5
                            0.5,        # 30 +/- 2.5
