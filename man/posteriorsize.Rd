@@ -224,7 +224,7 @@ Gile, Krista J. and Handcock, Mark S. (2010)
 To appear, Sociological methodology, 40. 
 
 Gile, Krista J. and Handcock, Mark S. (2009)
- {\pkg{size}: {A} Package to Estimate Population Size from Respondent Driven
+ \pkg{size}: {A} Package to Estimate Population Size from Respondent Driven
 Sampling Data}.
  Statnet Project, Seattle, WA.
  Version 1, \url{http://statnet.org}.
@@ -280,12 +280,12 @@ dis<-sample(1*(pop>quantile(pop,0.2)), size=n, replace = TRUE, prob = pop)
  
 out <- posteriorsize(s=s)
 out
-prob <- exp(out$logprob)/sum(exp(out$logprob))
 x <- n+seq(along=out$lpriorm)
-#pdf("bbb.pdf")
-plot(density(out$sample[,"N"]),
-     xlab="population size",ylab="Probability", type="n")
-lines(x=x, y=exp(out$lpriorm), lty=2)
+plot(density(out$sample[,"N"]), xlim=c(0,400), main="Posterior",
+     xlab="population size",ylab="Probability")
+lpriorm <- exp(out$lpriorm)
+lpriorm <- lpriorm/(diff(range(x))*mean(lpriorm))
+lines(x=x, y=lpriorm, lty=2)
 abline(v=N0)
 abline(v=n,lty=2)
 }
