@@ -4,6 +4,7 @@
 
 #include "posteriorcmp.h"
 #include "cmp.h"
+//#include "cmp179.h"
 #include <R.h>
 #include <Rmath.h>
 #include <math.h>
@@ -126,15 +127,14 @@ void gcmp (int *pop,
     lzcmp = zcmp(exp(mui), sigmai, errval, Ki, give_log1);
     if(lzcmp < -100000.0){continue;}
     pi[Np]=cmp(Np+1,mui,sigmai,lzcmp,give_log0);
-    for (i=Np; i<Ki; i++){
+    for (i=Np+1; i<Ki; i++){
       pi[i]=pi[i-1]*exp(mui-sigmai*log((double)(i+1)));
-//  Rprintf("i %d pi[i] %f\n", i, pi[i]);
-//    pis+=pi[i];
     }
 //  Rprintf("isamp %d pis %f\n", isamp, pis);
     pis=1.-exp(-lzcmp);
     for (i=0; i<Ki; i++){
       pi[i]/=pis;
+//Rprintf("i %d pi %f pi0 %f\n", i, pi[i], pi0[i], pis, pis0);
     }
     pis=1.;
     for (i=0; i<Np; i++){
@@ -175,6 +175,7 @@ void gcmp (int *pop,
     if(Ni >= imaxN) Ni = imaxN-1;
 		    
     if((fabs(lambdad[0])>0.0000001) | (fabs(nud[0])>0.0000001)){
+Rprintf("No! lambdad[0] %f nud[0] %f\n", lambdad[0], nud[0]);
     for (i=0; i<Ki; i++){
       nk[i]=0;
     }
@@ -187,9 +188,11 @@ void gcmp (int *pop,
      for (i=0; i<ni; i++){if(pop[i]==(j)){compute=1;}}
      if(compute==1){
 //    Next four lines for cmp reporting distribution
+//    ?? Should it be cmp(j+1,...) or cmp(j,...)??
       for (i=0; i<Ki; i++){
        lzcmp = zcmp(exp(lambdad[i]),nud[i], errval, Ki, give_log1);
-       pd[i]=pi[i]*cmp(j,lambdad[i],nud[i],lzcmp,give_log0);
+//     pd[i]=pi[i]*cmp(j,lambdad[i],nud[i],lzcmp,give_log0);
+       pd[i]=pi[i]*cmp(j+1,lambdad[i],nud[i],lzcmp,give_log0);
       }
 //     Next seven lines for proportional reporting distribution
 //       for (i=0; i<Ki; i++){
@@ -386,7 +389,8 @@ void MHcmp (int *Nk, int *K,
   }
   pis=1.-exp(-lzcmp);
   for (i=0; i<Ki; i++){
-   pi[i]/=pis;
+    pi[i]/=pis;
+//Rprintf("i %d pi %f pi0 %f\n", i, pi[i], pi0[i], pis, pis0);
   }
   pis=1.;
   for (i=0; i<Np; i++){
@@ -441,14 +445,14 @@ void MHcmp (int *Nk, int *K,
 //    Rprintf("mustar %f sigmastar %f lzcmp %f\n", mustar, sigmastar, lzcmp);
     pstars=0.;
     lzcmp = zcmp(exp(mustar), sigmastar, errval, Ki, give_log1);
-    if(lzcmp < -100000.0){continue;}
     pstar[Np]=cmp(Np+1,mustar,sigmastar,lzcmp,give_log0);
     for (i=Np+1; i<Ki; i++){
       pstar[i]=pstar[i-1]*exp(mustar-sigmastar*log((double)(i+1)));
     }
     pstars=1.-exp(-lzcmp);
-    for (i=Np; i<Ki; i++){
-     pstar[i]/=pstars;
+    for (i=0; i<Ki; i++){
+      pstar[i]/=pstars;
+//Rprintf("i %d pstar %f pi0 %f\n", i, pstar[i], pi0[i], pis, pis0);
     }
     pstars=1.;
     for (i=0; i<Np; i++){
