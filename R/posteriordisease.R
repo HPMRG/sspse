@@ -52,7 +52,7 @@ posteriordisease<-function(s,dis,
   }else{
     cl <- beginsnow(parallel)
     samplesize.parallel=round(samplesize/parallel)
-    outlist <- clusterCall(cl, posfn,
+    outlist <- snow::clusterCall(cl, posfn,
       s=s,dis=dis,K=K,nk0=nk0,nk1=nk1,n=n,maxN=maxN,
       mean0.prior.degree=mean0.prior.degree,
       mean1.prior.degree=mean1.prior.degree,

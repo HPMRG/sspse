@@ -32,7 +32,7 @@ dsizeprior<-function(n,
      },
     flat={
       if(is.null(maxN)){
-        maxN <- 10*length(s)
+        maxN <- 10*n
       }
       if(is.null(N)){
         N <- 0.5*maxN
@@ -119,7 +119,7 @@ dsizeprior<-function(n,
     if(effective.prior.df!=1){
      if(log){
       lpriorm <- exp(lpriorm*effective.prior.df)
-      lpriorm <- lprior/sum(lpriorm)
+      lpriorm <- lpriorm/sum(lpriorm)
       lpriorm <- log(lpriorm)
      }else{
       lpriorm <- lpriorm^effective.prior.df

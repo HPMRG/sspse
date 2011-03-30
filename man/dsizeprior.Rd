@@ -87,8 +87,8 @@ Gile, Krista J. and Handcock, Mark S. (2010)
 To appear, Sociological methodology, 40. 
 
 Gile, Krista J. and Handcock, Mark S. (2009)
- \pkg{size}: {A} Package to Estimate Population Size from Respondent Driven
-Sampling Data}.
+ \pkg{size}: A Package to Estimate Population Size from Respondent Driven
+Sampling Data.
  Statnet Project, Seattle, WA.
  Version 1, \url{http://statnet.org}.
 

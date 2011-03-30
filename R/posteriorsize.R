@@ -55,7 +55,7 @@ posteriorsize<-function(s,
     samplesize.parallel=round(samplesize/parallel)
     ### cluster call, send following to each of the virtual machines, posnbinom function
     ### with it's arguments
-    outlist <- clusterCall(cl, posfn,
+    outlist <- snow::clusterCall(cl, posfn,
       s=s,K=K,nk=nk,n=n,maxN=maxN,
       mean.prior.degree=mean.prior.degree,df.mean.prior=df.mean.prior,
       sd.prior.degree=sd.prior.degree,df.sd.prior=df.sd.prior,
