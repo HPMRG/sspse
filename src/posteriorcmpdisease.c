@@ -257,10 +257,13 @@ void gcmpdisease (int *pop, int *dis,
      for (i=0; i<ni; i++){if((pop[i]==(j)) && (dis[i]==ddis)){compute=1;}}
      if(compute==1){
       if(ddis==1){
-//      Next four lines for cmp reporting distribution
+//    Next four lines for cmp reporting distribution
+//    ?? Should it be cmp(j+1,...) or cmp(j,...)??
+//    I think j=1 as pd[i], p1i[i], etc, refer to degree i+1 
+//    as all degrees must be positive.
       for (i=0; i<Ki; i++){
        lzcmp = zcmp(exp(lambdad[i]),nud[i], errval, Ki, give_log1);
-       pd[i]=p1i[i]*cmp(j,lambdad[i],nud[i],lzcmp,give_log0);
+       pd[i]=p1i[i]*cmp(j+1,lambdad[i],nud[i],lzcmp,give_log0);
       }
 //     Next seven lines for proportional reporting distribution
 //       for (i=0; i<Ki; i++){
@@ -268,9 +271,9 @@ void gcmpdisease (int *pop, int *dis,
 //        if((j)>0){
 //         pd[i] -= pgamma(2.0*lambdad[i]/((j)-0.5),1.0,1.0,0,0);
 //        }
-if((pd[i]<0.0 ) | (pd[i]>1.0)){ Rprintf("j %d pop[j] %d i %d pd[i] %f\n", j, pop[j],i, pd[i]);
- Rprintf("i %d p1i[i] %f, gamma0rt %f gamma1rt %f \n", i, p1i[i],  gamma0rt,  gamma1rt);
- }
+// if((pd[i]<0.0 ) | (pd[i]>1.0)){ Rprintf("j %d pop[j] %d i %d pd[i] %f\n", j, pop[j],i, pd[i]);
+//  Rprintf("i %d p1i[i] %f, gamma0rt %f gamma1rt %f \n", i, p1i[i],  gamma0rt,  gamma1rt);
+//  }
 //       if(j==75 & isamp == 4){
 ////      for (i=0; i<100; i++){
 //Rprintf("j %d dis %d i %d l[i] %f pd[i] %f\n", j, ddis, i, lambdad[i], pd[i]);
@@ -296,7 +299,7 @@ if((pd[i]<0.0 ) | (pd[i]>1.0)){ Rprintf("j %d pop[j] %d i %d pd[i] %f\n", j, pop
       // Set up pd to be cumulative for the random draws
       for (i=1; i<Ki; i++){
        pd[i]=pd[i-1]+pd[i];
-if((pd[i]<0.0 ) | (pd[i]>1.0)){ Rprintf("j %d pop[j] %d i %d pd[i] %f\n", j, pop[j],i, pd[i]);}
+// if((pd[i]<0.0 ) | (pd[i]>1.0)){ Rprintf("j %d pop[j] %d i %d pd[i] %f\n", j, pop[j],i, pd[i]);}
       }
       /* Draw unobserved degrees sizes */
       for (i=0; i<ni; i++){
