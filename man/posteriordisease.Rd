@@ -364,8 +364,7 @@ dis<-sample(1*(pop>quantile(pop,0.2)), size=n, replace = TRUE, prob = pop)
  
 out <- posteriordisease(s=s,dis=dis)
 out
-prob <- exp(out$lpriorm)/sum(exp(out$lpriorm))
-x <- n+seq(along=out$lpriorm)
+x <- out$n+seq(along=out$lpriorm)
 plot(density(out$sample[,"N"]), xlim=c(0,400), main="Posterior with disease",
      xlab="population size",ylab="Probability")
 lpriorm <- exp(out$lpriorm)
