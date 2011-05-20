@@ -120,13 +120,9 @@ poscmp<-function(s,maxN=NULL,
     endrun <- burnin+interval*(samplesize-1)
     attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
     attr(Cret$sample, "class") <- "mcmc"
-    mapfn <- function(x,lbound=min(x),ubound=max(x)){
-      posdensN <- density(x, from=lbound, to=ubound)
-      posdensN$x[which.max(posdensN$y)]
-    }
     ### compute modes of posterior samples,Maximum A Posterior (MAP) values N, mu, sigma, degree1
-    Cret$MAP <- apply(Cret$sample,2,mapfn)
-    Cret$MAP["N"] <- mapfn(Cret$sample[,"N"],lbound=n,ubound=prior$maxN)
+    Cret$MAP <- apply(Cret$sample,2,mode.density)
+    Cret$MAP["N"] <- mode.density(Cret$sample[,"N"],lbound=n,ubound=prior$maxN)
     Cret$maxN <- prior$maxN
     Cret$mode.prior.size <- prior$mode.prior.size
     Cret$effective.prior.df <- prior$effective.prior.df

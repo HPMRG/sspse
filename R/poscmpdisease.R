@@ -160,13 +160,9 @@ poscmpdisease<-function(s,dis,
   endrun <- burnin+interval*(samplesize-1)
   attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
   attr(Cret$sample, "class") <- "mcmc"
-   mapfn <- function(x,lbound=min(x),ubound=max(x)){
-     posdensN <- density(x, from=lbound, to=ubound)
-     posdensN$x[which.max(posdensN$y)]
-   }
-   Cret$MAP <- apply(Cret$sample,2,mapfn)
-   Cret$MAP["N"] <- mapfn(Cret$sample[,"N"],lbound=n,ubound=prior$maxN)
-   Cret$MAP["disease"] <- mapfn(Cret$sample[,"disease"],lbound=0,ubound=1)
+   Cret$MAP <- apply(Cret$sample,2,mode.density)
+   Cret$MAP["N"] <- mode.density(Cret$sample[,"N"],lbound=n,ubound=prior$maxN)
+   Cret$MAP["disease"] <- mode.density(Cret$sample[,"disease"],lbound=0,ubound=1)
    Cret$maxN <- prior$maxN
    Cret$mode.prior.size <- prior$mode.prior.size
    Cret$effective.prior.df <- prior$effective.prior.df

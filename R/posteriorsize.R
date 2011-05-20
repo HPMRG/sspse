@@ -107,15 +107,9 @@ posteriorsize<-function(s,
 #   Nlastpos <- Cret$sample[nrow(Cret$sample),"N"]
 #   Cret$pop<-Cret$pop[1:Nlastpop]
 
-    ### define function that will compute mode of a sample
-    mapfn <- function(x,lbound=min(x),ubound=max(x)){
-      posdensN <- density(x, from=lbound, to=ubound)
-      posdensN$x[which.max(posdensN$y)]
-    }
-    
     ### compute modes of posterior samples,Maximum A Posterior (MAP) values N, mu, sigma, degree1
-    Cret$MAP <- apply(Cret$sample,2,mapfn)
-    Cret$MAP["N"] <- mapfn(Cret$sample[,"N"],lbound=n,ubound=Cret$maxN)
+    Cret$MAP <- apply(Cret$sample,2,mode.density)
+    Cret$MAP["N"] <- mode.density(Cret$sample[,"N"],lbound=n,ubound=Cret$maxN)
     if(verbose){
      cat("parallel samplesize=", parallel,"by", samplesize.parallel,"\n")
     }

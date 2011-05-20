@@ -108,12 +108,8 @@ posteriordisease<-function(s,dis,
     attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
     attr(Cret$sample, "class") <- "mcmc"
     ### define function that will compute mode of a sample
-    mapfn <- function(x,lbound=min(x),ubound=max(x)){
-      posdensN <- density(x, from=lbound, to=ubound)
-      posdensN$x[which.max(posdensN$y)]
-    }
-    Cret$MAP <- apply(Cret$sample,2,mapfn)
-    Cret$MAP["N"] <- mapfn(Cret$sample[,"N"],lbound=n,ubound=Cret$maxN)
+    Cret$MAP <- apply(Cret$sample,2,mode.density)
+    Cret$MAP["N"] <- mode.density(Cret$sample[,"N"],lbound=n,ubound=Cret$maxN)
     if(verbose){
      cat("parallel samplesize=", parallel,"by", samplesize.parallel,"\n")
     }
