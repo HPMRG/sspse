@@ -11,7 +11,7 @@ beginsnow<-function(parallel=1, type="PVM", verbose=TRUE){
      }
      require(rpvm)
      PVM.running <- try(rpvm::.PVM.config(), silent = TRUE)
-     if(inherits(rpvm::PVM.running, "try-error")){
+     if(inherits(PVM.running, "try-error")){
       hostfile <- paste(Sys.getenv("HOME"), "/.xpvm_hosts", sep = "")
       if(file.exists(hostfile)){
        rpvm::.PVM.start.pvmd(hostfile)
