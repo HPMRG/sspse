@@ -123,6 +123,8 @@ poscmp<-function(s,maxN=NULL,
     ### compute modes of posterior samples,Maximum A Posterior (MAP) values N, mu, sigma, degree1
     Cret$MAP <- apply(Cret$sample,2,mode.density)
     Cret$MAP["N"] <- mode.density(Cret$sample[,"N"],lbound=n,ubound=prior$maxN)
+#
+    Cret$MSE <- c(((prior$x-mean.prior.degree)^2)*prior$lprior/sum(prior$lprior),mean((Cret$sample[,"N"]-mean.prior.degree)^2))
     Cret$maxN <- prior$maxN
     Cret$mode.prior.size <- prior$mode.prior.size
     Cret$effective.prior.df <- prior$effective.prior.df
