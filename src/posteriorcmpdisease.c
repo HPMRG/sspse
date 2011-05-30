@@ -211,17 +211,17 @@ void gcmpdisease (int *pop, int *dis,
 //    gamma0rt=log(gamma0rt);
 //    gamma1rt=log(gamma1rt);
     gammart=log((1.-pbeta)*gamma0rt+pbeta*gamma1rt);
-    tU = -1000000000;
+    temp = -100000000.0;
     // N = m + n
     // Compute (log) P(m | \theta and data and \Psi)
     for (i=0; i<imaxN; i++){
      lpm[i]=lgamma(ni+i+1.)-lgamma(i+1.)+i*gammart;
      //  Add in the (log) prior on m: P(m)
      lpm[i]+=lpriorm[i];
-     if(lpm[i] > tU) tU = lpm[i];
+     if(lpm[i] > temp) temp = lpm[i];
     }
     for (i=0; i<imaxN; i++){
-      lpm[i]=exp(lpm[i]-tU);
+      lpm[i]=exp(lpm[i]-temp);
     }
     for (i=1; i<imaxN; i++){
       lpm[i]=lpm[i-1]+lpm[i];

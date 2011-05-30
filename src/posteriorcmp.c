@@ -152,17 +152,17 @@ void gcmp (int *pop,
       gammart+=(exp(-r*(i+1))*pi[i]);
     }
     gammart=log(gammart);
-    tU = -1000000000;
+    temp = -100000000.0;
     // N = m + n
     // Compute (log) P(m | \theta and data and \Psi)
     for (i=0; i<imaxN; i++){
       lpm[i]=i*gammart+lgamma(ni+i+1.)-lgamma(i+1.);
 //    Add in the (log) prior on m: P(m)
       lpm[i]+=lpriorm[i];
-      if(lpm[i] > tU) tU = lpm[i];
+      if(lpm[i] > temp) temp = lpm[i];
     }
     for (i=0; i<imaxN; i++){
-      lpm[i]=exp(lpm[i]-tU);
+      lpm[i]=exp(lpm[i]-temp);
     }
     for (i=1; i<imaxN; i++){
       lpm[i]=lpm[i-1]+lpm[i];
