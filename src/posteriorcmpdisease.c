@@ -165,7 +165,7 @@ void gcmpdisease (int *pop, int *dis,
     p0i[Np0]=cmp(Np0+1,mu0i,sigma0i,lzcmp,give_log0);
     for (i=Np0+1; i<Ki; i++){
 //    p0i[i]=cmp(i+1,mu0i,sigma0i,lzcmp,give_log0);
-      p0i[i]=p0i[i-1]*exp(mu0i-sigma0i*log((double)(i+2)));
+      p0i[i]=p0i[i-1]*exp(mu0i-sigma0i*log((double)(i+1)));
 // Rprintf("i %d ss %e c %e lzcmp %e\n", i, p0i[i], cmp(i+1,mu0i,sigma0i,lzcmp,give_log0),lzcmp);
     }
 //  p0is=1.-cmp(0,mu0i,sigma0i,lzcmp,give_log0);
@@ -175,7 +175,7 @@ void gcmpdisease (int *pop, int *dis,
     p1i[Np1]=cmp(Np1+1,mu1i,sigma1i,lzcmp,give_log0);
     for (i=Np1+1; i<Ki; i++){
 //    p1i[i]=cmp(i+1,mu1i,sigma1i,lzcmp,give_log0);
-      p1i[i]=p1i[i-1]*exp(mu1i-sigma1i*log((double)(i+2)));
+      p1i[i]=p1i[i-1]*exp(mu1i-sigma1i*log((double)(i+1)));
 //    p1is+=p1i[i];
     }
 //  p1is=1.-cmp(0,mu1i,sigma1i,lzcmp,give_log0);
@@ -468,7 +468,7 @@ void MHcmpdisease (int *Nk0, int *Nk1, int *totdis, int *K,
   int i, Ki, Ni, isamp, iinterval, isamplesize, iburnin, itotdis;
   double ip, cutoff;
   double mu0star, mu1star, mu0i, mu1i, lp;
-  double pbeta, betastar, betai;
+  double pbetastar, pbeta, betastar, betai;
   double p0is, p1is, p0stars, p1stars;
   double sigma0star, sigma1star, sigma0i, sigma1i;
   double sigma02star, sigma12star, sigma02i, sigma12i;
@@ -550,7 +550,7 @@ void MHcmpdisease (int *Nk0, int *Nk1, int *totdis, int *K,
   p0i[Np0]=cmp(Np0+1,mu0i,sigma0i,lzcmp,give_log0);
   for (i=Np0+1; i<Ki; i++){
 //  p0i[i]=cmp(i+1,mu0i,sigma0i,lzcmp,give_log0);
-    p0i[i]=p0i[i-1]*exp(mu0i-sigma0i*log((double)(i+2)));
+    p0i[i]=p0i[i-1]*exp(mu0i-sigma0i*log((double)(i+1)));
 //  p0is+=p0i[i];
   }
 //p0is=1.-cmp(0,mu0i,sigma0i,lzcmp,give_log0);
@@ -559,7 +559,7 @@ void MHcmpdisease (int *Nk0, int *Nk1, int *totdis, int *K,
   p1i[Np1]=cmp(Np1+1,mu1i,sigma1i,lzcmp,give_log0);
   for (i=Np1+1; i<Ki; i++){
 //  p1i[i]=cmp(i+1,mu1i,sigma1i,lzcmp,give_log0);
-    p1i[i]=p1i[i-1]*exp(mu1i-sigma1i*log((double)(i+2)));
+    p1i[i]=p1i[i-1]*exp(mu1i-sigma1i*log((double)(i+1)));
 //  p1is+=p1i[i];
   }
 //p1is=1.-cmp(0,mu1i,sigma1i,lzcmp,give_log0);
@@ -602,7 +602,7 @@ void MHcmpdisease (int *Nk0, int *Nk1, int *totdis, int *K,
     /* Propose new theta */
     /* Start with the disease status parameters */
     betastar = rnorm(betai, dmuproposal);
-    pbeta = exp(betastar)/(1.+exp(betastar));
+    pbetastar = exp(betastar)/(1.+exp(betastar));
     /* Now the degree distribution model parameters */
     for (i=0; i<Np0; i++){
       odeg0star[i] = rnorm(odeg0i[i], dmuproposal);
@@ -653,8 +653,8 @@ void MHcmpdisease (int *Nk0, int *Nk1, int *totdis, int *K,
     /* Calculate ratio */
     ip = pithetastar-pithetai;
     /* Add the disease status */
-//    Rprintf("pbeta %f betastar %f\n", pbeta, betastar);
-    ip+=(itotdis*log(pbeta)+(Ni-itotdis)*log(1.-pbeta));
+//    Rprintf("pbetastar %f betastar %f\n", pbetastar, betastar);
+    ip+=(itotdis*log(pbetastar)+(Ni-itotdis)*log(1.-pbetastar));
     pbeta = exp(betai)/(1.+exp(betai));
     ip-=(itotdis*log(pbeta)+(Ni-itotdis)*log(1.-pbeta));
 //    Rprintf("pbeta %f betai %f betastar %f\n", pbeta, betai, betastar);
@@ -667,7 +667,7 @@ void MHcmpdisease (int *Nk0, int *Nk1, int *totdis, int *K,
     p0star[Np0]=cmp(Np0+1,mu0star,sigma0star,lzcmp,give_log0);
     for (i=Np0+1; i<Ki; i++){
 //    p0star[i]=cmp(i+1,mu0star,sigma0star,lzcmp,give_log0);
-      p0star[i]=p0star[i-1]*exp(mu0star-sigma0star*log((double)(i+2)));
+      p0star[i]=p0star[i-1]*exp(mu0star-sigma0star*log((double)(i+1)));
 //    p0stars+=p0star[i];
     }
 //  p0stars=1.-cmp(0,mu0star,sigma0star,lzcmp,give_log0);
@@ -677,7 +677,7 @@ void MHcmpdisease (int *Nk0, int *Nk1, int *totdis, int *K,
     p1star[Np1]=cmp(Np1+1,mu1star,sigma1star,lzcmp,give_log0);
     for (i=Np1+1; i<Ki; i++){
 //    p1star[i]=cmp(i+1,mu1star,sigma1star,lzcmp,give_log0);
-      p1star[i]=p1star[i-1]*exp(mu1star-sigma1star*log((double)(i+2)));
+      p1star[i]=p1star[i-1]*exp(mu1star-sigma1star*log((double)(i+1)));
 //    p1stars+=p1star[i];
     }
 //  p1stars=1.-cmp(0,mu1star,sigma1star,lzcmp,give_log0);

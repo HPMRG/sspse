@@ -30,7 +30,7 @@ void gplndisease (int *pop, int *dis,
   int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
   double mu0i, mu1i, pbeta, beta, sigma0i, sigma1i, dsamp;
   double dkappa0, ddf0, dmu0, dmu1, dsigma0, dsigma1, dmuproposal, dsigmaproposal;
-  int tU, popi, imaxN, itotdis0, itotdis, give_log0=0, give_log1=1;
+  int tU, popi, imaxN, itotdis0, itotdis;
   double r, gamma0rt, gamma1rt, p0is, p1is, Nd;
 
   GetRNGstate();  /* R function enabling uniform RNG */
@@ -338,7 +338,7 @@ void MHplndisease (int *Nk0, int *Nk1, int *totdis, int *K,
 	    int *verbose
 			 ) {
   int Nnp0, Nnp1;
-  int step, taken, give_log0=0, give_log1=1;
+  int step, taken, give_log1=1;
   int i, Ki, Ni, isamp, iinterval, isamplesize, iburnin, itotdis;
   double ip, cutoff;
   double mu0star, mu1star, mu0i, mu1i, lp;

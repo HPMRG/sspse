@@ -11,7 +11,7 @@ posteriordisease<-function(s,dis,
 		  median.prior.size=NULL,
 		  mode.prior.size=NULL,
 		  effective.prior.df=1,
-		  degreedistribution=c("cmp","nbinom","pln"),
+		  degreedistribution=c("cmp","nbinom","pln","np"),
                   maxN=NULL,
                   K=round(quantile(s,0.80)), n=length(s),
 		  nk0=tabulate(s[dis==0],nbin=K),
@@ -20,11 +20,14 @@ posteriordisease<-function(s,dis,
                   sigmaproposal=0.15, 
                   parallel=1, seed=NULL, dispersion=0,
                   verbose=TRUE){
+  if(!any(dis==0)){nk0 <- nk1-nk1}
+  if(!any(dis==1)){nk1 <- nk0-nk0}
   degreedistribution=match.arg(degreedistribution)
   posfn <- switch(degreedistribution,
                   nbinom=posnbinomdisease,
                   pln=posplndisease,
 		  cmp=poscmpdisease,
+		  np=posnpdisease,
 		  poscmpdisease)
   priorsizedistribution=match.arg(priorsizedistribution)
   if(priorsizedistribution=="nbinom" && missing(mean.prior.size)){
@@ -110,6 +113,11 @@ posteriordisease<-function(s,dis,
     ### define function that will compute mode of a sample
     Cret$MAP <- apply(Cret$sample,2,mode.density)
     Cret$MAP["N"] <- mode.density(Cret$sample[,"N"],lbound=n,ubound=Cret$maxN)
+    Cret$MAP["disease"] <- mode.density(Cret$sample[,"disease"],lbound=0,ubound=1)
+#   Cret$MAP["N.disease"] <- mode.density(Cret$sample[,"disease.count"],lbound=0,
+#                                  ubound=Cret$maxN)
+#   Cret$MAP["N.nondisease"] <- mode.density(
+#     Cret$sample[,"N"]-Cret$sample[,"disease.count"],lbound=0, ubound=Cret$maxN)
     if(verbose){
      cat("parallel samplesize=", parallel,"by", samplesize.parallel,"\n")
     }

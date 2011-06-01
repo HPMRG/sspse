@@ -29,7 +29,7 @@ void gpln (int *pop,
   int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
   double mui, sigmai, dsamp;
   double dkappa0, ddf0, dmu0, dsigma0, dmuproposal, dsigmaproposal;
-  int tU, popi, imaxN, give_log0=0, give_log1=1;
+  int tU, popi, imaxN;
   double r, gammart, pis, Nd;
 
   GetRNGstate();  /* R function enabling uniform RNG */
@@ -241,7 +241,7 @@ void MHpln (int *Nk, int *K,
 	    int *verbose
 			 ) {
   int Np;
-  int step, taken, give_log1=1, give_log0=0;
+  int step, taken, give_log1=1;
   int i, Ki, Ni, isamp, iinterval, isamplesize, iburnin;
   double ip, cutoff;
   double mustar, mui, lp;

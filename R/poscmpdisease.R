@@ -157,11 +157,11 @@ poscmpdisease<-function(s,dis,
     Cret$predictive.degree<-Cret$ppos
     Cret$ppos<-NULL
     #
-  endrun <- burnin+interval*(samplesize-1)
-  attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
-  attr(Cret$sample, "class") <- "mcmc"
+   endrun <- burnin+interval*(samplesize-1)
+   attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
+   attr(Cret$sample, "class") <- "mcmc"
    Cret$MAP <- apply(Cret$sample,2,mode.density)
-   Cret$MAP["N"] <- mode.density(Cret$sample[,"N"],lbound=n,ubound=prior$maxN)
+   Cret$MAP["N"] <- mode.density(Cret$sample[,"N"],lbound=n,ubound=prior$maxN/2)
    Cret$MAP["disease"] <- mode.density(Cret$sample[,"disease"],lbound=0,ubound=1)
    Cret$maxN <- prior$maxN
    Cret$mode.prior.size <- prior$mode.prior.size

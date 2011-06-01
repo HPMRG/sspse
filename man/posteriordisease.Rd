@@ -367,8 +367,8 @@ out
 x <- out$n+seq(along=out$lpriorm)
 plot(density(out$sample[,"N"]), xlim=c(0,400), main="Posterior with disease",
      xlab="population size",ylab="Probability")
-lpriorm <- exp(out$lpriorm)
-lpriorm <- lpriorm/(diff(range(x))*mean(lpriorm))
+#lpriorm <- exp(out$lpriorm)
+#lpriorm <- lpriorm/(diff(range(x))*mean(lpriorm))
 lines(x=x, y=lpriorm, lty=2)
 abline(v=N0)
 abline(v=n,lty=2)

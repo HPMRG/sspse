@@ -26,6 +26,11 @@ void bnw_llik(int *K, int *n, int *s, int *nk, double *Nk, double *llik){
     *llik=ll;
 }
 double bnw_llikN(int *K, int *n, int *s, int *nk, int *Nk){
+// K: number of classes
+// n: sample size 
+// s: sample in sequential order (vector) 
+// nk: sample counts (vector) 
+// Nk: population counts (vector) 
     int i, k, Nkk, totsize;
     double ll;
     ll=0.;
@@ -48,6 +53,12 @@ double bnw_llikN(int *K, int *n, int *s, int *nk, int *Nk){
     return(ll);
 }
 double bnw_llikNf(int *K, int *n, int *s, int *nk, int *Nk){
+// No check
+// K: number of classes
+// n: sample size 
+// s: sample in sequential order (vector) 
+// nk: sample counts (vector) 
+// Nk: population counts (vector) 
     int i, k, Nkk, totsize;
     double ll,dtotsize;
     ll=0.;

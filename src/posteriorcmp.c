@@ -34,7 +34,7 @@ void gcmp (int *pop,
   double mui, sigmai, dsamp;
   double dkappa, ddf, dmu, dsigma, dmuproposal, dsigmaproposal;
   int tU, sizei, imaxN, give_log0=0, give_log1=1;
-  int maxpop, ddis;
+  int maxpop;
   double r, gammart, pis, Nd;
   double temp;
   double errval=0.000001, lzcmp;
@@ -369,7 +369,7 @@ void MHcmp (int *Nk, int *K,
   step = -iburnin;
   pis=1.;
   for (i=0; i<Np; i++){
-    pdegi[i] = psample[i+Np];
+    pdegi[i] = psample[i];
     pis-=pdegi[i];
   }
   for (i=0; i<Np; i++){

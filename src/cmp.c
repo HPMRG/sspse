@@ -20,7 +20,7 @@ double cmp(int x, double llambda, double nu, double lzcmp, int give_log)
 
 double zcmp(double lambda, double nu, double err, int K, int give_log)
   {
-     double mj, z, aj;
+     double mj=0.0, z, aj;
      int j;
      z = 1.0 + lambda;
      aj = lambda;
