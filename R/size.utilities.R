@@ -1,17 +1,30 @@
-mode.density <- function(x,lbound=min(x),ubound=max(x), smooth=0.35, h=0){
+mode.density <- function(x,lbound=min(x,na.rm=TRUE),ubound=max(x,na.rm=TRUE), smooth=0.35, h=0){
 #     posdensN <- locfit(~ x, alpha=c(2*smooth,0.3))
 #     posdensN <- locfit(~ x)
 #     xp <- floor(lbound):ceiling(ubound)
-      posdensN <- locfit( ~ lp(x, nn=2*smooth, h=h, maxk=500))
-      xp <- seq(lbound, ubound, length=10000)
-      posdensN <- list(x=xp,y=predict(posdensN, newdata=xp))
+      x <- x[!is.na(x)]
+      if(length(x)==0){return(NA)}
+      posdensN <- try(locfit( ~ lp(x, nn=2*smooth, h=h, maxk=500)),silent=TRUE)
+      if(inherits(posdensN,"try-error")){
+       posdensN <- density(x, from=lbound, to=ubound)
+      }else{
+       xp <- seq(lbound, ubound, length=10000)
+       posdensN <- list(x=xp,y=predict(posdensN, newdata=xp))
+      }
       posdensN$x[which.max(posdensN$y)]
 }
-ll.density <- function(x,lbound=min(x),ubound=max(x), smooth=0.35, h=0){
+ll.density <- function(x,lbound=min(x,na.rm=TRUE),ubound=max(x,na.rm=TRUE), smooth=0.35, h=0){
 #     posdensN <- locfit(~ x, alpha=c(2*smooth,0.3))
 #     posdensN <- locfit(~ x)
 #     xp <- floor(lbound):ceiling(ubound)
-      posdensN <- locfit( ~ lp(x, nn=2*smooth, h=h, maxk=500))
+      x <- x[!is.na(x)]
+      if(length(x)==0){return(NA)}
       xp <- seq(lbound, ubound, length=10000)
-      list(x=xp,y=predict(posdensN, newdata=xp))
+      posdensN <- try(locfit( ~ lp(x, nn=2*smooth, h=h, maxk=500)),silent=TRUE)
+      if(inherits(posdensN,"try-error")){
+       posdensN <- density(x, from=lbound, to=ubound)
+       list(x=xp,y=posdensN)
+      }else{
+       list(x=xp,y=predict(posdensN, newdata=xp))
+      }
 }
