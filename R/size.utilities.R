@@ -9,7 +9,12 @@ mode.density <- function(x,lbound=min(x,na.rm=TRUE),ubound=max(x,na.rm=TRUE), sm
        posdensN <- density(x, from=lbound, to=ubound)
       }else{
        xp <- seq(lbound, ubound, length=10000)
-       posdensN <- list(x=xp,y=predict(posdensN, newdata=xp))
+       posdensN <- try(predict(posdensN, newdata=xp),silent=TRUE)
+       if(inherits(posdensN,"try-error")){
+        posdensN <- density(x, from=lbound, to=ubound)
+       }else{
+        posdensN <- list(x=xp,y=posdensN)
+       }
       }
       posdensN$x[which.max(posdensN$y)]
 }
@@ -25,6 +30,12 @@ ll.density <- function(x,lbound=min(x,na.rm=TRUE),ubound=max(x,na.rm=TRUE), smoo
        posdensN <- density(x, from=lbound, to=ubound)
        list(x=xp,y=posdensN)
       }else{
-       list(x=xp,y=predict(posdensN, newdata=xp))
+       posdensN <- try(predict(posdensN, newdata=xp),silent=TRUE)
+       if(inherits(posdensN,"try-error")){
+        posdensN <- density(x, from=lbound, to=ubound)
+        list(x=xp,y=posdensN)
+       }else{
+        list(x=xp,y=posdensN)
+       }
       }
 }
