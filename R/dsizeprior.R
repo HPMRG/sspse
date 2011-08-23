@@ -63,7 +63,7 @@ dsizeprior<-function(n,
       beta <- -log(2)/log(1-n/median.prior.size)
      }
      if(!is.null(mean.prior.size)){
-      beta <- (1-mean.prior.size)/mean.prior.size
+      beta <- mean.prior.size/n - 1
      }
      if(!is.null(mode.prior.size)){
       beta <- 2*mode.prior.size/n - 1
@@ -91,7 +91,7 @@ dsizeprior<-function(n,
       beta <- -log(2)/log(1-n/median.prior.size)
      }
      if(!is.null(mean.prior.size)){
-      beta <- (1-mean.prior.size)/mean.prior.size
+      beta <- mean.prior.size/n - 1
      }
      if(!is.null(mode.prior.size)){
       beta <- 2*mode.prior.size/n - 1
