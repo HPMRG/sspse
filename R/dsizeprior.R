@@ -119,11 +119,16 @@ dsizeprior<-function(n,
     if(effective.prior.df!=1){
      if(log){
       lpriorm <- exp(lpriorm*effective.prior.df)
+      lpriorm <- lpriorm - max(lpriorm)
       lpriorm <- lpriorm/sum(lpriorm)
       lpriorm <- log(lpriorm)
+      lpriorm[is.infinite(lpriorm)] <- NA
+      lpriorm[is.na(lpriorm)] <- min(lpriorm,na.rm=TRUE)
      }else{
       lpriorm <- lpriorm^effective.prior.df
       lpriorm <- lpriorm/sum(lpriorm)
+      lpriorm[is.infinite(lpriorm)] <- NA
+      lpriorm[is.na(lpriorm)] <- min(lpriorm,na.rm=TRUE)
      }
     }
     if(is.null(N)){N <- mean(x)}
