@@ -5,7 +5,7 @@ dsizeprior<-function(n,
 		  median.prior.sample.proportion=NULL,
 		  median.prior.size=NULL,
 		  mode.prior.size=NULL,
-		  effective.prior.df=1,
+		  effective.prior.df=3,
                   maxN=NULL,
                   log=FALSE,
                   verbose=TRUE){
@@ -92,12 +92,26 @@ dsizeprior<-function(n,
      }
      if(!is.null(mean.prior.size)){
       beta <- mean.prior.size/n - 1
+      if(is.null(maxN)){maxN <- min(50000,ceiling( n/(1-0.90^(1/beta)) ))}
+      x <- 0:(maxN-1) + n
+      fn <- function(beta,x,n,mean.prior.size,effective.prior.df){
+       lpriorm <- (1-n/(x+0.5))^beta - (1-n/(x-0.5))^beta
+       lpriorm[1] <- (1-n/(n+0.5))^beta
+       lpriorm <- lpriorm^effective.prior.df
+       lpriorm[is.infinite(lpriorm)] <- NA
+       lpriorm[is.na(lpriorm)] <- min(lpriorm,na.rm=TRUE)
+#print(c(beta,sum(x*lpriorm)/sum(lpriorm)))
+       (mean.prior.size - sum(x*lpriorm)/sum(lpriorm))^2
+      }
+      a = optimize(f=fn,interval=c(1,100),x,n,mean.prior.size,effective.prior.df,tol=0.01)
+      beta <- a$minimum
      }
      if(!is.null(mode.prior.size)){
       beta <- 2*mode.prior.size/n - 1
      }
      median.prior.size <- n/(1-0.5^(1/beta))
      mode.prior.size <- n*(beta+1)/2
+     mean.prior.size <- n*(beta+1)
      mode.prior.sample.proportion <- 2/(beta+1)
      if(is.null(maxN)){maxN <- min(50000,ceiling( n/(1-0.90^(1/beta)) ))}
      if(is.null(N)){N <- min(50000,ceiling( n/(1-0.5^(1/beta)) ))}
@@ -118,17 +132,21 @@ dsizeprior<-function(n,
     )
     if(effective.prior.df!=1){
      if(log){
-      lpriorm <- exp(lpriorm*effective.prior.df)
-      lpriorm <- lpriorm - max(lpriorm)
-      lpriorm <- lpriorm/sum(lpriorm)
+      lpriorm <- exp(lpriorm*effective.prior.df-max(lpriorm*effective.prior.df,na.rm=TRUE))
+#     lpriorm <- lpriorm - max(lpriorm,na.rm=TRUE)
+#     lpriorm <- lpriorm/sum(lpriorm,na.rm=TRUE)
+      mean.prior.size <- sum(x*lpriorm)/sum(lpriorm)
+      median.prior.size <- x[match(TRUE,cumsum(lpriorm) >= sum(lpriorm)*0.5)]
       lpriorm <- log(lpriorm)
       lpriorm[is.infinite(lpriorm)] <- NA
       lpriorm[is.na(lpriorm)] <- min(lpriorm,na.rm=TRUE)
      }else{
       lpriorm <- lpriorm^effective.prior.df
-      lpriorm <- lpriorm/sum(lpriorm)
       lpriorm[is.infinite(lpriorm)] <- NA
       lpriorm[is.na(lpriorm)] <- min(lpriorm,na.rm=TRUE)
+      lpriorm <- lpriorm/sum(lpriorm,na.rm=TRUE)
+      mean.prior.size <- sum(x*lpriorm)
+      median.prior.size <- x[match(TRUE,cumsum(lpriorm) >= 0.5)]
      }
     }
     if(is.null(N)){N <- mean(x)}
