@@ -90,13 +90,13 @@ dsizeprior<-function(n,
      if(!is.null(median.prior.size)){
       beta <- -log(2)/log(1-n/median.prior.size)
      }
+       dfn <- function(x,beta,n,effective.prior.df){
+        (beta*n*((x-n)^(beta-1))/(x^(beta+1)))^effective.prior.df
+       }
      if(!is.null(mean.prior.size)){
       beta <- mean.prior.size/n - 1
       if(is.null(maxN)){maxN <- min(50000,ceiling( n/(1-0.90^(1/beta)) ))}
       x <- 0:(maxN-1) + n
-       dfn <- function(x,beta,n,effective.prior.df){
-        (beta*n*((x-n)^(beta-1))/(x^(beta+1)))^effective.prior.df
-       }
       fn <- function(beta,x,n,mean.prior.size,effective.prior.df){
 #      lpriorm <- (1-n/(x+0.5))^beta - (1-n/(x-0.5))^beta
 #      lpriorm[1] <- (1-n/(n+0.5))^beta
