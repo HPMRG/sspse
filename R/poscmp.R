@@ -59,12 +59,12 @@ poscmp<-function(s,maxN=NULL,
     priorsizedistribution=match.arg(priorsizedistribution)
     prior <- dsizeprior(n=n,
 		  type=priorsizedistribution,
-		  mean.prior.size=mean.prior.size,
 		  sd.prior.size=sd.prior.size,
 		  mode.prior.sample.proportion=mode.prior.sample.proportion,
 		  median.prior.sample.proportion=median.prior.sample.proportion,
 		  median.prior.size=median.prior.size,
 		  mode.prior.size=mode.prior.size,
+		  mean.prior.size=mean.prior.size,
                   effective.prior.df=effective.prior.df,
                   maxN=maxN,
                   log=TRUE,
@@ -124,9 +124,10 @@ poscmp<-function(s,maxN=NULL,
     Cret$MAP <- apply(Cret$sample,2,mode.density)
     Cret$MAP["N"] <- mode.density(Cret$sample[,"N"],lbound=n,ubound=prior$maxN)
 #
-    Cret$MSE <- c(((prior$x-mean.prior.degree)^2)*prior$lprior/sum(prior$lprior),mean((Cret$sample[,"N"]-mean.prior.degree)^2))
+#   Cret$MSE <- c(((prior$x-mean.prior.degree)^2)*prior$lprior/sum(prior$lprior),mean((Cret$sample[,"N"]-mean.prior.degree)^2))
     Cret$maxN <- prior$maxN
     Cret$mode.prior.size <- prior$mode.prior.size
+    Cret$mean.prior.size <- prior$mean.prior.size
     Cret$effective.prior.df <- prior$effective.prior.df
     Cret$median.prior.size <- prior$median.prior.size
     Cret$mode.prior.sample.proportion <- prior$mode.prior.sample.proportion
