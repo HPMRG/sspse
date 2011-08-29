@@ -5,7 +5,7 @@ dsizeprior<-function(n,
 		  median.prior.sample.proportion=NULL,
 		  median.prior.size=NULL,
 		  mode.prior.size=NULL,
-		  effective.prior.df=0.5,
+		  effective.prior.df=1,
                   maxN=NULL,
                   log=FALSE,
                   verbose=TRUE){
@@ -104,9 +104,15 @@ dsizeprior<-function(n,
       fn <- function(beta,x,n,median.prior.size,effective.prior.df){
        lpriorm <- lfn(x+0.5,beta,n,effective.prior.df)
        priorm <- exp(lpriorm) / sum(exp(lpriorm) )
+#   abs(median.prior.size - (x+0.5)[match(TRUE,cumsum(priorm) >= 0.5)] ) 
   print(c(beta,sum(x*priorm)/sum(priorm),
-    abs(median.prior.size - (x+0.5)[match(TRUE,cumsum(priorm) >= 0.5)] ) ))
-       abs(median.prior.size - (x+0.5)[match(TRUE,cumsum(priorm) >= 0.5)] )
+         0.5*( (x+0.5)[match(TRUE,cumsum(priorm) >= 0.5)] 
+          +(x+0.5)[which.max(lpriorm)] )
+        ))
+       abs(median.prior.size - 
+         0.5*( (x+0.5)[match(TRUE,cumsum(priorm) >= 0.5)] 
+          +(x+0.5)[which.max(lpriorm)] )
+          )
       }
       a = optimize(f=fn,interval=c(1,10),x,n,median.prior.size,
                    effective.prior.df,tol=0.01)

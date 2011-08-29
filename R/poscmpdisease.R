@@ -18,7 +18,7 @@ poscmpdisease<-function(s,dis,
 		  median.prior.sample.proportion=NULL,
 		  median.prior.size=NULL,
 		  mode.prior.size=NULL,
-		  effective.prior.df=0.5,
+		  effective.prior.df=1,
                   seed=NULL,
                   dispersion=0,
                   verbose=TRUE){
