@@ -148,7 +148,7 @@ dsizeprior<-function(n,
                    effective.prior.df,tol=0.01)
       beta <- a$minimum
      }
-     median.prior.size <- n/(1-0.5^(1/beta))
+#    median.prior.size <- n/(1-0.5^(1/beta))
 #    mode.prior.size <- n*(beta+1)/2
 #    mean.prior.size <- n*(beta+1)
 #    mode.prior.sample.proportion <- 2/(beta+1)
