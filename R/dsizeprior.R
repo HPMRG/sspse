@@ -98,6 +98,8 @@ dsizeprior<-function(n,
       a <- a - mina
      }
      if(!is.null(median.prior.size)){
+      if(median.prior.size < n){median.prior.size = n}
+      if(median.prior.size < 750){effective.prior.df=max(effective.prior.df,3)}
       beta <- -log(2)/log(1-n/median.prior.size)
       if(is.null(maxN)){maxN <- min(50000,ceiling( n/(1-0.90^(1/beta)) ))}
       x <- 0:(maxN-1) + n
@@ -114,11 +116,13 @@ dsizeprior<-function(n,
           +(x+0.5)[which.max(lpriorm)] )
           )
       }
+  print(paste("median:",median.prior.size))
       a = optimize(f=fn,interval=c(1,10),x,n,median.prior.size,
                    effective.prior.df,tol=0.01)
       beta <- a$minimum
      }
      if(!is.null(mean.prior.size)){
+      if(mean.prior.size < n){mean.prior.size = n}
       beta <- mean.prior.size/n - 1
       if(is.null(maxN)){maxN <- min(50000,ceiling( n/(1-0.90^(1/beta)) ))}
       x <- 0:(maxN-1) + n
@@ -140,6 +144,7 @@ dsizeprior<-function(n,
       beta <- a$minimum
      }
      if(!is.null(mode.prior.size)){
+      if(mode.prior.size < n){mode.prior.size = n}
       beta <- 2*mode.prior.size/n - 1
       if(is.null(maxN)){maxN <- min(50000,ceiling( n/(1-0.90^(1/beta)) ))}
       x <- 0:(maxN-1) + n
