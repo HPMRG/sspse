@@ -97,7 +97,7 @@ dsizeprior<-function(n,
       a[is.infinite(a)] <- mina
       a <- a - mina
      }
-     if(!is.null(median.prior.size)){
+     if(!is.null(median.mid.prior.size)){
       if(median.prior.size < n){median.prior.size = n}
       if(median.prior.size < 750){effective.prior.df=max(effective.prior.df,3)}
       beta <- -log(2)/log(1-n/median.prior.size)
@@ -115,6 +115,25 @@ dsizeprior<-function(n,
          0.5*( (x+0.5)[match(TRUE,cumsum(priorm) >= 0.5)] 
           +(x+0.5)[which.max(lpriorm)] )
           )
+      }
+  print(paste("median:",median.prior.size))
+      a = optimize(f=fn,interval=c(1,10),x,n,median.prior.size,
+                   effective.prior.df,tol=0.01)
+      beta <- a$minimum
+     }
+     if(!is.null(median.prior.size)){
+      if(median.prior.size < n){median.prior.size = n}
+      if(median.prior.size < 750){effective.prior.df=max(effective.prior.df,3)}
+      beta <- -log(2)/log(1-n/median.prior.size)
+      if(is.null(maxN)){maxN <- min(50000,ceiling( n/(1-0.90^(1/beta)) ))}
+      x <- 0:(maxN-1) + n
+      fn <- function(beta,x,n,median.prior.size,effective.prior.df){
+       lpriorm <- lfn(x+0.5,beta,n,effective.prior.df)
+       priorm <- exp(lpriorm) / sum(exp(lpriorm) )
+  print(c(beta,sum(x*priorm)/sum(priorm),
+       (x+0.5)[match(TRUE,cumsum(priorm) >= 0.5)] ))
+       abs(median.prior.size - 
+        (x+0.5)[match(TRUE,cumsum(priorm) >= 0.5)] ) 
       }
   print(paste("median:",median.prior.size))
       a = optimize(f=fn,interval=c(1,10),x,n,median.prior.size,
