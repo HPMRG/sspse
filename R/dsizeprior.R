@@ -9,6 +9,7 @@ dsizeprior<-function(n,
 		  effective.prior.df=1,
                   maxN=NULL,
                   log=FALSE,
+                  maxbeta=25,
                   verbose=TRUE){
   priorsizedistribution=match.arg(type)
   N <- NULL
@@ -118,7 +119,7 @@ dsizeprior<-function(n,
           )
       }
   print(paste("median:",median.prior.size))
-      a = optimize(f=fn,interval=c(1,20),x,n,median.prior.size,
+      a = optimize(f=fn,interval=c(1,maxbeta),x,n,median.prior.size,
                    effective.prior.df,tol=0.01)
       beta <- a$minimum
      }
@@ -137,7 +138,7 @@ dsizeprior<-function(n,
         (x+0.5)[match(TRUE,cumsum(priorm) >= 0.5)] ) 
       }
   print(paste("median:",median.prior.size))
-      a = optimize(f=fn,interval=c(1,20),x,n,median.prior.size,
+      a = optimize(f=fn,interval=c(1,maxbeta),x,n,median.prior.size,
                    effective.prior.df,tol=0.01)
       beta <- a$minimum
      }
@@ -159,7 +160,7 @@ dsizeprior<-function(n,
 #        abs(mean.prior.size - sum(x*priorm)/sum(priorm))))
        abs(mean.prior.size - sum(x*priorm)/sum(priorm,na.rm=TRUE))
       }
-      a = optimize(f=fn,interval=c(1,20),x,n,mean.prior.size,effective.prior.df,tol=0.01)
+      a = optimize(f=fn,interval=c(1,maxbeta),x,n,mean.prior.size,effective.prior.df,tol=0.01)
 #browser()
       beta <- a$minimum
      }
@@ -175,7 +176,7 @@ dsizeprior<-function(n,
           abs(mode.prior.size - (x+0.5)[which.max(lpriorm)]) ))
        abs(mode.prior.size - (x+0.5)[which.max(lpriorm)])
       }
-      a = optimize(f=fn,interval=c(1,20),x,n,mode.prior.size,
+      a = optimize(f=fn,interval=c(1,maxbeta),x,n,mode.prior.size,
                    effective.prior.df,tol=0.01)
       beta <- a$minimum
      }
