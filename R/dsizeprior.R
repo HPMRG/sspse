@@ -7,6 +7,7 @@ dsizeprior<-function(n,
 		  median.mid.prior.size=NULL,
 		  mode.prior.size=NULL,
 		  effective.prior.df=1,
+		  alpha=mean.prior.size/(mean.prior.size-n),
                   maxN=NULL,
                   log=FALSE,
                   maxbeta=25,
@@ -92,7 +93,7 @@ dsizeprior<-function(n,
      lfn <- function(x,beta,n,effective.prior.df){
 #     (beta*n*((x-n)^(beta-1))/(x^(beta+1)))^effective.prior.df
 #     a=effective.prior.df*(log(beta*n)+(beta-1)*log(x-n) - (beta+1)*log(x) )
-      a=effective.prior.df*(log(beta*n)+(beta-1)*log(1-n/x) - 2*log(x) )
+      a=effective.prior.df*(log(n*gamma(alpha+beta)/(gamma(alpha)*gamma(beta)))+(beta-1)*log(1-n/x) - (alpha+1)*log(x) )
       mina <- min(a,na.rm=TRUE)
 #if(any(is.na(a))){browser()}
       a[is.na(a)] <- mina
