@@ -9,6 +9,7 @@ posteriorsize<-function(s,
 		  median.prior.size=NULL,
 		  mode.prior.size=NULL,
 		  effective.prior.df=1,
+		  alpha=NULL,
 		  degreedistribution=c("cmp","nbinom","pln"),
                   maxN=NULL,
                   K=round(quantile(s,0.80)), n=length(s),
@@ -44,6 +45,7 @@ posteriorsize<-function(s,
 		    median.prior.size=median.prior.size,
 		    mode.prior.size=mode.prior.size,
                     effective.prior.df=effective.prior.df,
+                    alpha=alpha,
                     seed=seed,
                     dispersion=dispersion)
 
@@ -69,6 +71,7 @@ posteriorsize<-function(s,
       median.prior.size=median.prior.size,
       mode.prior.size=mode.prior.size,
       effective.prior.df=effective.prior.df,
+      alpha=alpha,
       dispersion=dispersion)
 #
 #   Process the results
