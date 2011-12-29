@@ -15,10 +15,14 @@ collected by Respondent Driven Sampling.
    mode.prior.sample.proportion=0.5,
    median.prior.sample.proportion=NULL,
    median.prior.size=NULL,
+   median.mid.prior.size=NULL,
    mode.prior.size=NULL,
    effective.prior.df=1,
+   alpha = NULL,
    maxN=NULL,
    log=FALSE,
+   maxbeta = 100,
+   maxNmax = 2e+05,
    verbose=TRUE)
 }
 \arguments{
@@ -36,8 +40,11 @@ The default is \code{proportion}.}
   \item{median.prior.size}{scalar; A hyperparameter being the mode of the prior distribution on the population size.}
   \item{mode.prior.size}{scalar; A hyperparameter being the mode of the prior distribution on the population size.}
   \item{effective.prior.df}{scalar; A hyperparameter being the effective number of samples worth of information represented in the prior distribution on the population size. By default this is 1, but it can be greater (or less!) to allow for different levels of uncertainty.}
+  \item{alpha}{scalar; A hyperparameter being the first parameter of the beta prior model for the sample proportion. By default this is NULL, meaning that 1 is chosen. it can be any value at least 1 to allow for different levels of uncertainty.}
   \item{maxN}{integer; maximum possible population size. By default this is determined from an upper quantile of the prior distribution.}
   \item{log}{logical; return the prior or the the logarithm of the prior.}
+  \item{maxbeta}{integer; maximum beta in the prior for population size. By default this is determined to ensure numerical stability.}
+  \item{maxNmax}{integer; maximum possible population size. By default this is determined to ensure numerical stability.}
   \item{verbose}{logical; if this is
     \code{TRUE}, the program will print out additional
     information, including goodness of fit statistics.

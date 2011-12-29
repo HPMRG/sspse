@@ -10,8 +10,8 @@ dsizeprior<-function(n,
 		  alpha=NULL,
                   maxN=NULL,
                   log=FALSE,
-                  maxbeta=25,
-                  maxNmax=50000,
+                  maxbeta=100,
+                  maxNmax=200000,
                   verbose=TRUE){
   priorsizedistribution=match.arg(type)
   N <- NULL
