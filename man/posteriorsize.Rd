@@ -13,7 +13,7 @@ over the population members.
 
 It does not use the disease states of the sampled individuals to improve the
 estimation.  See \code{\link{posteriordisease}} for a version that uses the
-sample of degrees only. 
+joint sample of degrees and disease states. 
 
 %By default, the probability that a randomly chosen
 %person has degree \eqn{k} is modeled as a Conway-Maxwell-Poisson distribution
@@ -223,13 +223,12 @@ Ph.D. Thesis, Department of Statistics, University of Washington.
 
 Gile, Krista J. and Handcock, Mark S. (2010)
 \emph{Respondent-Driven Sampling: An Assessment of Current Methodology},
-To appear, Sociological methodology, 40. 
+Sociological Methodology 40, 285-327.
 
 Gile, Krista J. and Handcock, Mark S. (2009)
- \pkg{size}: {A} Package to Estimate Population Size from Respondent Driven
-Sampling Data.
+ \pkg{size}: {A} Package to Estimate Population Size from Respondent Driven Sampling Data.
  Statnet Project, Seattle, WA.
- Version 1, \url{http://statnet.org}.
+ Version 1, \url{http://hpmrg.org}.
 
 Handcock MS (2003b).
  \pkg{degreenet}: Models for Skewed Count Distributions Relevant
@@ -254,7 +253,7 @@ Hunter DR, Handcock MS, Butts CT, Goodreau SM, Morris M (2008b).
  \url{http://www.jstatsoft.org/v24/i03/}.
 }
 
-\seealso{network, statnet, snow, degreenet}
+\seealso{network, statnet, degreenet}
 
 \examples{
 library(degreenet)
@@ -276,7 +275,7 @@ probs <- probs / sum(probs)
 # Create an RD sample
 #
 set.seed(1)
-pop<-sample(1:K, size=N0, replace = TRUE, prob = probs)
+ pop<-sample(1:K, size=N0, replace = TRUE, prob = probs)
 s<-sample(pop, size=n, replace = FALSE, prob = pop)
 dis<-sample(1*(pop>quantile(pop,0.2)), size=n, replace = TRUE, prob = pop)
  

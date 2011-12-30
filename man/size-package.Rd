@@ -66,7 +66,7 @@ Ph.D. Thesis, Department of Statistics, University of Washington.
 
 Gile, Krista J. and Handcock, Mark S. (2010)
 \emph{Respondent-Driven Sampling: An Assessment of Current Methodology},
-To appear, Sociological methodology, 40. 
+Sociological Methodology 40, 285-327.
 
 Gile, Krista J. and Handcock, Mark S. (2009)
  \pkg{size}: {A} Package to Estimate Population Size from Respondent Driven
