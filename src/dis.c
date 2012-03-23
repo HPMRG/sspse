@@ -28,7 +28,7 @@ void gsppsdis (int *pop, int *dis,
   int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
   double mu, mu0i, mu1i, pbeta, beta, sigma0i, sigma1i;
   double dkappa0, ddf0, dmu0, dmu1, dsigma0, dsigma1, dmuproposal, dsigmaproposal;
-  int tU, popi, imaxN, itotdis0, itotdis;
+  int tU, popi, imaxN, imaxm, itotdis0, itotdis;
   double r, gamma0rt, gamma1rt, p0is, p1is, Nd;
 
   GetRNGstate();  /* R function enabling uniform RNG */
@@ -37,6 +37,7 @@ void gsppsdis (int *pop, int *dis,
   Ni=(*N);
   Ki=(*K);
   imaxN=(*maxN);
+  imaxm=imaxN-ni;
   isamplesize=(*samplesize);
   iinterval=(*interval);
   iburnin=(*burnin);
@@ -60,7 +61,7 @@ void gsppsdis (int *pop, int *dis,
   int *Nk0pos = (int *) malloc(sizeof(int) * Ki);
   int *Nk1 = (int *) malloc(sizeof(int) * Ki);
   int *Nk1pos = (int *) malloc(sizeof(int) * Ki);
-  double *lpm = (double *) malloc(sizeof(double) * imaxN);
+  double *lpm = (double *) malloc(sizeof(double) * imaxm);
   double *pdeg0i = (double *) malloc(sizeof(double) * Np0);
   double *pdeg1i = (double *) malloc(sizeof(double) * Np1);
   double *psample = (double *) malloc(sizeof(double) * (Np0+Np1));
@@ -179,24 +180,24 @@ void gsppsdis (int *pop, int *dis,
 //    gamma1rt=log(gamma1rt);
     gamma0rt=log((1.-pbeta)*gamma0rt+pbeta*gamma1rt);
     tU = -1000000000;
-    for (i=0; i<imaxN; i++){
+    for (i=0; i<imaxm; i++){
      lpm[i]=lgamma(ni+i+1.)-lgamma(i+1)+i*gamma0rt;
      if(lpm[i] > tU) tU = lpm[i];
     }
-    for (i=0; i<imaxN; i++){
+    for (i=0; i<imaxm; i++){
       lpm[i]=exp(lpm[i]-tU);
     }
-    for (i=1; i<imaxN; i++){
+    for (i=1; i<imaxm; i++){
       lpm[i]=lpm[i-1]+lpm[i];
     }
-    gamma0rt = lpm[imaxN-1] * unif_rand();
+    gamma0rt = lpm[imaxm-1] * unif_rand();
     Ni = 0;
     while(gamma0rt > lpm[Ni]){Ni++;}
-//  if (*verbose) Rprintf("Ni %d lpm[imaxN-1] %f lpm[Ni] %f\n", Ni, lpm[imaxN-1],
+//  if (*verbose) Rprintf("Ni %d lpm[imaxm-1] %f lpm[Ni] %f\n", Ni, lpm[imaxm-1],
 //  lpm[Ni]);
 //  }
     Ni += ni;
-    if(Ni >= imaxN) Ni = imaxN-1;
+    if(Ni > imaxN) Ni = imaxN;
 
 //  if (*verbose) Rprintf("step %d Ni %d itotdis %d beta %f mu0 %f mu1 %f s0 %f r %f\n",
 //  step, Ni, itotdis, betasample[0], musample[0], musample[1], sigmasample[0], r);
@@ -281,7 +282,7 @@ void gsppsdis (int *pop, int *dis,
       isamp++;
       if (*verbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d samples...\n", isamp);
 //    if (*verbose) Rprintf("r %f gammart %f\n", r, gammart);
-//    if (*verbose) Rprintf("Ni %d lpm[0] %f imaxN %d\n", Ni, lpm[0], imaxN);
+//    if (*verbose) Rprintf("Ni %d lpm[0] %f imaxm %d\n", Ni, lpm[0], imaxm);
     }
     step++;
   }

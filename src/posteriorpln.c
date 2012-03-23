@@ -29,7 +29,7 @@ void gpln (int *pop,
   int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
   double mui, sigmai, dsamp;
   double dkappa0, ddf0, dmu0, dsigma0, dmuproposal, dsigmaproposal;
-  int tU, popi, imaxN;
+  int tU, popi, imaxN, imaxm;
   double r, gammart, pis, Nd;
 
   GetRNGstate();  /* R function enabling uniform RNG */
@@ -38,6 +38,7 @@ void gpln (int *pop,
   Ni=(*N);
   Ki=(*K);
   imaxN=(*maxN);
+  imaxm=imaxN-ni;
   isamplesize=(*samplesize);
   iinterval=(*interval);
   iburnin=(*burnin);
@@ -55,7 +56,7 @@ void gpln (int *pop,
   int *b = (int *) malloc(sizeof(int) * ni);
   int *Nk = (int *) malloc(sizeof(int) * Ki);
   int *Nkpos = (int *) malloc(sizeof(int) * Ki);
-  double *lpm = (double *) malloc(sizeof(double) * imaxN);
+  double *lpm = (double *) malloc(sizeof(double) * imaxm);
   double *pdegi = (double *) malloc(sizeof(double) * (Np+1));
   double *psample = (double *) malloc(sizeof(double) * (Np+1));
   double *musample = (double *) malloc(sizeof(double));
@@ -134,24 +135,24 @@ void gpln (int *pop,
     tU = -1000000000;
     // N = m + n
     // Compute (log) P(m | \theta and data and \Psi)
-    for (i=0; i<imaxN; i++){
+    for (i=0; i<imaxm; i++){
       lpm[i]=i*gammart+lgamma(ni+i+1.)-lgamma(i+1.);
 //    Add in the (log) prior on m: P(m)
       lpm[i]=lpm[i]+lpriorm[i];
       if(lpm[i] > tU) tU = lpm[i];
     }
-    for (i=0; i<imaxN; i++){
+    for (i=0; i<imaxm; i++){
       lpm[i]=exp(lpm[i]-tU);
     }
-    for (i=1; i<imaxN; i++){
+    for (i=1; i<imaxm; i++){
       lpm[i]=lpm[i-1]+lpm[i];
     }
-    gammart = lpm[imaxN-1] * unif_rand();
+    gammart = lpm[imaxm-1] * unif_rand();
     Ni = 0;
     while(gammart > lpm[Ni]){Ni++;}
     // Add back the sample size
     Ni+= ni;
-    if(Ni >= imaxN) Ni = imaxN-1;
+    if(Ni > imaxN) Ni = imaxN;
 		    
     /* Draw phis */
     tU=0;
