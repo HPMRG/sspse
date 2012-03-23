@@ -23,7 +23,7 @@ pospln<-function(s,maxN=4*length(s),
     mu0 <- log(mean.prior.degree)-0.5*sigma0*sigma0
     #
     dimsample <- 4+Np
-    lpriorm <- dnbinommu(x=n+(1:maxN)-1,
+    lpriorm <- dnbinommu(x=n:maxN,
                          mu=mean.prior.size, sd=sd.prior.size,
 			 log=TRUE)
     Cret <- .C("gpln",

@@ -18,7 +18,7 @@ posnbinom<-function(s,maxN=4*length(s),
     mu0 <- mean.prior.degree
     if(!is.null(seed))  set.seed(as.integer(seed))
     dimsample <- 4+Np
-    lpriorm <- dnbinommu(x=n+(1:maxN)-1,
+    lpriorm <- dnbinommu(x=n:maxN,
                          mu=mean.prior.size, sd=sd.prior.size,
 			 log=TRUE)
     Cret <- .C("gnbinom",
