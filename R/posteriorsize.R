@@ -134,7 +134,7 @@ posteriorsize<-function(s,
   }
   Cret$degreedistribution <- degreedistribution
   Cret$priorsizedistribution <- priorsizedistribution
-  Cret$mean.prior.size <- mean.prior.size
+# Cret$mean.prior.size <- mean.prior.size
   ### return result
   Cret
 }

@@ -130,6 +130,7 @@ poscmp<-function(s,maxN=NULL,
 #
 #   Cret$MSE <- c(((prior$x-mean.prior.degree)^2)*prior$lprior/sum(prior$lprior),mean((Cret$sample[,"N"]-mean.prior.degree)^2))
     Cret$maxN <- prior$maxN
+    Cret$quartiles.prior.size <- prior$quartiles.prior.size
     Cret$mode.prior.size <- prior$mode.prior.size
     Cret$mean.prior.size <- prior$mean.prior.size
     Cret$effective.prior.df <- prior$effective.prior.df

@@ -33,7 +33,7 @@ void gcmp (int *pop,
   int i, j, compute, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
   double mui, sigmai, dsamp;
   double dkappa, ddf, dmu, dsigma, dmuproposal, dsigmaproposal;
-  int tU, sizei, imaxN, give_log0=0, give_log1=1;
+  int tU, sizei, imaxN, imaxm, give_log0=0, give_log1=1;
   int maxpop;
   double r, gammart, pis, Nd;
   double temp;
@@ -45,6 +45,7 @@ void gcmp (int *pop,
   Ni=(*N);
   Ki=(*K);
   imaxN=(*maxN);
+  imaxm=imaxN-ni;
   isamplesize=(*samplesize);
   iinterval=(*interval);
   iburnin=(*burnin);
@@ -64,7 +65,7 @@ void gcmp (int *pop,
   int *b = (int *) malloc(sizeof(int) * ni);
   int *Nk = (int *) malloc(sizeof(int) * Ki);
   int *Nkpos = (int *) malloc(sizeof(int) * Ki);
-  double *lpm = (double *) malloc(sizeof(double) * imaxN);
+  double *lpm = (double *) malloc(sizeof(double) * imaxm);
   double *pdegi = (double *) malloc(sizeof(double) * (Np+1));
   double *psample = (double *) malloc(sizeof(double) * (Np+1));
   double *musample = (double *) malloc(sizeof(double));
@@ -155,24 +156,24 @@ void gcmp (int *pop,
     temp = -100000000.0;
     // N = m + n
     // Compute (log) P(m | \theta and data and \Psi)
-    for (i=0; i<imaxN; i++){
+    for (i=0; i<imaxm; i++){
       lpm[i]=i*gammart+lgamma(ni+i+1.)-lgamma(i+1.);
 //    Add in the (log) prior on m: P(m)
       lpm[i]+=lpriorm[i];
       if(lpm[i] > temp) temp = lpm[i];
     }
-    for (i=0; i<imaxN; i++){
+    for (i=0; i<imaxm; i++){
       lpm[i]=exp(lpm[i]-temp);
     }
-    for (i=1; i<imaxN; i++){
+    for (i=1; i<imaxm; i++){
       lpm[i]=lpm[i-1]+lpm[i];
     }
-    temp = lpm[imaxN-1] * unif_rand();
+    temp = lpm[imaxm-1] * unif_rand();
     Ni = 0;
     while(temp > lpm[Ni]){Ni++;}
     // Add back the sample size
     Ni += ni;
-    if(Ni >= imaxN) Ni = imaxN-1;
+    if(Ni > imaxN) Ni = imaxN;
 		    
     if((fabs(lambdad[0])>0.0000001) | (fabs(nud[0])>0.0000001)){
 Rprintf("No! lambdad[0] %f nud[0] %f\n", lambdad[0], nud[0]);

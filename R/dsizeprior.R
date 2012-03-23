@@ -41,10 +41,9 @@ dsizeprior<-function(n,
         maxN <- min(maxNmax,ceiling(qnbinommu(p=0.5,
                     mu=mean.prior.size, sd=sd.prior.size)))
       }
-      lpriorm <- dnbinommu(x=n+(1:maxN)-1,
+      lpriorm <- dnbinommu(x=n:maxN,
                            mu=mean.prior.size, sd=sd.prior.size,
                            log=log)
-      x <- 0:(maxN-1)
       if(is.null(median.prior.size)) median.prior.size <- maxN/2
       lpriorm
      },
@@ -66,7 +65,6 @@ dsizeprior<-function(n,
         lpriorm[1:(mode.prior.size-n)] <- 0
        }
       }
-      x <- 0:(maxN-1)
       if(is.null(median.prior.size)) median.prior.size <- maxN/2
       lpriorm
      },
@@ -91,8 +89,8 @@ dsizeprior<-function(n,
      mode.prior.sample.proportion <- 2/(beta+1)
      if(is.null(maxN)){maxN <- min(maxNmax,ceiling( n/(1-0.90^(1/beta)) ))}
      if(is.null(N)){N <- min(maxNmax,ceiling( n/(1-0.5^(1/beta)) ))}
-     x <- (1:maxN)
-     lpriorm <- log(beta*n)+(beta-1)*log(x)-(beta+1)*log(x+n)
+     x <- (n:maxN)
+     lpriorm <- log(beta*n)+(beta-1)*log(x-n+1)-(beta+1)*log(x+1)
      if(!log){
       lpriorm <- exp(lpriorm)
      }
@@ -124,13 +122,13 @@ dsizeprior<-function(n,
           )
       }
 #     print(paste("median:",median.prior.size))
-      x <- 0:(maxN-1-n) + n
+      x <- n:maxN
       while( {
        p=dfn(alpha,beta,x,n,effective.prior.df);
 #      print( c(sum(p[x>1000]), sum(p[x>4000])) );
        abs(p[length(p)]/max(p) - 0.01)>0.005}){
-        maxN <- maxN*(c(0.9,1.1)[(p[length(p)]/max(p) > 0.01)+1])
-        x <- 0:(maxN-1-n) + n
+        maxN <- round(maxN*(c(0.9,1.1)[(p[length(p)]/max(p) > 0.01)+1]))
+        x <- n:maxN
         a = optimize(f=fn,interval=c(1,maxbeta),x,n,median.prior.size,
                     effective.prior.df,alpha,tol=0.01)
         beta <- a$minimum
@@ -151,7 +149,7 @@ dsizeprior<-function(n,
       }
 # print(paste("median:",median.prior.size))
       maxN = ceiling(3*median.prior.size)
-      x <- 0:(maxN-1-n) + n
+      x <- n:maxN
       a = optimize(f=fn,interval=c(1,maxbeta),x,n,median.prior.size,
                    effective.prior.df,alpha,tol=0.01)
       beta <- a$minimum
@@ -159,8 +157,8 @@ dsizeprior<-function(n,
        p=dfn(alpha,beta,x,n,effective.prior.df);
 #      print( c(sum(p[x>1000]), sum(p[x>4000])) );
        abs(p[length(p)]/max(p) - 0.01)>0.005}){
-        maxN <- maxN*(c(0.9,1.1)[(p[length(p)]/max(p) > 0.01)+1])
-        x <- 0:(maxN-1-n) + n
+        maxN <- round(maxN*(c(0.9,1.1)[(p[length(p)]/max(p) > 0.01)+1]))
+        x <- n:maxN
         a = optimize(f=fn,interval=c(1,maxbeta),x,n,median.prior.size,
                      effective.prior.df,alpha,tol=0.01)
         beta <- a$minimum
@@ -179,7 +177,7 @@ dsizeprior<-function(n,
        abs(mean.prior.size - sum(x*priorm)/sum(priorm,na.rm=TRUE))
       }
       maxN = ceiling(3*mean.prior.size)
-      x <- 0:(maxN-1-n) + n
+      x <- n:maxN
       a = optimize(f=fn,interval=c(1,maxbeta),x,n,mean.prior.size,
                    effective.prior.df,alpha,tol=0.01)
       beta <- a$minimum
@@ -187,8 +185,8 @@ dsizeprior<-function(n,
        p=dfn(alpha,beta,x,n,effective.prior.df);
 #      print( c(sum(p[x>1000]), sum(p[x>4000])) );
        abs(p[length(p)]/max(p) - 0.01)>0.005}){
-        maxN <- maxN*(c(0.9,1.1)[(p[length(p)]/max(p) > 0.01)+1])
-        x <- 0:(maxN-1-n) + n
+        maxN <- round(maxN*(c(0.9,1.1)[(p[length(p)]/max(p) > 0.01)+1]))
+        x <- n:maxN
         a = optimize(f=fn,interval=c(1,maxbeta),x,n,mean.prior.size,
                     effective.prior.df,alpha,tol=0.01)
         beta <- a$minimum
@@ -208,7 +206,7 @@ dsizeprior<-function(n,
        abs(mode.prior.size - (x+0.5)[which.max(priorm)])
       }
       maxN = ceiling(3*mode.prior.size)
-      x <- 0:(maxN-1-n) + n
+      x <- n:maxN
       a = optimize(f=fn,interval=c(1,maxbeta),x,n,mode.prior.size,
                    effective.prior.df,alpha,tol=0.01)
       beta <- a$minimum
@@ -216,8 +214,8 @@ dsizeprior<-function(n,
        p=dfn(alpha,beta,x,n,effective.prior.df);
 #      print( c(sum(p[x>1000]), sum(p[x>4000])) );
        abs(p[length(p)]/max(p) - 0.01)>0.005}){
-        maxN <- maxN*(c(0.9,1.1)[(p[length(p)]/max(p) > 0.01)+1])
-        x <- 0:(maxN-1-n) + n
+        maxN <- round(maxN*(c(0.9,1.1)[(p[length(p)]/max(p) > 0.01)+1]))
+        x <- n:maxN
         a = optimize(f=fn,interval=c(1,maxbeta),x,n,mode.prior.size,
                      effective.prior.df,alpha,tol=0.01)
         beta <- a$minimum
@@ -241,7 +239,7 @@ dsizeprior<-function(n,
             (quartiles.prior.size[2] - (x+0.5)[match(TRUE,cumsum(priorm) >= 0.75)])^2)
       }
       maxN = ceiling(10*quartiles.prior.size[2])
-      x <- 0:(maxN-1-n) + n
+      x <- n:maxN
       a = optim(par=log(c(1,10)),fn=fn,
         x=x,n=n,quartiles.prior.size=quartiles.prior.size,effective.prior.df=effective.prior.df,
         control=list(abstol=10))
@@ -251,8 +249,8 @@ dsizeprior<-function(n,
        p=dfn(alpha,beta,x,n,effective.prior.df);
 #      print( c(sum(p[x>1000]), sum(p[x>4000])) );
        abs(p[length(p)]/max(p) - 0.01)>0.005}){
-        maxN <- maxN*(c(0.9,1.1)[(p[length(p)]/max(p) > 0.01)+1])
-        x <- 0:(maxN-1-n) + n
+        maxN <- round(maxN*(c(0.9,1.1)[(p[length(p)]/max(p) > 0.01)+1]))
+        x <- n:maxN
         a = optim(par=a$par,fn=fn,
          x=x,n=n,quartiles.prior.size=quartiles.prior.size,effective.prior.df=effective.prior.df,
          control=list(abstol=10))
@@ -265,16 +263,16 @@ dsizeprior<-function(n,
      }
      if(is.null(maxN)){maxN <- min(maxNmax,ceiling( n/(1-0.90^(1/beta)) ))}
      if(is.null(N)){N <- min(maxNmax,ceiling( n/(1-0.5^(1/beta)) ))}
-     x <- 0:(maxN-1-n) + n
+     x <- n:maxN
      lpriorm=dfn(alpha,beta,x,n,effective.prior.df);
      if(log){
       lpriorm <- log(lpriorm)
      }
-     x <- 0:(maxN-1-n)
      lpriorm
      }
     )
-     x <- x + n
+#    End of switch to compute lpriorm
+     x <- n:maxN
      if(log){
       priorm <- exp(lpriorm)
      }else{
@@ -286,7 +284,7 @@ dsizeprior<-function(n,
      quartiles.prior.size[1] <- (x+0.5)[match(TRUE,cumsum(priorm) >= 0.25)]
      quartiles.prior.size[2] <- (x+0.5)[match(TRUE,cumsum(priorm) >= 0.75)]
     if(is.null(N)){N <- mean(x)}
-    if(verbose){cat(paste("The maximum prior population size is",n+maxN,"\n"))}
+    if(verbose){cat(paste("The maximum prior population size is",maxN,"\n"))}
     list(x=x,lprior=lpriorm,N=N,maxN=maxN,
          median.prior.size=median.prior.size,
          mean.prior.size=mean.prior.size,
