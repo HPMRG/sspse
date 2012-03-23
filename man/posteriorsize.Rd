@@ -31,6 +31,7 @@ joint sample of degrees and disease states.
                   mode.prior.sample.proportion=0.5,
                   median.prior.size=NULL,
                   mode.prior.size=NULL,
+		  quartiles.prior.size=NULL,
 		  effective.prior.df=1,
 		  alpha=NULL,
                   degreedistribution=c("cmp","nbinom","pln"),
@@ -77,6 +78,9 @@ The default is \code{proportion}.}
   \item{mode.prior.sample.proportion}{scalar; A hyperparameter being the mode of the prior distribution on the sample proportion \eqn{n/N}.}
   \item{median.prior.size}{scalar; A hyperparameter being the mode of the prior distribution on the population size.}
   \item{mode.prior.size}{scalar; A hyperparameter being the mode of the prior distribution on the population size.}
+  \item{quartiles.prior.size}{vector of length 2; A pair of hyperparameters being the lower and upper quartiles of the prior distribution on the population size.
+For example, \code{quartiles.prior.size=c(1000,4000)} corresponds to a prior
+where the lower quartile (25\%) is 1000 and the upper (75\%) is 4000.}
   \item{effective.prior.df}{scalar; A hyperparameter being the effective number of samples worth of information represented in the prior distribution on the population size. By default this is 1, but it can be greater (or less!) to allow for different levels of uncertainty.}
   \item{alpha}{scalar; A hyperparameter being the first parameter of the beta prior model for the sample proportion. By default this is NULL, meaning that 1 is chosen. it can be any value at least 1 to allow for different levels of uncertainty.}
   \item{degreedistribution}{count; the parametric distribution to
@@ -211,8 +215,11 @@ The best way to specify the prior is via the hyperparameter \code{mode.prior.siz
 which specifies the mode of the prior distribution on the population size.
 You can alternatively specify the hyperparameter \code{median.prior.size}
 which specifies the median of the prior distribution on the population size,
+or \code{mean.prior.sample proportion} which specifies the mean of the prior
+distribution on the proportion of the population size in the sample
 or \code{mode.prior.sample proportion} which specifies the mode of the prior
 distribution on the proportion of the population size in the sample.
+Finally, you can specify \code{quartiles.prior.size} as a vector of length 2 being the pair of lower and upper quartiles of the prior distribution on the population size.
 }
 
 \references{
