@@ -37,7 +37,7 @@ void gspps (int *pop,
   Ni=(*N);
   Ki=(*K);
   imaxN=(*maxN);
-  imaxm=imaxm-ni;
+  imaxm=imaxN-ni;
   isamplesize=(*samplesize);
   iinterval=(*interval);
   iburnin=(*burnin);

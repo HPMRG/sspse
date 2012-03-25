@@ -20,6 +20,7 @@ poscmpdisease<-function(s,dis,
 		  mode.prior.size=NULL,
 		  quartiles.prior.size=NULL,
 		  effective.prior.df=1,
+                  alpha=NULL,
                   seed=NULL,
                   dispersion=0,
                   verbose=TRUE){
@@ -83,6 +84,7 @@ poscmpdisease<-function(s,dis,
 		  mode.prior.size=mode.prior.size,
 		  quartiles.prior.size=quartiles.prior.size,
                   effective.prior.df=effective.prior.df,
+                  alpha=alpha,
                   maxN=maxN,
                   log=TRUE,
                   verbose=verbose)
@@ -168,6 +170,8 @@ poscmpdisease<-function(s,dis,
    Cret$maxN <- prior$maxN
    Cret$mode.prior.size <- prior$mode.prior.size
    Cret$effective.prior.df <- prior$effective.prior.df
+   Cret$quartiles.prior.size <- prior$quartiles.prior.size
+   Cret$mean.prior.size <- prior$mean.prior.size
    Cret$median.prior.size <- prior$median.prior.size
    Cret$mode.prior.sample.proportion <- prior$mode.prior.sample.proportion
    Cret$N <- prior$N
