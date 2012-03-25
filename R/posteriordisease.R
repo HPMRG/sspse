@@ -12,6 +12,7 @@ posteriordisease<-function(s,dis,
 		  mode.prior.size=NULL,
 		  quartiles.prior.size=NULL,
 		  effective.prior.df=1,
+                  alpha=NULL,
 		  degreedistribution=c("cmp","nbinom","pln","np"),
                   maxN=NULL,
                   K=round(quantile(s,0.80)), n=length(s),
@@ -52,6 +53,7 @@ posteriordisease<-function(s,dis,
 		      mode.prior.size=mode.prior.size,
 		      quartiles.prior.size=quartiles.prior.size,
                       effective.prior.df=effective.prior.df,
+                      alpha=alpha,
                       seed=seed,
 		      dispersion=dispersion)
   }else{
@@ -74,6 +76,7 @@ posteriordisease<-function(s,dis,
       mode.prior.size=mode.prior.size,
       quartiles.prior.size=quartiles.prior.size,
       effective.prior.df=effective.prior.df,
+      alpha=alpha,
       dispersion=dispersion)
 #
 #   Process the results
