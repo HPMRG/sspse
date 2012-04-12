@@ -1,8 +1,8 @@
 dsizeprior<-function(n,
 		  type=c("proportion","nbinom","pln","flat","continuous"),
 		  mean.prior.size=NULL, sd.prior.size=NULL,
-		  mode.prior.sample.proportion=0.5,
-		  median.prior.sample.proportion=NULL,
+		  mode.prior.sample.proportion=NULL,
+		  median.prior.sample.proportion=0.5,
 		  median.prior.size=NULL,
 		  median.mid.prior.size=NULL,
 		  mode.prior.size=NULL,
@@ -58,9 +58,9 @@ dsizeprior<-function(n,
         mode.prior.size <- 0
       }
       if(log){
-       lpriorm <- rep(0,maxN)
+       lpriorm <- rep(0,maxN-n+1)
       }else{
-       lpriorm <- rep(1/maxN,maxN)
+       lpriorm <- rep(1/maxN,maxN+1)
        if(mode.prior.size > n){
         lpriorm[1:(mode.prior.size-n)] <- 0
        }
