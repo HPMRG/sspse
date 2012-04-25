@@ -261,6 +261,7 @@ dsizeprior<-function(n,
       maxN = min(maxNmax,maxN)
      }
      }
+     if(is.null(alpha)) alpha=1
      if(is.null(maxN)){maxN <- min(maxNmax,ceiling( n/(1-0.90^(1/beta)) ))}
      if(is.null(N)){N <- min(maxNmax,ceiling( n/(1-0.5^(1/beta)) ))}
      x <- n:maxN
