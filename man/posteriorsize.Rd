@@ -128,6 +128,7 @@ calculated as twice the maximum observed degree.}
 being the mean degree for the prior distribution for a randomly chosen person. The prior has this mean.}
   \item{sigma}{scalar;  The hyper parameter \code{sd.prior.degree} being the standard deviation of the degree for 
     a randomly chosen person. The prior has this standard deviation.}
+  \item{df.mean.prior}{scalar;  A hyper parameter being the degrees-of-freedom of the prior for the mean. This gives the equivalent sample size that would contain the same amount of information inherent in the prior.}
   \item{df.sd.prior}{scalar;  A hyper parameter being the degrees-of-freedom of the prior for the standard deviation. This gives the equivalent sample size that would contain the same amount of information inherent in the prior for the standard deviation.}
   \item{Np}{integer; The overall degree distribution
   is a mixture of the \code{1:Np} rates and a parametric
@@ -144,6 +145,7 @@ distribution for the standard deviation of the degree.}
    \describe{
       \item{\code{MAP}}{maximum aposteriori value of N}
       \item{\code{Mean AP}}{mean aposteriori value of N}
+      \item{\code{Median AP}}{median aposteriori value of N}
       \item{\code{P025}}{the 2.5th percentile of the (posterior) distribution
 for the N. That is, the lower point on a 95\% probability interval.}
       \item{\code{P975}}{the 97.5th percentile of the (posterior) distribution
@@ -163,7 +165,8 @@ for the N. That is, the upper point on a 95\% probability interval.}
      }
 }
   \item{lpriorm}{vector; the vector of (log) prior probabilities on each value
-of \eqn{m=N-n} - that is, the number of unobserved members of the population.}
+of \eqn{m=N-n} - that is, the number of unobserved members of the population.
+The values are \code{n:(length(lpriorm)-1+n).}
   \item{burnintheta}{count; the number of proposals in the Metropolis-Hastings
 sub-step for the degree distribution parameters (\eqn{\theta}) before any MCMC sampling is done. It typically is set to a modestly large number.}
   \item{verbose}{logical; if this is
@@ -191,7 +194,9 @@ people with each degree in the population.}
   \item{mode.prior.sample.proportion}{scalar; A hyperparameter being the mode of the prior distribution on the sample proportion \eqn{n/N}.}
   \item{median.prior.size}{scalar; A hyperparameter being the mode of the prior distribution on the population size.}
   \item{mode.prior.size}{scalar; A hyperparameter being the mode of the prior distribution on the population size.}
-% \item{mean.prior.size}{scalar; A hyperparameter being the mean of the prior distribution on the population size.}
+  \item{mean.prior.size}{scalar; A hyperparameter being the mean of the prior distribution on the population size.}
+   \item{quartiles.prior.size}{vector of length 2; A pair of hyperparameters being the
+lower and upper quartiles of the prior distribution on the population size.}
   \item{degreedistribution}{count; the parametric distribution to
   use for the individual network sizes (i.e., degrees). The
   options are \code{cmp}, \code{nbinom}, and \code{pln}.
@@ -286,15 +291,18 @@ set.seed(1)
 s<-sample(pop, size=n, replace = FALSE, prob = pop)
 dis<-sample(1*(pop>quantile(pop,0.2)), size=n, replace = TRUE, prob = pop)
  
-out <- posteriorsize(s=s)
+out <- posteriorsize(s=s,K=K,interval=10)
 out
-x <- out$n+seq(along=out$lpriorm)
-plot(density(out$sample[,"N"]), xlim=c(0,400), main="Posterior",
+x <- out$n+(seq(along=out$lpriorm)-1)
+plot(density(out$sample[,"N"]), xlim=c(n,500),main="Posterior",
      xlab="population size",ylab="Probability")
 lpriorm <- exp(out$lpriorm)
 lpriorm <- lpriorm/(diff(range(x))*mean(lpriorm))
 lines(x=x, y=lpriorm, lty=2)
-abline(v=N0)
+abline(v=N0,lty=3)
 abline(v=n,lty=2)
+# Let's look at some MCMC diagnostics
+library(coda)
+plot(out$sample)
 }
 \keyword{models}

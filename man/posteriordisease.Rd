@@ -34,6 +34,7 @@ sample of degrees only.
                   mode.prior.size=NULL,
 		  quartiles.prior.size=NULL,
 		  effective.prior.df=1,
+                  alpha=NULL,
                   degreedistribution=c("cmp","nbinom","pln"),
                   maxN=NULL,
                   K=round(quantile(s, 0.8)), n=length(s),
@@ -98,6 +99,7 @@ The default is \code{proportion}.}
 For example, \code{quartiles.prior.size=c(1000,4000)} corresponds to a prior
 where the lower quartile (25\%) is 1000 and the upper (75\%) is 4000.}
   \item{effective.prior.df}{scalar; A hyperparameter being the effective number of samples worth of information represented in the prior distribution on the population size. By default this is 1, but it can be greater (or less!) to allow for different levels of uncertainty.}
+  \item{alpha}{scalar; A hyperparameter being the first parameter of the beta prior model for the sample proportion. By default this is NULL, meaning that 1 is chosen. it can be any value at least 1 to allow for different levels of uncertainty.}
   \item{degreedistribution}{count; the parametric distribution to
   use for the individual network sizes (i.e., degrees). The
   options are \code{cmp}, \code{nbinom}, and \code{pln}.
@@ -123,7 +125,7 @@ The default is 1, that is not to use parallel processing.}
    generator is at the time of the call.
   }
   \item{dispersion}{scalar; dispersion to use in the reported network size
-      compared to the actual netowrk size}
+      compared to the actual network size.}
   \item{verbose}{logical; if this is
     \code{TRUE}, the program will print out additional
     information, including goodness of fit statistics.
@@ -265,7 +267,7 @@ disease disease is the proportion of people in the population with disease statu
   \item{median.prior.size}{scalar; A hyperparameter being the mode of the prior distribution on the population size.}
   \item{mode.prior.size}{scalar; A hyperparameter being the mode of the prior distribution on the population size.}
   \item{mean.prior.size}{scalar; A hyperparameter being the mean of the prior distribution on the population size.}
-  \item{quartiles.prior.size}{vector of length 2; A pair of hyperparameters being the lower and upper quartiles of the prior distribution on the population size.
+  \item{quartiles.prior.size}{vector of length 2; A pair of hyperparameters being the lower and upper quartiles of the prior distribution on the population size.}
   \item{disease}{vector of length 5; summary statistics for the posterior disease prevalence. 
    \describe{
       \item{\code{MAP}}{maximum aposteriori value of disease prevalence}
