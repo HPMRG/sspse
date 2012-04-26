@@ -215,7 +215,7 @@ disease disease is the proportion of people in the population with disease statu
 }
   \item{lpriorm}{vector; the vector of (log) prior probabilities on each value
 of \eqn{m=N-n} - that is, the number of unobserved members of the population.
-The values are \code{n:(length(lpriorm)-1+n)}
+The values are \code{n:(length(lpriorm)-1+n)}.}
   \item{burnintheta}{count; the number of proposals in the Metropolis-Hastings
 sub-step for the degree distribution parameters (\eqn{\theta}) before any MCMC sampling is done. It typically is set to a modestly large number.}
   \item{verbose}{logical; if this is
@@ -301,6 +301,7 @@ for the disease count. That is, the upper point on a 95\% probability interval.}
 \code{flat} (uniform),
 and \code{continuous} (the continuous version of \code{proportion}).The default is \code{proportion}.
 The default is \code{proportion}.
+}
 }
 
 % \item{\dots}{Additional

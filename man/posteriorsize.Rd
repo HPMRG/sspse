@@ -31,9 +31,9 @@ joint sample of degrees and disease states.
                   mode.prior.sample.proportion=0.5,
                   median.prior.size=NULL,
                   mode.prior.size=NULL,
-		  quartiles.prior.size=NULL,
-		  effective.prior.df=1,
-		  alpha=NULL,
+                  quartiles.prior.size=NULL,
+                  effective.prior.df=1,
+                  alpha=NULL,
                   degreedistribution=c("cmp","nbinom","pln"),
                   maxN=NULL,
                   K=round(quantile(s, 0.8)), n=length(s),
@@ -166,7 +166,7 @@ for the N. That is, the upper point on a 95\% probability interval.}
 }
   \item{lpriorm}{vector; the vector of (log) prior probabilities on each value
 of \eqn{m=N-n} - that is, the number of unobserved members of the population.
-The values are \code{n:(length(lpriorm)-1+n).}
+The values are \code{n:(length(lpriorm)-1+n)}.}
   \item{burnintheta}{count; the number of proposals in the Metropolis-Hastings
 sub-step for the degree distribution parameters (\eqn{\theta}) before any MCMC sampling is done. It typically is set to a modestly large number.}
   \item{verbose}{logical; if this is
@@ -208,12 +208,12 @@ lower and upper quartiles of the prior distribution on the population size.}
 \code{flat} (uniform),
 and \code{continuous} (the continuous version of \code{proportion}).The default is \code{proportion}.
 The default is \code{proportion}.
-}
+}}
 
 % \item{\dots}{Additional
 %   arguments, to be passed to lower-level functions in the future.
 % }
-}
+%}
 
 \section{Details on priors}{
 The best way to specify the prior is via the hyperparameter \code{mode.prior.size}
