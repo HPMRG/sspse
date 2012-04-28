@@ -39,3 +39,14 @@ ll.density <- function(x,lbound=min(x,na.rm=TRUE),ubound=max(x,na.rm=TRUE), smoo
        }
       }
 }
+HPD.density <- function(x,lbound=min(x,na.rm=TRUE),ubound=max(x,na.rm=TRUE)){
+      x <- x[!is.na(x)]
+      if(length(x)==0){return(c(NA,NA))}
+      posdensN <- density(x, from=lbound, to=ubound)
+      cy <- cumsum(posdensN$y/sum(posdensN$y))
+      cy <- c(posdensN$x[which.max(cy>0.025)],
+              posdensN$x[which.max(cy>0.975)])
+      if(is.na(cy[1])) cy[1] <- lbound
+      if(is.na(cy[2])) cy[2] <- ubound
+      cy
+}
