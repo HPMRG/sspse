@@ -17,7 +17,7 @@ posteriorsize<-function(s,
                   nk=tabulate(s,nbin=K),
                   muproposal=0.1, 
                   sigmaproposal=0.15, 
-                  parallel=1, seed=NULL, dispersion=0,
+                  parallel=1, parallel.type="PVM", seed=NULL, dispersion=0,
                   verbose=TRUE){
 #
   degreedistribution=match.arg(degreedistribution)
@@ -50,11 +50,10 @@ posteriorsize<-function(s,
                     alpha=alpha,
                     seed=seed,
                     dispersion=dispersion)
-
   }
   ### since running job in parallel, start pvm (if not already running)
   else{
-    cl <- beginsnow(parallel)
+    cl <- beginsnow(parallel,type=parallel.type)
     ### divide the samplesize by the number of parallel runs (number of MCMC samples)
     samplesize.parallel=round(samplesize/parallel)
     ### cluster call, send following to each of the virtual machines, posnbinom function
@@ -121,7 +120,7 @@ posteriorsize<-function(s,
     }
     
     ### stop cluster and PVM (in case PVM is flakey)
-    endsnow(cl)
+    endsnow(cl,type=parallel.type)
   }
   Cret$N <- c(Cret$MAP["N"], 
               mean(Cret$sample[,"N"]),

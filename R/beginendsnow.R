@@ -5,7 +5,9 @@ beginsnow<-function(parallel=1, type="PVM", verbose=TRUE){
 #   Start PVM if necessary
 #
 #   setDefaultClusterOptions(type="PVM")
-    if(snow::getClusterOption("type")=="PVM"){
+#   setDefaultClusterOptions(type="MPI")
+#   if(snow::getClusterOption("type")=="PVM"){
+    if(type=="PVM"){
      if(verbose){
       cat("Engaging warp drive using PVM ...\n")
      }
@@ -29,11 +31,11 @@ beginsnow<-function(parallel=1, type="PVM", verbose=TRUE){
 #   Start Cluster
 #
     ### Snow commands to set up cluster
-    cl <- snow::makeCluster(parallel)
+    cl <- makeCluster(parallel,type=type)
     ### initialize parallel random number streams
-    snow::clusterSetupRNG(cl)
+    clusterSetRNGStream(cl)
     ### start each virtual machine with size library loaded
-    snow::clusterEvalQ(cl, library(size))
+    clusterEvalQ(cl, library(size))
 #
 #   Run the jobs with rpvm or Rmpi
 #
@@ -41,9 +43,10 @@ beginsnow<-function(parallel=1, type="PVM", verbose=TRUE){
     flush.console()
     return(cl)
 }
-endsnow<-function(cl, verbose=TRUE){
+endsnow<-function(cl, type="PVM", verbose=TRUE){
     ### stop cluster and PVM (in case PVM is flakey)
-    snow::stopCluster(cl)
-    if(snow::getClusterOption("type")=="PVM") rpvm::.PVM.exit()
+    stopCluster(cl)
+#   if(snow::getClusterOption("type")=="PVM") rpvm::.PVM.exit()
+    if(type=="PVM") rpvm::.PVM.exit()
     invisible()
 }
