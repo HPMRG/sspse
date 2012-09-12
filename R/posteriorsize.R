@@ -53,12 +53,12 @@ posteriorsize<-function(s,
   }
   ### since running job in parallel, start pvm (if not already running)
   else{
-    cl <- beginsnow(parallel,type=parallel.type)
+    cl <- beginparallel(parallel,type=parallel.type)
     ### divide the samplesize by the number of parallel runs (number of MCMC samples)
     samplesize.parallel=round(samplesize/parallel)
     ### cluster call, send following to each of the virtual machines, posnbinom function
     ### with it's arguments
-    outlist <- snow::clusterCall(cl, posfn,
+    outlist <- parallel::clusterCall(cl, posfn,
       s=s,K=K,nk=nk,n=n,maxN=maxN,
       mean.prior.degree=mean.prior.degree,df.mean.prior=df.mean.prior,
       sd.prior.degree=sd.prior.degree,df.sd.prior=df.sd.prior,
@@ -94,7 +94,7 @@ posteriorsize<-function(s,
     #
     degnames <- NULL
     if(Np>0){degnames <- c(degnames,paste("pdeg",1:Np,sep=""))}
-    colnamessample <- c("N","mu","sigma","degree1")
+    colnamessample <- c("N","mu","sigma","degree1","totalsize")
     if(length(degnames)>0){
      colnamessample <- c(colnamessample, degnames)
     }
@@ -120,7 +120,7 @@ posteriorsize<-function(s,
     }
     
     ### stop cluster and PVM (in case PVM is flakey)
-    endsnow(cl,type=parallel.type)
+    endparallel(cl,type=parallel.type)
   }
   Cret$N <- c(Cret$MAP["N"], 
               mean(Cret$sample[,"N"]),

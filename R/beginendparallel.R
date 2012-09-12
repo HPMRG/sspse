@@ -1,6 +1,7 @@
-beginsnow<-function(parallel=1, type="PVM", verbose=TRUE){
-    ### snow is wrapper for MPI or PVM (mosix only has PVM)
-    require(snow)
+beginparallel<-function(parallel=1, type="PVM", verbose=TRUE){
+    ### parallel is wrapper for MPI or PVM (mosix only has PVM)
+#   require(snow)
+    require(parallel)
 #
 #   Start PVM if necessary
 #
@@ -43,7 +44,7 @@ beginsnow<-function(parallel=1, type="PVM", verbose=TRUE){
     flush.console()
     return(cl)
 }
-endsnow<-function(cl, type="PVM", verbose=TRUE){
+endparallel<-function(cl, type="PVM", verbose=TRUE){
     ### stop cluster and PVM (in case PVM is flakey)
     stopCluster(cl)
 #   if(snow::getClusterOption("type")=="PVM") rpvm::.PVM.exit()

@@ -27,7 +27,7 @@ posteriornbinom<-function(s,
   }
   ### since running job in parallel, start pvm (if not already running)
   else{
-    cl <- beginsnow(parallel)
+    cl <- beginparallel(parallel)
     ### divide the samplesize by the number of parallel runs (number of MCMC samples)
     samplesize.parallel=round(samplesize/parallel)
     ### cluster call, send following to each of the virtual machines, posnbinom function
@@ -92,7 +92,7 @@ posteriornbinom<-function(s,
     }
     
     ### stop cluster and PVM (in case PVM is flakey)
-    endsnow(cl)
+    endparallel(cl)
   }
   if(Cret$ppos[length(Cret$ppos)] > 0.01){
    warning("There is a non-trivial proportion of the posterior mass on very high degrees. This may indicate convergence problems in the MCMC.")

@@ -57,9 +57,9 @@ posteriordisease<-function(s,dis,
                       seed=seed,
 		      dispersion=dispersion)
   }else{
-    cl <- beginsnow(parallel)
+    cl <- beginparallel(parallel)
     samplesize.parallel=round(samplesize/parallel)
-    outlist <- snow::clusterCall(cl, posfn,
+    outlist <- parallel::clusterCall(cl, posfn,
       s=s,dis=dis,K=K,nk0=nk0,nk1=nk1,n=n,maxN=maxN,
       mean0.prior.degree=mean0.prior.degree,
       mean1.prior.degree=mean1.prior.degree,
@@ -127,7 +127,7 @@ posteriordisease<-function(s,dis,
     if(verbose){
      cat("parallel samplesize=", parallel,"by", samplesize.parallel,"\n")
     }
-    endsnow(cl)
+    endparallel(cl)
   }
   Cret$N <- c(Cret$MAP["N"], 
               mean(Cret$sample[,"N"]),

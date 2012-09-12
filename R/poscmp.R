@@ -56,7 +56,7 @@ poscmp<-function(s,maxN=NULL,
 #      print(cbind(1:K,lambdad,nud))
     }
     #
-    dimsample <- 4+Np
+    dimsample <- 5+Np
     #
     priorsizedistribution=match.arg(priorsizedistribution)
     prior <- dsizeprior(n=n,
@@ -98,7 +98,7 @@ poscmp<-function(s,maxN=NULL,
     Cret$sample<-matrix(Cret$sample,nrow=samplesize,ncol=dimsample,byrow=TRUE)
     degnames <- NULL
     if(Np>0){degnames <- c(degnames,paste("pdeg",1:Np,sep=""))}
-    colnamessample <- c("N","mu","sigma","degree1")
+    colnamessample <- c("N","mu","sigma","degree1","totalsize")
     if(length(degnames)>0){
      colnames(Cret$sample) <- c(colnamessample, degnames)
     }else{
