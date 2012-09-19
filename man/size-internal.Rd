@@ -265,7 +265,7 @@
 \alias{Zee}
 \alias{akestN}
 \alias{bbfsolve}
-\alias{beginsnow}
+\alias{beginparallel}
 \alias{bfsolve}
 \alias{bins}
 \alias{bnwnest}
@@ -283,7 +283,7 @@
 \alias{discretemleimputeindividual}
 \alias{discretemlesearch}
 \alias{dwarC}
-\alias{endsnow}
+\alias{endparallel}
 \alias{getest}
 \alias{getestC}
 \alias{getestCstacked}

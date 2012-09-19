@@ -20,36 +20,64 @@ joint sample of degrees and disease states.
 %with specified (hyper)parameters.
 }
 \usage{
- posteriorsize(s,
-                  mean.prior.degree=7,
-                  sd.prior.degree=3,
-                  df.mean.prior=1,df.sd.prior=5,
-                  Np=0,
-                  samplesize=1000,burnin=100,interval=1,burnintheta=500,
-                  priorsizedistribution=c("proportion","nbinom","pln","flat"),
-                  mean.prior.size=NULL, sd.prior.size=NULL,
-                  mode.prior.sample.proportion=0.5,
+posteriorsize(s,
                   median.prior.size=NULL,
-                  mode.prior.size=NULL,
+                  interval=10,
+                  burnin=5000,
+                  maxN=NULL,
+                  K=round(quantile(s,0.80)),
+                  samplesize=1000,
                   quartiles.prior.size=NULL,
+                  mean.prior.size=NULL,
+                  mode.prior.size=NULL,
+                  priorsizedistribution=c("proportion","flat","nbinom","pln"),
                   effective.prior.df=1,
+                  sd.prior.size=NULL,
+                  mode.prior.sample.proportion=0.5,
                   alpha=NULL,
                   degreedistribution=c("cmp","nbinom","pln"),
-                  maxN=NULL,
-                  K=round(quantile(s, 0.8)), n=length(s),
+                  mean.prior.degree=NULL, sd.prior.degree=NULL,
+                  df.mean.prior=1,df.sd.prior=5,
+                  Np=0,
                   nk=tabulate(s,nbin=K),
-                  muproposal=0.1,
-                  sigmaproposal=0.15,
-                  parallel=1, seed=NULL,
-                  dispersion=0,
+                  n=length(s),
+                  muproposal=0.1, 
+                  sigmaproposal=0.15, 
+                  burnintheta=500,
+                  parallel=1, parallel.type="PVM", seed=NULL, dispersion=0,
                   verbose=TRUE)
 }
 \arguments{
   \item{s}{vector of integers; the vector of degrees from the RDS in order 
     they are recorded.}
-  \item{mean.prior.degree}{scalar; A hyper parameter being the mean degree for the prior
-    distribution for a randomly chosen person. The prior has this
-    mean.}
+  \item{median.prior.size}{scalar; A hyperparameter being the mode of the prior distribution on the population size.}
+  \item{interval}{count; the number of proposals between sampled statistics.}
+  \item{burnin}{count; the number of proposals before any MCMC sampling is done. It typically is set to a fairly large number.}
+  \item{maxN}{integer; maximum possible population size. By default this is determined from an upper quantile of the prior distribution.}
+  \item{K}{count; the maximum degree for an individual. This is usually
+calculated as twice the maximum observed degree.}
+  \item{samplesize}{count; the number of Monte-Carlo samples to draw to compute the posterior. This is the number returned by the Metropolis-Hastings algorithm.The default is 1000.}
+  \item{quartiles.prior.size}{vector of length 2; A pair of hyperparameters being the lower and upper quartiles of the prior distribution on the population size.
+For example, \code{quartiles.prior.size=c(1000,4000)} corresponds to a prior
+where the lower quartile (25\%) is 1000 and the upper (75\%) is 4000.}
+  \item{mean.prior.size}{scalar; A hyperparameter being the mean of the prior distribution on the population size.}
+  \item{mode.prior.size}{scalar; A hyperparameter being the mode of the prior distribution on the population size.}
+  \item{priorsizedistribution}{character; the type of parametric distribution to use for the prior on population size. The options are \code{proportion}
+(for a prior on the sample proportion (i.e. \eqn{n/N})), 
+\code{flat} (uniform),
+\code{nbinom} (Negative-Binomial), and \code{pln} (Poisson-log-normal).
+%and \code{continuous} (the continuous version of \code{proportion}). 
+The default is \code{proportion}.}
+  \item{effective.prior.df}{scalar; A hyperparameter being the effective number of samples worth of information represented in the prior distribution on the population size. By default this is 1, but it can be greater (or less!) to allow for different levels of uncertainty.}
+  \item{sd.prior.size}{scalar; A hyperparameter being the standard deviation of the prior distribution on the population size.}
+  \item{mode.prior.sample.proportion}{scalar; A hyperparameter being the mode of the prior distribution on the sample proportion \eqn{n/N}.}
+  \item{alpha}{scalar; A hyperparameter being the first parameter of the beta prior model for the sample proportion. By default this is NULL, meaning that 1 is chosen. it can be any value at least 1 to allow for different levels of uncertainty.}
+  \item{degreedistribution}{count; the parametric distribution to
+  use for the individual network sizes (i.e., degrees). The
+  options are \code{cmp}, \code{nbinom}, and \code{pln}.
+  These correspond to the Conway-Maxwell-Poisson,
+  Negative-Binomial, and Poisson-log-normal. The default is \code{cmp}.}
+  \item{mean.prior.degree}{scalar; A hyper parameter being the mean degree for the prior distribution for a randomly chosen person. The prior has this mean.}
   \item{sd.prior.degree}{scalar;  A hyper parameter being the standard deviation of the degree for a randomly chosen person.  The prior has this standard deviation.}
   \item{df.mean.prior}{scalar;  A hyper parameter being the degrees-of-freedom of the prior for the mean. This gives the equivalent sample size that would contain the same amount of information inherent in the prior.}
   \item{df.sd.prior}{scalar;  A hyper parameter being the degrees-of-freedom of the prior for the standard deviation. This gives the equivalent sample size that would contain the same amount of information inherent in the prior for the standard deviation.}
@@ -61,47 +89,20 @@ population with degree \code{1:Np} each with a separate parameter. This
 should adjust for an lack-of-fit of the parametric degree
 distribution model  at lower degrees, although it also changes
 the model away from the parametric degree distribution model.}
-  \item{samplesize}{count; the number of Monte-Carlo samples to draw to compute the posterior. This is the number returned by the Metropolis-Hastings algorithm.The default is 1000.}
-  \item{burnin}{count; the number of proposals before any MCMC sampling
-    is done. It typically is set to a fairly large number.}
-  \item{interval}{count; the number of proposals between sampled statistics.}
-  \item{burnintheta}{count; the number of proposals in the Metropolis-Hastings
-sub-step for the degree distribution parameters (\eqn{\theta}) before any MCMC sampling is done. It typically is set to a modestly large number.}
-  \item{priorsizedistribution}{character; the type of parametric distribution to use for the prior on population size. The options are \code{proportion}
-(for a prior on the sample proportion (i.e. \eqn{n/N}), 
-\code{nbinom} (Negative-Binomial), \code{pln} (Poisson-log-normal),
-\code{flat} (uniform),
-and \code{continuous} (the continuous version of \code{proportion}).The default is \code{proportion}.
-The default is \code{proportion}.}
-  \item{mean.prior.size}{scalar; A hyperparameter being the mean of the prior distribution on the population size.}
-  \item{sd.prior.size}{scalar; A hyperparameter being the standard deviation of the prior distribution on the population size.}
-  \item{mode.prior.sample.proportion}{scalar; A hyperparameter being the mode of the prior distribution on the sample proportion \eqn{n/N}.}
-  \item{median.prior.size}{scalar; A hyperparameter being the mode of the prior distribution on the population size.}
-  \item{mode.prior.size}{scalar; A hyperparameter being the mode of the prior distribution on the population size.}
-  \item{quartiles.prior.size}{vector of length 2; A pair of hyperparameters being the lower and upper quartiles of the prior distribution on the population size.
-For example, \code{quartiles.prior.size=c(1000,4000)} corresponds to a prior
-where the lower quartile (25\%) is 1000 and the upper (75\%) is 4000.}
-  \item{effective.prior.df}{scalar; A hyperparameter being the effective number of samples worth of information represented in the prior distribution on the population size. By default this is 1, but it can be greater (or less!) to allow for different levels of uncertainty.}
-  \item{alpha}{scalar; A hyperparameter being the first parameter of the beta prior model for the sample proportion. By default this is NULL, meaning that 1 is chosen. it can be any value at least 1 to allow for different levels of uncertainty.}
-  \item{degreedistribution}{count; the parametric distribution to
-  use for the individual network sizes (i.e., degrees). The
-  options are \code{cmp}, \code{nbinom}, and \code{pln}.
-  These correspond to the Conway-Maxwell-Poisson,
-  Negative-Binomial, and Poisson-log-normal. The default is \code{cmp}.}
-  \item{maxN}{integer; maximum possible population size. By default this is determined from an upper quantile of the prior distribution.}
-  \item{K}{count; the maximum degree for an individual. This is usually
-calculated as twice the maximum observed degree.}
-  \item{n}{vector; the vector of counts for the number of people in the sample
+  \item{nk}{vector; the vector of counts for the number of people in the sample
 with degree k. This is usually computed from \eqn{s} automatically and not
 usually specified by the user.}
-  \item{nk}{vector; the vector of counts for the number of people in the sample
+  \item{n}{vector; the vector of counts for the number of people in the sample
 with degree k. This is usually computed from \eqn{s} automatically and not
 usually specified by the user.}
   \item{muproposal}{scalar; The standard deviation of the proposal distribution for the mean degree.}
   \item{sigmaproposal}{scalar; The standard deviation of the proposal
 distribution for the standard deviation of the degree.}
-  \item{parallel}{count; the number of parallel processes to run for the Monte-Carlo sample.  This uses PVM or MPI and requires the \code{snow} package and its dependencies to be installed.
+  \item{burnintheta}{count; the number of proposals in the Metropolis-Hastings
+sub-step for the degree distribution parameters (\eqn{\theta}) before any MCMC sampling is done. It typically is set to a modestly large number.}
+  \item{parallel}{count; the number of parallel processes to run for the Monte-Carlo sample.  This uses PVM or MPI.
 The default is 1, that is not to use parallel processing.}
+  \item{parallel.type}{The type of parallel processing to use. The options are "PVM" or "MPI". This requires the corresponding type to be installed.}
   \item{seed}{integer; random number integer seed.  Defaults to
    \code{NULL} to use whatever the state of the random number
    generator is at the time of the call.

@@ -1,22 +1,27 @@
 posteriorsize<-function(s,
-                  mean.prior.degree=7, sd.prior.degree=3,
-                  df.mean.prior=1,df.sd.prior=5,
-                  Np=0,
-                  samplesize=1000,burnin=100,interval=1,burnintheta=500,
-		  priorsizedistribution=c("proportion","nbinom","pln","flat"),
-		  mean.prior.size=NULL, sd.prior.size=NULL,
-		  mode.prior.sample.proportion=0.5,
 		  median.prior.size=NULL,
-		  mode.prior.size=NULL,
+                  interval=10,
+                  burnin=5000,
+                  maxN=NULL,
+                  K=round(quantile(s,0.80)), 
+                  samplesize=1000,
 		  quartiles.prior.size=NULL,
+		  mean.prior.size=NULL,
+		  mode.prior.size=NULL,
+		  priorsizedistribution=c("proportion","flat","nbinom","pln"),
 		  effective.prior.df=1,
+                  sd.prior.size=NULL,
+		  mode.prior.sample.proportion=0.5,
 		  alpha=NULL,
 		  degreedistribution=c("cmp","nbinom","pln"),
-                  maxN=NULL,
-                  K=round(quantile(s,0.80)), n=length(s),
+                  mean.prior.degree=NULL, sd.prior.degree=NULL,
+                  df.mean.prior=1,df.sd.prior=5,
+                  Np=0,
                   nk=tabulate(s,nbin=K),
+                  n=length(s),
                   muproposal=0.1, 
                   sigmaproposal=0.15, 
+                  burnintheta=500,
                   parallel=1, parallel.type="PVM", seed=NULL, dispersion=0,
                   verbose=TRUE){
 #
@@ -29,6 +34,19 @@ posteriorsize<-function(s,
   priorsizedistribution=match.arg(priorsizedistribution)
   if(priorsizedistribution=="nbinom" && missing(mean.prior.size)){
     stop("You need to specify 'mean.prior.size', and possibly 'sd.prior.size' if you use the 'nbinom' prior.") 
+  }
+  if(is.null(mean.prior.degree)){
+    degs <- s
+    degs[degs==0]<-1
+    isnas <- is.na(degs)
+    degs <- sum(!isnas)*(degs)/sum(degs,na.rm=TRUE)
+    weights <- (1/degs)
+    weights[is.na(weights)] <- 0
+    mean.prior.degree <- sum(s*weights)/sum(weights)
+    if(is.null(sd.prior.degree)){
+     sd.prior.degree <- sum(s*s*weights)/sum(weights)
+     sd.prior.degree <- sqrt(sd.prior.degree - mean.prior.degree^2)
+    }
   }
   ### are we running the job in parallel (parallel > 1), if not just 
   #   call the degree specific function

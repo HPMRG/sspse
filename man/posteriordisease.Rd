@@ -118,7 +118,7 @@ usually specified by the user.}
   \item{muproposal}{scalar; The standard deviation of the proposal distribution for the mean degree.}
   \item{sigmaproposal}{scalar; The standard deviation of the proposal
 distribution for the standard deviation of the degree.}
-  \item{parallel}{count; the number of parallel processes to run for the Monte-Carlo sample.  This uses PVM or MPI and requires the \code{snow} package and its dependencies to be installed.
+  \item{parallel}{count; the number of parallel processes to run for the Monte-Carlo sample.  This uses PVM or MPI.
 The default is 1, that is not to use parallel processing.}
   \item{seed}{integer; random number integer seed.  Defaults to
    \code{NULL} to use whatever the state of the random number
@@ -360,7 +360,7 @@ Hunter DR, Handcock MS, Butts CT, Goodreau SM, Morris M (2008b).
  \url{http://www.jstatsoft.org/v24/i03/}.
 }
 
-\seealso{network, statnet, snow, degreenet}
+\seealso{network, statnet, degreenet}
 
 \examples{
 library(degreenet)

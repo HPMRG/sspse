@@ -1,4 +1,4 @@
-beginparallel<-function(parallel=1, type="PVM", verbose=TRUE){
+beginparallel<-function(parallel=1, type="PVM", seed=NULL, verbose=TRUE){
     ### parallel is wrapper for MPI or PVM (mosix only has PVM)
 #   require(snow)
     require(parallel)
@@ -34,7 +34,11 @@ beginparallel<-function(parallel=1, type="PVM", verbose=TRUE){
     ### Snow commands to set up cluster
     cl <- makeCluster(parallel,type=type)
     ### initialize parallel random number streams
-    clusterSetRNGStream(cl)
+    if(is.null(seed)){
+     clusterSetRNGStream(cl)
+    }else{
+     clusterSetRNGStream(cl,iseed=seed)
+    }
     ### start each virtual machine with size library loaded
     clusterEvalQ(cl, library(size))
 #

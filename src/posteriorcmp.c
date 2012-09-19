@@ -57,7 +57,7 @@ void gcmp (int *pop,
   dsigmaproposal=(*sigmaproposal);
   dmuproposal=(*muproposal);
 
-  dimsample=4+Np;
+  dimsample=5+Np;
 
   double *pi = (double *) malloc(sizeof(double) * Ki);
   double *pd = (double *) malloc(sizeof(double) * ni);
@@ -286,8 +286,13 @@ if((pd[i]<0.0 ) | (pd[i]>1.0)){ Rprintf("j %d pop[j] %d i %d pd[i] %f\n", j, pop
       sample[isamp*dimsample+1]=mui;
       sample[isamp*dimsample+2]=sigmai;
       sample[isamp*dimsample+3]=(double)(Nk[0]);
+      temp=0.0;
+      for (i=0; i<Ki; i++){
+        temp+=(i+1.0)*Nk[i];
+      }
+      sample[isamp*dimsample+4]=temp;
       for (i=0; i<Np; i++){
-        sample[isamp*dimsample+4+i]=pdegi[i];
+        sample[isamp*dimsample+5+i]=pdegi[i];
       }
       for (i=0; i<Ki; i++){
         Nkpos[i]=Nkpos[i]+Nk[i];

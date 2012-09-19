@@ -126,7 +126,7 @@ Hunter DR, Handcock MS, Butts CT, Goodreau SM, Morris M (2008b).
  \url{http://www.jstatsoft.org/v24/i03/}.
 }
 
-\seealso{network, statnet, snow, degreenet}
+\seealso{network, statnet, degreenet}
 
 \examples{
 dsizeprior(n=100,
