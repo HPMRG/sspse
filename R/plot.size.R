@@ -1,4 +1,4 @@
-plot.size <- function(fit,data=NULL,xlim=2500){
+plot.size <- function(fit,xlim=2500,data=NULL){
 require(locfit)
 out <- fit$sample
 outN <- out[,"N"]
@@ -42,13 +42,13 @@ plot(density(out[,"mu"],na.rm=TRUE), xlab="mean network size", main="posterior f
 mean network size in the population")
 plot(density(out[,"sigma"],na.rm=TRUE), xlab="s.d. network size", main="posterior for s.d. of the network size")
 #
-if(!is.null(data)){
-bbb <- tabulate(data,nbin=max(data))
-bbb <- bbb/sum(bbb)
-aaa <- barplot(bbb,names.arg=1:max(data),
+plot(seq_along(fit$predictive.degree),y=fit$predictive.degree, type='h',
+col='red', lwd=2, xlab="degree",ylab="probability",
   main="mean posterior network size distribution")
-#abline(v=7)
-lines(aaa, fit$predictive.data[1:max(data)], type='h', col='red', lwd=2)
+if(!is.null(data)){
+  bbb <- tabulate(data,nbin=max(data))
+  bbb <- bbb/sum(bbb)
+  aaa <- barplot(bbb,names.arg=1:max(data),add=T)
 }
 invisible()
 }
