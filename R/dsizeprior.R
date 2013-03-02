@@ -176,6 +176,7 @@ dsizeprior<-function(n,
        priorm <- dfn(alpha,beta,x,n,effective.prior.df)
        abs(mean.prior.size - sum(x*priorm)/sum(priorm,na.rm=TRUE))
       }
+      if(is.null(maxN)){
       maxN = ceiling(3*mean.prior.size)
       x <- n:maxN
       a = optimize(f=fn,interval=c(1,maxbeta),x,n,mean.prior.size,
@@ -193,6 +194,12 @@ dsizeprior<-function(n,
 #print(c(beta,maxN,pbeta(n/maxN,shape1=alpha,shape2=beta)))
       }
       maxN = min(maxNmax,maxN)
+      }else{
+      x <- 0:(maxN-1-n) + n
+      a = optimize(f=fn,interval=c(1,maxbeta),x,n,mean.prior.size,
+                   effective.prior.df,alpha,tol=0.01)
+      beta <- a$minimum
+      }
      }
      if(!is.null(mode.prior.size)){
       if(mode.prior.size < n){mode.prior.size = n}
