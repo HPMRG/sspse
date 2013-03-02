@@ -1,11 +1,14 @@
-plot.size <- function(fit,xlim=2500,data=NULL){
+plot.size <- function(fit,xlim=NULL,data=NULL,support=1000){
 require(locfit)
+require(coda)
 out <- fit$sample
 outN <- out[,"N"]
-a=locfit( ~ lp(outN, nn=2*0.35, h=0, maxk=500))
-xp <- seq(fit$n,fit$maxN, by=1)
+if(is.null(xlim)){xlim <- quantile(outN,0.99)}
+#a=locfit( ~ lp(outN, nn=0.35, h=0, maxk=500))
+a=locfit( ~ lp(outN,nn=0.5))
+xp <- seq(fit$n,fit$maxN, length=support)
 posdensN <- predict(a, newdata=xp)
-posdensN <- posdensN / sum(posdensN)
+posdensN <- support*posdensN / ((fit$maxN-fit$n)*sum(posdensN))
 lpriorm <- exp(fit$lpriorm-max(fit$lpriorm))
 lpriorm <- lpriorm[fit$n+(1:length(lpriorm)) > fit$n & fit$n+(1:length(lpriorm)) < fit$maxN]
 lpriorm <- lpriorm / sum(lpriorm)
