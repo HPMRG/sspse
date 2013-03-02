@@ -307,7 +307,6 @@ The default is \code{proportion}.
 % \item{\dots}{Additional
 %   arguments, to be passed to lower-level functions in the future.
 % }
-%}
 
 \section{Details on priors}{
 The best way to specify the prior is via the hyperparameter \code{mode.prior.size}

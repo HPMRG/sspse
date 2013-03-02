@@ -5,8 +5,7 @@ Title:  Estimating Hidden Population Size using Respondent Driven Sampling Data
 Author: Krista J. Gile <gile@math.umass.edu>,
         Mark S. Handcock <handcock@stat.ucla.edu>
 Maintainer: Krista J. Gile <gile@math.umass.edu>
-Depends: R (>= 2.14.1)
-Depends: locfit
+Depends: parallel, locfit
 Suggests: network, coda
 Description: An integrated set of tools to analyze respondent-driven sampling data. In particular it estimates population size.  "size" is a part of the "statnet" suite of packages for network analysis.  For a list of functions type: help(package='size')
 License: file LICENSE
