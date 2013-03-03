@@ -48,6 +48,13 @@ posteriorsize<-function(s,
      sd.prior.degree <- sqrt(sd.prior.degree - mean.prior.degree^2)
     }
   }
+  cat(sprintf("The mean of the prior distribution for degree is %f.\n",mean.prior.degree))
+  cat(sprintf("The s.d. of the prior distribution for degree is %f.\n",sd.prior.degree))
+  if(sd.prior.degree > sqrt(2*mean.prior.degree)){
+    sd.prior.degree <- min(sqrt(2*mean.prior.degree), sd.prior.degree)
+    cat(sprintf("The suggested s.d. of the prior distribution for degree is too
+large and has been reduced to the more reasonable %f.\n",sd.prior.degree))
+  }
   ### are we running the job in parallel (parallel > 1), if not just 
   #   call the degree specific function
   if(parallel==1){

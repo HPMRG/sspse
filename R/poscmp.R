@@ -32,9 +32,15 @@ poscmp<-function(s,maxN=NULL,
     # Transform observed mean parametrization to log-normal
     # parametrization
     #
+  cat(sprintf("The mean of the prior distribution for degree is
+%f.\n",mean.prior.degree))
+  cat(sprintf("The s.d. of the prior distribution for degree is
+%f.\n",sd.prior.degree))
     out <- cmp.natural(mean.prior.degree, sd.prior.degree)
+print(out)
     mu <- log(out$lambda)
     sigma <- out$nu
+#   sigma <- max(0.00001, sigma)
     #
     lambdad <- rep(dispersion,K)
     nud <- rep(dispersion,K)
