@@ -1,4 +1,4 @@
-plot.size <- function(fit,xlim=NULL,data=NULL,support=1000){
+plot.size <- function(fit,xlim=NULL,data=NULL,support=1000,HPD.level=0.95){
 require(locfit)
 require(coda)
 out <- fit$sample
@@ -24,8 +24,16 @@ abline(v=fit$n,lty=2)
 lpriorm <- exp(fit$lpriorm-max(fit$lpriorm))
 lpriorm <- lpriorm/sum(lpriorm)
 lines(x=fit$n+(1:length(lpriorm)),y=lpriorm,lty=2)
+# Next from coda
+#hpd <- HPDinterval(fit$sample[,"N"])[1:2]
+# MSH using locfit
+  cy <- cumsum(posdensN/sum(posdensN))
+  hpd <- c(xp[which.max(cy>((1-HPD.level)/2))],
+           xp[which.max(cy>((1+HPD.level)/2))])
+  if(is.na(hpd[1])) hpd[1] <- xp[1]
+  if(is.na(hpd[2])) hpd[2] <- xp[length(xp)]
 #
-hpd <- HPDinterval(fit$sample[,"N"])[1:2]
+  map <- xp[which.max(posdensN)]
 #
 abline(v=median(outN,na.rm=T),col=2)
 abline(v=mean(outN,na.rm=T),col=3)
@@ -36,6 +44,9 @@ text(x=hpd[2],y=-0.000,col=4,cex=0.5,labels=paste(round(hpd[2])))
 text(x=fit$n,y=0.000,labels=paste(fit$n),col=1,cex=0.5)
 text(x=mean(outN,na.rm=T),y=-0.000,col=3,cex=0.5,labels=paste(round(mean(outN,na.rm=T))))
 text(x=median(outN,na.rm=T),y=-0.000,col=2,cex=0.5,labels=paste(round(median(outN,na.rm=T))))
+text(x=map,y=-0.000,col=5,cex=0.5,labels=paste(round(map)))
+#
+cat(sprintf("MAP = %d, HPD = (%d, %d).\n",round(map),round(hpd[1]),round(hpd[2])))
 #
 x <- fit$n+(1:length(lpriorm))
 lines(x=fit$n+(1:length(lpriorm)),y=lpriorm,lty=2)
