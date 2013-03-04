@@ -37,6 +37,7 @@ posteriorsize<-function(s,
   }
   if(is.null(mean.prior.degree)){
     degs <- s
+    deg[deg>K] <- K
     degs[degs==0]<-1
     isnas <- is.na(degs)
     degs <- sum(!isnas)*(degs)/sum(degs,na.rm=TRUE)
