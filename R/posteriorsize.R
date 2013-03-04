@@ -37,7 +37,7 @@ posteriorsize<-function(s,
   }
   if(is.null(mean.prior.degree)){
     degs <- s
-    deg[deg>K] <- K
+    degs[degs>K] <- K
     degs[degs==0]<-1
     isnas <- is.na(degs)
     degs <- sum(!isnas)*(degs)/sum(degs,na.rm=TRUE)
@@ -51,8 +51,8 @@ posteriorsize<-function(s,
   }
   cat(sprintf("The mean of the prior distribution for degree is %f.\n",mean.prior.degree))
   cat(sprintf("The s.d. of the prior distribution for degree is %f.\n",sd.prior.degree))
-  if(sd.prior.degree > sqrt(2*mean.prior.degree)){
-    sd.prior.degree <- min(sqrt(2*mean.prior.degree), sd.prior.degree)
+  if(sd.prior.degree > sqrt(4*mean.prior.degree)){
+    sd.prior.degree <- min(sqrt(4*mean.prior.degree), sd.prior.degree)
     cat(sprintf("The suggested s.d. of the prior distribution for degree is too
 large and has been reduced to the more reasonable %f.\n",sd.prior.degree))
   }
