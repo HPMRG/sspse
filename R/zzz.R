@@ -1,6 +1,6 @@
 ######################################################################
-# copyright (c) 2009, Krista J. Gile, Nuffield College, Oxford,
-#                     Mark S. Handcock, University of Washington
+# copyright (c) 2009, Krista J. Gile, University of Massachusetts - Amherst
+#                     Mark S. Handcock, University of California - Los Angeles
 # 
 # For license and citation information see
 #    http://statnet.org/attribution
@@ -18,21 +18,19 @@
 #
 ######################################################################
 
-.First.lib <- function(lib, pkg){
-  library.dynam("size", pkg, lib)
-  DESCpath <- file.path(system.file(package="size"), "DESCRIPTION")
-  info <- read.dcf(DESCpath)
-  cat('\nsize:', info[,"Title"], 
-      '\nVersion', info[,"Version"], 'created on', info[,"Date"], '\n') 
-  
-  cat(paste("copyright (c) 2009, Krista J. Gile, Nuffield College, Oxford\n",
-"                    Mark S. Handcock, University of Washington\n",sep=""))
-  cat('Type help(package="size") to get started.\n\n')
-  cat('Based on "statnet" project software (http://statnet.org).\n',
-      'For license and citation information see http://statnet.org/attribution\n',
-      'or type citation("size").\n')
+.onLoad <-function(libname, pkgname){
+  library.dynam("size", package=pkgname, lib.loc=libname)
 }
 
-.Last.lib <- function(libpath){
-  library.dynam.unload("size",libpath)
+.onAttach <- function(libname, pkgname){
+  temp<-packageDescription("size")
+  msg<-paste(temp$Package,": ",temp$Title,"\n",
+      "Version ",temp$Version,
+      " created on ",
+      temp$Date,".\n", sep="")
+  msg<-paste(msg,"copyright (c) 2009, Krista J. Gile, University of Massachusetts - Amherst\n",
+"                    Mark S. Handcock, University of California - Los Angeles\n",sep="")
+  msg<-paste(msg,'For citation information, type citation("size").\n')
+  msg<-paste(msg,'Type help("size-package") to get started.\n')
+  packageStartupMessage(msg)
 }
