@@ -7,7 +7,7 @@ statnettitle <- "statnet: Software Tools for the Statistical Modeling of Network
 statnetversion <- "2.0"
 statnetyear <- "2003"
 
-sizetitle <- "size: A Package to Fit, Simulate and Diagnose Exponential-Family Models for Networks"
+sizetitle <- "size: Estimating Hidden Population Size using Respondent Driven Sampling Data"
 sizedesc <- packageDescription("size")
 sizeversion <- sizedesc$Version
 sizedate <- sizedesc$Date
@@ -45,7 +45,7 @@ citEntry(entry="Manual",
          note         = paste("Version ", sizeversion,
                         ".  Project home page at \\url{", projhomepage, "}", 
                         sep=""),
-         address      = "Seattle, WA",
+         address      = "Los Angeles, CA",
          url          = "http://CRAN.R-project.org/package=size",
          textVersion = paste(paste(authors, collapse=", "), " (", sizeyear,
                "), ", sizetitle, ". Version ", sizeversion,
