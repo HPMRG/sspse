@@ -60,7 +60,7 @@ plot(seq_along(fit$predictive.degree),y=fit$predictive.degree, type='h',
 col='red', lwd=2, xlab="degree",ylab="probability",
   main="mean posterior network size distribution")
 if(!is.null(data)){
-  bbb <- tabulate(data,nbin=max(data))
+  bbb <- tabulate(data,nbins=max(data))
   bbb <- bbb/sum(bbb)
   aaa <- barplot(bbb,names.arg=1:max(data),add=T)
 }

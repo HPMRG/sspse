@@ -1,6 +1,6 @@
 posteriornbinom<-function(s,
                   maxN=4*length(s),
-                  K=2*max(s), nk=tabulate(s,nbin=K), n=length(s),
+                  K=2*max(s), nk=tabulate(s,nbins=K), n=length(s),
 		  N=0.5*maxN,
                   mean.prior.degree=7, sd.prior.degree=3,
                   df.mean.prior=1,df.sd.prior=5,

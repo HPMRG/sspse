@@ -4,7 +4,7 @@ margposteriorsize<-function(N=trunc(length(s)*seq(1.1,4,length=10)+1),
           prob=rep(1/K,K),
           M=100000,
           parallel=1, seed=NULL, verbose=TRUE, 
-          n=tabulate(s,nbin=K),
+          n=tabulate(s,nbins=K),
 	  maxit=50000, method="Nelder-Mead", temp=10, trace=0,
 	  return.all=TRUE){
   if(length(prob)!=K){
@@ -39,7 +39,7 @@ margposteriorsize<-function(N=trunc(length(s)*seq(1.1,4,length=10)+1),
     Cret$unpos
   }
 }
-unposN<-function(prob,N,K,s,n=tabulate(s,nbin=K),M=100000){
+unposN<-function(prob,N,K,s,n=tabulate(s,nbins=K),M=100000){
   #this function takes a vector of population sizes and a vector s of 
   #sequential sizes of sampled units and returns a log likelihood value
   #s values must all be positive integers
@@ -63,7 +63,7 @@ margposN<-function(N, s,
           prob=rep(1/K,K),
           M=100000,
           parallel=1, seed=NULL, verbose=FALSE, 
-          n=tabulate(s,nbin=K),
+          n=tabulate(s,nbins=K),
 	  qprob=NULL,
 	  maxit=50000, method="Nelder-Mead", temp=10, trace=0,
           return.all=FALSE){
@@ -149,7 +149,7 @@ margposN<-function(N, s,
   }
 }
 
-llhoodf<-function(N,s,n=tabulate(s,nbin=length(N)),verbose=TRUE){
+llhoodf<-function(N,s,n=tabulate(s,nbins=length(N)),verbose=TRUE){
     #this function takes a vector of population sizes and a vector s of 
     #sequential sizes of sampled units and returns a log likelihood value
     #s values must all be positive integers
@@ -170,7 +170,7 @@ discretemleN<-function(N,s,
           K=max(s),
           M=100000,
           parallel=1, seed=NULL, verbose=FALSE, 
-          n=tabulate(s,nbin=K),
+          n=tabulate(s,nbins=K),
           Nkmle.start=NULL,
 	  qprob=NULL,
 	  maxit=50000, maxit.spps=10, method="Nelder-Mead", temp=10, trace=0,
@@ -293,7 +293,7 @@ discretemleNimpute<-function(N,s,
   if(!is.null(seed))  set.seed(as.integer(seed))
   ns <- length(s)/nsim
   if(is.null(n)){
-   n <- as.vector(apply(matrix(s,nrow=nsim,byrow=TRUE),1,tabulate,nbin=K))
+   n <- as.vector(apply(matrix(s,nrow=nsim,byrow=TRUE),1,tabulate,nbins=K))
   }
   toN <- function(x,Ntot,nk){
     nk[nk!=0] <- (Ntot-sum(nk))*c(1,exp(x))/(1+sum(exp(x)))+nk[nk!=0]
@@ -377,7 +377,7 @@ discretemle<-function(N=trunc(length(s)*seq(1.1,4,length=10)+1),
 	  K=max(s),
           M=100000,
           parallel=1, seed=NULL, verbose=FALSE, 
-          n=tabulate(s,nbin=K),
+          n=tabulate(s,nbins=K),
           Nkmle.start=NULL,
 	  maxit=50000, method="Nelder-Mead", temp=10, trace=0,
           return.all=TRUE){
@@ -426,7 +426,7 @@ discretemlesearch<-function(s,
 	  K=max(s),
           M=10000,
           parallel=1, seed=NULL, verbose=FALSE, 
-          n=tabulate(s,nbin=K),
+          n=tabulate(s,nbins=K),
           Nkmle.start=NULL,
 	  maxit=10000, tol=0.1, maxit.spps=3,
           return.all=TRUE){
@@ -481,7 +481,7 @@ discretemleimpute<-function(N=trunc(length(s)*seq(1.1,4,length=10)+1),
    si <- round(impute.size(s.raw))
    si[si > truncate.size] <- truncate.size
    s <- c(s,si)
-   n <- c(n,tabulate(si,nbin=max(sizeN))[sizeN])
+   n <- c(n,tabulate(si,nbins=max(sizeN))[sizeN])
   }
   if(length(N)==1){
       Cret <- discretemleNimpute(N=N,s=s,nsim=nsim,n=n,K=K,M=M,seed=seed,
@@ -541,7 +541,7 @@ discretemleimputeindividual<-function(N=trunc(length(s)*seq(1.1,4,length=10)+1),
   for(i in 1:nsim){
    s <- round(impute.size(s.raw))
    s[s > truncate.size] <- truncate.size
-   stab <- tabulate(s,nbin=max(sizeN))[sizeN]
+   stab <- tabulate(s,nbins=max(sizeN))[sizeN]
    out <- discretemle(N=N,s=s,K=K,M=M,seed=seed,n=stab,
              maxit=maxit,method=method,trace=trace,temp=temp,
 	     verbose=verbose,

@@ -3,7 +3,7 @@ margposteriorsize.origandgood<-function(s,N=trunc(length(s)*seq(1.1,4,length=10)
           prob=rep(1/K,K),
           M=100000,
           parallel=1,seed=NULL, verbose=TRUE, 
-          n=tabulate(s,nbin=K),
+          n=tabulate(s,nbins=K),
           lbound=NULL,
           nstart=NULL,
           return.all=TRUE){
@@ -113,7 +113,7 @@ margposteriorsizewar<-function(s,N=trunc(length(s)*seq(1.1,4,length=10)+1),
           K=max(s),
           mu=5,rho=3,M=100000,
           parallel=1,seed=NULL, verbose=TRUE, 
-          n=tabulate(s,nbin=K),
+          n=tabulate(s,nbins=K),
           lbound=NULL,
           nstart=NULL,
           return.all=TRUE){
@@ -214,7 +214,7 @@ margpossize<-function(s,N=trunc(length(s)*seq(1.1,4,length=10)+1),
           K=max(s),
           M=100000,
           parallel=1,seed=NULL, verbose=FALSE, 
-          n=tabulate(s,nbin=K),
+          n=tabulate(s,nbins=K),
           return.all=FALSE){
   if(length(N)==0||!is.numeric(N)||trunc(N)!=N){
     stop("N needs to be a vector of integers.")
@@ -228,7 +228,7 @@ margpossize<-function(s,N=trunc(length(s)*seq(1.1,4,length=10)+1),
   }
   list(N=N,logprob=logprob,s=s,K=K,mu=mu,rho=rho)
 }
-unposNwar<-function(mu,rho,N,K,s,n=tabulate(s,nbin=K),M=100000){
+unposNwar<-function(mu,rho,N,K,s,n=tabulate(s,nbins=K),M=100000){
     #this function takes a vector of population sizes and a vector s of 
     #sequential sizes of sampled units and returns a log likelihood value
     #s values must all be positive integers

@@ -1,5 +1,5 @@
 poscmp<-function(s,maxN=NULL,
-                  K=2*max(s), nk=tabulate(s,nbin=K), n=length(s),
+                  K=2*max(s), nk=tabulate(s,nbins=K), n=length(s),
                   mean.prior.degree=7, sd.prior.degree=3,
                   df.mean.prior=1, df.sd.prior=5,
                   muproposal=0.1, 

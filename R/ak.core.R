@@ -1,7 +1,7 @@
 akestN<-function(N,s,
           K=max(s),
           verbose=FALSE, 
-          n=tabulate(s,nbin=K),
+          n=tabulate(s,nbins=K),
 	  maxit=5000, tol=0.00000001,
           return.all=FALSE){
   if(length(s)>N){print("Error: The population counts should not be exceeded by the sample counts.")}
@@ -25,7 +25,7 @@ akestN<-function(N,s,
 sppsestN<-function(N,s,
           K=max(s),
           verbose=FALSE, 
-          n=tabulate(s,nbin=K),
+          n=tabulate(s,nbins=K),
 	  maxit=10, M=10000, trace=FALSE,
           return.all=FALSE){
   if(length(s)>N){print("Error: The population counts should not be exceeded by the sample counts.")}
