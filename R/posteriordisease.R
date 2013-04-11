@@ -113,6 +113,11 @@ posteriordisease<-function(s,dis,
      colnamessample <- c(colnamessample, c("lambda0","nu0","lambda1","nu1"))
     }
     colnames(Cret$sample) <- colnamessample
+#
+    m <- apply(Cret$sample,2,median,na.rm=TRUE)
+    Cret$sample[is.na(Cret$sample[,"mu"]),"mu"] <- m["mu"]
+    Cret$sample[is.na(Cret$sample[,"sigma"]),"sigma"] <- m["sigma"]
+#
     endrun <- burnin+interval*(samplesize)
     attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
     attr(Cret$sample, "class") <- "mcmc"

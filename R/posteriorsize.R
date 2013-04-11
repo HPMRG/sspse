@@ -128,6 +128,9 @@ large and has been reduced to the more reasonable %f.\n",sd.prior.degree))
      colnamessample <- c(colnamessample, c("lambda","nu"))
     }
     colnames(Cret$sample) <- colnamessample
+    m <- apply(Cret$sample,2,median,na.rm=TRUE)
+    Cret$sample[is.na(Cret$sample[,"mu"]),"mu"] <- m["mu"]
+    Cret$sample[is.na(Cret$sample[,"sigma"]),"sigma"] <- m["sigma"]
     
     ### Coda package which does MCMC diagnostics, requires certain attributes of MCMC sample
     endrun <- burnin+interval*(samplesize)

@@ -34,6 +34,9 @@ lines(x=fit$n+(1:length(lpriorm)),y=lpriorm,lty=2)
   if(is.na(hpd[2])) hpd[2] <- xp[length(xp)]
 #
   map <- xp[which.max(posdensN)]
+  mp <- sum(xp*posdensN)/sum(posdensN)
+  l90 <- xp[which.max(cy>0.9)]
+  l50 <- xp[which.max(cy>0.5)]
 #
 abline(v=median(outN,na.rm=T),col=2)
 abline(v=mean(outN,na.rm=T),col=3)
@@ -46,14 +49,14 @@ text(x=mean(outN,na.rm=T),y=-0.000,col=3,cex=0.5,labels=paste(round(mean(outN,na
 text(x=median(outN,na.rm=T),y=-0.000,col=2,cex=0.5,labels=paste(round(median(outN,na.rm=T))))
 text(x=map,y=-0.000,col=5,cex=0.5,labels=paste(round(map)))
 #
-cat(sprintf("MAP = %d, HPD = (%d, %d).\n",round(map),round(hpd[1]),round(hpd[2])))
+cat(sprintf("Mean = %d, Median = %d, MAP = %d, 90%% = %d, HPD = (%d,
+%d).\n",round(mp),round(l50),round(map),round(l90),round(hpd[1]),round(hpd[2])))
 #
 x <- fit$n+(1:length(lpriorm))
 lines(x=fit$n+(1:length(lpriorm)),y=lpriorm,lty=2)
 #
 out[is.na(out)] <- apply(out,2,median,na.rm=T)
-plot(density(out[,"mu"],na.rm=TRUE), xlab="mean network size", main="posterior for
-mean network size in the population")
+plot(density(out[,"mu"],na.rm=TRUE), xlab="mean network size", main="posterior for mean network size in the population")
 plot(density(out[,"sigma"],na.rm=TRUE), xlab="s.d. network size", main="posterior for s.d. of the network size")
 #
 plot(seq_along(fit$predictive.degree),y=fit$predictive.degree, type='h',
