@@ -3,7 +3,7 @@ posteriorsize<-function(s,
                   interval=10,
                   burnin=5000,
                   maxN=NULL,
-                  K=round(quantile(s,0.80)), 
+                  K=NULL,
                   samplesize=1000,
 		  quartiles.prior.size=NULL,
 		  mean.prior.size=NULL,
@@ -35,6 +35,29 @@ posteriorsize<-function(s,
   if(priorsizedistribution=="nbinom" && missing(mean.prior.size)){
     stop("You need to specify 'mean.prior.size', and possibly 'sd.prior.size' if you use the 'nbinom' prior.") 
   }
+  if(is.null(K)){
+    K=round(quantile(s,0.80))
+    degs <- s
+    degs[degs>K] <- K
+    degs[degs==0]<-1
+    isnas <- is.na(degs)
+    degs <- sum(!isnas)*(degs)/sum(degs,na.rm=TRUE)
+    weights <- (1/degs)
+    weights[is.na(weights)] <- 0
+    mean.pd <- sum(s*weights)/sum(weights)
+    sd.pd <- sum(s*s*weights)/sum(weights)
+    sd.pd <- sqrt(sd.pd - mean.pd^2)
+    if(sd.pd > sqrt(4*mean.pd)){
+     sd.pd <- min(sqrt(4*mean.pd), sd.pd)
+    }
+    xv <- s
+    xp <- weights*s
+    xp <- length(xp)*xp/sum(xp)
+    fit <- cmpmle(xv,xp,cutoff=1,cutabove=K-1,guess=c(mean.pd, sd.pd))
+#   print(cmp.mu(fit))
+    y=dcmp.natural(v=fit,x=(0:max(s)))
+    K=(0:max(s))[which.max(cumsum(y)>0.95)]
+  }
   if(is.null(mean.prior.degree)){
     degs <- s
     degs[degs>K] <- K
@@ -48,9 +71,18 @@ posteriorsize<-function(s,
      sd.prior.degree <- sum(s*s*weights)/sum(weights)
      sd.prior.degree <- sqrt(sd.prior.degree - mean.prior.degree^2)
     }
+    xv <- s
+    xp <- weights*s
+    xp <- length(xp)*xp/sum(xp)
+    fit <- cmpmle(xv,xp,cutoff=1,cutabove=K-1,guess=c(mean.pd, sd.pd))
+    fit <- cmp.mu(fit)
+    mean.prior.degree = fit[1]
+    sd.prior.degree = fit[2]
   }
-  cat(sprintf("The mean of the prior distribution for degree is %f.\n",mean.prior.degree))
-  cat(sprintf("The s.d. of the prior distribution for degree is %f.\n",sd.prior.degree))
+  if(verbose){
+    cat(sprintf("The mean of the prior distribution for degree is %f.\n",mean.prior.degree))
+    cat(sprintf("The s.d. of the prior distribution for degree is %f.\n",sd.prior.degree))
+  }
   if(sd.prior.degree > sqrt(4*mean.prior.degree)){
     sd.prior.degree <- min(sqrt(4*mean.prior.degree), sd.prior.degree)
     cat(sprintf("The suggested s.d. of the prior distribution for degree is too
