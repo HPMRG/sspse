@@ -40,41 +40,44 @@ posteriorsize<-function(s,
     degs <- s
     degs[degs>K] <- K
     degs[degs==0]<-1
+    ds<-degs
     isnas <- is.na(degs)
     degs <- sum(!isnas)*(degs)/sum(degs,na.rm=TRUE)
     weights <- (1/degs)
     weights[is.na(weights)] <- 0
-    mean.pd <- sum(s*weights)/sum(weights)
-    sd.pd <- sum(s*s*weights)/sum(weights)
+    mean.pd <- sum(ds*weights)/sum(weights)
+    sd.pd <- sum(ds*ds*weights)/sum(weights)
     sd.pd <- sqrt(sd.pd - mean.pd^2)
     if(sd.pd > sqrt(4*mean.pd)){
      sd.pd <- min(sqrt(4*mean.pd), sd.pd)
     }
-    xv <- s
-    xp <- weights*s
+    xv <- ds
+    xp <- weights*ds
     xp <- length(xp)*xp/sum(xp)
     fit <- cmpmle(xv,xp,cutoff=1,cutabove=K-1,guess=c(mean.pd, sd.pd))
-#   print(cmp.mu(fit))
     y=dcmp.natural(v=fit,x=(0:max(s)))
     K=(0:max(s))[which.max(cumsum(y)>0.95)]
   }
+  cat(sprintf("The size cap is K = %d.\n",K))
   if(is.null(mean.prior.degree)){
     degs <- s
     degs[degs>K] <- K
     degs[degs==0]<-1
+    ds<-degs
     isnas <- is.na(degs)
     degs <- sum(!isnas)*(degs)/sum(degs,na.rm=TRUE)
     weights <- (1/degs)
     weights[is.na(weights)] <- 0
-    mean.prior.degree <- sum(s*weights)/sum(weights)
+    mean.prior.degree <- sum(ds*weights)/sum(weights)
     if(is.null(sd.prior.degree)){
-     sd.prior.degree <- sum(s*s*weights)/sum(weights)
+     sd.prior.degree <- sum(ds*ds*weights)/sum(weights)
      sd.prior.degree <- sqrt(sd.prior.degree - mean.prior.degree^2)
     }
-    xv <- s
-    xp <- weights*s
+    xv <- ds
+    xp <- weights*ds
     xp <- length(xp)*xp/sum(xp)
-    fit <- cmpmle(xv,xp,cutoff=1,cutabove=K-1,guess=c(mean.pd, sd.pd))
+    fit <- cmpmle(xv,xp,cutoff=1,cutabove=K-1,
+            guess=c(mean.prior.degree,sd.prior.degree))
     fit <- cmp.mu(fit)
     mean.prior.degree = fit[1]
     sd.prior.degree = fit[2]

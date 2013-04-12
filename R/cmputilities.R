@@ -1,19 +1,28 @@
 cmpmle <-function(xv,xp,cutoff=1,cutabove=1000,guess=c(7,3)){
+ xp <- xp[xv >= cutoff]
+ xv <- xv[xv >= cutoff]
+ xp <- xp[xv <= cutabove]
+ xv <- xv[xv <= cutabove]
+ xp <- length(xv)*xp/sum(xp)
  guess <- cmp.natural(mu=guess[1],sig=guess[2])
  guess <- c(log(guess$lambda), log(guess$nu))
   aaa <- optim(par=guess,fn=allcmp,
    method="BFGS",
    hessian=FALSE,control=list(fnscale=-10),
-   xv=xv,xp=xp,cutoff=cutoff)
+   xv=xv,xp=xp,cutoff=cutoff,cutabove=cutabove)
   names(aaa$par) <- c("CMP lambda","CMP nu")
   exp(aaa$par)
 }
-allcmp <- function(v,xv,xp,cutoff=1){
+allcmp <- function(v,xv,xp,cutoff=1,cutabove=1000){
  n <- sum(xp)
- if(cutoff>0){
-  cprob <- 1 - sum(dcmp.natural(v=exp(v),x=0:(cutoff-1)))
+ if(cutabove<1000){
+  cprob <- sum(dcmp.natural(v=exp(v),x=(cutoff:cutabove)))
  }else{
-  cprob <- 1
+  if(cutoff>0){
+   cprob <- 1 - sum(dcmp.natural(v=exp(v),x=0:(cutoff-1)))
+  }else{
+   cprob <- 1
+  }
  }
 #
  out <- sum(xp*ldcmp.natural(v=exp(v),x=xv))-n*log(cprob)
