@@ -8,10 +8,10 @@ posteriorsize<-function(s,
 		  quartiles.prior.size=NULL,
 		  mean.prior.size=NULL,
 		  mode.prior.size=NULL,
-		  priorsizedistribution=c("proportion","flat","nbinom","pln"),
+		  priorsizedistribution=c("proportion","flat","nbinom","pln","supplied"),
 		  effective.prior.df=1,
                   sd.prior.size=NULL,
-		  mode.prior.sample.proportion=0.5,
+		  mode.prior.sample.proportion=NULL,
 		  alpha=NULL,
 		  degreedistribution=c("cmp","nbinom","pln"),
                   mean.prior.degree=NULL, sd.prior.degree=NULL,
@@ -23,6 +23,7 @@ posteriorsize<-function(s,
                   sigmaproposal=0.15, 
                   burnintheta=500,
                   parallel=1, parallel.type="PVM", seed=NULL, dispersion=0,
+                  supplied=list(maxN=maxN),
                   verbose=TRUE){
 #
   degreedistribution=match.arg(degreedistribution)
@@ -110,6 +111,7 @@ large and has been reduced to the more reasonable %f.\n",sd.prior.degree))
                     effective.prior.df=effective.prior.df,
                     alpha=alpha,
                     seed=seed,
+                    supplied=supplied,
                     dispersion=dispersion)
   }
   ### since running job in parallel, start pvm (if not already running)
@@ -135,6 +137,7 @@ large and has been reduced to the more reasonable %f.\n",sd.prior.degree))
       quartiles.prior.size=quartiles.prior.size,
       effective.prior.df=effective.prior.df,
       alpha=alpha,
+      supplied=supplied,
       dispersion=dispersion)
 #
 #   Process the results

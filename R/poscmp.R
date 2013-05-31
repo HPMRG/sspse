@@ -6,9 +6,9 @@ poscmp<-function(s,maxN=NULL,
                   sigmaproposal=0.15, 
                   Np=0,
                   samplesize=10,burnin=0,interval=1,burnintheta=500,
-		  priorsizedistribution=c("proportion","nbinom","pln","flat"),
+		  priorsizedistribution=c("proportion","nbinom","pln","flat","supplied"),
 		  mean.prior.size=NULL, sd.prior.size=NULL,
-		  mode.prior.sample.proportion=0.5,
+		  mode.prior.sample.proportion=NULL,
 		  median.prior.sample.proportion=NULL,
 		  median.prior.size=NULL,
 		  mode.prior.size=NULL,
@@ -17,6 +17,7 @@ poscmp<-function(s,maxN=NULL,
 		  alpha=NULL,
                   seed=NULL,
                   dispersion=0,
+                  supplied=list(maxN=maxN),
                   verbose=TRUE){
     #this function takes a vector of population sizes and a vector s of 
     #sequential sizes of sampled units and returns a log likelihood value
@@ -78,6 +79,7 @@ print(out)
                   alpha=alpha,
                   maxN=maxN,
                   log=TRUE,
+                  supplied=supplied,
                   verbose=verbose)
     Cret <- .C("gcmp",
               pop=as.integer(c(s,rep(0,prior$maxN-n))),

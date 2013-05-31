@@ -1,5 +1,5 @@
 dsizeprior<-function(n,
-		  type=c("proportion","nbinom","pln","flat","continuous"),
+		  type=c("proportion","nbinom","pln","flat","continuous","supplied"),
 		  mean.prior.size=NULL, sd.prior.size=NULL,
 		  mode.prior.sample.proportion=NULL,
 		  median.prior.sample.proportion=0.5,
@@ -14,6 +14,7 @@ dsizeprior<-function(n,
                   log=FALSE,
                   maxbeta=100,
                   maxNmax=200000,
+                  supplied=list(maxN=maxN),
                   verbose=TRUE){
   priorsizedistribution=match.arg(type)
   N <- NULL
@@ -276,6 +277,17 @@ dsizeprior<-function(n,
      if(log){
       lpriorm <- log(lpriorm)
      }
+     lpriorm
+     },
+    supplied={
+     maxN <- supplied$maxN
+     x <- n:maxN
+     out <- supplied$sample
+     outN <- out[,"N"]
+     a=locfit( ~ lp(outN,nn=0.5))
+     posdensN <- predict(a, newdata=x)
+     posdensN <- posdensN / sum(posdensN)
+     lpriorm <- log(posdensN)
      lpriorm
      }
     )

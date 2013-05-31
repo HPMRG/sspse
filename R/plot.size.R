@@ -1,4 +1,4 @@
-plot.size <- function(fit,xlim=NULL,data=NULL,support=1000,HPD.level=0.95){
+plot.size <- function(fit,xlim=NULL,data=NULL,support=1000,HPD.level=0.95,N=NULL){
 require(locfit)
 require(coda)
 out <- fit$sample
@@ -41,6 +41,7 @@ lines(x=fit$n+(1:length(lpriorm)),y=lpriorm,lty=2)
 abline(v=median(outN,na.rm=T),col=2)
 abline(v=mean(outN,na.rm=T),col=3)
 abline(v=c(fit$n,fit$maxN),lty=2)
+if(!is.null(N)){abline(v=N,lty=1,col=1)}
 abline(v=hpd,lty=2,col=4)
 text(x=hpd[1],y=-0.000,col=4,cex=0.5,labels=paste(round(hpd[1])))
 text(x=hpd[2],y=-0.000,col=4,cex=0.5,labels=paste(round(hpd[2])))
@@ -48,9 +49,12 @@ text(x=fit$n,y=0.000,labels=paste(fit$n),col=1,cex=0.5)
 text(x=mean(outN,na.rm=T),y=-0.000,col=3,cex=0.5,labels=paste(round(mean(outN,na.rm=T))))
 text(x=median(outN,na.rm=T),y=-0.000,col=2,cex=0.5,labels=paste(round(median(outN,na.rm=T))))
 text(x=map,y=-0.000,col=5,cex=0.5,labels=paste(round(map)))
+if(!is.null(N)){text(x=N,y=-0.000,col=1,cex=0.5,labels="truth")}
 #
-cat(sprintf("Mean = %d, Median = %d, MAP = %d, 90%% = %d, HPD = (%d,
-%d).\n",round(mp),round(l50),round(map),round(l90),round(hpd[1]),round(hpd[2])))
+cat(sprintf("Prior:\nMean = %d, Median = %d, Mode = %d, 25%% = %d, 75%% = %d.\n",
+ round(fit$mean.prior.size), round(fit$median.prior.size), round(fit$mode.prior.size), round(fit$quartiles.prior.size[1]), round(fit$quartiles.prior.size[2])))
+cat(sprintf("Posterior:\nMean = %d, Median = %d, MAP = %d, 90%% = %d, HPD = (%d, %d).\n",
+ round(mp),round(l50),round(map),round(l90),round(hpd[1]),round(hpd[2])))
 #
 x <- fit$n+(1:length(lpriorm))
 lines(x=fit$n+(1:length(lpriorm)),y=lpriorm,lty=2)
