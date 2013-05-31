@@ -298,11 +298,19 @@ dsizeprior<-function(n,
      }else{
       priorm <- lpriorm
      }
-     mode.prior.size <- (x+0.5)[which.max(priorm)]
-     mean.prior.size <- sum((x+0.5)*priorm)
-     median.prior.size <- (x+0.5)[match(TRUE,cumsum(priorm) >= 0.5)]
-     quartiles.prior.size[1] <- (x+0.5)[match(TRUE,cumsum(priorm) >= 0.25)]
-     quartiles.prior.size[2] <- (x+0.5)[match(TRUE,cumsum(priorm) >= 0.75)]
+     if(priorsizedistribution!="flat"){
+      mode.prior.size <- (x+0.5)[which.max(priorm)]
+      mean.prior.size <- sum((x+0.5)*priorm)
+      median.prior.size <- (x+0.5)[match(TRUE,cumsum(priorm) >= 0.5)]
+      quartiles.prior.size[1] <- (x+0.5)[match(TRUE,cumsum(priorm) >= 0.25)]
+      quartiles.prior.size[2] <- (x+0.5)[match(TRUE,cumsum(priorm) >= 0.75)]
+     }else{
+      mode.prior.size <- (maxN+n)/2
+      mean.prior.size <- (maxN+n)/2
+      median.prior.size <- (maxN+n)/2
+      quartiles.prior.size[1] <-   (maxN+n)/4
+      quartiles.prior.size[2] <- 3*(maxN+n)/4
+     }
     if(is.null(N)){N <- mean(x)}
     if(verbose){cat(paste("The maximum prior population size is",maxN,"\n"))}
     list(x=x,lprior=lpriorm,N=N,maxN=maxN,
