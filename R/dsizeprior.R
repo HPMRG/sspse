@@ -61,7 +61,7 @@ dsizeprior<-function(n,
       if(log){
        lpriorm <- rep(0,maxN-n+1)
       }else{
-       lpriorm <- rep(1/maxN,maxN+1)
+       lpriorm <- rep(1/(maxN-n+1),maxN-n+1)
        if(mode.prior.size > n){
         lpriorm[1:(mode.prior.size-n)] <- 0
        }
