@@ -19,8 +19,23 @@
 ######################################################################
 
 .onLoad <-function(libname, pkgname){
+	deducerNotLoaded <- try(.deducer == .jnull(),silent=TRUE)
+	if(inherits(deducerNotLoaded,"try-error") || deducerNotLoaded)
+		return(NULL)
+	
+  RDSAnalyst <- J("RDSAnalyst.RDSAnalyst")
+
   library.dynam("size", package=pkgname, lib.loc=libname)
-}
+  
+  deducer.addMenuItem("Prior Distribution",,".getDialog('Prior Distribution')$run()","RDS Population")
+  if(.windowsGUI){winMenuAddItem("RDS Data",'Prior Distribution',"deducer('Prior Distribution')")}
+  else if(.jgr){	
+	  if(RDSAnalyst$isPro()){
+		  jgr.addMenuItem("RDS Population","Prior Distribution","deducer('Prior Distribution')")
+  		}}
+	
+  .registerDialog("Prior Distribution", .makePriorDistribution)
+ }
 
 .onAttach <- function(libname, pkgname){
   temp<-packageDescription("size")
@@ -34,3 +49,5 @@
   msg<-paste(msg,'Type help("size-package") to get started.\n')
   packageStartupMessage(msg)
 }
+
+
