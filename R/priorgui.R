@@ -19,7 +19,8 @@
 	maxN$setInteger(TRUE)
 	maxN$setLowerBound(1)
 	
-	typedist <-new(Deducer::ButtonGroupWidget, "Distribution Type", c("proportion","neg-binom","continuous","pois-log-norm","flat"))
+	typedist <-new(Deducer::ButtonGroupWidget, "Distribution Type", c("proportion","nbinom","continuous","pln","flat"))
+	typedist$setToolTipText("nbinom = Negative Binomial; pln = Poison-log-normal")
 	
 	plotbox <- new(Deducer::CheckBoxesWidget,.jarray("Plot Distribution"))
 	setSize(plotbox,400,75)	
@@ -84,7 +85,7 @@
 			return("Prior propotion median must be between 0 and 1")
 		else("")
 
-		#if type is flat or pois-log-normal, grey out everything but n and maxN
+		#if type is flat or pln, grey out everything but n and maxN
 		#if type is proportioon, grey out mode.prior.size
 		
 		#tmp <- weightPanel$check()
@@ -107,10 +108,10 @@
 		n <- samplesize$getModel()
 		max_N <- maxN$getModel()
 		dist_type <- switch(typedist$getModel(),
-				"proportion"="proportion",
-				"neg-binom"="nbinom",
+				"proportion"="proportion",  #Decided to leave names as is, but can update this later
+				"nbinom"="nbinom",
 				"continuous"="continuous",
-				"pos-log-norm"="pln",
+				"pln"="pln",
 				"flat" = "flat" )
 		prior.mean <- "NULL"
 			if (priormean$getModel()!="") {prior.mean = priormean$getModel()}
@@ -122,6 +123,7 @@
 			if (priormode$getModel()!="") {prior.mode = priormode$getModel()}
 		prior.quart <- "NULL"
 		quarts <- "c("%+%priorquartiles$getModel()%+%")"
+		#add hovertext to ensure proper entry form and/or add check for extra parenths
 			if (priorquartiles$getModel()!="") {prior.quart = quarts}
 		prior.prop.mode <- "NULL"
 			if (priormodeprop$getModel()!="") {prior.prop.mode = priormodeprop$getModel()}
