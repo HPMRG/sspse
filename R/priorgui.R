@@ -77,12 +77,12 @@
 		if (maxN$getModel() == "") 
 			return("Please enter population max")
 		if (priorquartiles$getModel()!="" && !length(strsplit(priorquartiles$getModel(),",")[[1]])%in%c(0,2))
-			#return("Quartile entry should be empty or vector of length two")
-			return(strsplit(priorquartiles$getModel(),",")[[1]])
+			return("Quartile entry should be empty or of form low,high e.g 2000,5000")
+			#return(strsplit(priorquartiles$getModel(),",")[[1]])
 		if (priormodeprop$getModel()>1)
-			return("Prior propotion mode must be between 0 and 1")
+			return("Prior proportion mode must be between 0 and 1")
 		if (priormedprop$getModel()>1)
-			return("Prior propotion median must be between 0 and 1")
+			return("Prior proportion median must be between 0 and 1")
 		else("")
 
 		#if type is flat or pln, grey out everything but n and maxN
