@@ -8,6 +8,7 @@
 .makePosteriorDistribution <- function() {
 	
 	JPanel <- J("javax.swing.JPanel")
+	
 	JSeparator <- J("javax.swing.JSeparator")
 	Dimension <- J("java.awt.Dimension")
 	AnchorLayout <- J("org.rosuda.JGR.layout.AnchorLayout")
@@ -16,7 +17,7 @@
 	
 	
 	#top and column 1 - choose degree and optional status variables. 
-	#choose to use posteriorsize or posterior disease function via checkbox (diseasebox)
+	#choose to use posteriorsize or posteriordisease function via checkbox (diseasebox)
 	dialog <- new(Deducer::SimpleRDialog)
 	dialog$setSize(500L, 700L)
 	dialog$setTitle("Calculate Posterior Distribution of Population Size")
@@ -39,7 +40,7 @@
 	burnin$setDefaultModel("5000")
 	burnin$setLowerBound(0)
 	
-	samples <- new(Deducer::TextFieldWidget, "Number of samples")
+	samples <- new(Deducer::TextFieldWidget, "Number of Samples")
 	samples$setDefaultModel("1000")
 	samples$setLowerBound(1)
 	
@@ -49,7 +50,7 @@
 	
 	#can be calculated via prior distribution dialog
 	
-	maxN <- new(Deducer::TextFieldWidget, "Population Max")
+	maxN <- new(Deducer::TextFieldWidget, "Pop. Max")
 	maxN$setLowerBound(1)
 
 	priormed <- new(Deducer::TextFieldWidget, "Prior Median")
@@ -64,19 +65,19 @@
 	priormode <- new(Deducer::TextFieldWidget, "Prior Mode")
 	priormode$setLowerBound(1)
 	
-	quarts <- new(Deducer::TextFieldWidget, "Quartiles (25%,75%)")
+	quarts <- new(Deducer::TextFieldWidget, "Quartiles")
 	
-	priormodeprop <- new(Deducer::TextFieldWidget, "Proportion Prior Mode")
+	priormodeprop <- new(Deducer::TextFieldWidget, "Prop.  Mode")
 	priormodeprop$setLowerBound(0)
 	priormodeprop$setUpperBound(1)
 	priormodeprop$setDefaultModel(".5")
 	
-	#MAKE THIS A DROP DOWN
-	typedist <-new(Deducer::ButtonGroupWidget, "Prior Dist Type", c("proportion","flat","nbinom","pln"))
-	typedist$setDefaultModel("proportion")
+	types = c("proportion","flat","nbinom","pln")
+	typedist <-new(Deducer::ComboBoxWidget, types)
+	typedist$setTitle("Prior Distribution Type", TRUE)
+	#default automatically set to proportion
 	
 	#degree info
-	
 	maxDeg <- new(Deducer::TextFieldWidget, "Max Degree") #= K, default = round(quantile(s,0.80))
 	maxDeg$setLowerBound(1)
 	maxDeg$setToolTipText("The maximum degree for an individual. This is usually calculated as twice the maximum observed degree.")
@@ -86,10 +87,10 @@
 	#below isn't working. Doesn't work on ButtonGroupWidget?
 	#degreedist$setToolTipText("cmp = Conway-Maxwell-Poisson; nbinom = Negative Binomial; pln = Poisson-log-normal")
 	
-	priordegreemean <- new(Deducer::TextFieldWidget, "Degree Mean")
+	priordegreemean <- new(Deducer::TextFieldWidget, "Mean Degree")
 	priordegreemean$setLowerBound(0)
 	
-	priordegreeSD <- new(Deducer::TextFieldWidget, "Degree SD")
+	priordegreeSD <- new(Deducer::TextFieldWidget, "SD Degree")
 	priordegreeSD$setLowerBound(0)
 	
 	dispersion <- new(Deducer::TextFieldWidget, "Dispersion")
@@ -116,7 +117,7 @@
 	#effectivedf <- new(Deducer::TextFieldWidget, "Effective Prior DF")
 	#effectivedf$setDefaultModel("1")
 	
-	priormedprop <- new(Deducer::TextFieldWidget, "Proportion Prior Median")
+	priormedprop <- new(Deducer::TextFieldWidget, "Prop. Med")
 	priormedprop$setLowerBound(0)
 	priormedprop$setUpperBound(1)
 	
@@ -158,7 +159,7 @@
 	
 #prior data panel
 	priorpanel <- new(JPanel)
-	priorpanel$setBorder(J("javax.swing.BorderFactory")$createTitledBorder("Prior Pop. Data"))
+	priorpanel$setBorder(J("javax.swing.BorderFactory")$createTitledBorder("Prior Population Data"))
 	priorpanel$setLayout(new(AnchorLayout))
 	addComponent(dialog, priorpanel, 375, 950, 900, 500,bottomType="REL")		
 	
@@ -171,16 +172,77 @@
 	addComponent(priorpanel, priormode, 400, 475, 525, 50, bottomType = "REL")
 	addComponent(priorpanel, quarts, 400, 950, 525, 525, bottomType = "REL")
 	
-	addComponent(priorpanel, priormodeprop, 550, 475, 675, 50, bottomType = "NONE")
-	addComponent(priorpanel, priormedprop, 550, 950, 675, 525, bottomType = "NONE")
-	
-	#Left space to add this once I make it a drop-down. Also, dist for degree?
-	#addComponent(dialog, typedist, 900, 900, 1000, 600, bottomType = "NONE")
+	addComponent(priorpanel, priormodeprop, 550, 475, 675, 50, bottomType = "REL")
+	addComponent(priorpanel, priormedprop, 550, 950, 675, 525, bottomType = "REL")	
+	addComponent(priorpanel, typedist, 725, 950, 950, 50, bottomType = "REL")
 
-	checkFunc <- function(x) {}
+	checkFunc <- function(x) {
+		
+		if (degreevar$getRModel() == "c()") 
+			return("Please enter degree variable")
+		if (diseasevar$getRModel() == "c()" && diseasebox$getModel()$size()>0) 
+			return("Please enter status variable")
+		#if (maxN$getModel() == "") 
+		#	return("Please enter population max")
+		if (quarts$getModel()!="" && !length(strsplit(quarts$getModel(),",")[[1]])%in%c(0,2))
+			return("Quartile entry should be empty or of form low,high e.g 2000,5000")
+		if (priormodeprop$getModel()>1)
+			return("Prior proportion mode must be between 0 and 1")
+		if (priormedprop$getModel()>1)
+			return("Prior proportion median must be between 0 and 1")
+		else return("")
+		
+	}
 	dialog$setCheckFunction(toJava(checkFunc))	
 	
-	runFunc <- function(x){}	
+	runFunc <- function(x){
+			
+		"%+%" <- function(x, y) paste(x, y, sep = "")
+		s <- c(varSel$getRmodel,degreevar$getRModel())
+			max_N <- maxN$getModel()
+			dist_type <- switch(typedist$getModel(),
+					"proportion"="proportion",  #Decided to leave names as is, but can update this later
+					"nbinom"="nbinom",
+					"continuous"="continuous",
+					"pln"="pln",
+					"flat" = "flat" )
+			prior.mean <- "NULL"
+			if (priormean$getModel()!="") {prior.mean = priormean$getModel()}
+			prior.SD <- "NULL"
+			if (priorsd$getModel()!="") {prior.SD= priorsd$getModel()}
+			prior.med <- "NULL"
+			if (priormed$getModel()!="") {prior.med = priormed$getModel()}
+			prior.mode <- "NULL"
+			if (priormode$getModel()!="") {prior.mode = priormode$getModel()}
+			prior.quart <- "NULL"
+			quarts <- "c("%+%priorquartiles$getModel()%+%")"
+			#add hovertext to ensure proper entry form and/or add check for extra parenths
+			if (priorquartiles$getModel()!="") {prior.quart = quarts}
+			prior.prop.mode <- "NULL"
+			if (priormodeprop$getModel()!="") {prior.prop.mode = priormodeprop$getModel()}
+			prior.prop.med <- "NULL"
+			if (priormedprop$getModel()!="") {prior.prop.med = priormedprop$getModel()}	
+			
+			cmd <- "dsp <- dsizeprior(" %+% n %+% ", type=\"" %+% dist_type %+% "\", mean.prior.size =" %+% prior.mean %+%
+					", maxN=" %+% max_N %+%	", sd.prior.size=" %+% 
+					prior.SD %+% ", mode.prior.sample.proportion=" %+% prior.prop.mode %+% 
+					", median.prior.sample.proportion=" %+% prior.prop.med %+% 
+					", median.prior.size=" %+% prior.med %+% ", mode.prior.size =" %+% 
+					prior.mode %+% ", quartiles.prior.size=" %+% prior.quart %+% 
+					", effective.prior.df=1, alpha = NULL, beta = NULL, log = FALSE, maxbeta = 100, maxNmax = 2e+05, verbose = TRUE" 
+			
+			
+			
+			if(diseasevar$getModel()$size()>0) { #use posteriordisease function
+				dis <- degreevar$getRModel()
+				
+				cmd <- cmd %+% "); dsp[3:14]; plot(dsp$x,dsp$lprior,main = \"Prior Pop. Size Distribution (" %+% dist_type %+% ")\")"
+			}
+			else (cmd <- cmd %+% ");dsp\n")
+			execute(cmd)
+		
+		
+	}	
 	dialog$setRunFunction(toJava(runFunc))
 	dialog
 }
