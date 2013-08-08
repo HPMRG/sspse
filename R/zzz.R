@@ -28,13 +28,22 @@
   library.dynam("size", package=pkgname, lib.loc=libname)
   
   deducer.addMenuItem("Prior Distribution",,".getDialog('Prior Distribution')$run()","RDS Population")
-  if(.windowsGUI){winMenuAddItem("RDS Data",'Prior Distribution',"deducer('Prior Distribution')")}
+  deducer.addMenuItem("Posterior Distribution",,".getDialog('Posterior Distribution')$run()","RDS Population")
+  
+  if(.windowsGUI){
+	  winMenuAddItem("RDS Data",'Prior Distribution',"deducer('Prior Distribution')")
+	  winMenuAddItem("RDS Data",'Posterior Distribution',"deducer('Posterior Distribution')")  
+  }
+  
   else if(.jgr){	
 	  if(RDSAnalyst$isPro()){
 		  jgr.addMenuItem("RDS Population","Prior Distribution","deducer('Prior Distribution')")
-  		}}
+		  jgr.addMenuItem("RDS Population","Posterior Distribution","deducer('Posterior Distribution')")
+		  
+	  }}
 	
   .registerDialog("Prior Distribution", .makePriorDistribution)
+  .registerDialog("Posterior Distribution", .makePosteriorDistribution)
  }
 
 .onAttach <- function(libname, pkgname){
