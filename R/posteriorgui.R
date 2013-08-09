@@ -1,6 +1,10 @@
 # TODO: Add comment
 # 
 # Author: JaneAc
+
+#questions:
+#na.rm's in quantile func?
+
 ###############################################################################
 
 ###############################################################################
@@ -36,9 +40,9 @@
 	intervalsize$setDefaultModel("10")
 	intervalsize$setLowerBound(1)
 	
-	burnin <- new(Deducer::TextFieldWidget, "Burnin")
-	burnin$setDefaultModel("5000")
-	burnin$setLowerBound(0)
+	burn <- new(Deducer::TextFieldWidget, "Burnin")
+	burn$setDefaultModel("5000")
+	burn$setLowerBound(0)
 	
 	samples <- new(Deducer::TextFieldWidget, "Number of Samples")
 	samples$setDefaultModel("1000")
@@ -50,8 +54,8 @@
 	
 	#can be calculated via prior distribution dialog
 	
-	maxN <- new(Deducer::TextFieldWidget, "Pop. Max")
-	maxN$setLowerBound(1)
+	max_N <- new(Deducer::TextFieldWidget, "Pop. Max")
+	max_N$setLowerBound(1)
 
 	priormed <- new(Deducer::TextFieldWidget, "Prior Median")
 	priormed$setLowerBound(1)
@@ -67,7 +71,7 @@
 	
 	quarts <- new(Deducer::TextFieldWidget, "Quartiles")
 	
-	priormodeprop <- new(Deducer::TextFieldWidget, "Prop.  Mode")
+	priormodeprop <- new(Deducer::TextFieldWidget, "Prior Proportion Mode")
 	priormodeprop$setLowerBound(0)
 	priormodeprop$setUpperBound(1)
 	priormodeprop$setDefaultModel(".5")
@@ -78,7 +82,7 @@
 	#default automatically set to proportion
 	
 	#degree info
-	maxDeg <- new(Deducer::TextFieldWidget, "Max Degree") #= K, default = round(quantile(s,0.80))
+	maxDeg <- new(Deducer::TextFieldWidget, "Max Deg. (K)") #= K, default = round(quantile(s,0.80))
 	maxDeg$setLowerBound(1)
 	maxDeg$setToolTipText("The maximum degree for an individual. This is usually calculated as twice the maximum observed degree.")
 	
@@ -93,8 +97,8 @@
 	priordegreeSD <- new(Deducer::TextFieldWidget, "SD Degree")
 	priordegreeSD$setLowerBound(0)
 	
-	dispersion <- new(Deducer::TextFieldWidget, "Dispersion")
-	dispersion$setLowerBound(0)
+	dispers <- new(Deducer::TextFieldWidget, "Dispersion")
+	dispers$setLowerBound(0)
 	
 	
 	#plotbox <- new(Deducer::CheckBoxesWidget,.jarray("Plot Distribution"))
@@ -117,9 +121,9 @@
 	#effectivedf <- new(Deducer::TextFieldWidget, "Effective Prior DF")
 	#effectivedf$setDefaultModel("1")
 	
-	priormedprop <- new(Deducer::TextFieldWidget, "Prop. Med")
-	priormedprop$setLowerBound(0)
-	priormedprop$setUpperBound(1)
+	#priormedprop <- new(Deducer::TextFieldWidget, "Prop. Med")
+	#priormedprop$setLowerBound(0)
+	#priormedprop$setUpperBound(1)
 	
 	#top and column 1
 	addComponent(dialog, varSel, 50, 450, 350, 50)
@@ -138,7 +142,7 @@
 	samplepanel$setLayout(new(AnchorLayout))
 	addComponent(dialog, samplepanel, 375, 450, 625, 50,bottomType="REL")		
 	
-	addComponent(samplepanel, burnin, 100, 475, 450, 50, bottomType = "NONE")
+	addComponent(samplepanel, burn, 100, 475, 450, 50, bottomType = "NONE")
 	addComponent(samplepanel, intervalsize, 100, 950, 450, 525, bottomType = "NONE")
 	addComponent(samplepanel, samples, 500, 950, 950, 50, bottomType = "NONE")
 	
@@ -149,7 +153,7 @@
 	addComponent(dialog, degreepanel, 650, 450, 900, 50,bottomType="REL")		
 
 	addComponent(degreepanel, maxDeg, 100, 475, 450, 50, bottomType = "NONE")
-	addComponent(degreepanel, dispersion, 100, 950, 450, 525, bottomType = "NONE")
+	addComponent(degreepanel, dispers, 100, 950, 450, 525, bottomType = "NONE")
 	addComponent(degreepanel, priordegreemean, 500, 475, 950, 50, bottomType = "NONE")
 	addComponent(degreepanel, priordegreeSD, 500, 950, 950, 525, bottomType = "NONE")
 	#addComponent(dialog, degreedist, 650, 350, 700, 50, bottomType = "NONE")
@@ -163,7 +167,7 @@
 	priorpanel$setLayout(new(AnchorLayout))
 	addComponent(dialog, priorpanel, 375, 950, 900, 500,bottomType="REL")		
 	
-	addComponent(priorpanel, maxN, 100, 475, 225, 50, bottomType = "REL")
+	addComponent(priorpanel, max_N, 100, 475, 225, 50, bottomType = "REL")
 	addComponent(priorpanel, priormed, 100, 950, 225, 525, bottomType = "REL")
 	
 	addComponent(priorpanel, priormean, 250, 475, 375, 50, bottomType = "REL")
@@ -172,8 +176,8 @@
 	addComponent(priorpanel, priormode, 400, 475, 525, 50, bottomType = "REL")
 	addComponent(priorpanel, quarts, 400, 950, 525, 525, bottomType = "REL")
 	
-	addComponent(priorpanel, priormodeprop, 550, 475, 675, 50, bottomType = "REL")
-	addComponent(priorpanel, priormedprop, 550, 950, 675, 525, bottomType = "REL")	
+	addComponent(priorpanel, priormodeprop, 550, 750, 675, 50, bottomType = "REL")
+	#addComponent(priorpanel, priormedprop, 550, 950, 675, 525, bottomType = "REL")	
 	addComponent(priorpanel, typedist, 725, 950, 950, 50, bottomType = "REL")
 
 	checkFunc <- function(x) {
@@ -182,14 +186,12 @@
 			return("Please enter degree variable")
 		if (diseasevar$getRModel() == "c()" && diseasebox$getModel()$size()>0) 
 			return("Please enter status variable")
-		#if (maxN$getModel() == "") 
-		#	return("Please enter population max")
 		if (quarts$getModel()!="" && !length(strsplit(quarts$getModel(),",")[[1]])%in%c(0,2))
 			return("Quartile entry should be empty or of form low,high e.g 2000,5000")
 		if (priormodeprop$getModel()>1)
 			return("Prior proportion mode must be between 0 and 1")
-		if (priormedprop$getModel()>1)
-			return("Prior proportion median must be between 0 and 1")
+		#if (priormedprop$getModel()>1)
+		#	return("Prior proportion median must be between 0 and 1")
 		else return("")
 		
 	}
@@ -198,50 +200,138 @@
 	runFunc <- function(x){
 			
 		"%+%" <- function(x, y) paste(x, y, sep = "")
-		s <- c(varSel$getRmodel,degreevar$getRModel())
-			max_N <- maxN$getModel()
-			dist_type <- switch(typedist$getModel(),
-					"proportion"="proportion",  #Decided to leave names as is, but can update this later
-					"nbinom"="nbinom",
-					"continuous"="continuous",
-					"pln"="pln",
-					"flat" = "flat" )
-			prior.mean <- "NULL"
-			if (priormean$getModel()!="") {prior.mean = priormean$getModel()}
-			prior.SD <- "NULL"
-			if (priorsd$getModel()!="") {prior.SD= priorsd$getModel()}
-			prior.med <- "NULL"
-			if (priormed$getModel()!="") {prior.med = priormed$getModel()}
-			prior.mode <- "NULL"
-			if (priormode$getModel()!="") {prior.mode = priormode$getModel()}
-			prior.quart <- "NULL"
-			quarts <- "c("%+%priorquartiles$getModel()%+%")"
-			#add hovertext to ensure proper entry form and/or add check for extra parenths
-			if (priorquartiles$getModel()!="") {prior.quart = quarts}
-			prior.prop.mode <- "NULL"
-			if (priormodeprop$getModel()!="") {prior.prop.mode = priormodeprop$getModel()}
-			prior.prop.med <- "NULL"
-			if (priormedprop$getModel()!="") {prior.prop.med = priormedprop$getModel()}	
+		
+		deg<- unlist(strsplit(degreevar$getRModel(), "[\"]"))[2]		
+		#print(deg)
+		s <- varSel$getModel() %+% "$" %+% deg
+		#print(s)
+		
+		median.prior.size="NULL"
+		if (priormed$getModel()!="") {median.prior.size = priormed$getModel()}
+		interval <- "10"
+		if (intervalsize$getModel()!="") {interval = intervalsize$getModel()}
+		burnin <- "5000"
+		if (burn$getModel()!="") {burnin = burn$getModel()}
+		maxN = "NULL"
+		
+		if (max_N$getModel()!="") {maxN = max_N$getModel()}
+		s2=eval(parse(text=s))
+		K=as.character(round(quantile(s2,0.80,na.rm=TRUE))) #should this be double the max observed instead??
+		if (maxDeg$getModel()!="") {K = maxDeg$getModel()}
+		samplesize <- "1000"
+		if (samples$getModel()!="") {samplesize = samples$getModel()}
+		
+		quartiles.prior.size <- "NULL"
+		quarts2 <- quarts$getRModel()
+		#add hovertext to ensure proper entry form and/or add check for extra parenths?
+		if (quarts2!="\"\"") {quartiles.prior.size = quarts2}
+		print(quartiles.prior.size)
+		
+		mean.prior.size <- "NULL"
+		if (priormean$getModel()!="") {mean.prior.size = priormean$getModel()}
+		mode.prior.size <- "NULL"
+		if (priormode$getModel()!="") {mode.prior.size = priormode$getModel()}
+		priorsizedistribution=typedist$getRModel()
+		
+		sd.prior.size <- "NULL"
+		if (priorsd$getModel()!="") {sd.prior.size = priorsd$getModel()}
+		mode.prior.sample.proportion <- ".5"
+		if (priormodeprop$getModel()!="") {mode.prior.sample.proportion = priormodeprop$getModel()}
+		mean.prior.degree <- "NULL"
+		if (priordegreemean$getModel()!="") {mean.prior.degree = priordegreemean$getModel()}
+		sd.prior.degree <- "NULL"
+		if (priordegreeSD$getModel()!="") {sd.prior.degree = priordegreeSD$getModel()}
+		dispersion <- "NULL"
+		if (dispers$getModel()!="") {dispersion = dispers$getModel()}
+		
+		#no entry field
+		alpha = "NULL"
+		degreedistribution = "cmp" #
+		df.mean.prior="1"
+		df.sd.prior = "5"
+		Np = "0"
+		#effective.prior.df=1
+		#nk=tabulate(s,nbin=K),
+		#n=length(s),
+		#muproposal=0.1, 
+		#sigmaproposal=0.15, 
+		#burnintheta=500,
+		#parallel=1, 
+		#parallel.type="PVM",
+		#seed=NULL
+		#verbose=TRUE
+		
+#		checked to here
+		cmd <- "posize <- posteriorsize(" %+% s %+% #", median.prior.size=" %+% median.prior.size %+% ", interval =" %+% intervalsize %+%
+					#", burnin=" %+% burnin %+%
+					", maxN=" %+% maxN %+% ", K=" %+% K %+% 
+					#", samplesize=" %+% samplesize %+% 
+					", quartiles.prior.size=" %+% quartiles.prior.size %+% 
+					#", mean.prior.size =" %+% mean.prior.size %+% 
+					#", mode.prior.size=" %+% mode.prior.size %+% 
+					#", priorsizedistribution=" %+% priorsizedistribution %+% 
+					#", effective.prior.df= 1" %+% 
+					#", sd.prior.size =" %+%	sd.prior.size %+% 
+					#", mode.prior.sample.proportion=" %+% mode.prior.sample.proportion %+% 
+					#", alpha=" %+% alpha %+% 
+					#", degreedistribution=" %+% degreedistribution %+% 
+					#", mean.prior.degree=" %+% mean.prior.degree %+% 
+					#", sd.prior.degree=" %+% sd.prior.degree %+% 
+					#", df.mean.prior =" %+% df.mean.prior %+% 
+					#", df.sd.prior=" %+% df.sd.prior %+% 
+					#", Np=" %+% Np %+% 
+					#", dispersion=" %+% dispersion %+% 
+					#"nk=tabulate(s,nbin=K), n=length(s), muproposal=0.1, 
+					#\nsigmaproposal=0.15, burnintheta=500, parallel=1, parallel.type=\"PVM\",
+					#seed=NULL verbose=TRUE" %+% 
+					")"
+		
+		print(cmd)	
+		cmd <- cmd %+% ";posize\n"
 			
-			cmd <- "dsp <- dsizeprior(" %+% n %+% ", type=\"" %+% dist_type %+% "\", mean.prior.size =" %+% prior.mean %+%
-					", maxN=" %+% max_N %+%	", sd.prior.size=" %+% 
-					prior.SD %+% ", mode.prior.sample.proportion=" %+% prior.prop.mode %+% 
-					", median.prior.sample.proportion=" %+% prior.prop.med %+% 
-					", median.prior.size=" %+% prior.med %+% ", mode.prior.size =" %+% 
-					prior.mode %+% ", quartiles.prior.size=" %+% prior.quart %+% 
-					", effective.prior.df=1, alpha = NULL, beta = NULL, log = FALSE, maxbeta = 100, maxNmax = 2e+05, verbose = TRUE" 
+			#add mean0 and mean1
+			#samping defaults are different for posterior size
 			
-			
-			
-			if(diseasevar$getModel()$size()>0) { #use posteriordisease function
+		if(diseasevar$getModel()$size()>0) { #use posteriordisease function
 				dis <- degreevar$getRModel()
+				Np0 = "0"
+				Np1 = "0"
+				cmd <- "podisease <- posteriordiesase(" %+% s %+% ", dis=" %+% dis %+%
+						", mean0.prior.degree =" %+% mean0.prior.degree %+%
+						", mean1.prior.degree =" %+% mean1.prior.degree %+%
+						", sd.prior.degree =" %+% sd.prior.degree %+%
+						", df.mean.prior =" %+% df.mean.prior %+% 
+						", df.sd.prior=" %+% df.sd.prior %+% 
+						", Np0=" %+% 0 %+% 
+						", Np1=" %+% 0 %+% 
+						", samplesize=" %+% samplesize %+%	
+						", burnin=" %+% burnin %+%	
+						", interval=" %+% interval %+%	
+						", burnintheta=" %+% burnintheta %+%	
+						", priorsizedistribution=" %+% priorsizedistribution %+%	
+						", mean.prior.size =" %+% mean.prior.size %+% 
+						", sd.prior.size =" %+%	sd.prior.size %+% 
+						", mode.prior.sample.proportion=" %+% mode.prior.sample.proportion %+% 
+						", median.prior.size=" %+% median.prior.size %+% 
+						", mode.prior.size =" %+% mode.prior.size %+% 
+						", quartiles.prior.size=" %+% quartiles.prior.size %+%
+						", effective.prior.df= 1" %+% 
+						", alpha=" %+% alpha %+% 
+						", degreedistribution=" %+% degreedistribution %+% 
+						", maxN=" %+% maxN %+% 
+						", K=" %+% K %+% 
+						", n=length(s)," %+%
+						"nk0=tabulate(s[dis==0],nbin=K),
+						nk1=tabulate(s[dis==1],nbin=K),
+						muproposal=0.1,
+						sigmaproposal=0.15,
+						parallel=1, seed=NULL,
+						dispersion=0,
+						verbose=TRUE)"
+				cmd <- cmd %+% ";podisease\n"
+							}
+		execute(cmd)
 				
-				cmd <- cmd %+% "); dsp[3:14]; plot(dsp$x,dsp$lprior,main = \"Prior Pop. Size Distribution (" %+% dist_type %+% ")\")"
-			}
-			else (cmd <- cmd %+% ");dsp\n")
-			execute(cmd)
-		
-		
 	}	
 	dialog$setRunFunction(toJava(runFunc))
 	dialog
