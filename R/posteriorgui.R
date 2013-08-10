@@ -4,6 +4,7 @@
 
 #questions:
 #na.rm's in quantile func?
+#not working with nyjazz data, but ok with fauxmadronadata
 
 ###############################################################################
 
@@ -57,21 +58,21 @@
 	max_N <- new(Deducer::TextFieldWidget, "Pop. Max")
 	max_N$setLowerBound(1)
 
-	priormed <- new(Deducer::TextFieldWidget, "Prior Median")
+	priormed <- new(Deducer::TextFieldWidget, "Median")
 	priormed$setLowerBound(1)
 	
-	priormean <- new(Deducer::TextFieldWidget, "Prior Mean")
+	priormean <- new(Deducer::TextFieldWidget, "Mean")
 	priormean$setLowerBound(1)
 	
-	priorsd <- new(Deducer::TextFieldWidget, "Prior SD")
+	priorsd <- new(Deducer::TextFieldWidget, "SD")
 	priorsd$setLowerBound(0)
 	
-	priormode <- new(Deducer::TextFieldWidget, "Prior Mode")
+	priormode <- new(Deducer::TextFieldWidget, "Mode")
 	priormode$setLowerBound(1)
 	
 	quarts <- new(Deducer::TextFieldWidget, "Quartiles")
 	
-	priormodeprop <- new(Deducer::TextFieldWidget, "Prior Proportion Mode")
+	priormodeprop <- new(Deducer::TextFieldWidget, "Proportion Mode")
 	priormodeprop$setLowerBound(0)
 	priormodeprop$setUpperBound(1)
 	priormodeprop$setDefaultModel(".5")
@@ -106,11 +107,11 @@
 	#plotbox$setDefaultModel(c("Plot Distribution"))
 	
 	#column2
-	priormean <- new(Deducer::TextFieldWidget, "Prior Mean")
+	priormean <- new(Deducer::TextFieldWidget, "Mean")
 	priormean$setLowerBound(1)
 
 	
-	priormode <- new(Deducer::TextFieldWidget, "Prior Mode")
+	priormode <- new(Deducer::TextFieldWidget, "Mode")
 	priormed$setLowerBound(1)
 	
 	priorquartiles <- new(Deducer::TextFieldWidget, "Prior Quartiles (25%, 75%)")
@@ -202,9 +203,8 @@
 		"%+%" <- function(x, y) paste(x, y, sep = "")
 		
 		deg<- unlist(strsplit(degreevar$getRModel(), "[\"]"))[2]		
-		#print(deg)
+
 		s <- varSel$getModel() %+% "$" %+% deg
-		#print(s)
 		
 		median.prior.size="NULL"
 		if (priormed$getModel()!="") {median.prior.size = priormed$getModel()}
@@ -225,7 +225,6 @@
 		quarts2 <- quarts$getRModel()
 		#add hovertext to ensure proper entry form and/or add check for extra parenths?
 		if (quarts2!="\"\"") {quartiles.prior.size = quarts2}
-		print(quartiles.prior.size)
 		
 		mean.prior.size <- "NULL"
 		if (priormean$getModel()!="") {mean.prior.size = priormean$getModel()}
@@ -241,12 +240,12 @@
 		if (priordegreemean$getModel()!="") {mean.prior.degree = priordegreemean$getModel()}
 		sd.prior.degree <- "NULL"
 		if (priordegreeSD$getModel()!="") {sd.prior.degree = priordegreeSD$getModel()}
-		dispersion <- "NULL"
+		dispersion <- "0"
 		if (dispers$getModel()!="") {dispersion = dispers$getModel()}
 		
 		#no entry field
 		alpha = "NULL"
-		degreedistribution = "cmp" #
+		degreedistribution = "\"cmp\"" #
 		df.mean.prior="1"
 		df.sd.prior = "5"
 		Np = "0"
@@ -263,42 +262,43 @@
 		
 #		checked to here
 		cmd <- "posize <- posteriorsize(" %+% s %+% #", median.prior.size=" %+% median.prior.size %+% ", interval =" %+% intervalsize %+%
-					#", burnin=" %+% burnin %+%
+					", burnin=" %+% burnin %+%
 					", maxN=" %+% maxN %+% ", K=" %+% K %+% 
-					#", samplesize=" %+% samplesize %+% 
+					", samplesize=" %+% samplesize %+% 
 					", quartiles.prior.size=" %+% quartiles.prior.size %+% 
-					#", mean.prior.size =" %+% mean.prior.size %+% 
-					#", mode.prior.size=" %+% mode.prior.size %+% 
-					#", priorsizedistribution=" %+% priorsizedistribution %+% 
-					#", effective.prior.df= 1" %+% 
-					#", sd.prior.size =" %+%	sd.prior.size %+% 
-					#", mode.prior.sample.proportion=" %+% mode.prior.sample.proportion %+% 
-					#", alpha=" %+% alpha %+% 
-					#", degreedistribution=" %+% degreedistribution %+% 
-					#", mean.prior.degree=" %+% mean.prior.degree %+% 
-					#", sd.prior.degree=" %+% sd.prior.degree %+% 
-					#", df.mean.prior =" %+% df.mean.prior %+% 
-					#", df.sd.prior=" %+% df.sd.prior %+% 
-					#", Np=" %+% Np %+% 
-					#", dispersion=" %+% dispersion %+% 
-					#"nk=tabulate(s,nbin=K), n=length(s), muproposal=0.1, 
-					#\nsigmaproposal=0.15, burnintheta=500, parallel=1, parallel.type=\"PVM\",
-					#seed=NULL verbose=TRUE" %+% 
+					", mean.prior.size =" %+% mean.prior.size %+% 
+					", mode.prior.size=" %+% mode.prior.size %+% 
+					", priorsizedistribution=" %+% priorsizedistribution %+% 
+					", effective.prior.df= 1" %+% 
+					", sd.prior.size =" %+%	sd.prior.size %+% 
+					", mode.prior.sample.proportion=" %+% mode.prior.sample.proportion %+% 
+					", alpha=" %+% alpha %+% 
+					", degreedistribution=" %+% degreedistribution %+% 
+					", mean.prior.degree=" %+% mean.prior.degree %+% 
+					", sd.prior.degree=" %+% sd.prior.degree %+% 
+					", df.mean.prior =" %+% df.mean.prior %+% 
+					", df.sd.prior=" %+% df.sd.prior %+% 
+					", Np=" %+% Np %+% 
+					", dispersion=" %+% dispersion %+% 
+					", nk=tabulate(s,nbin=K), n=length(s)" %+% 
+					", muproposal=0.1, sigmaproposal=0.15, burnintheta=500" %+% 
+					", parallel=1, parallel.type=\"PVM\", seed=NULL, verbose=TRUE" %+% 
 					")"
 		
-		print(cmd)	
-		cmd <- cmd %+% ";posize\n"
 			
 			#add mean0 and mean1
 			#samping defaults are different for posterior size
 			
-		if(diseasevar$getModel()$size()>0) { #use posteriordisease function
-				dis <- degreevar$getRModel()
+		if(diseasebox$getModel()$size()>0) { #use posteriordisease function				
+				
+				dis2<- unlist(strsplit(diseasevar$getRModel(), "[\"]"))[2]		
+				dis <- varSel$getModel() %+% "$" %+% dis2
 				Np0 = "0"
 				Np1 = "0"
-				cmd <- "podisease <- posteriordiesase(" %+% s %+% ", dis=" %+% dis %+%
-						", mean0.prior.degree =" %+% mean0.prior.degree %+%
-						", mean1.prior.degree =" %+% mean1.prior.degree %+%
+				burnintheta="500"	
+				cmd <- "podisease <- posteriordisease(" %+% s %+% ", dis=" %+% dis %+%
+						#", mean0.prior.degree =" %+% mean0.prior.degree %+%
+						#", mean1.prior.degree =" %+% mean1.prior.degree %+%
 						", sd.prior.degree =" %+% sd.prior.degree %+%
 						", df.mean.prior =" %+% df.mean.prior %+% 
 						", df.sd.prior=" %+% df.sd.prior %+% 
@@ -321,14 +321,13 @@
 						", maxN=" %+% maxN %+% 
 						", K=" %+% K %+% 
 						", n=length(s)," %+%
-						"nk0=tabulate(s[dis==0],nbin=K),
-						nk1=tabulate(s[dis==1],nbin=K),
-						muproposal=0.1,
-						sigmaproposal=0.15,
-						parallel=1, seed=NULL,
-						dispersion=0,
-						verbose=TRUE)"
-				cmd <- cmd %+% ";podisease\n"
+						", dispersion=" %+% dispersion %+%
+						", nk0=tabulate(s[dis==0],nbin=K), nk1=tabulate(s[dis==1],nbin=K)" %+%
+						", muproposal=0.1, sigmaproposal=0.15, parallel=1, seed=NULL" %+%
+						", verbose=TRUE"  %+%
+						")"
+
+				cmd <- cmd %+% #";podisease\n"
 							}
 		execute(cmd)
 				
