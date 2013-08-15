@@ -1,6 +1,8 @@
 # Author: JaneAc
 
-#TO DO:
+#NOTES/TO DO:
+
+#I ordered the data based on waves. what to do with NAs?
 #na.rm's in quantile func?
 #optim(par bug
 #samping defaults should be different for posterior size
@@ -39,9 +41,9 @@
 	varSel <- new(Deducer::VariableSelectorWidget)
 	varSel$setRDataFilter("is.rds.data.frame")
 	
-	degreevar <- new(Deducer::SingleVariableWidget,"Degree Var",varSel)
-	diseasevar <- new(Deducer::SingleVariableWidget,"Status Var",varSel)
-	wavevar <- new(Deducer::SingleVariableWidget,"Wave Var",varSel) #wave or order?
+	degreevar <- new(Deducer::SingleVariableWidget,"Degree Variable",varSel)
+	diseasevar <- new(Deducer::SingleVariableWidget,"Status Variable",varSel)
+	wavevar <- new(Deducer::SingleVariableWidget,"Wave Variable",varSel) #wave or order?
 	
 	diseasebox <- new(Deducer::CheckBoxesWidget,.jarray("Use Status Variable")) 	##choose to use posteriorsize or posteriordisease function via checkbox (diseasebox)
 	
@@ -250,7 +252,7 @@
 			return("Prior proportion mode must be between 0 and 1")
 		#if (priormedprop$getModel()>1)
 		#	return("Prior proportion median must be between 0 and 1")
-		else return("")
+		else("")
 		
 	}
 	dialog$setCheckFunction(toJava(checkFunc))	
@@ -264,8 +266,10 @@
 		#not yet incorporated in function
 		wave<- unlist(strsplit(wavevar$getRModel(), "[\"]"))[2]		
 		
-		s <- varSel$getModel() %+% "$" %+% deg
-		
+		sbase1 <- varSel$getModel() %+% "$" %+% deg 
+		sbase2 <- varSel$getModel() %+% "$" %+% wave
+		s <- sbase1 %+% "[order(" %+% sbase2 %+% ")]" #leaving in NAs for now. remove in the function? [!is.na(" %+% sbase1 %+% "[order(" %+% sbase2 %+% ")])]"
+				
 		median.prior.size="NULL"
 		if (priormed$getModel()!="") {median.prior.size = priormed$getModel()}
 		interval <- "10"
@@ -366,6 +370,10 @@
 				
 				dis2<- unlist(strsplit(diseasevar$getRModel(), "[\"]"))[2]		
 				dis <- varSel$getModel() %+% "$" %+% dis2
+				sbase2 <- varSel$getModel() %+% "$" %+% wave
+				dis <- dis %+% "[order(" %+% sbase2 %+% ")]"
+				
+				
 				Np0 = "0"
 				Np1 = "0"
 				burnintheta="500"	
