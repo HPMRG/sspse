@@ -1,6 +1,7 @@
 # TODO: Add comment
 # 
 # Author: JaneAc
+#remove priors from these guis too?
 ###############################################################################
 
 
@@ -19,27 +20,27 @@
 	maxN$setInteger(TRUE)
 	maxN$setLowerBound(1)
 	
-	typedist <-new(Deducer::ButtonGroupWidget, "Distribution Type", c("proportion","nbinom","continuous","pln","flat"))
-	typedist$setToolTipText("nbinom = Negative Binomial; pln = Poison-log-normal")
+	typedist <-new(Deducer::ButtonGroupWidget, "Distribution Type", c("Proportion","Neg-binom","Continuous","Poisson-log-norm","Flat"))
+	#typedist$setToolTipText("Neg-binom = Negative Binomial; Poisson-log-norm = Poisson-log-normal")
 	
 	plotbox <- new(Deducer::CheckBoxesWidget,.jarray("Plot Distribution"))
 	setSize(plotbox,400,75)	
 	#plotbox$setDefaultModel(c("Plot Distribution"))
 	
 	#column2
-	priormean <- new(Deducer::TextFieldWidget, "Prior Mean")
+	priormean <- new(Deducer::TextFieldWidget, "Mean")
 	priormean$setLowerBound(1)
 	
-	priorsd <- new(Deducer::TextFieldWidget, "Prior Standard Deviation")
+	priorsd <- new(Deducer::TextFieldWidget, "Standard Deviation")
 	priorsd$setLowerBound(0)
 	
-	priormed <- new(Deducer::TextFieldWidget, "Prior Median")
+	priormed <- new(Deducer::TextFieldWidget, "Median")
 	priormed$setLowerBound(1)
 	
-	priormode <- new(Deducer::TextFieldWidget, "Prior Mode")
+	priormode <- new(Deducer::TextFieldWidget, "Mode")
 	priormed$setLowerBound(1)
 
-	priorquartiles <- new(Deducer::TextFieldWidget, "Prior Quartiles (25%, 75%)")
+	priorquartiles <- new(Deducer::TextFieldWidget, "Quartiles (25%, 75%)")
 	#set to require acoordinate pair
 	
 	#ignore for now - user can set on command line
@@ -47,12 +48,12 @@
 	#effectivedf <- new(Deducer::TextFieldWidget, "Effective Prior DF")
 	#effectivedf$setDefaultModel("1")
 	
-	priormodeprop <- new(Deducer::TextFieldWidget, "Proportion Prior Mode")
+	priormodeprop <- new(Deducer::TextFieldWidget, "Proportion Mode")
 	priormodeprop$setLowerBound(0)
 	priormodeprop$setUpperBound(1)
 	priormodeprop$setDefaultModel(".5")
 	
-	priormedprop <- new(Deducer::TextFieldWidget, "Proportion Prior Median")
+	priormedprop <- new(Deducer::TextFieldWidget, "Proportion Median")
 	priormedprop$setLowerBound(0)
 	priormedprop$setUpperBound(1)
 	
@@ -74,8 +75,10 @@
 	checkFunc <- function(x) {
 		if (samplesize$getModel() == "") 
 			return("Please enter sample size")
-		if (maxN$getModel() == "") 
+		if (maxN$getModel() == "" && typedist$getModel()!="Proportion") 
 			return("Please enter population max")
+		if (priormodeprop$getModel() == "" && typedist$getModel()!="Proportion") 
+			return("Please enter proportion prior mode")
 		if (priorquartiles$getModel()!="" && !length(strsplit(priorquartiles$getModel(),",")[[1]])%in%c(0,2))
 			return("Quartile entry should be empty or of form low,high e.g 2000,5000")
 			#return(strsplit(priorquartiles$getModel(),",")[[1]])
@@ -87,17 +90,6 @@
 
 		#if type is flat or pln, grey out everything but n and maxN
 		#if type is proportioon, grey out mode.prior.size
-		
-		#tmp <- weightPanel$check()
-		#if (tmp != "") 
-		#	return(tmp)
-		#if (sub$getModel() != "") {
-		#	data <- varSel$getModel()
-		#	subExp <- sub$getModel()
-		#	if (!J("RDSAnalyst.SubsetWidget")$isValidSubsetExp(subExp, 
-		#			data)) 
-		#		return("Invalid subset")
-		
 }
 
 	dialog$setCheckFunction(toJava(checkFunc))	
@@ -108,11 +100,11 @@
 		n <- samplesize$getModel()
 		max_N <- maxN$getModel()
 		dist_type <- switch(typedist$getModel(),
-				"proportion"="proportion",  #Decided to leave names as is, but can update this later
-				"nbinom"="nbinom",
-				"continuous"="continuous",
-				"pln"="pln",
-				"flat" = "flat" )
+				"Proportion"="proportion",
+				"Neg-binom"="nbinom",
+				"Continuous"="continuous",
+				"Poisson-log-norm"="pln",
+				"Flat" = "flat" )
 		prior.mean <- "NULL"
 			if (priormean$getModel()!="") {prior.mean = priormean$getModel()}
 		prior.SD <- "NULL"
@@ -136,14 +128,14 @@
 		", median.prior.sample.proportion=" %+% prior.prop.med %+% 
 		", median.prior.size=" %+% prior.med %+% ", mode.prior.size =" %+% 
 		prior.mode %+% ", quartiles.prior.size=" %+% prior.quart %+% 
-		", effective.prior.df=1, alpha = NULL, beta = NULL, log = FALSE, maxbeta = 100, maxNmax = 2e+05, verbose = TRUE" 
+		", effective.prior.df=1, alpha = NULL, beta = NULL, log = FALSE, maxbeta = 100, maxNmax = 200000, verbose = TRUE" 
 	
 		
 		
 		if(plotbox$getModel()$size()>0) { #return info and plot instead of pmf vectors
-			cmd <- cmd %+% "); dsp[3:14]; plot(dsp$x,dsp$lprior,main = \"Prior Pop. Size Distribution (" %+% dist_type %+% ")\")"
+			cmd <- cmd %+% ")\n dsp[3:14] \n plot(dsp$x,dsp$lprior,main = \"Prior Pop. Size Distribution (" %+% dist_type %+% ")\")"
 			}
-			else (cmd <- cmd %+% ");dsp\n")
+			else (cmd <- cmd %+% ")\n dsp\n")
 		execute(cmd)
 	}	
 	dialog$setRunFunction(toJava(runFunc))
