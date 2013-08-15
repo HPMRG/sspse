@@ -79,7 +79,7 @@
 		
 		sbase1 <- varSel$getModel() %+% "$" %+% deg 
 		sbase2 <- varSel$getModel() %+% "$" %+% wave
-		s <- sbase1 %+% "[order(" %+% sbase2 %+% ")][!is.na(" %+% sbase1 %+% "[order(" %+% sbase2 %+% ")])]"
+		s <- sbase1 %+% "[order(" %+% sbase2 %+% ")]" #leaving NAs for now [!is.na(" %+% sbase1 %+% "[order(" %+% sbase2 %+% ")])]"
 		
 		K <- max_s$getModel()
 		if (K=="") {K = "max(s)"} 
