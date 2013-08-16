@@ -1,8 +1,12 @@
 # TODO/NOTES:
 # should method and maxit be set by the user?
 # I ordered the data based on waves and removed NAs
-# ERROR: printing the following line repeatedly after calculations
+# MUST RECREATE?:    ERROR: printing the following line repeatedly after calculations
 # N=10000 minvalid=5000 nvalidhtn=0 nvalidhtd=1000000
+  #??? 4)  I added a dialog for marginal posterior distribution dialog. 
+  #The dialog is OK, but when the function is actually called there's a bug where a line like 
+  # this "N=10000 minvalid=5000 nvalidhtn=0 nvalidhtd=1000000" is printed repeatedly". 
+  #I think the root of the problem is in the size.c file, but that's as far as I've delved.
 # Author: JaneAc
 ###############################################################################
 
@@ -74,7 +78,6 @@
 		
 		deg<- unlist(strsplit(degreevar$getRModel(), "[\"]"))[2]
 		
-		#not yet incorporated in function
 		wave<- unlist(strsplit(wavevar$getRModel(), "[\"]"))[2]		
 		
 		sbase1 <- varSel$getModel() %+% "$" %+% deg 
