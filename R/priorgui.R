@@ -1,7 +1,6 @@
 # TODO: Add comment
 # 
 # Author: JaneAc
-#remove priors from these guis too?
 ###############################################################################
 
 
@@ -77,7 +76,7 @@
 			return("Please enter sample size")
 		if (maxN$getModel() == "" && typedist$getModel()!="Proportion") 
 			return("Please enter population max")
-		if (priormodeprop$getModel() == "" && typedist$getModel()!="Proportion") 
+		if (priormodeprop$getModel() == "" && typedist$getModel()=="Proportion") 
 			return("Please enter proportion prior mode")
 		if (priorquartiles$getModel()!="" && !length(strsplit(priorquartiles$getModel(),",")[[1]])%in%c(0,2))
 			return("Quartile entry should be empty or of form low,high e.g 2000,5000")
