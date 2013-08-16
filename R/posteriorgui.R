@@ -4,7 +4,6 @@
 
 #I ordered the data based on waves. what to do with NAs?
 #na.rm's in quantile func?
-#optim(par bug
 #samping defaults should be different for posterior size
 #mention (in tooltip?) that prior data can be calculated via prior distribution dialog
 #add info buttons on subdialogs with screenshots of annotated versions of the dialogs
@@ -87,7 +86,7 @@
 	
 	types = c("Proportion","Flat","Neg-binom","Poisson-log-norm")
 	typedist <-new(Deducer::ComboBoxWidget, types)
-	typedist$setTitle("Prior Dist. Type", TRUE)
+	typedist$setTitle("Distribution Type", TRUE)
 	typedist$setDefaultModel("proportion")
 	
 	
@@ -362,7 +361,7 @@
 					", muproposal=0.1, sigmaproposal=0.15, burnintheta=500" %+% 
 					", parallel=1, parallel.type=\"PVM\", seed=NULL, verbose=TRUE" %+% 
 					")"
-			cmd <- cmd # %+% ";posize\n"
+			cmd <- cmd # %+% "\n posize\n" #print this?
 			
 		}
 		
@@ -408,7 +407,7 @@
 						", verbose = TRUE"  %+%
 						")"
 
-				cmd <- cmd # %+% ";podisease\n"
+				cmd <- cmd # %+% "\n podisease\n" #print this?
 						}
 		execute(cmd)
 
