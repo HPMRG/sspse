@@ -29,22 +29,29 @@
   
   deducer.addMenuItem("Prior Distribution",,".getDialog('Prior Distribution')$run()","RDS Population")
   deducer.addMenuItem("Posterior Distribution",,".getDialog('Posterior Distribution')$run()","RDS Population")
+  deducer.addMenuItem("Marginal Posterior Distribution",,".getDialog('Marginal Posterior Distribution')$run()","RDS Population")
+  
   
   if(.windowsGUI){
 	  winMenuAddItem("RDS Data",'Prior Distribution',"deducer('Prior Distribution')")
 	  winMenuAddItem("RDS Data",'Posterior Distribution',"deducer('Posterior Distribution')")  
+	  winMenuAddItem("RDS Data",'Marginal Posterior Distribution',"deducer('Marginal Posterior Distribution')")  
+	  
   }
   
   else if(.jgr){	
 	  if(RDSAnalyst$isPro()){
 		  jgr.addMenuItem("RDS Population","Prior Distribution","deducer('Prior Distribution')")
 		  jgr.addMenuItem("RDS Population","Posterior Distribution","deducer('Posterior Distribution')")
-		  
+		  jgr.addMenuItem("RDS Population","Marginal Posterior Distribution","deducer('Marginal Posterior Distribution')")
+
 	  }}
 	
   .registerDialog("Prior Distribution", .makePriorDistribution)
   .registerDialog("Posterior Distribution", .makePosteriorDistribution)
- }
+  .registerDialog("Marginal Posterior Distribution", .makeMarginalPosteriorDistribution)
+  
+}
 
 .onAttach <- function(libname, pkgname){
   temp<-packageDescription("size")
@@ -58,5 +65,6 @@
   msg<-paste(msg,'Type help("size-package") to get started.\n')
   packageStartupMessage(msg)
 }
+
 
 
