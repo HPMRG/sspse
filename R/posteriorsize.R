@@ -11,7 +11,7 @@ posteriorsize<-function(s,
 		  priorsizedistribution=c("proportion","flat","nbinom","pln","supplied"),
 		  effective.prior.df=1,
                   sd.prior.size=NULL,
-		  mode.prior.sample.proportion=NULL,
+		  mode.prior.sample.proportion=.5, #changed from NULL, jc
 		  alpha=NULL,
 		  degreedistribution=c("cmp","nbinom","pln"),
                   mean.prior.degree=NULL, sd.prior.degree=NULL,
