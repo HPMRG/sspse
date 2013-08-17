@@ -1,11 +1,13 @@
 # Author: JaneAc
 #
 # TODO/NOTES:
-# margposN function is in size.mle.R file
+# margposN function is in the size.mle.R file
 # should method and maxit be set by the user?
 # I ordered the data based on waves
 # NAs cause problems in the function. should they be removed as part of the function?
 # Make output more useful: 1) return pmf as a variable than can be plotted? - Right now it's the qprob vector if return.all=TRUE)
+	#add option to plot pmf?
+# n=tabulate(s,nbin=K), error as with margpossize
 ###############################################################################
 
 .makeMarginalPosteriorDistribution <- function() {
@@ -40,12 +42,12 @@
 	samples$setInteger(TRUE)
 	samples$setLowerBound(1)
 
-	#top 
+	#top
 	addComponent(dialog, varSel, 50, 450, 550, 50)
 	addComponent(dialog, degreevar, 50, 950, 200, 500)
 	addComponent(dialog, wavevar, 250, 950, 400, 500, topType="REL",bottomType="REL")	
 	
-	
+	#bottom
 	addComponent(dialog, samples, 650, 325, 850, 75, topType="REL",bottomType="NONE")
 	addComponent(dialog, N_count, 650, 625, 850, 375, topType="REL",bottomType="NONE")
 	addComponent(dialog, max_s, 650, 925, 850, 675, topType="REL",bottomType="NONE")
