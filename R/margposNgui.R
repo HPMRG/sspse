@@ -1,13 +1,11 @@
-# TODO/NOTES:
-# should method and maxit be set by the user?
-# I ordered the data based on waves and removed NAs
-# MUST RECREATE?:    ERROR: printing the following line repeatedly after calculations
-# N=10000 minvalid=5000 nvalidhtn=0 nvalidhtd=1000000
-  #??? 4)  I added a dialog for marginal posterior distribution dialog. 
-  #The dialog is OK, but when the function is actually called there's a bug where a line like 
-  # this "N=10000 minvalid=5000 nvalidhtn=0 nvalidhtd=1000000" is printed repeatedly". 
-  #I think the root of the problem is in the size.c file, but that's as far as I've delved.
 # Author: JaneAc
+#
+# TODO/NOTES:
+# margposN function is in size.mle.R file
+# should method and maxit be set by the user?
+# I ordered the data based on waves
+# NAs cause problems in the function. should they be removed as part of the function?
+# Make output more useful: 1) return pmf as a variable than can be plotted? - Right now it's the qprob vector if return.all=TRUE)
 ###############################################################################
 
 .makeMarginalPosteriorDistribution <- function() {
@@ -100,13 +98,14 @@
 			", M = " %+% M %+%
 			", maxit = " %+% maxit %+%
 			", method = " %+% method %+% 
-			", prob = rep(1/K, K), parallel=1, seed=NULL,verbose=FALSE" %+%
+			", parallel=1, seed=NULL,verbose=FALSE" %+%
 			# n=tabulate(s,nbin=K), 
-			", qprob = NULL, temp = 10, trace = 0, return.all=FALSE"  %+%
+			", temp = 10, trace = 0, return.all=FALSE"  %+%
 			")"
 	
-		#not entered through dialog: 
-		#parallel=1, seed, verbose, n, qprob, maxit, temp, trace, return.all
+		#not entered through dialog:
+		#parallel=1, seed, verbose, n, maxit, temp, trace, return.all
+	    # prob = rep(1/K, K) , qprob = NULL are set internally
 	
 	execute(cmd)
 
