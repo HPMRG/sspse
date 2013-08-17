@@ -30,12 +30,14 @@
   deducer.addMenuItem("Prior Distribution",,".getDialog('Prior Distribution')$run()","RDS Population")
   deducer.addMenuItem("Posterior Distribution",,".getDialog('Posterior Distribution')$run()","RDS Population")
   deducer.addMenuItem("Marginal Posterior Distribution",,".getDialog('Marginal Posterior Distribution')$run()","RDS Population")
+  deducer.addMenuItem("Marginal Posterior Size Dist.",,".getDialog('Marginal Posterior Size Dist.')$run()","RDS Population")
   
   
   if(.windowsGUI){
 	  winMenuAddItem("RDS Data",'Prior Distribution',"deducer('Prior Distribution')")
 	  winMenuAddItem("RDS Data",'Posterior Distribution',"deducer('Posterior Distribution')")  
 	  winMenuAddItem("RDS Data",'Marginal Posterior Distribution',"deducer('Marginal Posterior Distribution')")  
+	  winMenuAddItem("RDS Data",'Marginal Posterior Size Dist.',"deducer('Marginal Posterior Size Dist.')")  
 	  
   }
   
@@ -44,12 +46,14 @@
 		  jgr.addMenuItem("RDS Population","Prior Distribution","deducer('Prior Distribution')")
 		  jgr.addMenuItem("RDS Population","Posterior Distribution","deducer('Posterior Distribution')")
 		  jgr.addMenuItem("RDS Population","Marginal Posterior Distribution","deducer('Marginal Posterior Distribution')")
-
+		  jgr.addMenuItem("RDS Population","Marginal Posterior Size Dist.","deducer('Marginal Posterior Size Dist.')")
+		  
 	  }}
 	
   .registerDialog("Prior Distribution", .makePriorDistribution)
   .registerDialog("Posterior Distribution", .makePosteriorDistribution)
   .registerDialog("Marginal Posterior Distribution", .makeMarginalPosteriorDistribution)
+  .registerDialog("Marginal Posterior Size Dist.", .makeMarginalPosteriorSize)
   
 }
 
