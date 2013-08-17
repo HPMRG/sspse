@@ -7,6 +7,7 @@
 #samping defaults should be different for posterior size
 #mention (in tooltip?) that prior data can be calculated via prior distribution dialog
 #add info buttons on subdialogs with screenshots of annotated versions of the dialogs
+#nk=tabulate(s,nbin=K)" %+%  This line causes crash when included excplicitly. also a problem in the marginal functions.
 
 
 ###############################################################################
