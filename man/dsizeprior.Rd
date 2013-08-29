@@ -23,7 +23,7 @@ collected by Respondent Driven Sampling.
    maxN=NULL,
    log=FALSE,
    maxbeta = 100,
-   maxNmax = 2e+05,
+   maxNmax = 200000,
    verbose=TRUE)
 }
 \arguments{
