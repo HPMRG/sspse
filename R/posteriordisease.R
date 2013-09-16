@@ -7,7 +7,7 @@ posteriordisease<-function(s,dis,
                   samplesize=1000,burnin=100,interval=1,burnintheta=500,
 		  priorsizedistribution=c("proportion","nbinom","pln","flat"),
 		  mean.prior.size=NULL, sd.prior.size=NULL,
-		  mode.prior.sample.proportion=0.5,
+		  mode.prior.sample.proportion=NULL,
 		  median.prior.size=NULL,
 		  mode.prior.size=NULL,
 		  quartiles.prior.size=NULL,
@@ -22,6 +22,17 @@ posteriordisease<-function(s,dis,
                   sigmaproposal=0.15, 
                   parallel=1, seed=NULL, dispersion=0,
                   verbose=TRUE){
+  remvalues <- !is.na(s) & !is.na(dis)
+  if(sum(remvalues) < length(s)){
+   warning(paste(length(s)-sum(remvalues),"of",length(s),
+  	"sizes or disease status values were missing and were removed."), call. = FALSE)
+   s <- s[remvalues]
+   dis <- dis[remvalues]
+   n <- length(s)
+   K <- round(quantile(s,0.80))
+   nk0=tabulate(s[dis==0],nbins=K)
+   nk1=tabulate(s[dis==1],nbins=K)
+  }
   if(!any(dis==0)){nk0 <- nk1-nk1}
   if(!any(dis==1)){nk1 <- nk0-nk0}
   degreedistribution=match.arg(degreedistribution)

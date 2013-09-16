@@ -25,26 +25,27 @@ posteriorsize(s,
                   interval=10,
                   burnin=5000,
                   maxN=NULL,
-                  K=round(quantile(s,0.80)),
+                  K=NULL,
                   samplesize=1000,
                   quartiles.prior.size=NULL,
                   mean.prior.size=NULL,
                   mode.prior.size=NULL,
-                  priorsizedistribution=c("proportion","flat","nbinom","pln"),
+                  priorsizedistribution=c("proportion","flat","nbinom","pln","supplied"),
                   effective.prior.df=1,
                   sd.prior.size=NULL,
-                  mode.prior.sample.proportion=0.5,
+                  mode.prior.sample.proportion=NULL,
                   alpha=NULL,
                   degreedistribution=c("cmp","nbinom","pln"),
                   mean.prior.degree=NULL, sd.prior.degree=NULL,
                   df.mean.prior=1,df.sd.prior=5,
                   Np=0,
-                  nk=tabulate(s,nbin=K),
+                  nk=NULL,
                   n=length(s),
                   muproposal=0.1, 
                   sigmaproposal=0.15, 
                   burnintheta=500,
                   parallel=1, parallel.type="PVM", seed=NULL, dispersion=0,
+                  supplied=list(maxN=maxN),
                   verbose=TRUE)
 }
 \arguments{
@@ -55,7 +56,7 @@ posteriorsize(s,
   \item{burnin}{count; the number of proposals before any MCMC sampling is done. It typically is set to a fairly large number.}
   \item{maxN}{integer; maximum possible population size. By default this is determined from an upper quantile of the prior distribution.}
   \item{K}{count; the maximum degree for an individual. This is usually
-calculated as twice the maximum observed degree.}
+calculated as \code{round(quantile(s,0.80))}.}
   \item{samplesize}{count; the number of Monte-Carlo samples to draw to compute the posterior. This is the number returned by the Metropolis-Hastings algorithm.The default is 1000.}
   \item{quartiles.prior.size}{vector of length 2; A pair of hyperparameters being the lower and upper quartiles of the prior distribution on the population size.
 For example, \code{quartiles.prior.size=c(1000,4000)} corresponds to a prior
@@ -90,8 +91,8 @@ should adjust for an lack-of-fit of the parametric degree
 distribution model  at lower degrees, although it also changes
 the model away from the parametric degree distribution model.}
   \item{nk}{vector; the vector of counts for the number of people in the sample
-with degree k. This is usually computed from \eqn{s} automatically and not
-usually specified by the user.}
+with degree k. This is usually computed from \eqn{s} automatically as
+\code{tabulate(s,nbins=K)} and not usually specified by the user.}
   \item{n}{vector; the vector of counts for the number of people in the sample
 with degree k. This is usually computed from \eqn{s} automatically and not
 usually specified by the user.}
@@ -109,6 +110,10 @@ The default is 1, that is not to use parallel processing.}
   }
   \item{dispersion}{scalar; dispersion to use in the reported network size
       compared to the actual network size.}
+  \item{supplied}{list; If supplied, is a list with components \code{maxN} and \code{asample}.
+In this case \code{supplied} is a matrix with a column named \code{N} being a sample from a
+prior distribution for the population size. The value 
+\code{maxN} specifies the maximum value of the population size, a priori.}
   \item{verbose}{logical; if this is
     \code{TRUE}, the program will print out additional
     information, including goodness of fit statistics.

@@ -11,13 +11,13 @@ posteriorsize<-function(s,
 		  priorsizedistribution=c("proportion","flat","nbinom","pln","supplied"),
 		  effective.prior.df=1,
                   sd.prior.size=NULL,
-		  mode.prior.sample.proportion=.5, #changed from NULL, jc
+		  mode.prior.sample.proportion=NULL,
 		  alpha=NULL,
 		  degreedistribution=c("cmp","nbinom","pln"),
                   mean.prior.degree=NULL, sd.prior.degree=NULL,
                   df.mean.prior=1,df.sd.prior=5,
                   Np=0,
-                  nk=tabulate(s,nbins=K),
+                  nk=NULL,
                   n=length(s),
                   muproposal=0.1, 
                   sigmaproposal=0.15, 
@@ -32,6 +32,13 @@ posteriorsize<-function(s,
                   pln=pospln,
 		  cmp=poscmp,
 		  poscmp)
+  remvalues <- !is.na(s)
+  if(sum(remvalues) < length(s)){
+   warning(paste(length(s)-sum(remvalues),"of",length(s),
+  	"sizes values were missing and were removed."), call. = FALSE)
+   s <- s[remvalues]
+   n <- length(s)
+  }
   priorsizedistribution=match.arg(priorsizedistribution)
   if(priorsizedistribution=="nbinom" && missing(mean.prior.size)){
     stop("You need to specify 'mean.prior.size', and possibly 'sd.prior.size' if you use the 'nbinom' prior.") 
@@ -60,6 +67,7 @@ posteriorsize<-function(s,
     K=(0:max(s))[which.max(cumsum(y)>0.95)]
   }
   cat(sprintf("The size cap is K = %d.\n",K))
+  if(is.null(nk)){ nk <- tabulate(s,nbins=K)}
   if(is.null(mean.prior.degree)){
     degs <- s
     degs[degs>K] <- K

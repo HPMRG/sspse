@@ -29,7 +29,7 @@ sample of degrees only.
                   samplesize=1000,burnin=100,interval=1,burnintheta=500,
                   priorsizedistribution=c("proportion","nbinom","pln","flat"),
                   mean.prior.size=NULL, sd.prior.size=NULL,
-                  mode.prior.sample.proportion=0.5,
+                  mode.prior.sample.proportion=NULL,
                   median.prior.size=NULL,
                   mode.prior.size=NULL,
 		  quartiles.prior.size=NULL,
@@ -107,14 +107,17 @@ where the lower quartile (25\%) is 1000 and the upper (75\%) is 4000.}
   Negative-Binomial, and Poisson-log-normal. The default is \code{cmp}.}
   \item{maxN}{integer; maximum possible population size. By default this is determined from an upper quantile of the prior distribution.}
   \item{K}{count; the maximum degree for an individual. This is usually
-calculated as twice the maximum observed degree.}
+calculated as \code{round(quantile(s,0.80))}.}
   \item{n}{vector; the vector of counts for the number of people in the sample
 with degree k. This is usually computed from \eqn{s} automatically and not
 usually specified by the user.}
   \item{nk0}{vector; the vector of counts for the number of non-diseased people in the sample
-with degree k. This is usually computed from \eqn{s} automatically and not
-usually specified by the user.}
-  \item{nk1}{vector; the vector of counts for the number of diseased people in the sample with degree k. This is usually computed from \eqn{s} automatically and not usually specified by the user.}
+with degree k. This is usually computed from \eqn{s} automatically as
+                  \code{tabulate(s[dis==0],nbin=K)} and
+not usually specified by the user.}
+  \item{nk1}{vector; the vector of counts for the number of diseased people in the sample with degree k. This is usually computed from \eqn{s} automatically as
+                  \code{tabulate(s[dis==1],nbin=K)} and
+not usually specified by the user.}
   \item{muproposal}{scalar; The standard deviation of the proposal distribution for the mean degree.}
   \item{sigmaproposal}{scalar; The standard deviation of the proposal
 distribution for the standard deviation of the degree.}

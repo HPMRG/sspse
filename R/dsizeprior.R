@@ -2,7 +2,7 @@ dsizeprior<-function(n,
 		  type=c("proportion","nbinom","pln","flat","continuous","supplied"),
 		  mean.prior.size=NULL, sd.prior.size=NULL,
 		  mode.prior.sample.proportion=NULL,
-		  median.prior.sample.proportion=0.5,
+		  median.prior.sample.proportion=NULL,
 		  median.prior.size=NULL,
 		  median.mid.prior.size=NULL,
 		  mode.prior.size=NULL,
@@ -70,6 +70,7 @@ dsizeprior<-function(n,
       lpriorm
      },
     continuous={
+     beta <- 2
      if(!is.null(mode.prior.sample.proportion)){
       beta <- 2/mode.prior.sample.proportion - 1
      }

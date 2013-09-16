@@ -12,7 +12,7 @@ collected by Respondent Driven Sampling.
  dsizeprior(n,
    type=c("proportion","nbinom","pln","flat","continuous"),
    mean.prior.size=NULL, sd.prior.size=NULL,
-   mode.prior.sample.proportion=0.5,
+   mode.prior.sample.proportion=NULL,
    median.prior.sample.proportion=NULL,
    median.prior.size=NULL,
    median.mid.prior.size=NULL,
