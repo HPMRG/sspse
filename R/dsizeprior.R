@@ -1,5 +1,5 @@
 dsizeprior<-function(n,
-		  type=c("proportion","nbinom","pln","flat","continuous","supplied"),
+		  type=c("beta","nbinom","pln","flat","continuous","supplied"),
 		  mean.prior.size=NULL, sd.prior.size=NULL,
 		  mode.prior.sample.proportion=NULL,
 		  median.prior.sample.proportion=NULL,

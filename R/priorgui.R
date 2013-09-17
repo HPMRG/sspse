@@ -99,7 +99,7 @@
 		n <- samplesize$getModel()
 		max_N <- maxN$getModel()
 		dist_type <- switch(typedist$getModel(),
-				"Proportion"="proportion",
+				"Proportion"="beta",
 				"Neg-binom"="nbinom",
 				"Continuous"="continuous",
 				"Poisson-log-norm"="pln",

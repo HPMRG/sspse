@@ -10,7 +10,7 @@ collected by Respondent Driven Sampling.
 }
 \usage{
  dsizeprior(n,
-   type=c("proportion","nbinom","pln","flat","continuous"),
+   type=c("beta","nbinom","pln","flat","continuous"),
    mean.prior.size=NULL, sd.prior.size=NULL,
    mode.prior.sample.proportion=NULL,
    median.prior.sample.proportion=NULL,
@@ -28,12 +28,12 @@ collected by Respondent Driven Sampling.
 }
 \arguments{
   \item{n}{count; the sample size.}
-  \item{type}{character; the type of parametric distribution to use for the prior on population size. The options are \code{proportion}
-(for a prior on the sample proportion (i.e. \eqn{n/N}), 
+  \item{type}{character; the type of parametric distribution to use for the prior on population size. The options are \code{beta}
+(for a Beta-type prior on the sample proportion (i.e. \eqn{n/N}), 
 \code{nbinom} (Negative-Binomial), \code{pln} (Poisson-log-normal),
 \code{flat} (uniform), and \code{continuous} (the continuous version of
-\code{proportion}).
-The default is \code{proportion}.}
+the Beta-type prior on the sample proportion).
+The default is \code{beta}.}
   \item{mean.prior.size}{scalar; A hyperparameter being the mean of the prior distribution on the population size.}
   \item{sd.prior.size}{scalar; A hyperparameter being the standard deviation of the prior distribution on the population size.}
   \item{mode.prior.sample.proportion}{scalar; A hyperparameter being the mode of the prior distribution on the sample proportion \eqn{n/N}.}
@@ -44,7 +44,7 @@ The default is \code{proportion}.}
 For example, \code{quartiles.prior.size=c(1000,4000)} corresponds to a prior
 where the lower quartile (25\%) is 1000 and the upper (75\%) is 4000.}
   \item{effective.prior.df}{scalar; A hyperparameter being the effective number of samples worth of information represented in the prior distribution on the population size. By default this is 1, but it can be greater (or less!) to allow for different levels of uncertainty.}
-  \item{alpha}{scalar; A hyperparameter being the first parameter of the beta prior model for the sample proportion. By default this is NULL, meaning that 1 is chosen. it can be any value at least 1 to allow for different levels of uncertainty.}
+  \item{alpha}{scalar; A hyperparameter being the first parameter of the Beta prior model for the sample proportion. By default this is NULL, meaning that 1 is chosen. it can be any value at least 1 to allow for different levels of uncertainty.}
   \item{maxN}{integer; maximum possible population size. By default this is determined from an upper quantile of the prior distribution.}
   \item{log}{logical; return the prior or the the logarithm of the prior.}
   \item{maxbeta}{integer; maximum beta in the prior for population size. By default this is determined to ensure numerical stability.}
@@ -70,12 +70,12 @@ prior.}
   \item{mode.prior.sample.proportion}{scalar; A hyperparameter being the mode of the prior distribution on the sample proportion \eqn{n/N}.}
   \item{median.prior.size}{scalar; A hyperparameter being the mode of the prior distribution on the population size.}
   \item{beta}{scalar; A hyperparameter being the second parameter of the Beta distribuion that is a component of the prior distribution on the sample proportion \eqn{n/N}.}
-  \item{type}{character; the type of parametric distribution to use for the prior on population size. The options are \code{proportion}
-(for a prior on the sample proportion (i.e. \eqn{n/N}), 
+  \item{type}{character; the type of parametric distribution to use for the prior on population size. The possible values are \code{beta}
+(for a Beta prior on the sample proportion (i.e. \eqn{n/N}), 
 \code{nbinom} (Negative-Binomial), \code{pln} (Poisson-log-normal),
 \code{flat} (uniform), and \code{continuous} (the continuous version of
-\code{proportion}).
-The default is \code{proportion}.}
+the Beta prior on the sample proportion.
+The default is \code{beta}.}
 }
 
 \section{Details on priors}{
@@ -130,7 +130,7 @@ Hunter DR, Handcock MS, Butts CT, Goodreau SM, Morris M (2008b).
 
 \examples{
 dsizeprior(n=100,
-           type="proportion",
+           type="beta",
            mode.prior.size=1000)
 }
 \keyword{models}

@@ -88,7 +88,7 @@
 	types = c("Proportion","Flat","Neg-binom","Poisson-log-norm")
 	typedist <-new(Deducer::ComboBoxWidget, types)
 	typedist$setTitle("Distribution Type", TRUE)
-	typedist$setDefaultModel("proportion")
+	typedist$setDefaultModel("beta")
 	
 	
 	##DEGREE
@@ -311,7 +311,7 @@
 		
 		
 		priorsizedistribution <- switch(typedist$getModel(),
-				"Proportion"="proportion",
+				"Proportion"="beta",
 				"Neg-binom"="nbinom",
 				"Poisson-log-norm"="pln",
 				"Flat" = "flat" )

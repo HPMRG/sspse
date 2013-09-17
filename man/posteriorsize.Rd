@@ -30,7 +30,7 @@ posteriorsize(s,
                   quartiles.prior.size=NULL,
                   mean.prior.size=NULL,
                   mode.prior.size=NULL,
-                  priorsizedistribution=c("proportion","flat","nbinom","pln","supplied"),
+                  priorsizedistribution=c("beta","flat","nbinom","pln","supplied"),
                   effective.prior.df=1,
                   sd.prior.size=NULL,
                   mode.prior.sample.proportion=NULL,
@@ -63,12 +63,13 @@ For example, \code{quartiles.prior.size=c(1000,4000)} corresponds to a prior
 where the lower quartile (25\%) is 1000 and the upper (75\%) is 4000.}
   \item{mean.prior.size}{scalar; A hyperparameter being the mean of the prior distribution on the population size.}
   \item{mode.prior.size}{scalar; A hyperparameter being the mode of the prior distribution on the population size.}
-  \item{priorsizedistribution}{character; the type of parametric distribution to use for the prior on population size. The options are \code{proportion}
-(for a prior on the sample proportion (i.e. \eqn{n/N})), 
+  \item{priorsizedistribution}{character; the type of parametric distribution to use for the prior on population size. The options are \code{beta}
+(for a Beta prior on the sample proportion (i.e. \eqn{n/N})), 
 \code{flat} (uniform),
 \code{nbinom} (Negative-Binomial), and \code{pln} (Poisson-log-normal).
-%and \code{continuous} (the continuous version of \code{proportion}). 
-The default is \code{proportion}.}
+%and \code{continuous} (the continuous version of the Beta prior on the sample
+%proportion). 
+The default is \code{beta}.}
   \item{effective.prior.df}{scalar; A hyperparameter being the effective number of samples worth of information represented in the prior distribution on the population size. By default this is 1, but it can be greater (or less!) to allow for different levels of uncertainty.}
   \item{sd.prior.size}{scalar; A hyperparameter being the standard deviation of the prior distribution on the population size.}
   \item{mode.prior.sample.proportion}{scalar; A hyperparameter being the mode of the prior distribution on the sample proportion \eqn{n/N}.}
@@ -208,12 +209,11 @@ lower and upper quartiles of the prior distribution on the population size.}
   options are \code{cmp}, \code{nbinom}, and \code{pln}.
   These correspond to the Conway-Maxwell-Poisson,
   Negative-Binomial, and Poisson-log-normal. The default is \code{cmp}.}
-  \item{priorsizedistribution}{character; the type of parametric distribution to use for the prior on population size. The options are \code{proportion}
-(for a prior on the sample proportion (i.e. \eqn{n/N}), 
+  \item{priorsizedistribution}{character; the type of parametric distribution to use for the prior on population size. The options are \code{beta}
+(for a Beta prior on the sample proportion (i.e. \eqn{n/N}), 
 \code{nbinom} (Negative-Binomial), \code{pln} (Poisson-log-normal),
 \code{flat} (uniform),
-and \code{continuous} (the continuous version of \code{proportion}).The default is \code{proportion}.
-The default is \code{proportion}.
+and \code{continuous} (the continuous version of the Beta prior on the sample proportion. The default is \code{beta}.
 }}
 
 % \item{\dots}{Additional
