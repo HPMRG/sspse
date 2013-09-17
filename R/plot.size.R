@@ -1,9 +1,9 @@
-plot.size <- function(fit,xlim=NULL,data=NULL,support=1000,HPD.level=0.95,N=NULL){
+plot.size <-
+function(fit,xlim=NULL,data=NULL,support=1000,HPD.level=0.95,N=NULL,ylim=NULL){
 require(locfit)
 require(coda)
 out <- fit$sample
 outN <- out[,"N"]
-if(is.null(xlim)){xlim <- quantile(outN,0.99)}
 #a=locfit( ~ lp(outN, nn=0.35, h=0, maxk=500))
 a=locfit( ~ lp(outN,nn=0.5))
 xp <- seq(fit$n,fit$maxN, length=support)
@@ -13,11 +13,13 @@ lpriorm <- exp(fit$lpriorm-max(fit$lpriorm))
 lpriorm <- lpriorm[fit$n+(1:length(lpriorm)) > fit$n & fit$n+(1:length(lpriorm)) < fit$maxN]
 lpriorm <- lpriorm / sum(lpriorm)
 #
+if(is.null(xlim)){xlim <- quantile(outN,0.99)}
+if(is.null(ylim)){ylim <- c(0,max(posdensN,lpriorm))}
 plot(x=xp,y=posdensN,type='l', xlab="population size", 
   main="posterior for population size",
-  ylim=c(0,max(posdensN,lpriorm)),
+# ylim=c(0,max(posdensN,lpriorm)),
 # sub="mean prior = 1000",
-  ylab="posterior density",xlim=c(fit$n,xlim))
+  ylab="posterior density",xlim=c(fit$n,xlim),ylim=c(0,ylim))
 #
 abline(v=fit$n,lty=2)
 #
