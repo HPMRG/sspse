@@ -70,7 +70,6 @@ dsizeprior<-function(n,
       lpriorm
      },
     continuous={
-     beta <- 2
      if(!is.null(mode.prior.sample.proportion)){
       beta <- 2/mode.prior.sample.proportion - 1
      }
@@ -86,6 +85,10 @@ dsizeprior<-function(n,
      if(!is.null(mode.prior.size)){
       beta <- 2*mode.prior.size/n - 1
      }
+     if(is.null(beta)){
+       warning("No prior information about the population size was specified! Using a prior mode of twice the sample size. Please specify prior information!", call. = FALSE)
+       beta <- 3
+     }
      median.prior.size <- n/(1-0.5^(1/beta))
      mode.prior.size <- n*(beta+1)/2
      mode.prior.sample.proportion <- 2/(beta+1)
@@ -98,7 +101,7 @@ dsizeprior<-function(n,
      }
      lpriorm
      },
-    proportion={
+    beta={
      if(is.null(alpha) | is.null(beta)){
      if(!is.null(mode.prior.sample.proportion)){
       beta <- 2/mode.prior.sample.proportion - 1
@@ -114,20 +117,14 @@ dsizeprior<-function(n,
       if(is.null(maxN)){maxN <- min(maxNmax,ceiling( n/(1-0.90^(1/beta)) ))}
       fn <- function(beta,x,n,median.prior.size,effective.prior.df,alpha){
        priorm <- dfn(alpha,beta,x,n,effective.prior.df)
-# print(c(beta,sum(x*priorm)/sum(priorm),
-#        0.5*( (x+0.5)[match(TRUE,cumsum(priorm) >= 0.5)] 
-#         +(x+0.5)[which.max(priorm)] )
-#       ))
        abs(median.prior.size - 
          0.5*( (x+0.5)[match(TRUE,cumsum(priorm) >= 0.5)] 
           +(x+0.5)[which.max(priorm)] )
           )
       }
-#     print(paste("median:",median.prior.size))
       x <- n:maxN
       while( {
        p=dfn(alpha,beta,x,n,effective.prior.df);
-#      print( c(sum(p[x>1000]), sum(p[x>4000])) );
        abs(p[length(p)]/max(p) - 0.01)>0.005}){
         maxN <- round(maxN*(c(0.9,1.1)[(p[length(p)]/max(p) > 0.01)+1]))
         x <- n:maxN
@@ -144,12 +141,9 @@ dsizeprior<-function(n,
       if(is.null(maxN)){maxN <- min(maxNmax,ceiling( n/(1-0.90^(1/beta)) ))}
       fn <- function(beta,x,n,median.prior.size,effective.prior.df,alpha){
        priorm <- dfn(alpha,beta,x,n,effective.prior.df)
-# print(c(beta,sum(x*priorm)/sum(priorm),
-#      (x+0.5)[match(TRUE,cumsum(priorm) >= 0.5)] ))
        abs(median.prior.size - 
         (x+0.5)[match(TRUE,cumsum(priorm) >= 0.5)] ) 
       }
-# print(paste("median:",median.prior.size))
       maxN = ceiling(3*median.prior.size)
       x <- n:maxN
       a = optimize(f=fn,interval=c(1,maxbeta),x,n,median.prior.size,
@@ -157,14 +151,12 @@ dsizeprior<-function(n,
       beta <- a$minimum
       while( {
        p=dfn(alpha,beta,x,n,effective.prior.df);
-#      print( c(sum(p[x>1000]), sum(p[x>4000])) );
        abs(p[length(p)]/max(p) - 0.01)>0.005}){
         maxN <- round(maxN*(c(0.9,1.1)[(p[length(p)]/max(p) > 0.01)+1]))
         x <- n:maxN
         a = optimize(f=fn,interval=c(1,maxbeta),x,n,median.prior.size,
                      effective.prior.df,alpha,tol=0.01)
         beta <- a$minimum
-#print(c(beta,maxN,pbeta(n/maxN,shape1=alpha,shape2=beta)))
       }
       maxN = min(maxNmax,maxN-n)
      }
@@ -186,14 +178,12 @@ dsizeprior<-function(n,
       beta <- a$minimum
       while( {
        p=dfn(alpha,beta,x,n,effective.prior.df);
-#      print( c(sum(p[x>1000]), sum(p[x>4000])) );
        abs(p[length(p)]/max(p) - 0.01)>0.005}){
         maxN <- round(maxN*(c(0.9,1.1)[(p[length(p)]/max(p) > 0.01)+1]))
         x <- n:maxN
         a = optimize(f=fn,interval=c(1,maxbeta),x,n,mean.prior.size,
                     effective.prior.df,alpha,tol=0.01)
         beta <- a$minimum
-#print(c(beta,maxN,pbeta(n/maxN,shape1=alpha,shape2=beta)))
       }
       maxN = min(maxNmax,maxN)
       }else{
@@ -210,8 +200,6 @@ dsizeprior<-function(n,
       if(is.null(maxN)){maxN <- min(maxNmax,ceiling( n/(1-0.90^(1/beta)) ))}
       fn <- function(beta,x,n,mode.prior.size,effective.prior.df,alpha){
        priorm <- dfn(alpha,beta,x,n,effective.prior.df)
-# print(c(beta,sum(x*priorm)/sum(priorm),
-#         abs(mode.prior.size - (x+0.5)[which.max(priorm)]) ))
        abs(mode.prior.size - (x+0.5)[which.max(priorm)])
       }
       maxN = ceiling(3*mode.prior.size)
@@ -221,14 +209,12 @@ dsizeprior<-function(n,
       beta <- a$minimum
       while( {
        p=dfn(alpha,beta,x,n,effective.prior.df);
-#      print( c(sum(p[x>1000]), sum(p[x>4000])) );
        abs(p[length(p)]/max(p) - 0.01)>0.005}){
         maxN <- round(maxN*(c(0.9,1.1)[(p[length(p)]/max(p) > 0.01)+1]))
         x <- n:maxN
         a = optimize(f=fn,interval=c(1,maxbeta),x,n,mode.prior.size,
                      effective.prior.df,alpha,tol=0.01)
         beta <- a$minimum
-#print(c(beta,maxN,pbeta(n/maxN,shape1=alpha,shape2=beta)))
       }
       maxN = min(maxNmax,maxN)
      }
@@ -241,9 +227,6 @@ dsizeprior<-function(n,
       }
       fn <- function(p,x,n,quartiles.prior.size,effective.prior.df){
        priorm <- dfn(exp(p[1]),exp(p[2]),x,n,effective.prior.df)
-# print(c(exp(p),sum(x*priorm)/sum(priorm),
-#      sqrt((quartiles.prior.size[1] - (x+0.5)[match(TRUE,cumsum(priorm) >= 0.25)])^2+ 
-#           (quartiles.prior.size[2] - (x+0.5)[match(TRUE,cumsum(priorm) >= 0.75)])^2)))
        sqrt((quartiles.prior.size[1] - (x+0.5)[match(TRUE,cumsum(priorm) >= 0.25)])^2+ 
             (quartiles.prior.size[2] - (x+0.5)[match(TRUE,cumsum(priorm) >= 0.75)])^2)
       }
@@ -256,7 +239,6 @@ dsizeprior<-function(n,
       beta  <- exp(a$par[2])
       while( {
        p=dfn(alpha,beta,x,n,effective.prior.df);
-#      print( c(sum(p[x>1000]), sum(p[x>4000])) );
        abs(p[length(p)]/max(p) - 0.01)>0.005}){
         maxN <- round(maxN*(c(0.9,1.1)[(p[length(p)]/max(p) > 0.01)+1]))
         x <- n:maxN
@@ -265,12 +247,15 @@ dsizeprior<-function(n,
          control=list(abstol=10))
         alpha <- exp(a$par[1])
         beta  <- exp(a$par[2])
-#print(c(alpha,beta,maxN,sum(p[x>quartiles.prior.size[1]]), sum(p[x>quartiles.prior.size[2]] )))
       }
       maxN = min(maxNmax,maxN)
      }
      }
      if(is.null(alpha)) alpha=1
+     if(is.null(beta)){
+       warning("No prior information about the population size was specified! Using a prior mode of twice the sample size. Please specify prior information!", call. = FALSE)
+       beta <- 3
+     }
      if(is.null(maxN)){maxN <- min(maxNmax,ceiling( n/(1-0.90^(1/beta)) ))}
      if(is.null(N)){N <- min(maxNmax,ceiling( n/(1-0.5^(1/beta)) ))}
      x <- n:maxN
