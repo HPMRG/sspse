@@ -1,6 +1,7 @@
-plot.size <- function(fit,xlim=NULL,data=NULL,support=1000,HPD.level=0.95,N=NULL,ylim=NULL){
+plot.size <- function(fit,xlim=NULL,data=NULL,support=1000,HPD.level=0.95,N=NULL,ylim=NULL,ask=TRUE){
 require(locfit)
 require(coda)
+if(ask){par(ask=TRUE)}
 out <- fit$sample
 outN <- out[,"N"]
 #a=locfit( ~ lp(outN, nn=0.35, h=0, maxk=500))
@@ -39,16 +40,16 @@ lines(x=fit$n+(1:length(lpriorm)),y=lpriorm,lty=2)
   l90 <- xp[which.max(cy>0.9)]
   l50 <- xp[which.max(cy>0.5)]
 #
-abline(v=median(outN,na.rm=T),col=2)
-abline(v=mean(outN,na.rm=T),col=3)
+abline(v=median(outN,na.rm=TRUE),col=2)
+abline(v=mean(outN,na.rm=TRUE),col=3)
 abline(v=c(fit$n,fit$maxN),lty=2)
 if(!is.null(N)){abline(v=N,lty=1,col=1)}
 abline(v=hpd,lty=2,col=4)
 text(x=hpd[1],y=-0.000,col=4,cex=0.5,labels=paste(round(hpd[1])))
 text(x=hpd[2],y=-0.000,col=4,cex=0.5,labels=paste(round(hpd[2])))
 text(x=fit$n,y=0.000,labels=paste(fit$n),col=1,cex=0.5)
-text(x=mean(outN,na.rm=T),y=-0.000,col=3,cex=0.5,labels=paste(round(mean(outN,na.rm=T))))
-text(x=median(outN,na.rm=T),y=-0.000,col=2,cex=0.5,labels=paste(round(median(outN,na.rm=T))))
+text(x=mean(outN,na.rm=TRUE),y=-0.000,col=3,cex=0.5,labels=paste(round(mean(outN,na.rm=TRUE))))
+text(x=median(outN,na.rm=TRUE),y=-0.000,col=2,cex=0.5,labels=paste(round(median(outN,na.rm=TRUE))))
 text(x=map,y=-0.000,col=5,cex=0.5,labels=paste(round(map)))
 if(!is.null(N)){text(x=N,y=-0.000,col=1,cex=0.5,labels="truth")}
 #
@@ -60,7 +61,7 @@ cat(sprintf("Posterior:\nMean = %d, Median = %d, MAP = %d, 90%% = %d, HPD = (%d,
 x <- fit$n+(1:length(lpriorm))
 lines(x=fit$n+(1:length(lpriorm)),y=lpriorm,lty=2)
 #
-out[is.na(out)] <- apply(out,2,median,na.rm=T)
+out[is.na(out)] <- apply(out,2,median,na.rm=TRUE)
 plot(density(out[,"mu"],na.rm=TRUE), xlab="mean network size", main="posterior for mean network size in the population")
 plot(density(out[,"sigma"],na.rm=TRUE), xlab="s.d. network size", main="posterior for s.d. of the network size")
 #
@@ -68,9 +69,13 @@ plot(seq_along(fit$predictive.degree),y=fit$predictive.degree, type='h',
 col='red', lwd=2, xlab="degree",ylab="probability",
   main="mean posterior network size distribution")
 if(!is.null(data)){
-  bbb <- tabulate(data,nbins=max(data))
+  Kmax <- max(seq_along(fit$predictive.degree))
+  bbb <- tabulate(data,nbins=Kmax) #, nbins=max(data))
   bbb <- bbb/sum(bbb)
-  aaa <- barplot(bbb,names.arg=1:max(data),add=T)
+  aaa <- barplot(bbb,names.arg=1:Kmax,add=FALSE,axes=TRUE,width=rep(0.5,length(bbb)),space=1,col=0,
+    xlab="degree",ylab="probability", xlim=c(1,Kmax),
+    main="mean posterior network size distribution")
+  lines(x=-0.25+seq_along(fit$predictive.degree),y=fit$predictive.degree, type='h', col='red', lwd=2)
 }
 invisible()
 }
