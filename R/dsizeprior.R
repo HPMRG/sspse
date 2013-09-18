@@ -55,18 +55,18 @@ dsizeprior<-function(n,
       if(is.null(N)){
         N <- 0.5*maxN
       }
-      if(is.null(mode.prior.size)){
-        mode.prior.size <- 0
-      }
+#     if(is.null(mode.prior.size)){
+#       mode.prior.size <- 0
+#     }
+      lpriorm <- rep(1/(maxN-n+1),maxN-n+1)
       if(log){
-       lpriorm <- rep(0,maxN-n+1)
-      }else{
-       lpriorm <- rep(1/(maxN-n+1),maxN-n+1)
-       if(mode.prior.size > n){
-        lpriorm[1:(mode.prior.size-n)] <- 0
-       }
+       lpriorm <- log(lpriorm)
+#     }else{
+#      if(mode.prior.size > n){
+#       lpriorm[1:(mode.prior.size-n)] <- 0
+#      }
       }
-      if(is.null(median.prior.size)) median.prior.size <- maxN/2
+#     if(is.null(median.prior.size)) median.prior.size <- maxN/2
       lpriorm
      },
     continuous={

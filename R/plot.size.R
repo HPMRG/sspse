@@ -7,10 +7,12 @@ if(is.null(out)){
   fit$n <- min(fit$x)
   fit$lpriorm <- log(fit$lprior)
 }
+xp <- fit$n+(1:length(fit$lpriorm))-1
 lpriorm <- exp(fit$lpriorm-max(fit$lpriorm))
-lpriorm <- lpriorm[fit$n+(1:length(lpriorm)) > fit$n & fit$n+(1:length(lpriorm)) < fit$maxN]
+lpriorm <- lpriorm[xp >= fit$n & xp <= fit$maxN]
 lpriorm <- lpriorm / sum(lpriorm)
-x <- fit$n+(1:length(lpriorm))
+xp <- fit$n+(1:length(lpriorm))-1
+x <- fit$n+(1:length(lpriorm))-1
 if(!is.null(out)){
   outN <- out[,"N"]
   #a=locfit( ~ lp(outN, nn=0.35, h=0, maxk=500))
@@ -31,7 +33,7 @@ if(!is.null(out)){
   #
   lpriorm <- exp(fit$lpriorm-max(fit$lpriorm))
   lpriorm <- lpriorm/sum(lpriorm)
-  lines(x=fit$n+(1:length(lpriorm)),y=lpriorm,lty=2)
+  lines(x=fit$n+(1:length(lpriorm))-1,y=lpriorm,lty=2)
   # Next from coda
   #hpd <- HPDinterval(fit$sample[,"N"])[1:2]
   # MSH using locfit
@@ -64,7 +66,7 @@ if(!is.null(out)){
 #cat(sprintf("Posterior:\nMean = %d, Median = %d, MAP = %d, 90%% = %d, HPD = (%d, %d).\n",
 # round(mp),round(l50),round(map),round(l90),round(hpd[1]),round(hpd[2])))
 #
-lines(x=fit$n+(1:length(lpriorm)),y=lpriorm,lty=2)
+lines(x=fit$n+(1:length(lpriorm))-1,y=lpriorm,lty=2)
 #
 out[is.na(out)] <- apply(out,2,median,na.rm=TRUE)
 plot(density(out[,"mu"],na.rm=TRUE), xlab="mean network size", main="posterior for mean network size in the population")
@@ -84,7 +86,6 @@ if(!is.null(data)){
 }
 }else{
   cy <- cumsum(lpriorm)
-  xp <- fit$n+(1:length(lpriorm))
   #
   if(is.null(xlim)){xlim <- xp[which.max(cy>0.99)]}
   if(is.null(ylim)){ylim <- c(0,max(lpriorm))}
