@@ -252,7 +252,7 @@
 		if (xor(quarts25$getModel()=="",quarts75$getModel()==""))
 			{return("Quartile entries should be empty or both filled")}
 		if (diseasevar$getRModel()!="c()" && length(levels(eval(parse(text=unlist(strsplit(varSel$getRModel(), "[\"]"))[2]%+%"$"%+%unlist(strsplit(diseasevar$getRModel(), "[\"]"))[2]))))!=2)
-			{return("Status variable must be binary (have exactly two levels)")}
+			{return("Status variable must be of type \"Factor\" and have exactly two levels")}
 		else("")
 		
 	}
@@ -362,8 +362,8 @@
 
 		if(plotbox$getModel()$size()>0) 
 				{cmd <- cmd %+%
-				"\nJavaGD(width=500, height=500)"%+%
-				"\nmfrow=(c(2,3))" %+%
+				"\nJavaGD(width=800, height=550)"%+%
+				"\npar(mfrow=c(2,3))" %+%
 				"\nplot.size(posize,data="%+% "get.net.size(" %+% dataset %+% ")" %+%")"} ###
 		
 		}
@@ -445,8 +445,8 @@
 				
 				if(plotbox$getModel()$size()>0) {
 				cmd <- cmd %+%
-							"\nJavaGD(width=500, height=500)"%+%
-							"\nmfrow=(c(2,3))" %+%
+							"\nJavaGD(width=800, height=550)"%+%
+							"\npar(mfrow=c(2,3))" %+%
 							"\nplot.size(podisease,data="%+% "get.net.size(" %+% dataset %+% ")" %+%")"} 
 				
 						}
