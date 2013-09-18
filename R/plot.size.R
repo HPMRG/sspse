@@ -69,8 +69,16 @@ if(!is.null(out)){
 lines(x=fit$n+(1:length(lpriorm))-1,y=lpriorm,lty=2)
 #
 out[is.na(out)] <- apply(out,2,median,na.rm=TRUE)
-plot(density(out[,"mu"],na.rm=TRUE), xlab="mean network size", main="posterior for mean network size in the population")
-plot(density(out[,"sigma"],na.rm=TRUE), xlab="s.d. network size", main="posterior for s.d. of the network size")
+if("mu" %in% colnames(out)){
+ plot(density(out[,"mu"],na.rm=TRUE), xlab="mean network size", main="posterior for mean network size in the population")
+ plot(density(out[,"sigma"],na.rm=TRUE), xlab="s.d. network size", main="posterior for s.d. of the network size")
+}
+if("mu0" %in% colnames(out)){
+ plot(density(out[,"mu0"],na.rm=TRUE), xlab="mean network size for uninfected", main="posterior for mean network size in the uninfected population",sub="infected is dashed")
+ lines(density(out[,"mu1"],na.rm=TRUE),lty=2)
+ plot(density(out[,"sigma0"],na.rm=TRUE), xlab="s.d. network size", main="posterior for s.d. of the network size for uninfected",sub="infected is dashed")
+ lines(density(out[,"sigma1"],na.rm=TRUE),lty=2)
+}
 #
 plot(seq_along(fit$predictive.degree),y=fit$predictive.degree, type='h',
 col='red', lwd=2, xlab="degree",ylab="probability",
