@@ -2,10 +2,9 @@
 
 #NOTES/TO DO:
 
-#samping defaults should be different for posterior size
 #mention (in tooltip?) that prior data can be calculated via prior distribution dialog?
 #add info buttons on subdialogs with screenshots of annotated versions of the dialogs
-#nk=tabulate(s,nbin=K)" %+%  This line causes crash when included excplicitly. also a problem in the marginal functions.
+#nk=tabulate(s,nbin=K)" %+%  caused crash when included excplicitly. also a problem in the marginal functions.
 ###############################################################################
 
 .makePosteriorDistribution <- function() {
@@ -52,7 +51,19 @@
 	samples$setDefaultModel("1000")
 	samples$setLowerBound(1)
 	
+	#for posterior disease
+	intervalsize2 <- new(Deducer::TextFieldWidget, "Interval")
+	intervalsize2$setDefaultModel("1")
+	intervalsize2$setLowerBound(1)
 	
+	burn2 <- new(Deducer::TextFieldWidget, "Burnin")
+	burn2$setDefaultModel("100")
+	burn2$setLowerBound(0)
+	
+	samples2 <- new(Deducer::TextFieldWidget, "Number of Samples")
+	samples2$setDefaultModel("1000")
+	samples2$setLowerBound(1)
+
 	#POP PRIOR:	
 	#max_N <- new(Deducer::TextFieldWidget, "Pop. Max")
 	#max_N$setLowerBound(1)
@@ -122,12 +133,18 @@
 	#Buttons 
 	mcbutton <- new(JButton,"Sampling Prefs")
 	mcbutton$setToolTipText("Set burnin period, sampling interval and number of samples for MCMC sampling.")
+	
 	mcsubdialog <- new(SimpleRSubDialog,dialog,"Set MCMC Sampling Parameters")
 	setSize(mcsubdialog,300L,200L)
+	#for posteriordisease:
+	mcsubdialog2 <- new(SimpleRSubDialog,dialog,"Set MCMC Sampling Parameters")
+	setSize(mcsubdialog2,300L,200L)
 	
 	mcactionFunction <- function(cmd,ActionEvent){
-		mcsubdialog$setLocationRelativeTo(mcbutton)
-		mcsubdialog$run()
+		if (diseasevar$getRModel()=="c()") {mcsubdialog<-mcsubdialog}
+			else {mcsubdialog<-mcsubdialog2}	
+			mcsubdialog$setLocationRelativeTo(mcbutton)
+			mcsubdialog$run()
 	}
 	mclistener <- new(ActionListener)
 	mclistener$setFunction(toJava(mcactionFunction))
@@ -204,6 +221,10 @@
 	addComponent(mcsubdialog, intervalsize, 100, 950, 450, 525, bottomType = "NONE")
 	addComponent(mcsubdialog, samples, 500, 950, 850, 50, bottomType = "NONE")
 
+	addComponent(mcsubdialog2, burn2, 100, 475, 450, 50, bottomType = "NONE")
+	addComponent(mcsubdialog2, intervalsize2, 100, 950, 450, 525, bottomType = "NONE")
+	addComponent(mcsubdialog2, samples2, 500, 950, 850, 50, bottomType = "NONE")
+	
 	#column 2
 	
 	mmmpanel <- new(JPanel)
@@ -248,14 +269,6 @@
 		}		
 		
 		else {s <- "get.net.size(" %+% dataset %+% ")[order(get.wave(" %+% dataset %+% "))]"}#result from get.wave shouldn't have na's
-			
-		interval <- "10"
-		if (intervalsize$getModel()!="") {interval = intervalsize$getModel()}
-		burnin <- "5000"
-		if (burn$getModel()!="") {burnin = burn$getModel()}
-		samplesize <- "1000"
-		if (samples$getModel()!="") {samplesize = samples$getModel()}
-		
 		
 		priorsizedistribution <- switch(typedist$getModel(),
 				"Beta"="beta",
@@ -292,6 +305,7 @@
 			quartiles.prior.size = c(quarts1,quarts2)
 			cmd2 <- cmd2 %+% ", quartiles.prior.size=" %+% quartiles.prior.size
 		}
+		
 	
 #### OPTION 1		
 		
@@ -311,27 +325,41 @@
 		
 			#degreefields
 			if (priordegreemean$getModel()!="") {
-			mean.prior.degree = priordegreemean$getModel()
-			cmd <- cmd  %+% ", mean.prior.degree=" %+% mean.prior.degree		
+				mean.prior.degree = priordegreemean$getModel()
+				cmd <- cmd  %+% ", mean.prior.degree=" %+% mean.prior.degree		
 			}
 		
 			if (maxDeg1$getModel()!="") {
-			K = maxDeg1$getModel()
-			cmd <- cmd  %+% ", K =" %+% K
+				K = maxDeg1$getModel()
+				cmd <- cmd  %+% ", K =" %+% K
 			}
 		
 			if (priordegreeSD1$getModel()!="") {
-			sd.prior.degree = priordegreeSD1$getModel()
-			cmd <- cmd  %+% ", sd.prior.degree=" %+% sd.prior.degree 
+				sd.prior.degree = priordegreeSD1$getModel()
+				cmd <- cmd  %+% ", sd.prior.degree=" %+% sd.prior.degree 
 			}
 		
+			if (samples$getModel()!="" && samples$getModel()!="1000") {
+				samplesize <- samples$getModel()
+				cmd <- cmd  %+% ", samplesize= " %+% samplesize
+			}
+			
+			if (burn$getModel()!="" && burn$getModel()!="5000") {
+				burnin <- burn$getModel()
+				cmd <- cmd  %+% ", burnin= " %+% burnin
+			}
+			
+			if (intervalsize$getModel()!="" && intervalsize$getModel()!="10") {
+				interval <- intervalsize$getModel()
+				cmd <- cmd  %+% ", interval = " %+% interval
+			}
 
-		cmd <-cmd %+% cmd2 %+%
-				", interval=" %+% interval %+%
-				", burnin=" %+% burnin %+%
-				", samplesize=" %+% samplesize %+% ")" # %+% "\n posize\n" #print this?
+		cmd <-cmd %+% cmd2 # %+% "\n posize\n" #print this?
+
+		cmd <-cmd %+% ")"
+
+		if(plotbox$getModel()$size()>0) {cmd <- cmd %+% "\nplot.size(posize)"}
 		
-		print(cmd)
 		}
 
 #### OPTION 2		
@@ -369,12 +397,12 @@
 			cmd <- "podisease <- posteriordisease(s = " %+% s %+% 
 						", dis = " %+% dis
 
-				if (mean0.prior.degree!="") {
+				if (mean0.prior.degree!="" && mean0.prior.degree!="7") {
 					mean0.prior.degree <- priordegreemean0$getModel()
 					cmd <- cmd  %+% ", mean0.prior.degree = " %+% mean0.prior.degree
 					}
 					
-				if (mean1.prior.degree!="") {
+				if (mean1.prior.degree!="" && mean1.prior.degree!="7") {
 					mean1.prior.degree <- priordegreemean0$getModel()
 					cmd <- cmd  %+% ", mean1.prior.degree = " %+% mean1.prior.degree
 					}
@@ -389,17 +417,26 @@
 					cmd <- cmd  %+% ", K =" %+% K
 					}
 					
+				if (samples2$getModel()!="" && samples2$getModel()!="1000") {
+					samplesize <- samples2$getModel()
+					cmd <- cmd  %+% ", samplesize= " %+% samplesize
+					}
+					
+				if (burn2$getModel()!="" && burn2$getModel()!="100") {
+					burnin <- burn2$getModel()
+					cmd <- cmd  %+% ", burnin= " %+% burnin
+					}
+					
+				if (intervalsize2$getModel()!="" && intervalsize2$getModel()!="1") {
+					interval <- intervalsize2$getModel()
+					cmd <- cmd  %+% ", interval = " %+% interval
+					}
+					
 				cmd <- cmd %+% ", degreedistribution= \"" %+% priordegreedistribution %+% "\""  
-				cmd <- cmd %+% cmd2 %+%
-				
-				#if (samplesize!= "" || sampelsize!= 1000)	
-						", samplesize= " %+% samplesize %+%	
-						", burnin= " %+% burnin %+%	
-						", interval= " %+% interval %+%	
-						")"
+				cmd <- cmd %+% cmd2 %+% ")"
 
-				#print the command
-				#cmd <- cmd  %+% "\n podisease\n" 
+				if(plotbox$getModel()$size()>0) {cmd <- cmd %+% "\nplot.size(podisease)"}
+				
 						}
 		execute(cmd)
 
