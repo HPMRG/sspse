@@ -1,7 +1,7 @@
-plot.size <- function(fit,xlim=NULL,data=NULL,support=1000,HPD.level=0.95,N=NULL,ylim=NULL,ask=TRUE){
+plot.size <- function(fit,xlim=NULL,data=NULL,support=1000,HPD.level=0.95,N=NULL,ylim=NULL){
 require(locfit)
 require(coda)
-if(ask){par(ask=TRUE)}
+#if(ask){par(ask=TRUE)}
 out <- fit$sample
 if(is.null(out)){
   fit$n <- min(fit$x)
