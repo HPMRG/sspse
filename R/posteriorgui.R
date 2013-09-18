@@ -244,12 +244,15 @@
 #Functions
 	
 	checkFunc <- function(x) {
+
+		"%+%" <- function(x, y) paste(x, y, sep = "")
 		
-		if (varSel$getRModel()=="c()") {
-			return("Please select a data set")}
+		if (varSel$getRModel()=="c()") 
+			{return("Please select a data set")}
 		if (xor(quarts25$getModel()=="",quarts75$getModel()==""))
-			return("Quartile entries should be empty or both filled")
-			
+			{return("Quartile entries should be empty or both filled")}
+		if (diseasevar$getRModel()!="c()" && length(levels(eval(parse(text=unlist(strsplit(varSel$getRModel(), "[\"]"))[2]%+%"$"%+%unlist(strsplit(diseasevar$getRModel(), "[\"]"))[2]))))!=2)
+			{return("Status variable must be binary (have exactly two levels)")}
 		else("")
 		
 	}
@@ -354,11 +357,14 @@
 				cmd <- cmd  %+% ", interval = " %+% interval
 			}
 
-		cmd <-cmd %+% cmd2 # %+% "\n posize\n" #print this?
+		cmd <-cmd %+% cmd2 
+		cmd <-cmd %+% ")\nsummary.size(posize)"
 
-		cmd <-cmd %+% ")"
-
-#	if(plotbox$getModel()$size()>0) {cmd <- cmd %+% "\nplot.size(posize)"}
+		if(plotbox$getModel()$size()>0) 
+				{cmd <- cmd %+%
+				"\nJavaGD(width=500, height=500)"%+%
+				"\nmfrow=(c(2,3))" %+%
+				"\nplot.size(posize,data="%+% "get.net.size(" %+% dataset %+% ")" %+%")"} ###
 		
 		}
 
@@ -434,8 +440,14 @@
 					
 				cmd <- cmd %+% ", degreedistribution= \"" %+% priordegreedistribution %+% "\""  
 				cmd <- cmd %+% cmd2 %+% ")"
+				cmd <-cmd %+% "\nsummary.size(podisease)"
 
-				if(plotbox$getModel()$size()>0) {cmd <- cmd %+% "\nplot.size(podisease)"}
+				
+				if(plotbox$getModel()$size()>0) {
+				cmd <- cmd %+%
+							"\nJavaGD(width=500, height=500)"%+%
+							"\nmfrow=(c(2,3))" %+%
+							"\nplot.size(podisease,data="%+% "get.net.size(" %+% dataset %+% ")" %+%")"} 
 				
 						}
 		execute(cmd)
