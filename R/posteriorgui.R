@@ -2,16 +2,10 @@
 
 #NOTES/TO DO:
 
-#I ordered the data based on waves. what to do with NAs?
-#na.rm's in quantile func?
 #samping defaults should be different for posterior size
-#mention (in tooltip?) that prior data can be calculated via prior distribution dialog
+#mention (in tooltip?) that prior data can be calculated via prior distribution dialog?
 #add info buttons on subdialogs with screenshots of annotated versions of the dialogs
 #nk=tabulate(s,nbin=K)" %+%  This line causes crash when included excplicitly. also a problem in the marginal functions.
-
-
-###############################################################################
-
 ###############################################################################
 
 .makePosteriorDistribution <- function() {
@@ -23,15 +17,9 @@
 	AnchorLayout <- J("org.rosuda.JGR.layout.AnchorLayout")
 	SingletonDJList <- J("org.rosuda.deducer.toolkit.SingletonDJList")	
 	ActionListener <- J("org.rosuda.deducer.widgets.event.RActionListener")	
-	MouseListener <- J("org.rosuda.deducer.widgets.event.RMouseListener")	
 	
 	
-	#Components
-	#Buttons
-	#Arrange Components
-	
-	
-	#Components
+#Components
 	
 	##TOP: choose degree and optional status variables. 
 	dialog <- new(Deducer::SimpleRDialog)
@@ -41,11 +29,14 @@
 	varSel <- new(Deducer::VariableSelectorWidget)
 	varSel$setRDataFilter("is.rds.data.frame")
 	
-	degreevar <- new(Deducer::SingleVariableWidget,"Degree Variable",varSel)
-	diseasevar <- new(Deducer::SingleVariableWidget,"Status Variable",varSel)
-	wavevar <- new(Deducer::SingleVariableWidget,"Wave Variable",varSel) #wave or order?
+	#degreevar <- new(Deducer::SingleVariableWidget,"Degree Variable",varSel)
+	diseasevar <- new(Deducer::SingleVariableWidget,"Status (Optional)",varSel)
+	wavevar <- new(Deducer::SingleVariableWidget,"Order (Optional)",varSel) #Optional
 	
-	diseasebox <- new(Deducer::CheckBoxesWidget,.jarray("Use Status Variable")) 	##choose to use posteriorsize or posteriordisease function via checkbox (diseasebox)
+	##choose to use posteriorsize or posteriordisease 
+	#use to be a checkbox:
+	#diseasebox <- new(Deducer::CheckBoxesWidget,.jarray("Use Status Variable")) 
+	#now just use whether status var is filled in
 	
 	
 	##SAMPLING
@@ -63,8 +54,8 @@
 	
 	
 	#POP PRIOR:	
-	max_N <- new(Deducer::TextFieldWidget, "Pop. Max")
-	max_N$setLowerBound(1)
+	#max_N <- new(Deducer::TextFieldWidget, "Pop. Max")
+	#max_N$setLowerBound(1)
 
 	priormed <- new(Deducer::TextFieldWidget, "Median")
 	priormed$setLowerBound(1)
@@ -72,42 +63,49 @@
 	priormean <- new(Deducer::TextFieldWidget, "Mean")
 	priormean$setLowerBound(1)
 	
-	priorsd <- new(Deducer::TextFieldWidget, "SD")
+	priorsd <- new(Deducer::TextFieldWidget, "Standard Deviation (optional)")
 	priorsd$setLowerBound(0)
 	
 	priormode <- new(Deducer::TextFieldWidget, "Mode")
 	priormode$setLowerBound(1)
 	
-	quarts <- new(Deducer::TextFieldWidget, "Quartiles")
+	quarts25 <- new(Deducer::TextFieldWidget, "Quartiles - 25%")
+	quarts25$setLowerBound(0)
+	quarts75 <- new(Deducer::TextFieldWidget, "75%")
+	quarts75$setLowerBound(0)
 	
-	priormodeprop <- new(Deducer::TextFieldWidget, "Prop. Mode")
-	priormodeprop$setLowerBound(0)
-	priormodeprop$setUpperBound(1)
-	priormodeprop$setDefaultModel(".5")
+	#priormodeprop <- new(Deducer::TextFieldWidget, "Prop. Mode")
+	#priormodeprop$setLowerBound(0)
+	#priormodeprop$setUpperBound(1)
+	#priormodeprop$setDefaultModel(".5")
 	
-	types = c("Proportion","Flat","Neg-binom","Poisson-log-norm")
+	types = c("Beta","Flat") #"Neg-binom","Poisson-log-norm"
 	typedist <-new(Deducer::ComboBoxWidget, types)
-	typedist$setTitle("Distribution Type", TRUE)
-	typedist$setDefaultModel("beta")
+	typedist$setTitle("Prior Pop. Size Distribution ", TRUE)
+	typedist$setDefaultModel("Beta")
 	
-	
-	##DEGREE
-	maxDeg <- new(Deducer::TextFieldWidget, "Max Degree (K)") #= K, default = round(quantile(s,0.80))
-	maxDeg$setLowerBound(1)
-	#maxDegListen <- new(MouseListener)
-	#maxDeg$setToolTipText("The maximum degree for an individual. This is usually calculated as twice the maximum observed degree.")
-	#maxDeg$addMouseListener(maxDegListen)
+	##DEGREE - two copies of some fields because the posteriorsize and posteriordisease functions are run through the same dialog
+	maxDeg1 <- new(Deducer::TextFieldWidget, "Max Degree (K)") #= K, default = round(quantile(s,0.80))
+	maxDeg1$setLowerBound(1)
+	maxDeg2 <- new(Deducer::TextFieldWidget, "Max Degree (K)") #= K, default = round(quantile(s,0.80))
+	maxDeg2$setLowerBound(1)
 	
 	degs1 = c("Conway-Maxwell-Poisson","Neg-binom","Poisson-log-normal")
-	degreedist <-new(Deducer::ComboBoxWidget, degs1)
-	degreedist$setTitle("Degree Distribution Type", TRUE)
-	degreedist$setDefaultModel("Conway-Maxwell-Poisson")
+	degreedist1 <-new(Deducer::ComboBoxWidget, degs1)
+	degreedist1$setTitle("Degree Distribution Shape", TRUE)
+	degreedist1$setDefaultModel("Conway-Maxwell-Poisson")
+	
+	degreedist2 <-new(Deducer::ComboBoxWidget, degs1)
+	degreedist2$setTitle("Degree Distribution Shape", TRUE)
+	degreedist2$setDefaultModel("Conway-Maxwell-Poisson")
 	
 	priordegreemean <- new(Deducer::TextFieldWidget, "Mean Degree")
 	priordegreemean$setLowerBound(0)
 	
-	priordegreeSD <- new(Deducer::TextFieldWidget, "Std. Dev.")
-	priordegreeSD$setLowerBound(0)
+	priordegreeSD1 <- new(Deducer::TextFieldWidget, "Standard Deviation")
+	priordegreeSD1$setLowerBound(0)
+	priordegreeSD2 <- new(Deducer::TextFieldWidget, "Standard Deviation")
+	priordegreeSD2$setLowerBound(0)
 	
 	priordegreemean0 <- new(Deducer::TextFieldWidget, "Mean, Status = 0")
 	priordegreemean0$setLowerBound(0)
@@ -117,9 +115,9 @@
 	priordegreemean1$setLowerBound(0)
 	priordegreemean1$setDefaultModel("7")
 	
-	dispers <- new(Deducer::TextFieldWidget, "Dispersion")
-	dispers$setLowerBound(0)
-	
+	#dispers <- new(Deducer::TextFieldWidget, "Dispersion")
+	#dispers$setLowerBound(0)
+
 	
 	#Buttons 
 	mcbutton <- new(JButton,"Sampling Prefs")
@@ -135,12 +133,32 @@
 	mclistener$setFunction(toJava(mcactionFunction))
 	mcbutton$addActionListener(mclistener)
 	
-	degbutton <- new(JButton,"Prior Degree Data")
-	degbutton$setToolTipText("Only use Status = 0 and Status = 1 fields if \"Use Status Var\" is checked.")	
-	degsubdialog <- new(SimpleRSubDialog,dialog,"Prior Degree Data")
-	setSize(degsubdialog,300L,400L)
+	degbutton <- new(JButton,"Prior Degree Knowledge")
+	degbutton$setToolTipText("Status = 0 and Status = 1 fields only if \"Use Status Var\" is checked.")
+	
+	#one sub-dialog for posteriorsize and one for posteriordisease
+	degsubdialog1 <- new(SimpleRSubDialog,dialog,"Prior Degree Knowledge")
+	degsubdialog2 <- new(SimpleRSubDialog,dialog,"Prior Degree Knowledge")
+	
+	setSize(degsubdialog1,300L,300L)
+	setSize(degsubdialog2,300L,300L)
+	
+	addComponent(degsubdialog1, priordegreemean, 100, 475, 250, 50, bottomType = "NONE")
+	addComponent(degsubdialog1, maxDeg1, 300, 475, 450, 50, bottomType = "NONE")
+	addComponent(degsubdialog1, priordegreeSD1, 300, 950, 450, 525, bottomType = "NONE")
+	#addComponent(degsubdialog, dispers, 100, 950, 200, 525, bottomType = "NONE")
+	addComponent(degsubdialog1, degreedist1, 575, 950, 800, 50, bottomType = "REL")
+	
+	addComponent(degsubdialog2, priordegreemean0, 100, 475, 250, 50, bottomType = "NONE")
+	addComponent(degsubdialog2, priordegreemean1, 100, 950, 250, 525, bottomType = "NONE")
+	addComponent(degsubdialog2, maxDeg2, 300, 475, 450, 50, bottomType = "NONE")
+	addComponent(degsubdialog2, priordegreeSD2, 300, 950, 450, 525, bottomType = "NONE")
+	addComponent(degsubdialog2, degreedist2, 575, 950, 800, 50, bottomType = "REL")
+
 	
 	degactionFunction <- function(cmd,ActionEvent){
+		if (diseasevar$getRModel()=="c()") {degsubdialog<-degsubdialog1}
+		else {degsubdialog<-degsubdialog2}	
 		degsubdialog$setLocationRelativeTo(degbutton)
 		degsubdialog$run()
 	}
@@ -148,10 +166,10 @@
 	deglistener$setFunction(toJava(degactionFunction))
 	degbutton$addActionListener(deglistener)
 	
-	popbutton <- new(JButton,"Prior Population Data")
+	popbutton <- new(JButton,"Prior Pop. Size Knowledge")
 	
-	popsubdialog <- new(SimpleRSubDialog,dialog,"Prior Population Data")
-	setSize(popsubdialog,300L,400L)
+	popsubdialog <- new(SimpleRSubDialog,dialog,"Prior Population Knowledge")
+	setSize(popsubdialog,300L,500L)
 	
 	popactionFunction <- function(cmd,ActionEvent){
 		popsubdialog$setLocationRelativeTo(popbutton)
@@ -161,254 +179,227 @@
 	poplistener$setFunction(toJava(popactionFunction))
 	popbutton$addActionListener(poplistener)
 	
+	plotbox <- new(Deducer::CheckBoxesWidget,.jarray("Plot Distribution"))
+	setSize(plotbox,400,75)	
+	plotbox$setDefaultModel(c("Plot Distribution"))
 	
-	#Arrange Components:
+	
+	
+#Arrange Components:
 
-	#top 
-	addComponent(dialog, varSel, 50, 450, 550, 50)
-	#variable boxes
-	addComponent(dialog, degreevar, 50, 950, 175, 500, topType="ABS",bottomType="NONE")
-	#setSize(diseasevar,400,125)
-	addComponent(dialog, diseasevar, 200, 950, 325, 500, topType="REL",bottomType="REL")
-	#checkbox
-	addComponent(dialog, diseasebox, 325, 950, 425, 625, bottomType = "REL")
+	addComponent(dialog, varSel, 50, 450, 500, 50)
 	
-	addComponent(dialog, wavevar, 425, 950, 550, 500, topType="REL",bottomType="REL")
+	addComponent(dialog, plotbox, 60, 950, 150, 620)
+	addComponent(dialog, diseasevar, 200, 950, 350, 500, topType="REL",bottomType="REL")
+	addComponent(dialog, wavevar, 375, 950, 525, 500, topType="REL",bottomType="REL")
 	
 
 	#buttons
-	addComponent(dialog,mcbutton,625,450,725,50)
-	addComponent(dialog,degbutton,775,450,875,50)
-	addComponent(dialog,popbutton,625,950,725,550)	
-	
-	#Sampling button
-		#replaced panel with subdialog (JC)
-		#samplepanel <- new(JPanel)
-		#samplepanel$setPreferredSize(new(Dimension,350L,250L))
-		#samplepanel$setSize(new(Dimension,350L,250L))
-		#samplepanel$setBorder(J("javax.swing.BorderFactory")$createTitledBorder("MCMC Sampling"))
-		#samplepanel$setLayout(new(AnchorLayout))
-		#addComponent(dialog, samplepanel, 375, 450, 625, 50,bottomType="REL")		
-	
-		#addComponent(samplepanel, burn, 100, 475, 450, 50, bottomType = "NONE")
-		#addComponent(samplepanel, intervalsize, 100, 950, 450, 525, bottomType = "NONE")
-		#addComponent(samplepanel, samples, 500, 950, 950, 50, bottomType = "NONE")
-	
-
+	addComponent(dialog,mcbutton,590,450,690,50)
+	addComponent(dialog,degbutton,590,950,690,550)
+	addComponent(dialog, typedist, 750,450,850,50, bottomType = "REL")
+	addComponent(dialog,popbutton,750,950,850,550)	
 	
 	addComponent(mcsubdialog, burn, 100, 475, 450, 50, bottomType = "NONE")
 	addComponent(mcsubdialog, intervalsize, 100, 950, 450, 525, bottomType = "NONE")
 	addComponent(mcsubdialog, samples, 500, 950, 850, 50, bottomType = "NONE")
 
-
-
-	#degreeinfo
-	degreepanel <- new(JPanel)
-	degreepanel$setBorder(J("javax.swing.BorderFactory")$createTitledBorder("Prior Degree Data"))
-	degreepanel$setLayout(new(AnchorLayout))
-	#addComponent(dialog, degreepanel, 650, 450, 900, 50,bottomType="REL")		
-
-	addComponent(degsubdialog, maxDeg, 100, 475, 200, 50, bottomType = "NONE")
-	addComponent(degsubdialog, dispers, 100, 950, 200, 525, bottomType = "NONE")
-	addComponent(degsubdialog, priordegreemean, 250, 475, 350, 50, bottomType = "NONE")
-	addComponent(degsubdialog, priordegreeSD, 250, 950, 350, 525, bottomType = "NONE")
-	addComponent(degsubdialog, priordegreemean0, 400, 475, 500, 50, bottomType = "NONE")
-	addComponent(degsubdialog, priordegreemean1, 400, 950, 500, 525, bottomType = "NONE")
-	addComponent(degsubdialog, degreedist, 575, 950, 800, 50, bottomType = "REL")
-	
-	
 	#column 2
 	
-#prior data panel
-		#replaced panel with subdialog
-		#priorpanel <- new(JPanel)
-		#priorpanel$setBorder(J("javax.swing.BorderFactory")$createTitledBorder("Prior Population Data"))
-		#priorpanel$setLayout(new(AnchorLayout))
-		#addComponent(dialog, priorpanel, 375, 950, 900, 500,bottomType="REL")		
-	
-	addComponent(popsubdialog, max_N, 50, 475, 200, 50, bottomType = "REL")
-	addComponent(popsubdialog, priormed, 50, 950, 200, 525, bottomType = "REL")
-	
-	addComponent(popsubdialog, priormean, 250, 475, 400, 50, bottomType = "REL")
-	addComponent(popsubdialog, priorsd, 250, 950, 400, 525, bottomType = "REL")
-	
-	addComponent(popsubdialog, priormode, 450, 475, 600, 50, bottomType = "REL")
-	addComponent(popsubdialog, quarts, 450, 950, 600, 525, bottomType = "REL")
-	
-	addComponent(popsubdialog, priormodeprop, 650, 400, 800, 50, bottomType = "REL")
-	addComponent(popsubdialog, typedist, 650, 950, 800, 450, bottomType = "REL")
+	mmmpanel <- new(JPanel)
+	mmmpanel$setBorder(J("javax.swing.BorderFactory")$createTitledBorder("Fill in one row or none (default)"))
+	mmmpanel$setLayout(new(AnchorLayout))
+	addComponent(popsubdialog, mmmpanel, 50, 950, 700, 50,bottomType="REL")		
 
+	#degreeinfo
+	
+	addComponent(mmmpanel, priormean, 100, 950, 250, 50, bottomType = "NONE")
+	addComponent(mmmpanel, priormed, 300, 950, 450, 50, bottomType = "NONE")
+	addComponent(mmmpanel, priormode, 500, 950, 650, 50, bottomType = "NONE")
+	addComponent(mmmpanel, quarts25, 700, 490, 850, 50, bottomType = "NONE")
+	addComponent(mmmpanel, quarts75, 700, 950, 850, 510, bottomType = "NONE")
+	addComponent(popsubdialog, priorsd, 725, 900, 840, 100, bottomType = "REL")	
+
+#Functions
+	
 	checkFunc <- function(x) {
 		
-		if (degreevar$getRModel() == "c()") 
-			return("Please enter degree variable")
-		if (wavevar$getRModel() == "c()") 
-			return("Please enter wave variable")
-		if (diseasevar$getRModel() == "c()" && diseasebox$getModel()$size()>0) 
-			return("Please enter status variable")
-		if (quarts$getModel()!="" && !length(strsplit(quarts$getModel(),",")[[1]])%in%c(0,2))
-			return("Quartile entry should be empty or of form low,high e.g 2000,5000")
-		if (priormodeprop$getModel()>1)
-			return("Prior proportion mode must be between 0 and 1")
-		#if (priormedprop$getModel()>1)
-		#	return("Prior proportion median must be between 0 and 1")
+		if (varSel$getRModel()=="c()") {
+			return("Please select a data set")}
+		if (xor(quarts25$getModel()=="",quarts75$getModel()==""))
+			return("Quartile entries should be empty or both filled")
+			
 		else("")
 		
 	}
 	dialog$setCheckFunction(toJava(checkFunc))	
 	
+	
+	#if(plotbox$getModel()$size()>0)
 	runFunc <- function(x){
-			
+		
+		dataset <- unlist(strsplit(varSel$getRModel(), "[\"]"))[2]
 		"%+%" <- function(x, y) paste(x, y, sep = "")
 		
-		deg<- unlist(strsplit(degreevar$getRModel(), "[\"]"))[2]
+		if (wavevar$getRModel() != "c()") {
+			ordername <- unlist(strsplit(wavevar$getRModel(), "[\"]"))[2]
+			order.var <- dataset %+% "$" %+% ordername
+			s <- "get.net.size(" %+% dataset %+% ")[order(" %+% order.var %+% ")]"		
+		}		
 		
-		#not yet incorporated in function
-		wave<- unlist(strsplit(wavevar$getRModel(), "[\"]"))[2]		
-		
-		sbase1 <- varSel$getModel() %+% "$" %+% deg 
-		sbase2 <- varSel$getModel() %+% "$" %+% wave
-		s <- sbase1 %+% "[order(" %+% sbase2 %+% ")]" #leaving in NAs for now. remove in the function? [!is.na(" %+% sbase1 %+% "[order(" %+% sbase2 %+% ")])]"
-				
-		median.prior.size="NULL"
-		if (priormed$getModel()!="") {median.prior.size = priormed$getModel()}
+		else {s <- "get.net.size(" %+% dataset %+% ")[order(get.wave(" %+% dataset %+% "))]"}#result from get.wave shouldn't have na's
+			
 		interval <- "10"
 		if (intervalsize$getModel()!="") {interval = intervalsize$getModel()}
 		burnin <- "5000"
 		if (burn$getModel()!="") {burnin = burn$getModel()}
-		maxN = "NULL"
-		
-		if (max_N$getModel()!="") {maxN = max_N$getModel()}
-		s2=eval(parse(text=s))
-		K=as.character(round(quantile(s2,0.80,na.rm=TRUE))) #should this be double the max observed instead??
-		if (maxDeg$getModel()!="") {K = maxDeg$getModel()}
 		samplesize <- "1000"
 		if (samples$getModel()!="") {samplesize = samples$getModel()}
 		
-		quartiles.prior.size <- "NULL"
-		quarts2 <- quarts$getRModel()
-		#add hovertext to ensure proper entry form and/or add check for extra parenths?
-		if (quarts2!="\"\"") {quartiles.prior.size = quarts2}
-		
-		mean.prior.size <- "NULL"
-		if (priormean$getModel()!="") {mean.prior.size = priormean$getModel()}
-		mode.prior.size <- "NULL"
-		if (priormode$getModel()!="") {mode.prior.size = priormode$getModel()}
-		
-		sd.prior.size <- "NULL"
-		if (priorsd$getModel()!="") {sd.prior.size = priorsd$getModel()}
-		mode.prior.sample.proportion <- ".5"
-		if (priormodeprop$getModel()!="") {mode.prior.sample.proportion = priormodeprop$getModel()}
-		mean.prior.degree <- "NULL"
-		if (priordegreemean$getModel()!="") {mean.prior.degree = priordegreemean$getModel()}
-		sd.prior.degree <- "NULL"
-		if (priordegreeSD$getModel()!="") {sd.prior.degree = priordegreeSD$getModel()}
-		dispersion <- "0"
-		if (dispers$getModel()!="") {dispersion = dispers$getModel()}
-		
-		mean0.prior.degree = priordegreemean0$getModel()
-		mean1.prior.degree = priordegreemean1$getModel()
-		
 		
 		priorsizedistribution <- switch(typedist$getModel(),
-				"Proportion"="beta",
-				"Neg-binom"="nbinom",
-				"Poisson-log-norm"="pln",
+				"Beta"="beta",
+				#"Neg-binom"="nbinom",
+				#"Poisson-log-norm"="pln",
 				"Flat" = "flat" )
 		
-		priordegreedistribution <- switch(degreedist$getModel(),
+		quarts1 <- quarts25$getRModel()
+		quarts2 <- quarts75$getRModel()
+		
+		cmd2 <- ""
+		#pop fields
+		if (priormed$getModel()!="") {
+			med.prior.size <- priormed$getModel()
+			cmd2 <- cmd2  %+% ", med.prior.size =" %+% med.prior.size
+		}	
+		
+		if (priormean$getModel()!="") {
+			mean.prior.size <- priormean$getModel()
+			cmd2 <- cmd2  %+% ", mean.prior.size =" %+% mean.prior.size
+		}
+		
+		if (priormode$getModel()!="") {
+			mode.prior.size <- priormode$getModel()
+			cmd2 <- cmd2  %+% ", mode.prior.size =" %+% mode.prior.size
+		}
+		
+		if (priorsd$getModel()!="") {
+			sd.prior.size = priorsd$getModel()
+			cmd2 <- cmd2  %+% ", sd.prior.size =" %+% sd.prior.size
+		}
+		
+		if (quarts1!="\"\"" && quarts2!="\"\"") {#doublechecks that both must be filled in if one is filled in
+			quartiles.prior.size = c(quarts1,quarts2)
+			cmd2 <- cmd2 %+% ", quartiles.prior.size=" %+% quartiles.prior.size
+		}
+	
+#### OPTION 1		
+		
+		if (diseasevar$getRModel()=="c()") {
+			
+		priordegreedistribution <- switch(degreedist1$getModel(),
 				"Conway-Maxwell-Poisson" = "cmp", 
 				"Neg-binom"="nbinom",
 				"Poisson-log-norm"="pln")
-		
-		#no entry field
-		alpha = "NULL"
-		df.mean.prior="1"
-		df.sd.prior = "5"
-		Np = "0"
-		#effective.prior.df=1
-			#nk=tabulate(s,nbin=K),
-		#n=length(s),
-		#muproposal=0.1, 
-		#sigmaproposal=0.15, 
-		#burnintheta=500,
-		#parallel=1, 
-		#parallel.type="PVM",
-		#seed=NULL
-		#verbose=TRUE
-		
-		if (diseasebox$getModel()$size()<=0) {
-		cmd <- "posize <- posteriorsize(s =" %+% s %+% #", median.prior.size=" %+% median.prior.size %+% ", interval =" %+% intervalsize %+%
-					", burnin=" %+% burnin %+%
-					", maxN=" %+% maxN %+% ", K=" %+% K %+% 
-					", samplesize=" %+% samplesize %+% 
-					", quartiles.prior.size=" %+% quartiles.prior.size %+% 
-					", mean.prior.size =" %+% mean.prior.size %+% 
-					", mode.prior.size=" %+% mode.prior.size %+% 
-					", priorsizedistribution= \"" %+% priorsizedistribution %+% "\"" %+%
-					", effective.prior.df= 1" %+% 
-					", sd.prior.size =" %+%	sd.prior.size %+% 
-					", mode.prior.sample.proportion=" %+% mode.prior.sample.proportion %+% 
-					", alpha=" %+% alpha %+% 
-					", degreedistribution= \"" %+% priordegreedistribution %+% "\"" %+%
-					", mean.prior.degree=" %+% mean.prior.degree %+% 
-					", sd.prior.degree=" %+% sd.prior.degree %+% 
-					", df.mean.prior =" %+% df.mean.prior %+% 
-					", df.sd.prior=" %+% df.sd.prior %+% 
-					", Np=" %+% Np %+% 
-					", dispersion=" %+% dispersion %+% 
-				#", nk=tabulate(s,nbin=K)" %+%  This line causes crash when included excplicitly
-					", n=length(s)" %+% 
-					", muproposal=0.1, sigmaproposal=0.15, burnintheta=500" %+% 
-					", parallel=1, parallel.type=\"PVM\", seed=NULL, verbose=TRUE" %+% 
-					")"
-			cmd <- cmd # %+% "\n posize\n" #print this?
 			
-		}
+		cmd <- "posize <- posteriorsize(s =" %+% s %+% 
+				   #", median.prior.size=" %+% median.prior.size %+% ", 
+				   #", maxN=" %+% maxN %+%
+					", priorsizedistribution= \"" %+% priorsizedistribution %+% "\""
 		
+	#add to command depending on input:
+		
+			#degreefields
+			if (priordegreemean$getModel()!="") {
+			mean.prior.degree = priordegreemean$getModel()
+			cmd <- cmd  %+% ", mean.prior.degree=" %+% mean.prior.degree		
+			}
+		
+			if (maxDeg1$getModel()!="") {
+			K = maxDeg1$getModel()
+			cmd <- cmd  %+% ", K =" %+% K
+			}
+		
+			if (priordegreeSD1$getModel()!="") {
+			sd.prior.degree = priordegreeSD1$getModel()
+			cmd <- cmd  %+% ", sd.prior.degree=" %+% sd.prior.degree 
+			}
+		
+
+		cmd <-cmd %+% cmd2 %+%
+				", interval=" %+% interval %+%
+				", burnin=" %+% burnin %+%
+				", samplesize=" %+% samplesize %+% ")" # %+% "\n posize\n" #print this?
+		
+		print(cmd)
+		}
+
+#### OPTION 2		
+				
 		else { #use posteriordisease function				
 				
-				dis2<- unlist(strsplit(diseasevar$getRModel(), "[\"]"))[2]		
-				dis <- varSel$getModel() %+% "$" %+% dis2
-				sbase2 <- varSel$getModel() %+% "$" %+% wave
-				dis <- dis %+% "[order(" %+% sbase2 %+% ")]"
+			priordegreedistribution <- switch(degreedist2$getModel(),
+					"Conway-Maxwell-Poisson" = "cmp", 
+					"Neg-binom"="nbinom",
+					"Poisson-log-norm"="pln")
+			
+			if (wavevar$getRModel() != "c()") {
+				ordername <- unlist(strsplit(wavevar$getRModel(), "[\"]"))[2]
+				order.var <- dataset %+% "$" %+% ordername
+				s <- "get.net.size(" %+% dataset %+% ")[order(" %+% order.var %+% ")]"		
+			}		
+			
+			else {s <- "get.net.size(" %+% dataset %+% ")[order(get.wave(" %+% dataset %+% "))]"}#result from get.wave shouldn't have na's
+			
+			
+			dis2<- unlist(strsplit(diseasevar$getRModel(), "[\"]"))[2]		
+			dis <- dataset %+% "$" %+% dis2
+			
+			if (wavevar$getRModel() != "c()") {
+				ordername <- unlist(strsplit(wavevar$getRModel(), "[\"]"))[2]
+				order.var <- dataset %+% "$" %+% ordername
+				dis <- dis %+% "[order(" %+% order.var %+% ")]"
+			}		
+			
+			else {disease.var <- dis %+% "[order(get.wave(" %+% dataset %+% "))]"} #result from get.wave shouldn't have na's
+
+			mean0.prior.degree = priordegreemean0$getModel()
+			mean1.prior.degree = priordegreemean1$getModel()			
+			
+			cmd <- "podisease <- posteriordisease(s = " %+% s %+% 
+						", dis = " %+% dis
+
+				if (mean0.prior.degree!="") {
+					mean0.prior.degree <- priordegreemean0$getModel()
+					cmd <- cmd  %+% ", mean0.prior.degree = " %+% mean0.prior.degree
+					}
+					
+				if (mean1.prior.degree!="") {
+					mean1.prior.degree <- priordegreemean0$getModel()
+					cmd <- cmd  %+% ", mean1.prior.degree = " %+% mean1.prior.degree
+					}
+					
+				if (priordegreeSD2$getModel()!="") {
+					sd.prior.degree = priordegreeSD2$getModel()
+					cmd <- cmd  %+% ", sd.prior.degree=" %+% sd.prior.degree 
+					}
+					
+				if (maxDeg2$getModel()!="") {
+					K = maxDeg2$getModel()
+					cmd <- cmd  %+% ", K =" %+% K
+					}
+					
+				cmd <- cmd %+% ", degreedistribution= \"" %+% priordegreedistribution %+% "\""  
+				cmd <- cmd %+% cmd2 %+%
 				
-				
-				Np0 = "0"
-				Np1 = "0"
-				burnintheta="500"	
-				cmd <- "podisease <- posteriordisease(s = " %+% s %+% ", dis = " %+% dis %+%
-						", mean0.prior.degree = " %+% mean0.prior.degree %+%
-						", mean1.prior.degree = " %+% mean1.prior.degree %+%
-						", sd.prior.degree = " %+% sd.prior.degree %+%
-						", df.mean.prior = " %+% df.mean.prior %+% 
-						", df.sd.prior=" %+% df.sd.prior %+% 
-						", Np0= " %+% Np0 %+% 
-						", Np1= " %+% Np1 %+% 
+				#if (samplesize!= "" || sampelsize!= 1000)	
 						", samplesize= " %+% samplesize %+%	
 						", burnin= " %+% burnin %+%	
 						", interval= " %+% interval %+%	
-						", burnintheta= " %+% burnintheta %+%	
-						", priorsizedistribution= \"" %+% priorsizedistribution %+% "\"" %+%
-						", mean.prior.size = " %+% mean.prior.size %+% 
-						", sd.prior.size = " %+%	sd.prior.size %+% 
-						", mode.prior.sample.proportion = " %+% mode.prior.sample.proportion %+% 
-						", median.prior.size = " %+% median.prior.size %+% 
-						", mode.prior.size =" %+% mode.prior.size %+% 
-						", quartiles.prior.size = " %+% quartiles.prior.size %+%
-						", effective.prior.df = 1" %+% 
-						", alpha = " %+% alpha %+% 
-						", degreedistribution= \"" %+% priordegreedistribution %+% "\"" %+%
-						", maxN = " %+% maxN %+% 
-						", K = " %+% K %+% 
-						", n = length(s)" %+%
-						", dispersion = " %+% dispersion %+%
-						", nk0 = tabulate(s[dis==0],nbin=K), nk1 = tabulate(s[dis==1],nbin = K)" %+%
-						", muproposal = 0.1, sigmaproposal = 0.15, parallel = 1, seed = NULL" %+%
-						", verbose = TRUE"  %+%
 						")"
 
-				cmd <- cmd # %+% "\n podisease\n" #print this?
+				#print the command
+				#cmd <- cmd  %+% "\n podisease\n" 
 						}
 		execute(cmd)
 
