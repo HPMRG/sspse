@@ -138,7 +138,6 @@
 				
 		if (quarts1!="\"\"" && quarts2!="\"\"") {#doublechecks that both must be filled in if one is filled in
 			quartiles.prior.size = "c(" %+% strsplit(quarts1,"\"")[[1]][2] %+% "," %+% strsplit(quarts1,"\"")[[1]][2] %+% ")"
-			print(quartiles.prior.size)
 			cmd <- cmd %+% ", quartiles.prior.size=" %+% quartiles.prior.size
 		}
 			
@@ -147,24 +146,26 @@
 			cmd <- cmd  %+% ", sd.prior.size=" %+% sd.prior.size
 		}
 		
+		cmd <- cmd %+% ")\n summary.size(dsp)"
 		
 		
-	if(plotbox$getModel()$size()>0) { #return info and plot instead of pmf vectors
-			cmd <- cmd %+% ")\n dsp[3:14] \n plot(dsp$x,dsp$lprior,main = \"Prior Distribution for Population Size (" %+% dist_type %+% ")\", xlab = \"population size\", ylab = \"prior density\", type=\"n\")"
-			cmd <- cmd %+% "\nlines(dsp$x,dsp$lprior,lty = 2)"
-			cmd <- cmd %+% "\nabline(v=dsp$mode.prior.size,col=2,lty = 3)\nabline(v=dsp$quartiles.prior.size,col = 4)"
-			if (dist_type!="flat") {
-				cmd <- cmd %+% "\nabline(v=dsp$mean.prior.size,col=1,lty = 5)"   
-				cmd <- cmd %+% "\nlegend('topright', c(\"mode\", \"mean\", \"quartiles\"), col = c(2,1,4), lty = c(3,5,1))"
-				}
-			else {
-				cmd <- cmd %+% "\nlegend('topright', c(\"median\", \"quartiles\"), col = c(2,4), lty = c(3,1))"
-				}
-			}
+	if(plotbox$getModel()$size()>0) { 
 			
-	else (cmd <- cmd %+% ")\n dsp\n")
-	
-	print(cmd)
+		cmd <- cmd %+% "\n plot.size(dsp)"}
+			
+			#return info and plot instead of pmf vectors
+			#cmd <- cmd %+% ")\n dsp[3:14] \n plot(dsp$x,dsp$lprior,main = \"Prior Distribution for Population Size (" %+% dist_type %+% ")\", xlab = \"population size\", ylab = \"prior density\", type=\"n\")"
+			#cmd <- cmd %+% "\nlines(dsp$x,dsp$lprior,lty = 2)"
+			#cmd <- cmd %+% "\nabline(v=dsp$mode.prior.size,col=2,lty = 3)\nabline(v=dsp$quartiles.prior.size,col = 4)"
+			#if (dist_type!="flat") {
+			#	cmd <- cmd %+% "\nabline(v=dsp$mean.prior.size,col=1,lty = 5)"   
+			#	cmd <- cmd %+% "\nlegend('topright', c(\"mode\", \"mean\", \"quartiles\"), col = c(2,1,4), lty = c(3,5,1))"
+			#	}
+			#else {
+			#	cmd <- cmd %+% "\nlegend('topright', c(\"median\", \"quartiles\"), col = c(2,4), lty = c(3,1))"
+			#	}
+			#}
+			
 	execute(cmd)
 	}	
 	dialog$setRunFunction(toJava(runFunc))
