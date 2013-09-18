@@ -89,6 +89,9 @@ dsizeprior<-function(n,
        warning("No prior information about the population size was specified! Using a prior mode of twice the sample size. Please specify prior information!", call. = FALSE)
        beta <- 3
      }
+     if(is.infinite(beta) | is.na(beta)){
+       stop("The sample size is incompatible with the specified prior information about the population size.", call. = FALSE)
+     }
      median.prior.size <- n/(1-0.5^(1/beta))
      mode.prior.size <- n*(beta+1)/2
      mode.prior.sample.proportion <- 2/(beta+1)
@@ -255,6 +258,9 @@ dsizeprior<-function(n,
      if(is.null(beta)){
        warning("No prior information about the population size was specified! Using a prior mode of twice the sample size. Please specify prior information!", call. = FALSE)
        beta <- 3
+     }
+     if(is.infinite(beta) | is.na(beta)){
+       stop("The sample size is incompatible with the specified prior information about the population size.", call. = FALSE)
      }
      if(is.null(maxN)){maxN <- min(maxNmax,ceiling( n/(1-0.90^(1/beta)) ))}
      if(is.null(N)){N <- min(maxNmax,ceiling( n/(1-0.5^(1/beta)) ))}

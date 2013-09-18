@@ -1,5 +1,4 @@
-plot.size <-
-function(fit,xlim=NULL,data=NULL,support=1000,HPD.level=0.95,N=NULL,ylim=NULL){
+plot.size <- function(fit,xlim=NULL,data=NULL,support=1000,HPD.level=0.95,N=NULL,ylim=NULL){
 require(locfit)
 require(coda)
 out <- fit$sample
