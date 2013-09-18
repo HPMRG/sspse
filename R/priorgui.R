@@ -6,9 +6,15 @@
 
 .makePriorDistribution <- function() {
 
+	JPanel <- J("javax.swing.JPanel")
+	Dimension <- J("java.awt.Dimension")
+	AnchorLayout <- J("org.rosuda.JGR.layout.AnchorLayout")
+	ActionListener <- J("org.rosuda.deducer.widgets.event.RActionListener")	
+	
 	#column1	
+	
 	dialog <- new(Deducer::SimpleRDialog)
-	dialog$setSize(500L, 500L)
+	dialog$setSize(480L, 420L)
 	dialog$setTitle("Calculate Prior Distribution of Population Size")
 	
 	samplesize <- new(Deducer::TextFieldWidget, "Sample Size")
@@ -19,18 +25,18 @@
 	maxN$setInteger(TRUE)
 	maxN$setLowerBound(1)
 	
-	typedist <-new(Deducer::ButtonGroupWidget, "Distribution Type", c("Proportion","Neg-binom","Continuous","Poisson-log-norm","Flat"))
-	#typedist$setToolTipText("Neg-binom = Negative Binomial; Poisson-log-norm = Poisson-log-normal")
+	typedist <-new(Deducer::ButtonGroupWidget, "Distribution Type", c("Beta","Flat")) #"Neg-binom","Continuous","Poisson-log-norm",
+	#typedist$setSize(400,250)
 	
 	plotbox <- new(Deducer::CheckBoxesWidget,.jarray("Plot Distribution"))
 	setSize(plotbox,400,75)	
-	#plotbox$setDefaultModel(c("Plot Distribution"))
+	plotbox$setDefaultModel(c("Plot Distribution"))
 	
 	#column2
 	priormean <- new(Deducer::TextFieldWidget, "Mean")
 	priormean$setLowerBound(1)
 	
-	priorsd <- new(Deducer::TextFieldWidget, "Standard Deviation")
+	priorsd <- new(Deducer::TextFieldWidget, "Standard Deviation (optional)")
 	priorsd$setLowerBound(0)
 	
 	priormed <- new(Deducer::TextFieldWidget, "Median")
@@ -39,103 +45,118 @@
 	priormode <- new(Deducer::TextFieldWidget, "Mode")
 	priormed$setLowerBound(1)
 
-	priorquartiles <- new(Deducer::TextFieldWidget, "Quartiles (25%, 75%)")
-	#set to require acoordinate pair
+	quarts25 <- new(Deducer::TextFieldWidget, "Quartiles 25%")
+	quarts25$setLowerBound(0)
+	quarts75 <- new(Deducer::TextFieldWidget, "75%")
+	quarts75$setLowerBound(0)
 	
-	#ignore for now - user can set on command line
+	#ignore for now - user can set inconsole
 	#prioralpha <- new(Deducer::TextFieldWidget, "Alpha")
 	#effectivedf <- new(Deducer::TextFieldWidget, "Effective Prior DF")
 	#effectivedf$setDefaultModel("1")
 	
-	priormodeprop <- new(Deducer::TextFieldWidget, "Proportion Mode")
-	priormodeprop$setLowerBound(0)
-	priormodeprop$setUpperBound(1)
-	priormodeprop$setDefaultModel(".5")
+	#priormodeprop <- new(Deducer::TextFieldWidget, "Proportion Mode")
+	#priormodeprop$setLowerBound(0)
+	#priormodeprop$setUpperBound(1)
+	#priormodeprop$setDefaultModel(".5")
 	
-	priormedprop <- new(Deducer::TextFieldWidget, "Proportion Median")
-	priormedprop$setLowerBound(0)
-	priormedprop$setUpperBound(1)
+	#priormedprop <- new(Deducer::TextFieldWidget, "Proportion Median")
+	#priormedprop$setLowerBound(0)
+	#priormedprop$setUpperBound(1)
 	
 	#left column 1
-	addComponent(dialog, samplesize, 50, 350, 150, 100, bottomType = "NONE")
-    addComponent(dialog, maxN, 175, 350, 275, 100, bottomType = "NONE")
-	addComponent(dialog, typedist, 325, 450, 675, 100, bottomType = "NONE")
-	addComponent(dialog, plotbox, 675, 450, 750, 100, bottomType = "NONE")
+	addComponent(dialog, samplesize, 50, 450, 200, 100, bottomType = "NONE")
+    addComponent(dialog, maxN, 225, 450, 375, 100, bottomType = "NONE")
+	addComponent(dialog, typedist, 410, 450, 700, 100, bottomType = "REL")
+	addComponent(dialog, plotbox, 700, 450, 900, 100, bottomType = "NONE")
 
 	#right column 2
-	addComponent(dialog, priormean, 50, 900, 150, 500, bottomType = "NONE")
-	addComponent(dialog, priorsd, 175, 900, 275, 500, bottomType = "NONE")
-	addComponent(dialog, priormed, 300, 900, 400, 500, bottomType = "NONE")
-	addComponent(dialog, priormode, 425, 900, 525, 500, bottomType = "NONE")
-	addComponent(dialog, priorquartiles, 550, 900, 650, 500, bottomType = "NONE")
-	addComponent(dialog, priormodeprop, 675, 900, 775, 500, bottomType = "NONE")
-	addComponent(dialog, priormedprop, 800, 900, 900, 500, bottomType = "NONE")
+	
+	mmmpanel <- new(JPanel)
+	mmmpanel$setBorder(J("javax.swing.BorderFactory")$createTitledBorder("Fill at most one row"))
+	mmmpanel$setLayout(new(AnchorLayout))
+	
+	addComponent(dialog, mmmpanel, 50, 950, 700, 500,bottomType="REL")		
+	addComponent(mmmpanel, priormean, 100, 900, 250, 50, bottomType = "NONE")
+	addComponent(mmmpanel, priormed, 300, 900, 450, 50, bottomType = "NONE")
+	addComponent(mmmpanel, priormode, 500, 900, 650, 50,  bottomType = "NONE")
+	addComponent(mmmpanel, quarts25, 700, 455, 850, 50, bottomType = "NONE")
+	addComponent(mmmpanel, quarts75, 700, 900, 850, 465, bottomType = "NONE")
+	addComponent(dialog, priorsd, 725, 910, 875, 520, bottomType = "NONE")
+	
+	
+	#addComponent(dialog, priormodeprop, 675, 900, 775, 500, bottomType = "NONE")
+	#addComponent(dialog, priormedprop, 800, 900, 900, 500, bottomType = "NONE")
 	
 	checkFunc <- function(x) {
 		if (samplesize$getModel() == "") 
 			return("Please enter sample size")
 		if (maxN$getModel() == "" && typedist$getModel()!="Proportion") 
 			return("Please enter population max")
-		if (priormodeprop$getModel() == "" && typedist$getModel()=="Proportion") 
-			return("Please enter proportion prior mode")
-		if (priorquartiles$getModel()!="" && !length(strsplit(priorquartiles$getModel(),",")[[1]])%in%c(0,2))
-			return("Quartile entry should be empty or of form low,high e.g 2000,5000")
+		#if (priorquartiles$getModel()!="" && !length(strsplit(priorquartiles$getModel(),",")[[1]])%in%c(0,2))
+		#	return("Quartile entry should be empty or of form low,high e.g 2000,5000")
 			#return(strsplit(priorquartiles$getModel(),",")[[1]])
-		if (priormodeprop$getModel()>1)
-			return("Prior proportion mode must be between 0 and 1")
-		if (priormedprop$getModel()>1)
-			return("Prior proportion median must be between 0 and 1")
 		else("")
-
-		#if type is flat or pln, grey out everything but n and maxN
-		#if type is proportioon, grey out mode.prior.size
 }
 
 	dialog$setCheckFunction(toJava(checkFunc))	
 
 	runFunc <- function(x){
-	
+	    
 		"%+%" <- function(x, y) paste(x, y, sep = "")
+		
 		n <- samplesize$getModel()
 		max_N <- maxN$getModel()
 		dist_type <- switch(typedist$getModel(),
-				"Proportion"="beta",
-				"Neg-binom"="nbinom",
-				"Continuous"="continuous",
-				"Poisson-log-norm"="pln",
+				"Beta"="beta",
+				#"Neg-binom"="nbinom",
+				#"Continuous"="continuous",
+				#"Poisson-log-norm"="pln",
 				"Flat" = "flat" )
-		prior.mean <- "NULL"
-			if (priormean$getModel()!="") {prior.mean = priormean$getModel()}
-		prior.SD <- "NULL"
-			if (priorsd$getModel()!="") {prior.SD= priorsd$getModel()}
-		prior.med <- "NULL"
-			if (priormed$getModel()!="") {prior.med = priormed$getModel()}
-		prior.mode <- "NULL"
-			if (priormode$getModel()!="") {prior.mode = priormode$getModel()}
-		prior.quart <- "NULL"
-		quarts <- "c("%+%priorquartiles$getModel()%+%")"
-		#add hovertext to ensure proper entry form and/or add check for extra parenths
-			if (priorquartiles$getModel()!="") {prior.quart = quarts}
-		prior.prop.mode <- "NULL"
-			if (priormodeprop$getModel()!="") {prior.prop.mode = priormodeprop$getModel()}
-		prior.prop.med <- "NULL"
-			if (priormedprop$getModel()!="") {prior.prop.med = priormedprop$getModel()}	
+		
+		quarts1 <- quarts25$getRModel()
+		quarts2 <- quarts75$getRModel()
 			
-		cmd <- "dsp <- dsizeprior(" %+% n %+% ", type=\"" %+% dist_type %+% "\", mean.prior.size =" %+% prior.mean %+%
-		", maxN=" %+% max_N %+%	", sd.prior.size=" %+% 
-		prior.SD %+% ", mode.prior.sample.proportion=" %+% prior.prop.mode %+% 
-		", median.prior.sample.proportion=" %+% prior.prop.med %+% 
-		", median.prior.size=" %+% prior.med %+% ", mode.prior.size =" %+% 
-		prior.mode %+% ", quartiles.prior.size=" %+% prior.quart %+% 
-		", effective.prior.df=1, alpha = NULL, beta = NULL, log = FALSE, maxbeta = 100, maxNmax = 200000, verbose = TRUE" 
-	
+		cmd <- "dsp <- dsizeprior(" %+% n %+%
+				", maxN=" %+% max_N %+%
+				", type=\"" %+% dist_type %+% "\""
+		
+		if (priormean$getModel()!="") {
+			mean.prior.size = priormean$getModel()
+			cmd <- cmd  %+% ", mean.prior.size=" %+% mean.prior.size
+		}
+		
+		if (priormed$getModel()!="") {
+			median.prior.size = priormed$getModel()
+			cmd <- cmd  %+% ", median.prior.size=" %+% median.prior.size 
+		}
+				
+		if (priormode$getModel()!="") {
+			mode.prior.size = priormode$getModel()
+			cmd <- cmd  %+% ", mode.prior.size=" %+% mode.prior.size 
+		}
+				
+		if (quarts1!="\"\"" && quarts2!="\"\"") {#doublechecks that both must be filled in if one is filled in
+			quartiles.prior.size = "c(" %+% strsplit(quarts1,"\"")[[1]][2] %+% "," %+% strsplit(quarts1,"\"")[[1]][2] %+% ")"
+			print(quartiles.prior.size)
+			cmd <- cmd %+% ", quartiles.prior.size=" %+% quartiles.prior.size
+		}
+			
+		if (priorsd$getModel()!="") {
+			sd.prior.size = priorsd$getModel()
+			cmd <- cmd  %+% ", sd.prior.size=" %+% sd.prior.size
+		}
 		
 		
-		if(plotbox$getModel()$size()>0) { #return info and plot instead of pmf vectors
+		
+	if(plotbox$getModel()$size()>0) { #return info and plot instead of pmf vectors
 			cmd <- cmd %+% ")\n dsp[3:14] \n plot(dsp$x,dsp$lprior,main = \"Prior Pop. Size Distribution (" %+% dist_type %+% ")\")"
 			}
-			else (cmd <- cmd %+% ")\n dsp\n")
-		execute(cmd)
+			
+	else (cmd <- cmd %+% ")\n dsp\n")
+	
+	print(cmd)
+	execute(cmd)
 	}	
 	dialog$setRunFunction(toJava(runFunc))
 	dialog
