@@ -150,7 +150,8 @@
 		
 		
 	if(plotbox$getModel()$size()>0) { #return info and plot instead of pmf vectors
-			cmd <- cmd %+% ")\n dsp[3:14] \n plot(dsp$x,dsp$lprior,main = \"Prior Pop. Size Distribution (" %+% dist_type %+% ")\")"
+			cmd <- cmd %+% ")\n dsp[3:14] \n plot(dsp$x,dsp$lprior,main = \"Prior Distribution for Population Size (" %+% dist_type %+% ")\", xlab = \"population size\", ylab = \"prior density\", type=\"n\")"
+			cmd <- cmd %+% "\nlines(dsp$x,dsp$lprior,lty = 2)"
 			}
 			
 	else (cmd <- cmd %+% ")\n dsp\n")
