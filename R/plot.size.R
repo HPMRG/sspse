@@ -89,7 +89,7 @@ if(!is.null(data)){
   bbb <- bbb/sum(bbb)
   aaa <- barplot(bbb,names.arg=1:Kmax,add=FALSE,axes=TRUE,width=rep(0.5,length(bbb)),space=1,col=0,
     xlab="degree",ylab="probability", xlim=c(1,Kmax),
-    main="mean posterior network size distribution")
+    main="mean posterior network size distribution with sample histogram overlaid")
   lines(x=-0.25+seq_along(fit$predictive.degree),y=fit$predictive.degree, type='h', col='red', lwd=2)
 }
 }else{
