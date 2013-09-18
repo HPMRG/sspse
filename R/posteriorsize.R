@@ -66,7 +66,7 @@ posteriorsize<-function(s,
     y=dcmp.natural(v=fit,x=(0:max(s)))
     K=(0:max(s))[which.max(cumsum(y)>0.95)]
   }
-  cat(sprintf("The size cap is K = %d.\n",K))
+  cat(sprintf("The cap on influence of the personal network size is K = %d.\n",K))
   if(is.null(nk)){ nk <- tabulate(s,nbins=K)}
   if(is.null(mean.prior.degree)){
     degs <- s

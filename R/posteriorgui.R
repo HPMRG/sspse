@@ -358,7 +358,7 @@
 
 		cmd <-cmd %+% ")"
 
-		if(plotbox$getModel()$size()>0) {cmd <- cmd %+% "\nplot.size(posize)"}
+#	if(plotbox$getModel()$size()>0) {cmd <- cmd %+% "\nplot.size(posize)"}
 		
 		}
 
