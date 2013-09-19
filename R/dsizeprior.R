@@ -12,7 +12,7 @@ dsizeprior<-function(n,
 		  beta=NULL,
                   maxN=NULL,
                   log=FALSE,
-                  maxbeta=100,
+                  maxbeta=20,
                   maxNmax=200000,
                   supplied=list(maxN=maxN),
                   verbose=TRUE){
@@ -128,8 +128,8 @@ dsizeprior<-function(n,
       x <- n:maxN
       while( {
        p=dfn(alpha,beta,x,n,effective.prior.df);
-       abs(p[length(p)]/max(p) - 0.01)>0.005}){
-        maxN <- round(maxN*(c(0.9,1.1)[(p[length(p)]/max(p) > 0.01)+1]))
+       abs(p[length(p)]/max(p,na.rm=TRUE) - 0.01)>0.005}){
+        maxN <- round(maxN*(c(0.9,1.1)[(p[length(p)]/max(p,na.rm=TRUE) > 0.01)+1]))
         x <- n:maxN
         a = optimize(f=fn,interval=c(1,maxbeta),x,n,median.prior.size,
                     effective.prior.df,alpha,tol=0.01)
@@ -154,8 +154,8 @@ dsizeprior<-function(n,
       beta <- a$minimum
       while( {
        p=dfn(alpha,beta,x,n,effective.prior.df);
-       abs(p[length(p)]/max(p) - 0.01)>0.005}){
-        maxN <- round(maxN*(c(0.9,1.1)[(p[length(p)]/max(p) > 0.01)+1]))
+       abs(p[length(p)]/max(p,na.rm=TRUE) - 0.01)>0.005}){
+        maxN <- round(maxN*(c(0.9,1.1)[(p[length(p)]/max(p,na.rm=TRUE) > 0.01)+1]))
         x <- n:maxN
         a = optimize(f=fn,interval=c(1,maxbeta),x,n,median.prior.size,
                      effective.prior.df,alpha,tol=0.01)
@@ -181,8 +181,8 @@ dsizeprior<-function(n,
       beta <- a$minimum
       while( {
        p=dfn(alpha,beta,x,n,effective.prior.df);
-       abs(p[length(p)]/max(p) - 0.01)>0.005}){
-        maxN <- round(maxN*(c(0.9,1.1)[(p[length(p)]/max(p) > 0.01)+1]))
+       abs(p[length(p)]/max(p,na.rm=TRUE) - 0.01)>0.005}){
+        maxN <- round(maxN*(c(0.9,1.1)[(p[length(p)]/max(p,na.rm=TRUE) > 0.01)+1]))
         x <- n:maxN
         a = optimize(f=fn,interval=c(1,maxbeta),x,n,mean.prior.size,
                     effective.prior.df,alpha,tol=0.01)
@@ -212,8 +212,8 @@ dsizeprior<-function(n,
       beta <- a$minimum
       while( {
        p=dfn(alpha,beta,x,n,effective.prior.df);
-       abs(p[length(p)]/max(p) - 0.01)>0.005}){
-        maxN <- round(maxN*(c(0.9,1.1)[(p[length(p)]/max(p) > 0.01)+1]))
+       abs(p[length(p)]/max(p,na.rm=TRUE) - 0.01)>0.005}){
+        maxN <- round(maxN*(c(0.9,1.1)[(p[length(p)]/max(p,na.rm=TRUE) > 0.01)+1]))
         x <- n:maxN
         a = optimize(f=fn,interval=c(1,maxbeta),x,n,mode.prior.size,
                      effective.prior.df,alpha,tol=0.01)
@@ -242,8 +242,8 @@ dsizeprior<-function(n,
       beta  <- exp(a$par[2])
       while( {
        p=dfn(alpha,beta,x,n,effective.prior.df);
-       abs(p[length(p)]/max(p) - 0.01)>0.005}){
-        maxN <- round(maxN*(c(0.9,1.1)[(p[length(p)]/max(p) > 0.01)+1]))
+       abs(p[length(p)]/max(p,na.rm=TRUE) - 0.01)>0.005}){
+        maxN <- round(maxN*(c(0.9,1.1)[(p[length(p)]/max(p,na.rm=TRUE) > 0.01)+1]))
         x <- n:maxN
         a = optim(par=a$par,fn=fn,
          x=x,n=n,quartiles.prior.size=quartiles.prior.size,effective.prior.df=effective.prior.df,
