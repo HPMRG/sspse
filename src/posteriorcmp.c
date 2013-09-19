@@ -529,5 +529,7 @@ void MHcmp (int *Nk, int *K,
   free(pdegi);
   free(pdegstar);
   PutRNGstate();  /* Disable RNG before returning */
+  /*Check for interrupts (if recursion is taking way too long...)*/
+  R_CheckUserInterrupt();
   *staken = taken;
 }

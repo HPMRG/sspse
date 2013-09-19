@@ -798,5 +798,7 @@ void MHcmpdisease (int *Nk0, int *Nk1, int *totdis, int *K,
   free(pdeg1i);
   free(pdeg1star);
   PutRNGstate();  /* Disable RNG before returning */
+  /*Check for interrupts (if recursion is taking way too long...)*/
+  R_CheckUserInterrupt();
   *staken = taken;
 }
