@@ -285,8 +285,8 @@
 		cmd2 <- ""
 		#pop fields
 		if (priormed$getModel()!="") {
-			med.prior.size <- priormed$getModel()
-			cmd2 <- cmd2  %+% ", med.prior.size =" %+% med.prior.size
+			median.prior.size <- priormed$getModel()
+			cmd2 <- cmd2  %+% ", median.prior.size =" %+% median.prior.size
 		}	
 		
 		if (priormean$getModel()!="") {
@@ -305,7 +305,8 @@
 		}
 		
 		if (quarts1!="\"\"" && quarts2!="\"\"") {#doublechecks that both must be filled in if one is filled in
-			quartiles.prior.size = c(quarts1,quarts2)
+			
+			quartiles.prior.size = "c(" %+% unlist(strsplit(quarts1, "[\"]"))[2]%+% "," %+% unlist(strsplit(quarts2, "[\"]"))[2] %+% ")"
 			cmd2 <- cmd2 %+% ", quartiles.prior.size=" %+% quartiles.prior.size
 		}
 		
