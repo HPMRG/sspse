@@ -1,61 +1,30 @@
-statnetauthors <- c("Mark S. Handcock", "David R. Hunter", "Carter T. Butts",
-                    "Steven M. Goodreau", "Martina Morris")
-authors <- c("Krista J. Gile", "Mark S. Handcock")
-projhomepage <- "http://statnet.org"
+#cat("'RDS Analyst' is a suite of packages for the statistical modeling of network data.\n")
+#cat('Please read the license using license.statnet()\n')
 
-statnettitle <- "statnet: Software Tools for the Statistical Modeling of Network Data"
-statnetversion <- "2.0"
-statnetyear <- "2003"
+citHeader("If you are using 'size' for research that will be published, we request that you acknowledge this with the following citation:")
 
-sizetitle <- "size: Estimating Hidden Population Size using Respondent Driven Sampling Data"
-sizedesc <- packageDescription("size")
-sizeversion <- sizedesc$Version
-sizedate <- sizedesc$Date
-s <- regexpr("20[0-9][0-9]", sizedate)
-sizeyear <- ifelse (s==-1, "2003", substr(sizedate, s, s+3))
-      
+desc <- packageDescription("size")
 
-citHeader(
-   "'size' is part of the statnet suite of packages.  ",
-   'Please read the license using license.statnet("size").\n\n',
-   "If you are using the 'size' package for research that will be published, ",
-   "we request that you acknowledge this by citing 'statnet' as shown below.\n\n",
-   "To cite the individual package 'size', please use the second citation below.\n\n",
-   'For BibTeX format, use toBibtex(citation("size")).',
-   sep="")
-   
-citEntry(entry = "Manual",
-         textVersion = paste(paste(statnetauthors, collapse=", "), " (", statnetyear,
-                             "). ", statnettitle, ". Version ", statnetversion,
-                             ". Project home page at ", projhomepage, 
-                             ". URL http://CRAN.R-project.org/package=statnet.",
-                             sep=""),
-         title = statnettitle, 
-         author = statnetauthors, 
-         year = statnetyear,
-         note = paste("Version ", statnetversion, ". Project home page at ",
-                      "\\url{", projhomepage, "}", sep=""),
-         address = "Seattle, WA",
-         url = "http://CRAN.R-project.org/package=statnet")
+# auts <- eval(parse(text=desc$`Authors@R`))
+# auts <- auts[sapply(auts, function(aut) "aut" %in% aut$role)]
 
-citEntry(entry="Manual",
-         author = authors,
-         title = sizetitle,
-         year         = sizeyear,
-         note         = paste("Version ", sizeversion,
-                        ".  Project home page at \\url{", projhomepage, "}", 
-                        sep=""),
+bibentry("Manual",
+         title = paste(desc$Package,": ", desc$Title, sep=""),
+         author = personList(as.person("Mark S. Handcock"),
+                             as.person("Krista J. Gile")),
+         year         = substr(desc$Date,1,4),
+         note         = paste("R package version ", desc$Version, sep=""),
          address      = "Los Angeles, CA",
          url          = "http://CRAN.R-project.org/package=size",
-         textVersion = paste(paste(authors, collapse=", "), " (", sizeyear,
-               "), ", sizetitle, ". Version ", sizeversion,
-               ". Project home page at ", projhomepage,
-               ". URL http://CRAN.R-project.org/package=size.",
+         
+         textVersion = 
+         paste("Mark S. Handcock and Krista J. Gile (2012) ", 
+               paste(desc$Package,": ", desc$Title, sep=""),
+               ", Version ", desc$Version, ". Project home page at http://hpmrg.org",
+               ",", " URL http://CRAN.R-project.org/package=size.",
                sep="")
          )
 
-         
 citFooter("We have invested a lot of time and effort in creating the",
-          "'statnet' suite of packages for use by other researchers.",
+          "'size' package for use by other researchers.",
           "Please cite it in all papers where it is used.")
-          
