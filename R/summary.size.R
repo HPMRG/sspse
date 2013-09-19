@@ -58,6 +58,6 @@ if(!is.null(out)){
 }else{
   attr(res, "heading") <- "Summary of Population Size Prior"
 }
-print.Anova(res)
-invisible(res)
+class(res) <- c("Anova","data.frame")
+res
 }
