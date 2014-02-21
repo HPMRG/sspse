@@ -12,12 +12,13 @@ dsizeprior<-function(n,
 		  beta=NULL,
                   maxN=NULL,
                   log=FALSE,
-                  maxbeta=20,
+                  maxbeta=120,
                   maxNmax=200000,
                   supplied=list(maxN=maxN),
                   verbose=TRUE){
   priorsizedistribution=match.arg(type)
   N <- NULL
+  maxN.set <- maxN
   lfn <- function(x,beta,n,effective.prior.df,alpha){
    a=effective.prior.df*(log(n)+lgamma(alpha+beta)-lgamma(alpha)-lgamma(beta)+(beta-1)*log(x-n) - (alpha+beta)*log(x) )
    mina <- min(a,na.rm=TRUE)
@@ -236,7 +237,8 @@ dsizeprior<-function(n,
       maxN = ceiling(10*quartiles.prior.size[2])
       x <- n:maxN
       a = optim(par=log(c(1,10)),fn=fn,
-        x=x,n=n,quartiles.prior.size=quartiles.prior.size,effective.prior.df=effective.prior.df,
+        x=x,n=n,quartiles.prior.size=quartiles.prior.size,
+        effective.prior.df=effective.prior.df,
         control=list(abstol=10))
       alpha <- exp(a$par[1])
       beta  <- exp(a$par[2])
@@ -254,6 +256,7 @@ dsizeprior<-function(n,
       maxN = min(maxNmax,maxN)
      }
      }
+     cat(sprintf("Final alpha: %f, beta = %f max=%f\n",alpha, beta, maxbeta))
      if(is.null(alpha)) alpha=1
      if(is.null(beta)){
        warning("No prior information about the population size was specified! Using a prior mode of twice the sample size. Please specify prior information!", call. = FALSE)
@@ -262,7 +265,8 @@ dsizeprior<-function(n,
      if(is.infinite(beta) | is.na(beta)){
        stop("The sample size is incompatible with the specified prior information about the population size.", call. = FALSE)
      }
-     if(is.null(maxN)){maxN <- min(maxNmax,ceiling( n/(1-0.90^(1/beta)) ))}
+     if(is.null(maxN)&is.null(maxN.set)){maxN <- min(maxNmax,ceiling( n/(1-0.90^(1/beta)) ))}
+     if(!is.null(maxN.set)){maxN <- maxN.set}
      if(is.null(N)){N <- min(maxNmax,ceiling( n/(1-0.5^(1/beta)) ))}
      x <- n:maxN
      lpriorm=dfn(alpha,beta,x,n,effective.prior.df);
