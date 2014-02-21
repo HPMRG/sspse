@@ -45,13 +45,16 @@ if(!is.null(out)){
   round(fit$mean.prior.size), round(fit$median.prior.size), round(fit$mode.prior.size), round(pl90), round(fit$quartiles.prior.size[1]), round(fit$quartiles.prior.size[2]),
   round(mp),round(l50),round(map),round(l90),round(hpd[1]),round(hpd[2])),byrow=TRUE,nrow=2)
   rownames(res) <- c("Prior","Posterior")
+  colnames(res) <- c("Mean","Median","Mode","90%",
+    paste(round(100*(1-HPD.level)/2),"%",sep=""),
+    paste(round(100*(1+HPD.level)/2),"%",sep=""))
 }else{
  res <- matrix(c(
   round(fit$mean.prior.size), round(fit$median.prior.size), round(fit$mode.prior.size), round(pl90), round(fit$quartiles.prior.size[1]), round(fit$quartiles.prior.size[2])
   ),byrow=TRUE,nrow=1)
   rownames(res) <- c("Prior")
+  colnames(res) <- c("Mean","Median","Mode","90%","25%","75%")
 }
-colnames(res) <- c("Mean","Median","Mode","90%","25%","75%")
 res <- as.data.frame(res)
 if(!is.null(out)){
   attr(res, "heading") <- "Summary of Population Size Estimation"
