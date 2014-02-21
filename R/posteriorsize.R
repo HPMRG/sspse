@@ -22,7 +22,8 @@ posteriorsize<-function(s,
                   muproposal=0.1, 
                   sigmaproposal=0.15, 
                   burnintheta=500,
-                  parallel=1, parallel.type="PVM", seed=NULL, dispersion=0,
+                  parallel=1, parallel.type=NULL, seed=NULL, 
+                  maxbeta=120, dispersion=0,
                   supplied=list(maxN=maxN),
                   verbose=TRUE){
 #
@@ -120,6 +121,7 @@ large and has been reduced to the more reasonable %f.\n",sd.prior.degree))
                     alpha=alpha,
                     seed=seed,
                     supplied=supplied,
+                    maxbeta=maxbeta,
                     dispersion=dispersion)
   }
   ### since running job in parallel, start pvm (if not already running)
@@ -146,7 +148,8 @@ large and has been reduced to the more reasonable %f.\n",sd.prior.degree))
       effective.prior.df=effective.prior.df,
       alpha=alpha,
       supplied=supplied,
-      dispersion=dispersion)
+      dispersion=dispersion,
+      maxbeta=maxbeta)
 #
 #   Process the results
 #

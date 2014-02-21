@@ -22,6 +22,7 @@ poscmpdisease<-function(s,dis,
 		  effective.prior.df=1,
                   alpha=NULL,
                   seed=NULL,
+                  maxbeta=120,
                   dispersion=0,
                   verbose=TRUE){
     #this function takes a vector of population sizes and a vector s of 
@@ -86,6 +87,7 @@ poscmpdisease<-function(s,dis,
                   effective.prior.df=effective.prior.df,
                   alpha=alpha,
                   maxN=maxN,
+                  maxbeta=maxbeta,
                   log=TRUE,
                   verbose=verbose)
     Cret <- .C("gcmpdisease",

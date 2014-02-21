@@ -17,6 +17,7 @@ poscmp<-function(s,maxN=NULL,
 		  alpha=NULL,
                   seed=NULL,
                   dispersion=0,
+                  maxbeta=120,
                   supplied=list(maxN=maxN),
                   verbose=TRUE){
     #this function takes a vector of population sizes and a vector s of 
@@ -73,6 +74,7 @@ poscmp<-function(s,maxN=NULL,
                   effective.prior.df=effective.prior.df,
                   alpha=alpha,
                   maxN=maxN,
+                  maxbeta=maxbeta,
                   log=TRUE,
                   supplied=supplied,
                   verbose=verbose)
