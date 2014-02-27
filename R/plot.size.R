@@ -1,8 +1,16 @@
-plot.size <- function(fit,xlim=NULL,data=NULL,support=1000,HPD.level=0.95,N=NULL,ylim=NULL){
-require(locfit)
-require(coda)
-#if(ask){par(ask=TRUE)}
+plot.size <-
+function(fit,xlim=NULL,data=NULL,support=1000,HPD.level=0.95,N=NULL,ylim=NULL,mcmc=FALSE){
 out <- fit$sample
+if(!is.null(out) & mcmc){
+  require(coda)
+  a=round(seq.int(from=1,to=nrow(out),length=1000))
+  mcp <- attr(out,"mcpar")
+  b=mcmc(out[a,],start=1,end=mcp[2],thin=round(mcp[2]/1000))
+  plot(b)
+  return(invisible())
+}
+require(locfit)
+#if(ask){par(ask=TRUE)}
 if(is.null(out)){
   fit$n <- min(fit$x)
   fit$lpriorm <- log(fit$lprior)
