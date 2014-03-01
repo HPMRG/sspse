@@ -2,14 +2,15 @@ plot.size <-
 function(fit,xlim=NULL,data=NULL,support=1000,HPD.level=0.95,N=NULL,ylim=NULL,mcmc=FALSE){
 out <- fit$sample
 if(!is.null(out) & mcmc){
-  require(coda)
-  a=round(seq.int(from=1,to=nrow(out),length=1000))
+# suppressPackageStartupMessages(require(coda, quietly=TRUE))
+  mcmc.len <- min(1000, nrow(out))
+  a=round(seq.int(from=1,to=nrow(out),length=mcmc.len))
   mcp <- attr(out,"mcpar")
-  b=mcmc(out[a,],start=1,end=mcp[2],thin=round(mcp[2]/1000))
+  b=coda::mcmc(out[a,],start=mcp[1],end=mcp[2],thin=round((mcp[2]-mcp[1])/mcmc.len))
   plot(b)
   return(invisible())
 }
-require(locfit)
+suppressMessages(require(locfit,quietly=TRUE))
 #if(ask){par(ask=TRUE)}
 if(is.null(out)){
   fit$n <- min(fit$x)
@@ -24,7 +25,7 @@ x <- fit$n+(1:length(lpriorm))-1
 if(!is.null(out)){
   outN <- out[,"N"]
   #a=locfit( ~ lp(outN, nn=0.35, h=0, maxk=500))
-  a=locfit( ~ lp(outN,nn=0.5))
+  a=locfit::locfit( ~ lp(outN,nn=0.5))
   xp <- seq(fit$n,fit$maxN, length=support)
   posdensN <- predict(a, newdata=xp)
   posdensN <- support*posdensN / ((fit$maxN-fit$n)*sum(posdensN))

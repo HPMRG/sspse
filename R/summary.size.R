@@ -1,5 +1,5 @@
 summary.size <- function(fit,support=1000,HPD.level=0.95){
-require(locfit)
+ suppressMessages(require(locfit, quietly=TRUE))
 #require(coda)
 out <- fit$sample
 if(is.null(out)){
@@ -9,7 +9,7 @@ if(is.null(out)){
 if(!is.null(out)){
   outN <- out[,"N"]
   #a=locfit( ~ lp(outN, nn=0.35, h=0, maxk=500))
-  a=locfit( ~ lp(outN,nn=0.5))
+  a=locfit::locfit( ~ lp(outN,nn=0.5))
   xp <- seq(fit$n,fit$maxN, length=support)
   posdensN <- predict(a, newdata=xp)
   posdensN <- support*posdensN / ((fit$maxN-fit$n)*sum(posdensN))
