@@ -72,11 +72,11 @@ beginparallel<-function(parallel=1, type=NULL, seed=NULL, verbose=TRUE){
     flush.console()
     return(cl)
 }
-endparallel<-function(cl, type=NULL, verbose=TRUE){
+endparallel<-function(cl, type=NULL, finalize=FALSE, verbose=TRUE){
     ### stop cluster and PVM (in case PVM is flakey)
     stopCluster(cl)
     if(snow::getClusterOption("type")=="PVM"){rpvm::.PVM.exit()}
-    if(snow::getClusterOption("type")=="MPI"){Rmpi::mpi.finalize()}
+    if(finalize & snow::getClusterOption("type")=="MPI"){Rmpi::mpi.finalize()}
 #   if(type=="PVM"){
 #    if(require("rpvm",character.only = TRUE)){
 #     rpvm::.PVM.exit()
