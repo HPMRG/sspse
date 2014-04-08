@@ -1,4 +1,4 @@
-beginparallel<-function(parallel=1, type=NULL, seed=NULL, verbose=TRUE){
+beginparallel<-function(parallel=1, type=NULL, seed=NULL, packagenames=c("size"),verbose=TRUE){
     ### parallel is wrapper for MPI or PVM (mosix only has PVM)
 #   require(snow)
     require(parallel)
@@ -39,7 +39,7 @@ beginparallel<-function(parallel=1, type=NULL, seed=NULL, verbose=TRUE){
        }else{
         rpvm::.PVM.start.pvmd()
        }
-       cat("no problem... PVM started by size...\n")
+       cat("no problem... PVM started...\n")
       }
      }else{
       type <- "MPI"
@@ -63,8 +63,10 @@ beginparallel<-function(parallel=1, type=NULL, seed=NULL, verbose=TRUE){
     }else{
      clusterSetRNGStream(cl,iseed=seed)
     }
-    ### start each virtual machine with size library loaded
-    clusterEvalQ(cl, library(size))
+    ### start each virtual machine with libraries loaded
+    for(pkg in packagenames){
+      attached <- clusterCall(cl, require, package=pkg, character.only=TRUE)      
+    }
 #
 #   Run the jobs with rpvm or Rmpi
 #
