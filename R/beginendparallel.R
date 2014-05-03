@@ -9,7 +9,7 @@ beginparallel<-function(parallel=1, type=NULL, seed=NULL, packagenames=c("size")
 #   setDefaultClusterOptions(type="MPI")
 #   if(snow::getClusterOption("type")=="PVM"){
     if(is.null(type)){
-     silentwarnings <- capture.output(try.rpvm<-require(rpvm, quietly=TRUE, warn.conflicts = FALSE))
+     silentwarnings <- capture.output(try.rpvm<-suppressWarnings(require(rpvm, quietly=TRUE, warn.conflicts = FALSE)))
      if(try.rpvm){
       snow::setDefaultClusterOptions(type="PVM")
       type <- "PVM"
@@ -25,7 +25,7 @@ beginparallel<-function(parallel=1, type=NULL, seed=NULL, packagenames=c("size")
      }
     }
     if(type=="PVM"){
-     silentwarnings <- capture.output(try.rpvm<-require(rpvm, quietly=TRUE, warn.conflicts = FALSE))
+     silentwarnings <- capture.output(try.rpvm<-suppressWarnings(require(rpvm, quietly=TRUE, warn.conflicts = FALSE)))
      if(try.rpvm){
       if(verbose){
        cat("Engaging warp drive using PVM ...\n")

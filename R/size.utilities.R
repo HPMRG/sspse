@@ -4,6 +4,8 @@ mode.density <- function(x,lbound=min(x,na.rm=TRUE),ubound=max(x,na.rm=TRUE), sm
 #     xp <- floor(lbound):ceiling(ubound)
       x <- x[!is.na(x)]
       if(length(x)==0){return(NA)}
+      if(length(x[x>=lbound&x<=ubound])==0){return(NA)}
+      if(length(x[x>=lbound&x<=ubound])==1){return(x[x>=lbound&x<=ubound])}
 #     posdensN <- try(locfit( ~ lp(x, nn=2*smooth, h=h, maxk=500)),silent=TRUE)
 #     if(inherits(posdensN,"try-error")){
        posdensN <- density(x, from=lbound, to=ubound)
