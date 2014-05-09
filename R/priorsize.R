@@ -14,7 +14,7 @@ priorsize<-function(s,
                   mean.prior.degree=NULL, sd.prior.degree=NULL,
                   df.mean.prior=1,df.sd.prior=5,
                   Np=0,
-                  nk=tabulate(s,nbins=K),
+                  nk=NULL,
                   n=length(s),
                   seed=NULL, dispersion=0,
                   supplied=list(maxN=maxN),
@@ -94,6 +94,7 @@ large and has been reduced to the more reasonable %f.\n",sd.prior.degree))
      # Cap the maximum degree to K
      #
      s[s>K] <- K
+     if(is.null(nk)){nk=tabulate(s,nbins=K)}
     }
     #
     # Transform observed mean parametrization to log-normal

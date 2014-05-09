@@ -1,12 +1,14 @@
 akestN<-function(N,s,
           K=max(s),
           verbose=FALSE, 
-          n=tabulate(s,nbins=K),
+          n=NULL,
 	  maxit=5000, tol=0.00000001,
           return.all=FALSE){
   if(length(s)>N){print("Error: The population counts should not be exceeded by the sample counts.")}
 # sizes<-sort(unique(s))
   sizes<-1:K
+  s[s>K] <- K
+  if(is.null(n)){n=tabulate(s,nbins=K)}
   enroot<-function(llam,N,nk,sizes){
     sum(nk/(1-exp(-exp(llam)*sizes)))-N
   }
@@ -25,11 +27,13 @@ akestN<-function(N,s,
 sppsestN<-function(N,s,
           K=max(s),
           verbose=FALSE, 
-          n=tabulate(s,nbins=K),
+          n=NULL,
 	  maxit=10, M=10000, trace=FALSE,
           return.all=FALSE){
   if(length(s)>N){print("Error: The population counts should not be exceeded by the sample counts.")}
 # sizes<-sort(unique(s))
+  s[s>K] <- K
+  if(is.null(n)){n=tabulate(s,nbins=K)}
   out <- getestCstacked(samp=s,n=N,nit=maxit,nsampsamp=M)
   NNhat <- n
   NNhat[n!=0] <- out$NNhat

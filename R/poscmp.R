@@ -1,5 +1,5 @@
 poscmp<-function(s,maxN=NULL,
-                  K=2*max(s), nk=tabulate(s,nbins=K), n=length(s),
+                  K=2*max(s), nk=NULL, n=length(s),
                   mean.prior.degree=7, sd.prior.degree=3,
                   df.mean.prior=1, df.sd.prior=5,
                   muproposal=0.1, 
@@ -29,6 +29,7 @@ poscmp<-function(s,maxN=NULL,
      # Cap the maximum degree to K
      #
      s[s>K] <- K
+     if(is.null(nk)){nk=tabulate(s,nbins=K)}
     }
     #
     # Transform observed mean parametrization to log-normal

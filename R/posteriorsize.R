@@ -68,7 +68,6 @@ posteriorsize<-function(s,
     K=(0:max(s))[which.max(cumsum(y)>0.95)]
   }
   cat(sprintf("The cap on influence of the personal network size is K = %d.\n",K))
-  if(is.null(nk)){ nk <- tabulate(s,nbins=K)}
   if(is.null(mean.prior.degree)){
     degs <- s
     degs[degs>K] <- K
@@ -180,6 +179,9 @@ large and has been reduced to the more reasonable %f.\n",sd.prior.degree))
     m <- apply(Cret$sample,2,median,na.rm=TRUE)
     Cret$sample[is.na(Cret$sample[,"mu"]),"mu"] <- m["mu"]
     Cret$sample[is.na(Cret$sample[,"sigma"]),"sigma"] <- m["sigma"]
+#   Any NA and NaN are typically in pdeg and so should be 0.
+    Cret$sample[is.na(Cret$sample)] <- 0
+    Cret$sample[is.nan(Cret$sample)] <- 0
     
     ### Coda package which does MCMC diagnostics, requires certain attributes of MCMC sample
     endrun <- burnin+interval*(samplesize)
