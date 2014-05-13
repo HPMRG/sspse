@@ -11,8 +11,8 @@ priorsize<-function(s,
 		  mode.prior.sample.proportion=NULL,
 		  alpha=NULL,
 		  degreedistribution=c("cmp","nbinom","pln"),
-                  mean.prior.degree=NULL, sd.prior.degree=NULL,
-                  df.mean.prior=1,df.sd.prior=5,
+                  mean.prior.degree=NULL, sd.prior.degree=NULL, max.sd.prior.degree=4,
+                  df.mean.prior=1,df.sd.prior=3,
                   Np=0,
                   nk=NULL,
                   n=length(s),
@@ -43,11 +43,12 @@ priorsize<-function(s,
     mean.pd <- sum(ds*weights)/sum(weights)
     sd.pd <- sum(ds*ds*weights)/sum(weights)
     sd.pd <- sqrt(sd.pd - mean.pd^2)
-    if(sd.pd > sqrt(4*mean.pd)){
-     sd.pd <- min(sqrt(4*mean.pd), sd.pd)
+    if(sd.pd > sqrt(max.sd.prior.degree*mean.pd)){
+     sd.pd <- min(sqrt(max.sd.prior.degree*mean.pd), sd.pd)
     }
     xv <- ds
-    xp <- weights*ds
+#   xp <- weights*ds
+    xp <- weights
     xp <- length(xp)*xp/sum(xp)
     fit <- cmpmle(xv,xp,cutoff=1,cutabove=K-1,guess=c(mean.pd, sd.pd))
     y=dcmp.natural(v=fit,x=(0:max(s)))
@@ -69,7 +70,8 @@ priorsize<-function(s,
      sd.prior.degree <- sqrt(sd.prior.degree - mean.prior.degree^2)
     }
     xv <- ds
-    xp <- weights*ds
+#   xp <- weights*ds
+    xp <- weights
     xp <- length(xp)*xp/sum(xp)
     fit <- cmpmle(xv,xp,cutoff=1,cutabove=K-1,
             guess=c(mean.prior.degree,sd.prior.degree))
@@ -81,10 +83,9 @@ priorsize<-function(s,
     cat(sprintf("The mean of the prior distribution for degree is %f.\n",mean.prior.degree))
     cat(sprintf("The s.d. of the prior distribution for degree is %f.\n",sd.prior.degree))
   }
-  if(sd.prior.degree > sqrt(4*mean.prior.degree)){
-    sd.prior.degree <- min(sqrt(4*mean.prior.degree), sd.prior.degree)
-    cat(sprintf("The suggested s.d. of the prior distribution for degree is too
-large and has been reduced to the more reasonable %f.\n",sd.prior.degree))
+  if(sd.prior.degree > sqrt(max.sd.prior.degree*mean.prior.degree)){
+    sd.prior.degree <- min(sqrt(max.sd.prior.degree*mean.prior.degree), sd.prior.degree)
+    cat(sprintf("The suggested s.d. of the prior distribution for degree is too large and has been reduced to the more reasonable %f.\n",sd.prior.degree))
   }
   ### are we running the job in parallel (parallel > 1), if not just 
   #   call the degree specific function
