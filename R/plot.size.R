@@ -1,5 +1,5 @@
 plot.size <-
-function(fit,xlim=NULL,data=NULL,support=1000,HPD.level=0.95,N=NULL,ylim=NULL,mcmc=FALSE){
+function(fit,xlim=NULL,data=NULL,support=1000,HPD.level=0.95,N=NULL,ylim=NULL,mcmc=FALSE,type="both"){
 out <- fit$sample
 if(!is.null(out) & mcmc){
 # suppressPackageStartupMessages(require(coda, quietly=TRUE))
@@ -32,6 +32,7 @@ if(!is.null(out)){
   #
   if(is.null(xlim)){xlim <- quantile(outN,0.99)}
   if(is.null(ylim)){ylim <- c(0,max(posdensN,lpriorm))}
+  if(type %in% c("N","both")){
   plot(x=xp,y=posdensN,type='l', xlab="population size", 
     main="posterior for population size",
   # ylim=c(0,max(posdensN,lpriorm)),
@@ -76,7 +77,9 @@ if(!is.null(out)){
 # round(mp),round(l50),round(map),round(l90),round(hpd[1]),round(hpd[2])))
 #
 lines(x=fit$n+(1:length(lpriorm))-1,y=lpriorm,lty=2)
+}
 #
+if(type %in% c("others","both")){
 out[is.na(out)] <- apply(out,2,median,na.rm=TRUE)
 if("mu" %in% colnames(out)){
  plot(density(out[,"mu"],na.rm=TRUE), xlab="mean network size", main="posterior for mean network size in the population")
@@ -98,10 +101,11 @@ if(!is.null(data)){
   bbb <- bbb/sum(bbb)
   aaa <- barplot(bbb,names.arg=1:Kmax,add=FALSE,axes=TRUE,width=rep(0.5,length(bbb)),space=1,col=0,
     xlab="degree",ylab="probability", xlim=c(1,Kmax),
-    main="mean posterior network size distribution with sample histogram overlaid")
+    main="posterior with sample histogram overlaid")
   lines(x=-0.25+seq_along(fit$predictive.degree),y=fit$predictive.degree, type='h', col='red', lwd=2)
-}
+}}
 }else{
+if(type %in% c("others","both")){
   cy <- cumsum(lpriorm)
   #
   if(is.null(xlim)){xlim <- xp[which.max(cy>0.99)]}
@@ -131,6 +135,7 @@ if(!is.null(data)){
   text(x=l50,y=-0.000,col=2,cex=1.0,labels=paste(round(l50)))
   text(x=map,y=-0.000,col=5,cex=1.0,labels=paste(round(map)))
   if(!is.null(N)){text(x=N,y=-0.000,col=1,cex=1.0,labels="truth")}
+}
 #
 #cat(sprintf("Prior:\nMean = %d, Median = %d, Mode = %d, 25%% = %d, 75%% = %d.\n",
 # round(fit$mean.prior.size), round(fit$median.prior.size), round(fit$mode.prior.size), round(fit$quartiles.prior.size[1]), round(fit$quartiles.prior.size[2])))
