@@ -142,10 +142,10 @@ priorsize<-function(s,
                   verbose=verbose)
    x <- seq_along(prior) + n - 1
 
+   M <- 1000
    mx <- rep(0,M)
    sdx <- rep(0,M)
    nk <- rep(0,K)
-   M <- 1000
    for(m in 1:M){
     N <- sample(prior$x,size=1,prob=prior$lprior)
     if(N > n){
