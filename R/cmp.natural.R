@@ -1,8 +1,9 @@
-cmp.natural <- function (mu,sig,K=1000,guess=NULL) 
+cmp.natural <- function (mu,sig,K=max(ceiling(mu+10*sig),10),guess=NULL) 
 {
 # converts mean to natural
 # natural is log(lambda), -nu
 # natural is lambda, nu
+#   K <- max(ceiling(mu+10*sig),10)
     options(warn = -1)
     if(is.null(guess)){
       guess = c(2*log(mu+0.25), log(2))
@@ -22,6 +23,11 @@ cmp.natural <- function (mu,sig,K=1000,guess=NULL)
 cmp.mu <- function (p,K=1000) 
 {
 # converts natural to mean
+        j <- 0:K
+        a <- dcmp(x=j, lambda=p[1], nu=p[2], err=0.000000001)
+	mu <- sum(a*j)
+	sd <- sqrt(sum(a*j*j)-mu*mu)
+    K <- max(ceiling(mu+10*sd),10)
         j <- 0:K
         a <- dcmp(x=j, lambda=p[1], nu=p[2], err=0.000000001)
 	mu <- sum(a*j)

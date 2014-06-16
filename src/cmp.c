@@ -28,6 +28,7 @@ double zcmp(double lambda, double nu, double err, int K, int give_log)
        mj=lambda/pow((double)j,nu);
        aj*=mj;
        z+=aj;
+//Rprintf("j %d\n", j);
      }
 //Rprintf("cmp terms %d aj %f err %f\n", j, aj, err*(1-mj));
 //   while (aj < err*(1.-mj) && j < 1000){
@@ -42,6 +43,7 @@ double zcmp(double lambda, double nu, double err, int K, int give_log)
        mj=lambda/pow((double)j,nu);
        aj*=mj;
        z+=aj;
+//Rprintf("j %d\n", j);
      }
 //
 //
