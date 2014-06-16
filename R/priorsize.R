@@ -158,7 +158,7 @@ priorsize<-function(s,
                 nu=as.double(pcmp$nu),
                 n=as.integer(N-n),
                 K=as.integer(K),
-                err=as.double(0.00001),
+                err=as.double(0.00000001),
                 PACKAGE="size")$x
      nk=nk+( tabulate(c(s,pcmp),nbins=K) / (sum(nk > 0) ) )
      mx[m] <- mean(c(s,pcmp))

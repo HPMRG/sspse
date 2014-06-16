@@ -45,7 +45,7 @@ posteriorsize<-function(s,
     stop("You need to specify 'mean.prior.size', and possibly 'sd.prior.size' if you use the 'nbinom' prior.") 
   }
   if(is.null(K)){
-    K=round(quantile(s,0.80))
+    K=round(quantile(s,0.90))+1
     degs <- s
     degs[degs>K] <- K
     degs[degs==0]<-1
@@ -64,9 +64,12 @@ posteriorsize<-function(s,
 #   xp <- weights*ds
     xp <- weights
     xp <- length(xp)*xp/sum(xp)
-    fit <- cmpmle(xv,xp,cutoff=1,cutabove=K-1,guess=c(mean.pd, sd.pd))
+    txp <- tapply(xp,xv,sum)
+    txv <- tapply(xv,xv,median)
+    fit <- cmpmle(txv,txp,cutoff=1,cutabove=K-1,guess=c(mean.pd, sd.pd))
     y=dcmp.natural(v=fit,x=(0:max(s)))
-    K=(0:max(s))[which.max(cumsum(y)>0.95)]
+    K=(0:max(s))[which.max(cumsum(y)>0.99)]
+#   K=round(quantile(s,0.99))
   }
   cat(sprintf("The cap on influence of the personal network size is K = %d.\n",K))
   if(is.null(mean.prior.degree)){
@@ -88,15 +91,17 @@ posteriorsize<-function(s,
     xp <- weights
     xp[is.na(xp)] <- 0
     xp <- length(xp)*xp/sum(xp)
-    fit <- cmpmle(xv,xp,cutoff=1,cutabove=K-1,
+    txp <- tapply(xp,xv,sum)
+    txv <- tapply(xv,xv,median)
+    fit <- cmpmle(txv,txp,cutoff=1,cutabove=K-1,
             guess=c(mean.prior.degree,sd.prior.degree))
     fit <- cmp.mu(fit)
-    if(verbose){
-      cat(sprintf("The preliminary empirical value of the mean of the prior distribution for degree is %f.\n",mean.prior.degree))
-      cat(sprintf("The preliminary empirical value of the s.d. of the prior distribution for degree is %f.\n",sd.prior.degree))
-    }
-    mean.prior.degree = fit[1]
-    sd.prior.degree = fit[2]
+#   if(verbose){
+#     cat(sprintf("The preliminary empirical value of the mean of the prior distribution for degree is %f.\n",mean.prior.degree))
+#     cat(sprintf("The preliminary empirical value of the s.d. of the prior distribution for degree is %f.\n",sd.prior.degree))
+#   }
+#   mean.prior.degree = fit[1]
+#   sd.prior.degree = fit[2]
   }
   if(verbose){
     cat(sprintf("The mean of the prior distribution for degree is %f.\n",mean.prior.degree))

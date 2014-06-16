@@ -37,7 +37,7 @@ void lcmp (int *pop,
   int maxpop;
   double r, gammart, pis, Nd;
   double temp;
-  double errval=0.000001, lzcmp;
+  double errval=0.000000001, lzcmp;
 
   GetRNGstate();  /* R function enabling uniform RNG */
 
@@ -339,7 +339,7 @@ void MHlcmp (int *Nk, int *K,
 //double pithetastar, pithetai;
   double dkappa, rkappa, ddf, dmu;
   double dsigma, dsigma2, dmuproposal, dsigmaproposal;
-  double errval=0.000001, lzcmp;
+  double errval=0.000000001, lzcmp;
 
   GetRNGstate();  /* R function enabling uniform RNG */
 

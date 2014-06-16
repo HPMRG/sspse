@@ -37,7 +37,7 @@ void gcmp (int *pop,
   int maxpop;
   double r, gammart, pis, Nd;
   double temp;
-  double errval=0.000001, lzcmp;
+  double errval=0.0000000001, lzcmp;
 
   GetRNGstate();  /* R function enabling uniform RNG */
 
@@ -344,9 +344,9 @@ void MHcmp (int *Nk, int *K,
   double pithetastar, pithetai;
   double dkappa, rkappa, ddf, dmu;
   double dsigma, dsigma2, dmuproposal, dsigmaproposal;
-  double errval=0.000001, lzcmp;
+  double errval=0.0000000001, lzcmp;
 
-  GetRNGstate();  /* R function enabling uniform RNG */
+//  GetRNGstate();  /* R function enabling uniform RNG */
 
   Ki=(*K);
   Np=(*Npi);
@@ -388,7 +388,7 @@ void MHcmp (int *Nk, int *K,
   pithetai = pithetai+dsclinvchisq(sigma2i, ddf, dsigma2);
 //    Rprintf("mui %f sigmai %f lzcmp %f\n", mui, sigmai, lzcmp);
   pis=0.;
-  lzcmp = zcmp(exp(mui), sigmai, errval, Ki, give_log1);
+  lzcmp = zcmp(exp(mui), sigmai, errval, 2*Ki, give_log1);
   pi[Np]=cmp(Np+1,mui,sigmai,lzcmp,give_log0);
   for (i=Np+1; i<Ki; i++){
     pi[i]=pi[i-1]*exp(mui-sigmai*log((double)(i+1)));
@@ -450,7 +450,7 @@ void MHcmp (int *Nk, int *K,
     ip = pithetastar-pithetai;
 //    Rprintf("mustar %f sigmastar %f lzcmp %f\n", mustar, sigmastar, lzcmp);
     pstars=0.;
-    lzcmp = zcmp(exp(mustar), sigmastar, errval, Ki, give_log1);
+    lzcmp = zcmp(exp(mustar), sigmastar, errval, 2*Ki, give_log1);
     pstar[Np]=cmp(Np+1,mustar,sigmastar,lzcmp,give_log0);
     for (i=Np+1; i<Ki; i++){
       pstar[i]=pstar[i-1]*exp(mustar-sigmastar*log((double)(i+1)));
@@ -528,7 +528,7 @@ void MHcmp (int *Nk, int *K,
   free(odegstar);
   free(pdegi);
   free(pdegstar);
-  PutRNGstate();  /* Disable RNG before returning */
+//  PutRNGstate();  /* Disable RNG before returning */
   /*Check for interrupts (if recursion is taking way too long...)*/
   R_CheckUserInterrupt();
   *staken = taken;

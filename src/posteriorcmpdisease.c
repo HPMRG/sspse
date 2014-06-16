@@ -37,7 +37,7 @@ void gcmpdisease (int *pop, int *dis,
   int maxpop, ddis;
   double r, gamma0rt, gamma1rt, p0is, p1is, Nd;
   double gammart, temp;
-  double errval=0.000001, lzcmp;
+  double errval=0.000000001, lzcmp;
 
   GetRNGstate();  /* R function enabling uniform RNG */
 
@@ -161,7 +161,7 @@ void gcmpdisease (int *pop, int *dis,
     /* First find the degree distribution */
     p0is=0.;
     p1is=0.;
-    lzcmp = zcmp(exp(mu0i), sigma0i, errval, Ki, give_log1);
+    lzcmp = zcmp(exp(mu0i), sigma0i, errval, 2*Ki, give_log1);
     if(lzcmp < -100000.0){continue;}
     p0i[Np0]=cmp(Np0+1,mu0i,sigma0i,lzcmp,give_log0);
     for (i=Np0+1; i<Ki; i++){
@@ -171,7 +171,7 @@ void gcmpdisease (int *pop, int *dis,
     }
 //  p0is=1.-cmp(0,mu0i,sigma0i,lzcmp,give_log0);
     p0is=1.-exp(-lzcmp);
-    lzcmp = zcmp(exp(mu1i), sigma1i, errval, Ki, give_log1);
+    lzcmp = zcmp(exp(mu1i), sigma1i, errval, 2*Ki, give_log1);
     if(lzcmp < -100000.0){continue;}
     p1i[Np1]=cmp(Np1+1,mu1i,sigma1i,lzcmp,give_log0);
     for (i=Np1+1; i<Ki; i++){
@@ -263,7 +263,7 @@ void gcmpdisease (int *pop, int *dis,
 //    I think j=1 as pd[i], p1i[i], etc, refer to degree i+1 
 //    as all degrees must be positive.
       for (i=0; i<Ki; i++){
-       lzcmp = zcmp(exp(lambdad[i]),nud[i], errval, Ki, give_log1);
+       lzcmp = zcmp(exp(lambdad[i]),nud[i], errval, 2*Ki, give_log1);
        pd[i]=p1i[i]*cmp(j+1,lambdad[i],nud[i],lzcmp,give_log0);
       }
 //     Next seven lines for proportional reporting distribution
@@ -284,7 +284,7 @@ void gcmpdisease (int *pop, int *dis,
       }else{
 //      Next four lines for cmp reporting distribution
        for (i=0; i<Ki; i++){
-        lzcmp = zcmp(exp(lambdad[i]),nud[i], errval, Ki, give_log1);
+        lzcmp = zcmp(exp(lambdad[i]),nud[i], errval, 2*Ki, give_log1);
         pd[i]=p0i[i]*cmp(j,lambdad[i],nud[i],lzcmp,give_log0);
        }
 //     Next seven lines for proportional reporting distribution
@@ -477,7 +477,7 @@ void MHcmpdisease (int *Nk0, int *Nk1, int *totdis, int *K,
   double pithetastar, pithetai;
   double dkappa0, rkappa0, ddf0, dmu0, dmu1;
   double dsigma0, dsigma1, dsigma02, dsigma12, dmuproposal, dsigmaproposal;
-  double errval=0.000001, lzcmp;
+  double errval=0.000000001, lzcmp;
 
   GetRNGstate();  /* R function enabling uniform RNG */
 
@@ -547,7 +547,7 @@ void MHcmpdisease (int *Nk0, int *Nk1, int *totdis, int *K,
   pithetai = pithetai+dsclinvchisq(sigma12i, ddf0, dsigma12);
   p0is=0.;
   p1is=0.;
-  lzcmp = zcmp(exp(mu0i), sigma0i, errval, Ki, give_log1);
+  lzcmp = zcmp(exp(mu0i), sigma0i, errval, 2*Ki, give_log1);
   p0i[Np0]=cmp(Np0+1,mu0i,sigma0i,lzcmp,give_log0);
   for (i=Np0+1; i<Ki; i++){
 //  p0i[i]=cmp(i+1,mu0i,sigma0i,lzcmp,give_log0);
@@ -556,7 +556,7 @@ void MHcmpdisease (int *Nk0, int *Nk1, int *totdis, int *K,
   }
 //p0is=1.-cmp(0,mu0i,sigma0i,lzcmp,give_log0);
   p0is=1.-exp(-lzcmp);
-  lzcmp = zcmp(exp(mu1i), sigma1i, errval, Ki, give_log1);
+  lzcmp = zcmp(exp(mu1i), sigma1i, errval, 2*Ki, give_log1);
   p1i[Np1]=cmp(Np1+1,mu1i,sigma1i,lzcmp,give_log0);
   for (i=Np1+1; i<Ki; i++){
 //  p1i[i]=cmp(i+1,mu1i,sigma1i,lzcmp,give_log0);
@@ -663,7 +663,7 @@ void MHcmpdisease (int *Nk0, int *Nk1, int *totdis, int *K,
 //           pithetastar,pithetai,qsigma2star,qsigma2i);
     p0stars=0.;
     p1stars=0.;
-    lzcmp = zcmp(exp(mu0star), sigma0star, errval, Ki, give_log1);
+    lzcmp = zcmp(exp(mu0star), sigma0star, errval, 2*Ki, give_log1);
     if(lzcmp < -100000.0){continue;}
     p0star[Np0]=cmp(Np0+1,mu0star,sigma0star,lzcmp,give_log0);
     for (i=Np0+1; i<Ki; i++){
@@ -673,7 +673,7 @@ void MHcmpdisease (int *Nk0, int *Nk1, int *totdis, int *K,
     }
 //  p0stars=1.-cmp(0,mu0star,sigma0star,lzcmp,give_log0);
     p0stars=1.-exp(-lzcmp);
-    lzcmp = zcmp(exp(mu1star), sigma1star, errval, Ki, give_log1);
+    lzcmp = zcmp(exp(mu1star), sigma1star, errval, 2*Ki, give_log1);
     if(lzcmp < -100000.0){continue;}
     p1star[Np1]=cmp(Np1+1,mu1star,sigma1star,lzcmp,give_log0);
     for (i=Np1+1; i<Ki; i++){

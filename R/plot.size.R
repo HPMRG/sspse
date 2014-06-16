@@ -1,5 +1,4 @@
-plot.size <-
-function(fit,xlim=NULL,data=NULL,support=1000,HPD.level=0.95,N=NULL,ylim=NULL,mcmc=FALSE,type="both"){
+plot.size <- function(fit,xlim=NULL,data=NULL,support=1000,HPD.level=0.95,N=NULL,ylim=NULL,mcmc=FALSE,type="both"){
 out <- fit$sample
 if(!is.null(out) & mcmc){
 # suppressPackageStartupMessages(require(coda, quietly=TRUE))
@@ -21,7 +20,7 @@ lpriorm <- exp(fit$lpriorm-max(fit$lpriorm))
 lpriorm <- lpriorm[xp >= fit$n & xp <= fit$maxN]
 lpriorm <- lpriorm / sum(lpriorm)
 xp <- fit$n+(1:length(lpriorm))-1
-x <- fit$n+(1:length(lpriorm))-1
+x  <- fit$n+(1:length(lpriorm))-1
 if(!is.null(out)){
   outN <- out[,"N"]
   #a=locfit( ~ lp(outN, nn=0.35, h=0, maxk=500))
@@ -39,6 +38,9 @@ if(!is.null(out)){
   # sub="mean prior = 1000",
     ylab="posterior density",xlim=c(fit$n,xlim),ylim=ylim)
   #
+  legend('topright',lty=c(1,2,1,1,1,1,1),col=c(1,1,2,3,4,5),
+    legend=c("posterior","prior","median","mean","95% interval","mode"),
+    bty="n",cex=0.75)
   abline(v=fit$n,lty=2)
   #
   lpriorm <- exp(fit$lpriorm-max(fit$lpriorm))
@@ -58,16 +60,18 @@ if(!is.null(out)){
   l90 <- xp[which.max(cy>0.9)]
   l50 <- xp[which.max(cy>0.5)]
 #
-  abline(v=median(outN,na.rm=TRUE),col=2)
-  abline(v=mean(outN,na.rm=TRUE),col=3)
+# abline(v=median(outN,na.rm=TRUE),col=2)
+# abline(v=mean(outN,na.rm=TRUE),col=3)
+  abline(v=l50,col=2)
+  abline(v=mp,col=3)
   abline(v=c(fit$n,fit$maxN),lty=2)
   if(!is.null(N)){abline(v=N,lty=1,col=1)}
   abline(v=hpd,lty=2,col=4)
   text(x=hpd[1],y=-0.000,col=4,cex=1.0,labels=paste(round(hpd[1])))
   text(x=hpd[2],y=-0.000,col=4,cex=1.0,labels=paste(round(hpd[2])))
   text(x=fit$n,y=0.000,labels=paste(fit$n),col=1,cex=1.0)
-  text(x=mean(outN,na.rm=TRUE),y=-0.000,col=3,cex=1.0,labels=paste(round(mean(outN,na.rm=TRUE))))
-  text(x=median(outN,na.rm=TRUE),y=-0.000,col=2,cex=1.0,labels=paste(round(median(outN,na.rm=TRUE))))
+  text(x=round(mp),y=-0.000,col=3,cex=1.0,labels=paste(round(mp)))
+  text(x=l50,y=ylim[2],col=2,cex=1.0,labels=paste(round(l50)))
   text(x=map,y=-0.000,col=5,cex=1.0,labels=paste(round(map)))
   if(!is.null(N)){text(x=N,y=-0.000,col=1,cex=1.0,labels="truth")}
 #

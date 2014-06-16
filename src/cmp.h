@@ -23,6 +23,5 @@ void dcmp_mu (int *x, double *mu, double *sig, int *n, double *err, int *give_lo
 double cmp(int x, double llambda, double nu, double lzcmp, int give_log);
 void dcmp (int *x, double *lambda, double *nu, int *n, double *err, int *give_log, double *val);
 double zcmp(double lambda, double nu, double err, int K, int give_log);
-void vzcmp(double *lambda, double *nu, double *err, int *give_log, double *out);
 void rcmp (int *x, double *lambda, double *nu, int *n, int *K, double *err);
 #endif /* CMP_H */

@@ -36,7 +36,7 @@ allcmp <- function(v,xv,xp,cutoff=1,cutabove=1000){
 ldcmp.natural <- function(v,x,cutoff=0){
  log(dcmp.natural(v,x,cutoff=cutoff))
 }
-dcmp.natural <- function(v, x, cutoff=0, err=0.00001, log=FALSE){
+dcmp.natural <- function(v, x, cutoff=0, err=0.000000001, log=FALSE){
   # compute PMF from natural parameters
   # Perform argument checking
   if (v[1] < 0 || v[2] < 0)
@@ -56,7 +56,7 @@ dcmp.natural <- function(v, x, cutoff=0, err=0.00001, log=FALSE){
   }
   return(y)
 }
-dcmp <- function(x, lambda, nu, err=0.00001, log=FALSE){
+dcmp <- function(x, lambda, nu, err=0.000000001, log=FALSE){
   # compute PMF from natural parameters (with different parsing arguments)
   # Perform argument checking
   if (lambda < 0 || nu < 0)

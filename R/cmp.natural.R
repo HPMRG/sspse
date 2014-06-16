@@ -9,7 +9,7 @@ cmp.natural <- function (mu,sig,K=1000,guess=NULL)
     }
     result = optim(par=guess, fn=function(p,mu,sig,K) {
         j <- 0:K
-        a <- dcmp(x=j, lambda=exp(p[1]), nu=exp(p[2]), err=0.000001)
+        a <- dcmp(x=j, lambda=exp(p[1]), nu=exp(p[2]), err=0.000000001)
 	sqrt(abs(sum(a*j)^2-mu*mu)+abs(sum(a*j*j)-sig*sig-mu*mu))
     }, mu=mu, sig=sig, K=K, method = "Nelder-Mead",
        control=list(maxit=20000))
@@ -23,7 +23,7 @@ cmp.mu <- function (p,K=1000)
 {
 # converts natural to mean
         j <- 0:K
-        a <- dcmp(x=j, lambda=p[1], nu=p[2], err=0.000001)
+        a <- dcmp(x=j, lambda=p[1], nu=p[2], err=0.000000001)
 	mu <- sum(a*j)
 	sd <- sqrt(sum(a*j*j)-mu*mu)
     return(c(mu,sd))
