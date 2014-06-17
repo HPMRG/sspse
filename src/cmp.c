@@ -48,13 +48,16 @@ double zcmp(double lambda, double nu, double err, int K, int give_log)
 //
 //
 //if(j==1000 | (aj > 1.)){
-if(j>=200){
+if(j>=200 && nu > 0.01){
        mj=pow(lambda,1.0/nu);
        aj=pow(mj,(1.0-nu)/2.0)*exp(nu*mj)/(pow(2.0*M_PI,(nu-1.0)/2.0)*sqrt(nu));
-Rprintf("nu %f lambda %f j %d ztilde %f z %f\n", nu, lambda, j, aj, z);
-       z=aj;
-}
+//Rprintf("nu %f lambda %f j %d ztilde %f z %f\n", nu, lambda, j, aj, z);
+       if(aj > 1.0 + lambda){z=aj;}
+//}else{
+//Rprintf("nu %f lambda %f j %d z %f\n", nu, lambda, j, z);
+//if((mj > 1.) | (aj > 1.)){ Rprintf("mj %f aj %f\n", mj, aj); }
 //if((mj > 1.) | (aj > 1.)){ return(-200000.0); }
+}
 
 //   Add approx to remainder term
 //   mj=lambda/pow((double)(j+1),nu);

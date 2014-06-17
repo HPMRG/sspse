@@ -20,17 +20,21 @@ cmp.natural <- function (mu,sig,K=max(ceiling(mu+10*sig),10),guess=NULL)
     fit = c(lambda = lambda, nu = nu, result)
     return(fit)
 }
-cmp.mu <- function (p,K=1000) 
+cmp.mu <- function (p,K=1000,cutoff=1) 
 {
 # converts natural to mean
-        j <- 0:K
+        j <- cutoff:K
         a <- dcmp(x=j, lambda=p[1], nu=p[2], err=0.000000001)
+        a <- a / sum(a)
 	mu <- sum(a*j)
 	sd <- sqrt(sum(a*j*j)-mu*mu)
+#   cat(sprintf("K= %d mu= %f sd= %f\n",K,mu,sd))
     K <- max(ceiling(mu+10*sd),10)
-        j <- 0:K
+        j <- cutoff:K
         a <- dcmp(x=j, lambda=p[1], nu=p[2], err=0.000000001)
+        a <- a / sum(a)
 	mu <- sum(a*j)
 	sd <- sqrt(sum(a*j*j)-mu*mu)
+#   cat(sprintf("K= %d mu= %f sd= %f\n",K,mu,sd))
     return(c(mu,sd))
 }

@@ -96,12 +96,12 @@ posteriorsize<-function(s,
     fit <- cmpmle(txv,txp,cutoff=1,cutabove=K-1,
             guess=c(mean.prior.degree,sd.prior.degree))
     fit <- cmp.mu(fit)
-#   if(verbose){
-#     cat(sprintf("The preliminary empirical value of the mean of the prior distribution for degree is %f.\n",mean.prior.degree))
-#     cat(sprintf("The preliminary empirical value of the s.d. of the prior distribution for degree is %f.\n",sd.prior.degree))
-#   }
-#   mean.prior.degree = fit[1]
-#   sd.prior.degree = fit[2]
+    if(verbose){
+      cat(sprintf("The preliminary empirical value of the mean of the prior distribution for degree is %f.\n",mean.prior.degree))
+      cat(sprintf("The preliminary empirical value of the s.d. of the prior distribution for degree is %f.\n",sd.prior.degree))
+    }
+    mean.prior.degree = fit[1]
+    sd.prior.degree = fit[2]
   }
   if(verbose){
     cat(sprintf("The mean of the prior distribution for degree is %f.\n",mean.prior.degree))
