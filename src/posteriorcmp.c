@@ -120,6 +120,7 @@ void gcmp (int *pop,
     }
     mui=musample[0];
     sigmai=sigmasample[0];
+//  if(sigmai > 4.0 || mui > 4.5) Rprintf("mui %f sigmai %f kappa %f\n", mui, sigmai, kappa);
 
     /* Draw new N */
 
@@ -128,6 +129,7 @@ void gcmp (int *pop,
     lzcmp = zcmp(exp(mui), sigmai, errval, Ki, give_log1);
     if(lzcmp < -100000.0){continue;}
     pi[Np]=cmp(Np+1,mui,sigmai,lzcmp,give_log0);
+//Rprintf("mui %f sigmai %f lzcmp %f pi %f\n", mui, sigmai, lzcmp, pi[Np]);
     for (i=Np+1; i<Ki; i++){
       pi[i]=pi[i-1]*exp(mui-sigmai*log((double)(i+1)));
     }
@@ -283,6 +285,8 @@ if((pd[i]<0.0 ) | (pd[i]>1.0)){ Rprintf("j %d pop[j] %d i %d pd[i] %f\n", j, pop
       /* record statistics for posterity */
       Nd=(double)Ni;
       sample[isamp*dimsample  ]=Nd;
+//if(sigmai > 4.0 || mui > 4.5) Rprintf("sample: %f %f\n", mui,sigmai);
+// Rprintf("sample: %f %f\n", mui,sigmai);
       sample[isamp*dimsample+1]=mui;
       sample[isamp*dimsample+2]=sigmai;
       sample[isamp*dimsample+3]=(double)(Nk[0]);
@@ -346,7 +350,7 @@ void MHcmp (int *Nk, int *K,
   double dsigma, dsigma2, dmuproposal, dsigmaproposal;
   double errval=0.0000000001, lzcmp;
 
-//  GetRNGstate();  /* R function enabling uniform RNG */
+//GetRNGstate();  /* R function enabling uniform RNG */
 
   Ki=(*K);
   Np=(*Npi);
@@ -383,12 +387,15 @@ void MHcmp (int *Nk, int *K,
   }
   mui = musample[0];
   sigmai = sigmasample[0];
+// if(sigmai > 4.0 || mui > 4.5) Rprintf("%f %f\n", mui,sigmai);
+// Rprintf("%f %f\n", mui,sigmai);
   sigma2i  = sigmai*sigmai;
   pithetai = dnorm(mui, dmu, sigmai/rkappa, give_log1);
   pithetai = pithetai+dsclinvchisq(sigma2i, ddf, dsigma2);
 //    Rprintf("mui %f sigmai %f lzcmp %f\n", mui, sigmai, lzcmp);
   pis=0.;
   lzcmp = zcmp(exp(mui), sigmai, errval, 2*Ki, give_log1);
+//Rprintf("mui %f sigmai %f lzcmp %f\n", mui, sigmai, lzcmp);
   pi[Np]=cmp(Np+1,mui,sigmai,lzcmp,give_log0);
   for (i=Np+1; i<Ki; i++){
     pi[i]=pi[i-1]*exp(mui-sigmai*log((double)(i+1)));
@@ -437,7 +444,7 @@ void MHcmp (int *Nk, int *K,
     sigmastar = sqrt(sigma2star);
     /* Check for magnitude */
 
-//  if(sigma2star > 1000) Rprintf("%f %f %f %f %f\n", mustar, dmu, sigma2star, dkappa, sigma2i);
+//  if(sigmastar > 4.0 || mustar > 4.5) Rprintf("%f %f %f %f %f\n", mustar, dmu, sigmastar, dkappa, sigma2i);
     /* Calculate pieces of the posterior. */
     qsigma2star = dnorm(log(sigma2star/sigma2i)/dsigmaproposal,0.,1.,give_log1)
                   -log(dsigmaproposal*sigma2star);
@@ -448,17 +455,19 @@ void MHcmp (int *Nk, int *K,
 
     /* Calculate ratio */
     ip = pithetastar-pithetai;
-//    Rprintf("mustar %f sigmastar %f lzcmp %f\n", mustar, sigmastar, lzcmp);
     pstars=0.;
     lzcmp = zcmp(exp(mustar), sigmastar, errval, 2*Ki, give_log1);
+//if(sigmastar > 4.0 || mustar > 4.5)  Rprintf("mustar %f sigmastar %f lzcmp %f\n", mustar, sigmastar, lzcmp);
+//    if(sigmastar > 4.0 || mustar > 4.5){step++;continue;}
     pstar[Np]=cmp(Np+1,mustar,sigmastar,lzcmp,give_log0);
+//  Rprintf("mustar %f sigmastar %f lzcmp %f pstar %f\n", mustar, sigmastar, lzcmp,pstar[Np]);
     for (i=Np+1; i<Ki; i++){
       pstar[i]=pstar[i-1]*exp(mustar-sigmastar*log((double)(i+1)));
     }
     pstars=1.-exp(-lzcmp);
     for (i=0; i<Ki; i++){
       pstar[i]/=pstars;
-//Rprintf("i %d pstar %f pi0 %f\n", i, pstar[i], pi0[i], pis, pis0);
+//if(pstar[Np] < 0.00001){Rprintf("i %d pstar %f pi %f\n", i, pstar[i], pi[i]);}
     }
     pstars=1.;
     for (i=0; i<Np; i++){
@@ -478,6 +487,7 @@ void MHcmp (int *Nk, int *K,
     pstar[Ki-1]=pstars;
 
     for (i=0; i<Ki; i++){
+//if(pstar[Np] < 0.00001){Rprintf("i %d pstar %f pi %f\n", i, pstar[i], pi[i]);}
      if(Nk[i]>0){
       lp = log(pstar[i]/pi[i]);
       if(fabs(lp) < 100.){ip += (Nk[i]*lp);}
@@ -487,7 +497,7 @@ void MHcmp (int *Nk, int *K,
     then let the MH probability equal min{exp(cutoff), 1.0}.
     But we'll do it in log space instead.  */
 //  if (*verbose)
-//    Rprintf("Now proposing %d MH steps %f ip1...\n", step, ip);
+//  Rprintf("Now proposing %d MH steps %f ip1...\n", step, ip);
     cutoff = ip + qsigma2i-qsigma2star;
       
 //  if (*verbose)
@@ -518,6 +528,7 @@ void MHcmp (int *Nk, int *K,
         }
         isamp++;
         if (*verbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d MH samples...\n", isamp);
+//      Rprintf("Taken %d MH samples...\n", isamp);
       }
     }
     step++;
@@ -528,7 +539,7 @@ void MHcmp (int *Nk, int *K,
   free(odegstar);
   free(pdegi);
   free(pdegstar);
-//  PutRNGstate();  /* Disable RNG before returning */
+//PutRNGstate();  /* Disable RNG before returning */
   /*Check for interrupts (if recursion is taking way too long...)*/
   R_CheckUserInterrupt();
   *staken = taken;

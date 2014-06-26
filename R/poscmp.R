@@ -120,7 +120,13 @@ poscmp<-function(s,maxN=NULL,
     Cret$sample <- cbind(Cret$sample,Cret$sample[,c("mu","sigma")])
     colnames(Cret$sample)[ncol(Cret$sample)-(1:0)] <- c("lambda","nu")
     # Transform to mean value parametrization 
-    Cret$sample[,c("mu","sigma")] <- t(apply(Cret$sample[,c("mu","sigma")],1,cmp.mu))
+    a <- t(apply(Cret$sample[,c("mu","sigma")],1,cmp.mu,
+           max.mu=2*mean.prior.degree))
+    nas <- apply(a,1,function(x){any(is.na(x))})
+    inas <- sample(seq_along(nas)[!nas],size=sum(nas),replace=TRUE)
+    a[nas,] <- a[inas,]
+#   Cret$sample[,c("mu","sigma")] <- t(apply(Cret$sample[,c("mu","sigma")],1,cmp.mu,max.mu=5*mean.prior.degree)))
+    Cret$sample[,c("mu","sigma")] <- a
     #
 #   Cret$Nk<-Cret$nk/sum(Cret$nk)
     Cret$predictive.degree.count<-Cret$nk / samplesize

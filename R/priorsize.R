@@ -75,7 +75,7 @@ priorsize<-function(s,
     xp <- length(xp)*xp/sum(xp)
     fit <- cmpmle(xv,xp,cutoff=1,cutabove=K-1,
             guess=c(mean.prior.degree,sd.prior.degree))
-    fit <- cmp.mu(fit)
+    fit <- cmp.mu(fit,max.mu=5*mean.prior.degree)
     mean.prior.degree = fit[1]
     sd.prior.degree = fit[2]
   }

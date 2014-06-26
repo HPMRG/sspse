@@ -151,8 +151,8 @@ poscmpdisease<-function(s,dis,
     Cret$sample <- cbind(Cret$sample,Cret$sample[,c("mu1","sigma1")])
     colnames(Cret$sample)[ncol(Cret$sample)-(1:0)] <- c("lambda1","nu1")
     # Transform to mean value parametrization 
-    Cret$sample[,c("mu0","sigma0")] <- t(apply(Cret$sample[,c("mu0","sigma0")],1,cmp.mu))
-    Cret$sample[,c("mu1","sigma1")] <- t(apply(Cret$sample[,c("mu1","sigma1")],1,cmp.mu))
+    Cret$sample[,c("mu0","sigma0")] <- t(apply(Cret$sample[,c("mu0","sigma0")],1,cmp.mu,max.mu=5*mean0.prior.degree))
+    Cret$sample[,c("mu1","sigma1")] <- t(apply(Cret$sample[,c("mu1","sigma1")],1,cmp.mu,max.mu=5*mean1.prior.degree))
 #   aaa <- sum(Cret$nk0+Cret$nk1)
     Cret$predictive.degree.count0<-Cret$nk0 / samplesize
     Cret$predictive.degree.count1<-Cret$nk1 / samplesize
