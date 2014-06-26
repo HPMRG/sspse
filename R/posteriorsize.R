@@ -57,8 +57,8 @@ posteriorsize<-function(s,
     mean.pd <- sum(ds*weights)/sum(weights)
     sd.pd <- sum(ds*ds*weights)/sum(weights)
     sd.pd <- sqrt(sd.pd - mean.pd^2)
-    if(sd.pd > sqrt(max.sd.prior.degree*mean.pd)){
-     sd.pd <- min(sqrt(max.sd.prior.degree*mean.pd), sd.pd)
+    if(sd.pd > max.sd.prior.degree*mean.pd){
+     sd.pd <- min(max.sd.prior.degree*mean.pd, sd.pd)
     }
     xv <- ds
 #   xp <- weights*ds
@@ -95,7 +95,7 @@ posteriorsize<-function(s,
     txv <- tapply(xv,xv,median)
     fit <- cmpmle(txv,txp,cutoff=1,cutabove=K-1,
             guess=c(mean.prior.degree,sd.prior.degree))
-    fit <- cmp.mu(fit)
+    fit <- cmp.mu(fit,max.mu=5*mean.prior.degree)
     if(verbose){
       cat(sprintf("The preliminary empirical value of the mean of the prior distribution for degree is %f.\n",mean.prior.degree))
       cat(sprintf("The preliminary empirical value of the s.d. of the prior distribution for degree is %f.\n",sd.prior.degree))
@@ -107,8 +107,8 @@ posteriorsize<-function(s,
     cat(sprintf("The mean of the prior distribution for degree is %f.\n",mean.prior.degree))
     cat(sprintf("The s.d. of the prior distribution for degree is %f.\n",sd.prior.degree))
   }
-  if(sd.prior.degree > sqrt(max.sd.prior.degree*mean.prior.degree)){
-    sd.prior.degree <- min(sqrt(max.sd.prior.degree*mean.prior.degree), sd.prior.degree)
+  if(sd.prior.degree > max.sd.prior.degree*mean.prior.degree){
+    sd.prior.degree <- min(max.sd.prior.degree*mean.prior.degree, sd.prior.degree)
     cat(sprintf("The suggested s.d. of the prior distribution for degree is too large and has been reduced to the more reasonable %f.\n",sd.prior.degree))
   }
   ### are we running the job in parallel (parallel > 1), if not just 
