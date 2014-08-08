@@ -5,7 +5,7 @@ if(!is.null(out) & mcmc){
   mcmc.len <- min(1000, nrow(out))
   a=round(seq.int(from=1,to=nrow(out),length=mcmc.len))
   mcp <- attr(out,"mcpar")
-  b=coda::mcmc(out[a,],start=mcp[1],end=mcp[2],thin=round((mcp[2]-mcp[1])/mcmc.len))
+  b=coda::mcmc(out[a,],start=mcp[1],end=mcp[2],thin=floor((mcp[2]-mcp[1])/mcmc.len + 1))
   plot(b)
   return(invisible())
 }
