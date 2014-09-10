@@ -226,7 +226,13 @@ posteriorsize<-function(s,
   Cret$priorsizedistribution <- priorsizedistribution
 # Cret$mean.prior.size <- mean.prior.size
   ### return result
+  class(Cret)<-"posterior.size.estimate"
   Cret
 }
 
 posize.warning <- "POSTERIOR SIZE CALCULATION FAILED" #added for posteriorsize dialog to hide error message unless needed
+
+#' Is an instance of posterior.size.estimate
+#' @param x An object to be tested.
+#' @export
+is.posterior.size.estimate <- function(x) inherits(x,"posterior.size.estimate")
