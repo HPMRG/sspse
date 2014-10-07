@@ -26,6 +26,8 @@ if(!is.null(out)){
   mp <- sum(xp*posdensN)/sum(posdensN)
   l90 <- xp[which.max(cy>0.9)]
   l50 <- xp[which.max(cy>0.5)]
+  l25 <- xp[which.max(cy>0.25)]
+  l75 <- xp[which.max(cy>0.75)]
 }
 #
 lpriorm <- exp(fit$lpriorm-max(fit$lpriorm))
@@ -42,10 +44,12 @@ pl90 <- xp[which.max(cy>0.9)]
 #
 if(!is.null(out)){
  res <- matrix(c(
-  round(fit$mean.prior.size), round(fit$median.prior.size), round(fit$mode.prior.size), round(pl90), round(fit$quartiles.prior.size[1]), round(fit$quartiles.prior.size[2]),
-  round(mp),round(l50),round(map),round(l90),round(hpd[1]),round(hpd[2])),byrow=TRUE,nrow=2)
+  round(fit$mean.prior.size), round(fit$median.prior.size), round(fit$mode.prior.size),
+  round(fit$quartiles.prior.size[1]),round(fit$quartiles.prior.size[2]),round(pl90),
+  round(fit$quartiles.prior.size[1]), round(fit$quartiles.prior.size[2]),
+  round(mp),round(l50),round(map),round(l25),round(l75),round(l90),round(hpd[1]),round(hpd[2])),byrow=TRUE,nrow=2)
   rownames(res) <- c("Prior","Posterior")
-  colnames(res) <- c("Mean","Median","Mode","90%",
+  colnames(res) <- c("Mean","Median","Mode","25%","75%","90%",
     paste(round(100*(1-HPD.level)/2,1),"%",sep=""),
     paste(round(100*(1+HPD.level)/2,1),"%",sep=""))
 }else{
