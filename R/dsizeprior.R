@@ -139,7 +139,7 @@ dsizeprior<-function(n,
      }
      if(!is.null(median.prior.size)){
       if(median.prior.size < n){median.prior.size = n}
-      if(median.prior.size < 750){effective.prior.df=max(effective.prior.df,3)}
+#     if(median.prior.size < 750){effective.prior.df=max(effective.prior.df,3)}
       beta <- -log(2)/log(1-n/median.prior.size)
       if(is.null(alpha)) alpha=median.prior.size/(median.prior.size-n)
       if(is.null(maxN)){maxN <- min(maxNmax,ceiling( n/(1-0.90^(1/beta)) ))}
@@ -148,11 +148,16 @@ dsizeprior<-function(n,
        abs(median.prior.size - 
         (x+0.5)[match(TRUE,cumsum(priorm) >= 0.5)] ) 
       }
-      maxN = ceiling(3*median.prior.size)
+      if(is.null(maxN.set)){maxN = ceiling(3*median.prior.size)}
       x <- n:maxN
       a = optimize(f=fn,interval=c(1,maxbeta),x,n,median.prior.size,
                    effective.prior.df,alpha,tol=0.01)
       beta <- a$minimum
+      if(verbose){
+       p=dfn(alpha,beta,x,n,effective.prior.df);
+       cat(sprintf("maxN= %d Est. Q1=%d Est. Q3=%d Q1 = %d Q2 = %d\n",maxN,round((x+0.5)[match(TRUE,cumsum(p) >= 0.25)]),round((x+0.5)[match(TRUE,cumsum(p) >= 0.75)]),quartiles.prior.size[1],quartiles.prior.size[2]))
+      }
+      if(is.null(maxN.set)){
       while( {
        p=dfn(alpha,beta,x,n,effective.prior.df);
        abs(p[length(p)]/max(p,na.rm=TRUE) - 0.01)>0.005}){
@@ -161,8 +166,11 @@ dsizeprior<-function(n,
         a = optimize(f=fn,interval=c(1,maxbeta),x,n,median.prior.size,
                      effective.prior.df,alpha,tol=0.01)
         beta <- a$minimum
-      }
-      maxN = min(maxNmax,maxN-n)
+        if(verbose){
+       cat(sprintf("maxN= %d Est. Q1=%d Est. Q3=%d Q1 = %d Q2 = %d\n",maxN,round((x+0.5)[match(TRUE,cumsum(p) >= 0.25)]),round((x+0.5)[match(TRUE,cumsum(p) >= 0.75)]),quartiles.prior.size[1],quartiles.prior.size[2]))
+        }
+      }}
+      if(is.null(maxN.set)){maxN = min(maxNmax,maxN)}
      }
      if(!is.null(mean.prior.size)){
       if(mean.prior.size < n){mean.prior.size = n}
@@ -175,11 +183,16 @@ dsizeprior<-function(n,
        abs(mean.prior.size - sum(x*priorm)/sum(priorm,na.rm=TRUE))
       }
       if(is.null(maxN)){
-      maxN = ceiling(3*mean.prior.size)
+      if(is.null(maxN.set)){maxN = ceiling(3*mean.prior.size)}
       x <- n:maxN
       a = optimize(f=fn,interval=c(1,maxbeta),x,n,mean.prior.size,
                    effective.prior.df,alpha,tol=0.01)
       beta <- a$minimum
+      if(verbose){
+       p=dfn(alpha,beta,x,n,effective.prior.df);
+       cat(sprintf("maxN= %d Est. Q1=%d Est. Q3=%d Q1 = %d Q2 = %d\n",maxN,round((x+0.5)[match(TRUE,cumsum(p) >= 0.25)]),round((x+0.5)[match(TRUE,cumsum(p) >= 0.75)]),quartiles.prior.size[1],quartiles.prior.size[2]))
+      }
+      if(is.null(maxN.set)){
       while( {
        p=dfn(alpha,beta,x,n,effective.prior.df);
        abs(p[length(p)]/max(p,na.rm=TRUE) - 0.01)>0.005}){
@@ -188,8 +201,11 @@ dsizeprior<-function(n,
         a = optimize(f=fn,interval=c(1,maxbeta),x,n,mean.prior.size,
                     effective.prior.df,alpha,tol=0.01)
         beta <- a$minimum
-      }
-      maxN = min(maxNmax,maxN)
+        if(verbose){
+       cat(sprintf("maxN= %d Est. Q1=%d Est. Q3=%d Q1 = %d Q2 = %d\n",maxN,round((x+0.5)[match(TRUE,cumsum(p) >= 0.25)]),round((x+0.5)[match(TRUE,cumsum(p) >= 0.75)]),quartiles.prior.size[1],quartiles.prior.size[2]))
+        }
+      }}
+      if(is.null(maxN.set)){maxN = min(maxNmax,maxN)}
       }else{
       x <- 0:(maxN-1-n) + n
       a = optimize(f=fn,interval=c(1,maxbeta),x,n,mean.prior.size,
@@ -206,11 +222,16 @@ dsizeprior<-function(n,
        priorm <- dfn(alpha,beta,x,n,effective.prior.df)
        abs(mode.prior.size - (x+0.5)[which.max(priorm)])
       }
-      maxN = ceiling(3*mode.prior.size)
+      if(is.null(maxN.set)){maxN = ceiling(3*mode.prior.size)}
       x <- n:maxN
       a = optimize(f=fn,interval=c(1,maxbeta),x,n,mode.prior.size,
                    effective.prior.df,alpha,tol=0.01)
       beta <- a$minimum
+      if(verbose){
+       p=dfn(alpha,beta,x,n,effective.prior.df);
+       cat(sprintf("maxN= %d Est. Q1=%d Est. Q3=%d Q1 = %d Q2 = %d\n",maxN,round((x+0.5)[match(TRUE,cumsum(p) >= 0.25)]),round((x+0.5)[match(TRUE,cumsum(p) >= 0.75)]),quartiles.prior.size[1],quartiles.prior.size[2]))
+      }
+      if(is.null(maxN.set)){
       while( {
        p=dfn(alpha,beta,x,n,effective.prior.df);
        abs(p[length(p)]/max(p,na.rm=TRUE) - 0.01)>0.005}){
@@ -219,8 +240,11 @@ dsizeprior<-function(n,
         a = optimize(f=fn,interval=c(1,maxbeta),x,n,mode.prior.size,
                      effective.prior.df,alpha,tol=0.01)
         beta <- a$minimum
-      }
-      maxN = min(maxNmax,maxN)
+        if(verbose){
+          cat(sprintf("maxN= %d Est. Q1=%d Est. Q3=%d Q1 = %d Q2 = %d\n",maxN,round((x+0.5)[match(TRUE,cumsum(p) >= 0.25)]),round((x+0.5)[match(TRUE,cumsum(p) >= 0.75)]),quartiles.prior.size[1],quartiles.prior.size[2]))
+        }
+      }}
+      if(is.null(maxN.set)){maxN = min(maxNmax,maxN)}
      }
      if(!is.null(quartiles.prior.size)){
       if(quartiles.prior.size[1] < n){quartiles.prior.size[1] = n}
