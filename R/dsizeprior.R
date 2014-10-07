@@ -234,7 +234,7 @@ dsizeprior<-function(n,
        sqrt((quartiles.prior.size[1] - (x+0.5)[match(TRUE,cumsum(priorm) >= 0.25)])^2+ 
             (quartiles.prior.size[2] - (x+0.5)[match(TRUE,cumsum(priorm) >= 0.75)])^2)
       }
-      maxN = ceiling(10*quartiles.prior.size[2])
+      if(is.null(maxN.set)){maxN = ceiling(10*quartiles.prior.size[2])}
       x <- n:maxN
       a = optim(par=log(c(1,10)),fn=fn,
         x=x,n=n,quartiles.prior.size=quartiles.prior.size,
@@ -242,6 +242,12 @@ dsizeprior<-function(n,
         control=list(abstol=10))
       alpha <- exp(a$par[1])
       beta  <- exp(a$par[2])
+      if(verbose){
+       p=dfn(alpha,beta,x,n,effective.prior.df);
+       cat(sprintf("maxN= %d Est. Q1=%d Est. Q3=%d Q1 = %d Q2 = %d\n",maxN,round((x+0.5)[match(TRUE,cumsum(p) >= 0.25)]),round((x+0.5)[match(TRUE,cumsum(p) >= 0.75)]),quartiles.prior.size[1],quartiles.prior.size[2]))
+      }
+#cat(sprintf("alpha=%f beta = %f value = %f maxN=%f E1=%f E3=%f Q1 = %f Q2 = %f\n",alpha,beta,a$value,maxN,(x+0.5)[match(TRUE,cumsum(p) >= 0.25)],(x+0.5)[match(TRUE,cumsum(p) >= 0.75)],quartiles.prior.size[1],quartiles.prior.size[2]))
+      if(is.null(maxN.set)){
       while( {
        p=dfn(alpha,beta,x,n,effective.prior.df);
        abs(p[length(p)]/max(p,na.rm=TRUE) - 0.01)>0.005}){
@@ -252,8 +258,12 @@ dsizeprior<-function(n,
          control=list(abstol=10))
         alpha <- exp(a$par[1])
         beta  <- exp(a$par[2])
-      }
-      maxN = min(maxNmax,maxN)
+        if(verbose){
+       cat(sprintf("maxN= %d Est. Q1=%d Est. Q3=%d Q1 = %d Q2 = %d\n",maxN,round((x+0.5)[match(TRUE,cumsum(p) >= 0.25)]),round((x+0.5)[match(TRUE,cumsum(p) >= 0.75)]),quartiles.prior.size[1],quartiles.prior.size[2]))
+        }
+#cat(sprintf("alpha=%f beta = %f value = %f maxN=%f E1=%f E3=%f Q1 = %f Q2 = %f\n",alpha,beta,a$value,maxN,(x+0.5)[match(TRUE,cumsum(p) >= 0.25)],(x+0.5)[match(TRUE,cumsum(p) >= 0.75)],quartiles.prior.size[1],quartiles.prior.size[2]))
+      }}
+      if(is.null(maxN.set)){maxN = min(maxNmax,maxN)}
      }
      }
      cat(sprintf("Final alpha: %f, beta = %f max=%f\n",alpha, beta, maxbeta))
