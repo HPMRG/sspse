@@ -1,4 +1,4 @@
-beginparallel<-function(parallel=1, type=NULL, seed=NULL, packagenames=c("size"),verbose=TRUE){
+beginparallel<-function(parallel=1, type="MPI", seed=NULL, packagenames=c("size"),verbose=TRUE){
     ### parallel is wrapper for MPI or PVM (mosix only has PVM)
 #   require(snow)
     require(parallel)
@@ -17,7 +17,7 @@ beginparallel<-function(parallel=1, type=NULL, seed=NULL, packagenames=c("size")
        cat("Default warp drive is PVM ...\n")
       }
      }else{
-      snow::setDefaultClusterOptions(type="MPI")
+#     snow::setDefaultClusterOptions(type="MPI")
       type <- "MPI"
       if(verbose){
        cat("Default warp drive is MPI ...\n")
@@ -56,16 +56,16 @@ beginparallel<-function(parallel=1, type=NULL, seed=NULL, packagenames=c("size")
 #   Start Cluster
 #
     ### Snow commands to set up cluster
-    cl <- makeCluster(parallel,type=type)
+    cl <- parallel::makeCluster(parallel,type=type)
     ### initialize parallel random number streams
     if(is.null(seed)){
-     clusterSetRNGStream(cl)
+     parallel::clusterSetRNGStream(cl)
     }else{
-     clusterSetRNGStream(cl,iseed=seed)
+     parallel::clusterSetRNGStream(cl,iseed=seed)
     }
     ### start each virtual machine with libraries loaded
     for(pkg in packagenames){
-      attached <- clusterCall(cl, require, package=pkg, character.only=TRUE)      
+      attached <- parallel::clusterCall(cl, require, package=pkg, character.only=TRUE)      
     }
 #
 #   Run the jobs with rpvm or Rmpi
@@ -74,11 +74,13 @@ beginparallel<-function(parallel=1, type=NULL, seed=NULL, packagenames=c("size")
     flush.console()
     return(cl)
 }
-endparallel<-function(cl, type=NULL, finalize=FALSE, verbose=TRUE){
+endparallel<-function(cl, type="MPI", finalize=TRUE, verbose=TRUE){
     ### stop cluster and PVM (in case PVM is flakey)
-    stopCluster(cl)
-    if(snow::getClusterOption("type")=="PVM"){rpvm::.PVM.exit()}
-    if(finalize & snow::getClusterOption("type")=="MPI"){Rmpi::mpi.finalize()}
+    parallel::stopCluster(cl)
+#   if(snow::getClusterOption("type")=="PVM"){rpvm::.PVM.exit()}
+#   if(finalize & snow::getClusterOption("type")=="MPI"){Rmpi::mpi.finalize()}
+    if(finalize & type=="MPI"){Rmpi::mpi.finalize()}
+    if(finalize & type=="PVM"){rpvm::.PVM.exit()}
 #   if(type=="PVM"){
 #    if(require("rpvm",character.only = TRUE)){
 #     rpvm::.PVM.exit()

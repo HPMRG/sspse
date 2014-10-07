@@ -22,7 +22,7 @@ posteriorsize<-function(s,
                   muproposal=0.1, 
                   sigmaproposal=0.15, 
                   burnintheta=500,
-                  parallel=1, parallel.type=NULL, seed=NULL, 
+                  parallel=1, parallel.type="MPI", seed=NULL, 
                   maxbeta=120, dispersion=0,
                   supplied=list(maxN=maxN),
                   verbose=TRUE){
@@ -136,7 +136,7 @@ posteriorsize<-function(s,
   }
   ### since running job in parallel, start pvm (if not already running)
   else{
-    cl <- beginparallel(parallel,type=parallel.type)
+    cl <- size::beginparallel(parallel,type=parallel.type)
     ### divide the samplesize by the number of parallel runs (number of MCMC samples)
     samplesize.parallel=round(samplesize/parallel)
     ### cluster call, send following to each of the virtual machines, posnbinom function
@@ -211,7 +211,7 @@ posteriorsize<-function(s,
     }
     
     ### stop cluster and PVM (in case PVM is flakey)
-    endparallel(cl,type=parallel.type)
+    size::endparallel(cl,type=parallel.type)
   }
   Cret$N <- c(Cret$MAP["N"], 
               mean(Cret$sample[,"N"]),
@@ -226,13 +226,7 @@ posteriorsize<-function(s,
   Cret$priorsizedistribution <- priorsizedistribution
 # Cret$mean.prior.size <- mean.prior.size
   ### return result
-  class(Cret)<-"posterior.size.estimate"
   Cret
 }
 
 posize.warning <- "POSTERIOR SIZE CALCULATION FAILED" #added for posteriorsize dialog to hide error message unless needed
-
-#' Is an instance of posterior.size.estimate
-#' @param x An object to be tested.
-#' @export
-is.posterior.size.estimate <- function(x) inherits(x,"posterior.size.estimate")
