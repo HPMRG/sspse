@@ -67,13 +67,15 @@ if(!is.null(out)){
   abline(v=c(fit$n,fit$maxN),lty=2)
   if(!is.null(N)){abline(v=N,lty=1,col=1)}
   abline(v=hpd,lty=2,col=4)
-  text(x=hpd[1],y=-0.000,col=4,cex=1.0,labels=paste(round(hpd[1])))
-  text(x=hpd[2],y=-0.000,col=4,cex=1.0,labels=paste(round(hpd[2])))
-  text(x=fit$n,y=0.000,labels=paste(fit$n),col=1,cex=1.0)
-  text(x=round(mp),y=-0.000,col=3,cex=1.0,labels=paste(round(mp)))
-  text(x=l50,y=ylim[2],col=2,cex=1.0,labels=paste(round(l50)))
-  text(x=map,y=-0.000,col=5,cex=1.0,labels=paste(round(map)))
-  if(!is.null(N)){text(x=N,y=-0.000,col=1,cex=1.0,labels="truth")}
+  yloc <- ylim[2]*0.06
+  par(xpd=NA)
+  text(x=hpd[1],y=-yloc,col=4,cex=0.5,labels=paste(round(hpd[1])))
+  text(x=hpd[2],y=-yloc,col=4,cex=0.5,labels=paste(round(hpd[2])))
+  text(x=fit$n,y=-0,labels=paste(fit$n),col=1,cex=1.0)
+  text(x=round(mp),y=-yloc,col=3,cex=0.5,labels=paste(round(mp)))
+  text(x=l50,y=-yloc,col=2,cex=0.5,labels=paste(round(l50)))
+  text(x=map,y=-yloc,col=5,cex=0.5,labels=paste(round(map)))
+  if(!is.null(N)){text(x=N,y=-yloc,col=1,cex=0.5,labels="truth")}
 #
 #cat(sprintf("Prior:\nMean = %d, Median = %d, Mode = %d, 25%% = %d, 75%% = %d.\n",
 # round(fit$mean.prior.size), round(fit$median.prior.size), round(fit$mode.prior.size), round(fit$quartiles.prior.size[1]), round(fit$quartiles.prior.size[2])))
@@ -132,13 +134,15 @@ if(type %in% c("others","both")){
   abline(v=c(fit$n,fit$maxN),lty=2)
   if(!is.null(N)){abline(v=N,lty=1,col=1)}
   abline(v=hpd,lty=2,col=4)
-  text(x=hpd[1],y=-0.000,col=4,cex=1.0,labels=paste(round(hpd[1])))
-  text(x=hpd[2],y=-0.000,col=4,cex=1.0,labels=paste(round(hpd[2])))
-  text(x=fit$n,y=0.000,labels=paste(fit$n),col=1,cex=1.0)
-  text(x=mp,y=-0.000,col=3,cex=1.0,labels=paste(round(mp)))
-  text(x=l50,y=-0.000,col=2,cex=1.0,labels=paste(round(l50)))
-  text(x=map,y=-0.000,col=5,cex=1.0,labels=paste(round(map)))
-  if(!is.null(N)){text(x=N,y=-0.000,col=1,cex=1.0,labels="truth")}
+  yloc <- ylim[2]*0.06
+  par(xpd=NA)
+  text(x=hpd[1],y=-yloc,col=4,cex=0.5,labels=paste(round(hpd[1])))
+  text(x=hpd[2],y=-yloc,col=4,cex=0.5,labels=paste(round(hpd[2])))
+  text(x=fit$n,y=-0.0,labels=paste(fit$n),col=1,cex=1.0)
+  text(x=mp,y=-yloc,col=3,cex=0.5,labels=paste(round(mp)))
+  text(x=l50,y=-yloc,col=2,cex=0.5,labels=paste(round(l50)))
+  text(x=map,y=-yloc,col=5,cex=0.5,labels=paste(round(map)))
+  if(!is.null(N)){text(x=N,y=-yloc,col=1,cex=0.5,labels="truth")}
 }
 #
 #cat(sprintf("Prior:\nMean = %d, Median = %d, Mode = %d, 25%% = %d, 75%% = %d.\n",
