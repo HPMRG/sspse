@@ -35,7 +35,9 @@ lpriorm <- lpriorm[fit$n+(1:length(lpriorm)) > fit$n & fit$n+(1:length(lpriorm))
 lpriorm <- lpriorm / sum(lpriorm)
 cy <- cumsum(lpriorm)
 xp <- seq(fit$n,fit$maxN)
-pl90 <- xp[which.max(cy>0.9)]
+pl025 <- xp[which.max(cy>((1-HPD.level)/2))]
+pl95  <- xp[which.max(cy>((1+HPD.level)/2))]
+pl90  <- xp[which.max(cy>0.9)]
 #
 #cat(sprintf("Prior:\nMean = %d, Median = %d, Mode = %d, 90%% = %d, 25%% = %d, 75%% = %d.\n",
 # round(fit$mean.prior.size), round(fit$median.prior.size), round(fit$mode.prior.size), round(pl90), round(fit$quartiles.prior.size[1]), round(fit$quartiles.prior.size[2])))
@@ -45,8 +47,8 @@ pl90 <- xp[which.max(cy>0.9)]
 if(!is.null(out)){
  res <- matrix(c(
   round(fit$mean.prior.size), round(fit$median.prior.size), round(fit$mode.prior.size),
-  round(fit$quartiles.prior.size[1]),round(fit$quartiles.prior.size[2]),round(pl90),
-  round(fit$quartiles.prior.size[1]), round(fit$quartiles.prior.size[2]),
+  round(fit$quartiles.prior.size[1]),round(fit$quartiles.prior.size[2]),
+  round(pl90),round(pl025),round(pl95),
   round(mp),round(l50),round(map),round(l25),round(l75),round(l90),round(hpd[1]),round(hpd[2])),byrow=TRUE,nrow=2)
   rownames(res) <- c("Prior","Posterior")
   colnames(res) <- c("Mean","Median","Mode","25%","75%","90%",
@@ -54,10 +56,12 @@ if(!is.null(out)){
     paste(round(100*(1+HPD.level)/2,1),"%",sep=""))
 }else{
  res <- matrix(c(
-  round(fit$mean.prior.size), round(fit$median.prior.size), round(fit$mode.prior.size), round(pl90), round(fit$quartiles.prior.size[1]), round(fit$quartiles.prior.size[2])
+  round(fit$mean.prior.size), round(fit$median.prior.size), round(fit$mode.prior.size), round(fit$quartiles.prior.size[1]), round(fit$quartiles.prior.size[2]), round(pl90), round(pl025), round(pl95)
   ),byrow=TRUE,nrow=1)
   rownames(res) <- c("Prior")
-  colnames(res) <- c("Mean","Median","Mode","90%","25%","75%")
+  colnames(res) <- c("Mean","Median","Mode","25%","75%","90%",
+    paste(round(100*(1-HPD.level)/2,1),"%",sep=""),
+    paste(round(100*(1+HPD.level)/2,1),"%",sep=""))
 }
 res <- as.data.frame(res)
 if(!is.null(out)){
