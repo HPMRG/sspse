@@ -1,4 +1,4 @@
-plot.size <- function(fit,xlim=NULL,data=NULL,support=1000,HPD.level=0.95,N=NULL,ylim=NULL,mcmc=FALSE,type="both"){
+plot.size <- function(fit,xlim=NULL,data=NULL,support=1000,HPD.level=0.90,N=NULL,ylim=NULL,mcmc=FALSE,type="both"){
 out <- fit$sample
 if(!is.null(out) & mcmc){
 # suppressPackageStartupMessages(require(coda, quietly=TRUE))
@@ -39,7 +39,9 @@ if(!is.null(out)){
     ylab="posterior density",xlim=c(fit$n,xlim),ylim=ylim)
   #
   legend('topright',lty=c(1,2,1,1,1,1,1),col=c(1,1,2,3,4,5),
-    legend=c("posterior","prior","median","mean","95% interval","mode"),
+    legend=c("posterior","prior","median","mean",
+             paste(round(HPD.level*100),"% interval",sep=""),
+             "mode"),
     bty="n",cex=0.75)
   abline(v=fit$n,lty=2)
   #
