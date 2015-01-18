@@ -1,13 +1,17 @@
 Package: size
+Type: Package
 Version: 0.2
-Date: 2014-04-01
+Date: 2014-08-24
 Title:  Estimating Hidden Population Size using Respondent Driven Sampling Data
-Author: Krista J. Gile <gile@math.umass.edu>,
-        Mark S. Handcock <handcock@stat.ucla.edu>
-Maintainer: Krista J. Gile <gile@math.umass.edu>
+Authors@R: c( person("Mark S.", "Handcock", role=c("aut","cre","cph"),
+    email="handcock@stat.ucla.edu"), person("Krista J.", "Gile", role=c("aut","cph"),
+    email="gile@math.umass.edu"))
+Maintainer: Mark S. Handcock <handcock@stat.ucla.edu>
 Depends: parallel, locfit
 Suggests: network
 Imports: coda
 Description: An integrated set of tools to analyze respondent-driven sampling data. In particular it estimates population size.  "size" is a part of the "statnet" suite of packages for network analysis.  For a list of functions type: help(package='size')
 License: file LICENSE
-URL: http://hmprg.org
+URL: http://www.hpmrg.org
+Imports:
+    Rmpi
