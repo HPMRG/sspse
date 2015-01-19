@@ -1,4 +1,4 @@
-print.summary.size <- function (x, 
+print.summary.psess <- function (x, 
               digits = max(3, getOption("digits") - 3),
               correlation=FALSE, covariance=FALSE,
               signif.stars= getOption("show.signif.stars"),

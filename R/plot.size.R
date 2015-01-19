@@ -1,6 +1,14 @@
-plot.size <- function(fit,xlim=NULL,data=NULL,support=1000,HPD.level=0.90,N=NULL,ylim=NULL,mcmc=FALSE,type="both"){
-out <- fit$sample
-if(!is.null(out) & mcmc){
+plot.psess <- function(x,y=NULL,
+		       xlim=NULL,data=NULL,support=1000,HPD.level=0.90,N=NULL,ylim=NULL,mcmc=FALSE,type="both"){
+	p.args <- as.list( sys.call() )[-c(1,2)]
+	formal.args<-formals(sys.function())[-c(1,2)]
+
+	control<-list()
+	for(arg in names(formal.args)){ control[arg]<-list(get(arg)) }
+	for(arg in names(p.args)){ control[arg]<-list(get(arg)) }
+
+out <- x$sample
+if(!is.null(out) & control$mcmc){
 # suppressPackageStartupMessages(require(coda, quietly=TRUE))
   mcmc.len <- min(1000, nrow(out))
   a=round(seq.int(from=1,to=nrow(out),length=mcmc.len))
@@ -9,51 +17,50 @@ if(!is.null(out) & mcmc){
   plot(b)
   return(invisible())
 }
-suppressMessages(require(locfit,quietly=TRUE))
+#suppressMessages(require(locfit,quietly=TRUE))
 #if(ask){par(ask=TRUE)}
 if(is.null(out)){
-  fit$n <- min(fit$x)
-  fit$lpriorm <- log(fit$lprior)
+  x$n <- min(x$x)
+  x$lpriorm <- log(x$lprior)
 }
-xp <- fit$n+(1:length(fit$lpriorm))-1
-lpriorm <- exp(fit$lpriorm-max(fit$lpriorm))
-lpriorm <- lpriorm[xp >= fit$n & xp <= fit$maxN]
+xp <- x$n+(1:length(x$lpriorm))-1
+lpriorm <- exp(x$lpriorm-max(x$lpriorm))
+lpriorm <- lpriorm[xp >= x$n & xp <= x$maxN]
 lpriorm <- lpriorm / sum(lpriorm)
-xp <- fit$n+(1:length(lpriorm))-1
-x  <- fit$n+(1:length(lpriorm))-1
+xp <- x$n+(1:length(lpriorm))-1
 if(!is.null(out)){
   outN <- out[,"N"]
   #a=locfit( ~ lp(outN, nn=0.35, h=0, maxk=500))
   a=locfit::locfit( ~ lp(outN,nn=0.5))
-  xp <- seq(fit$n,fit$maxN, length=support)
+  xp <- seq(x$n,x$maxN, length=control$support)
   posdensN <- predict(a, newdata=xp)
-  posdensN <- support*posdensN / ((fit$maxN-fit$n)*sum(posdensN))
+  posdensN <- control$support*posdensN / ((x$maxN-x$n)*sum(posdensN))
   #
-  if(is.null(xlim)){xlim <- quantile(outN,0.99)}
-  if(is.null(ylim)){ylim <- c(0,max(posdensN,lpriorm))}
-  if(type %in% c("N","both")){
+  if(is.null(control$xlim)){control$xlim <- quantile(outN,0.99)}
+  if(is.null(control$ylim)){control$ylim <- c(0,max(posdensN,lpriorm))}
+  if(control$type %in% c("N","both")){
   plot(x=xp,y=posdensN,type='l', xlab="population size", 
     main="posterior for population size",
   # ylim=c(0,max(posdensN,lpriorm)),
   # sub="mean prior = 1000",
-    ylab="posterior density",xlim=c(fit$n,xlim),ylim=ylim)
+    ylab="posterior density",xlim=c(x$n,control$xlim),ylim=control$ylim)
   #
   legend('topright',lty=c(1,2,1,1,1,1,1),col=c(1,1,2,3,4,5),
     legend=c("posterior","prior","median","mean",
-             paste(round(HPD.level*100),"% interval",sep=""),
+             paste(round(control$HPD.level*100),"% interval",sep=""),
              "mode"),
     bty="n",cex=0.75)
-  abline(v=fit$n,lty=2)
+  abline(v=x$n,lty=2)
   #
-  lpriorm <- exp(fit$lpriorm-max(fit$lpriorm))
+  lpriorm <- exp(x$lpriorm-max(x$lpriorm))
   lpriorm <- lpriorm/sum(lpriorm)
-  lines(x=fit$n+(1:length(lpriorm))-1,y=lpriorm,lty=2)
+  lines(x=x$n+(1:length(lpriorm))-1,y=lpriorm,lty=2)
   # Next from coda
-  #hpd <- HPDinterval(fit$sample[,"N"])[1:2]
+  #hpd <- HPDinterval(x$sample[,"N"])[1:2]
   # MSH using locfit
   cy <- cumsum(posdensN/sum(posdensN))
-  hpd <- c(xp[which.max(cy>((1-HPD.level)/2))],
-           xp[which.max(cy>((1+HPD.level)/2))])
+  hpd <- c(xp[which.max(cy>((1-control$HPD.level)/2))],
+           xp[which.max(cy>((1+control$HPD.level)/2))])
   if(is.na(hpd[1])) hpd[1] <- xp[1]
   if(is.na(hpd[2])) hpd[2] <- xp[length(xp)]
 #
@@ -66,28 +73,28 @@ if(!is.null(out)){
 # abline(v=mean(outN,na.rm=TRUE),col=3)
   abline(v=l50,col=2)
   abline(v=mp,col=3)
-  abline(v=c(fit$n,fit$maxN),lty=2)
-  if(!is.null(N)){abline(v=N,lty=1,col=1)}
+  abline(v=c(x$n,x$maxN),lty=2)
+  if(!is.null(control$N)){abline(v=control$N,lty=1,col=1)}
   abline(v=hpd,lty=2,col=4)
-  yloc <- ylim[2]*0.06
+  yloc <- control$ylim[2]*0.06
   par(xpd=NA)
   text(x=hpd[1],y=-yloc,col=4,cex=0.5,labels=paste(round(hpd[1])))
   text(x=hpd[2],y=-yloc,col=4,cex=0.5,labels=paste(round(hpd[2])))
-  text(x=fit$n,y=-0,labels=paste(fit$n),col=1,cex=1.0)
+  text(x=x$n,y=-0,labels=paste(x$n),col=1,cex=1.0)
   text(x=round(mp),y=-yloc,col=3,cex=0.5,labels=paste(round(mp)))
   text(x=l50,y=-yloc,col=2,cex=0.5,labels=paste(round(l50)))
   text(x=map,y=-yloc,col=5,cex=0.5,labels=paste(round(map)))
-  if(!is.null(N)){text(x=N,y=-yloc,col=1,cex=0.5,labels="truth")}
+  if(!is.null(control$N)){text(x=control$N,y=-yloc,col=1,cex=0.5,labels="truth")}
 #
 #cat(sprintf("Prior:\nMean = %d, Median = %d, Mode = %d, 25%% = %d, 75%% = %d.\n",
-# round(fit$mean.prior.size), round(fit$median.prior.size), round(fit$mode.prior.size), round(fit$quartiles.prior.size[1]), round(fit$quartiles.prior.size[2])))
+# round(x$mean.prior.size), round(x$median.prior.size), round(x$mode.prior.size), round(x$quartiles.prior.size[1]), round(x$quartiles.prior.size[2])))
 #cat(sprintf("Posterior:\nMean = %d, Median = %d, MAP = %d, 90%% = %d, HPD = (%d, %d).\n",
 # round(mp),round(l50),round(map),round(l90),round(hpd[1]),round(hpd[2])))
 #
-lines(x=fit$n+(1:length(lpriorm))-1,y=lpriorm,lty=2)
+lines(x=x$n+(1:length(lpriorm))-1,y=lpriorm,lty=2)
 }
 #
-if(type %in% c("others","both")){
+if(control$type %in% c("others","both")){
 out[is.na(out)] <- apply(out,2,median,na.rm=TRUE)
 if("mu" %in% colnames(out)){
  plot(density(out[,"mu"],na.rm=TRUE), xlab="mean network size", main="posterior for mean network size in the population")
@@ -100,29 +107,29 @@ if("mu0" %in% colnames(out)){
  lines(density(out[,"sigma1"],na.rm=TRUE),lty=2)
 }
 #
-plot(seq_along(fit$predictive.degree),y=fit$predictive.degree, type='h',
+plot(seq_along(x$predictive.degree),y=x$predictive.degree, type='h',
 col='red', lwd=2, xlab="degree",ylab="probability",
   main="mean posterior network size distribution")
-if(!is.null(data)){
-  Kmax <- max(seq_along(fit$predictive.degree))
-  bbb <- tabulate(data,nbins=Kmax) #, nbins=max(data))
+if(!is.null(control$data)){
+  Kmax <- max(seq_along(x$predictive.degree))
+  bbb <- tabulate(control$data,nbins=Kmax) #, nbins=max(control$data))
   bbb <- bbb/sum(bbb)
   aaa <- barplot(bbb,names.arg=1:Kmax,add=FALSE,axes=TRUE,width=rep(0.5,length(bbb)),space=1,col=0,
     xlab="degree",ylab="probability", xlim=c(1,Kmax),
     main="posterior with sample histogram overlaid")
-  lines(x=-0.25+seq_along(fit$predictive.degree),y=fit$predictive.degree, type='h', col='red', lwd=2)
+  lines(x=-0.25+seq_along(x$predictive.degree),y=x$predictive.degree, type='h', col='red', lwd=2)
 }}
 }else{
-if(type %in% c("others","both")){
+if(control$type %in% c("others","both")){
   cy <- cumsum(lpriorm)
   #
-  if(is.null(xlim)){xlim <- xp[which.max(cy>0.99)]}
-  if(is.null(ylim)){ylim <- c(0,max(lpriorm))}
+  if(is.null(control$xlim)){control$xlim <- xp[which.max(cy>0.99)]}
+  if(is.null(control$ylim)){control$ylim <- c(0,max(lpriorm))}
   plot(x=xp,y=lpriorm,type='l', xlab="population size", 
     main="prior for population size",
-    ylab="prior density",xlim=c(fit$n,xlim),ylim=ylim)
+    ylab="prior density",xlim=c(x$n,control$xlim),ylim=control$ylim)
   #
-  abline(v=fit$n,lty=2)
+  abline(v=x$n,lty=2)
   #
 #
   map <- xp[which.max(lpriorm)]
@@ -133,22 +140,22 @@ if(type %in% c("others","both")){
 #
   abline(v=l50,col=2)
   abline(v=mp,col=3)
-  abline(v=c(fit$n,fit$maxN),lty=2)
-  if(!is.null(N)){abline(v=N,lty=1,col=1)}
+  abline(v=c(x$n,x$maxN),lty=2)
+  if(!is.null(control$N)){abline(v=control$N,lty=1,col=1)}
   abline(v=hpd,lty=2,col=4)
-  yloc <- ylim[2]*0.06
+  yloc <- control$ylim[2]*0.06
   par(xpd=NA)
   text(x=hpd[1],y=-yloc,col=4,cex=0.5,labels=paste(round(hpd[1])))
   text(x=hpd[2],y=-yloc,col=4,cex=0.5,labels=paste(round(hpd[2])))
-  text(x=fit$n,y=-0.0,labels=paste(fit$n),col=1,cex=1.0)
+  text(x=x$n,y=-0.0,labels=paste(x$n),col=1,cex=1.0)
   text(x=mp,y=-yloc,col=3,cex=0.5,labels=paste(round(mp)))
   text(x=l50,y=-yloc,col=2,cex=0.5,labels=paste(round(l50)))
   text(x=map,y=-yloc,col=5,cex=0.5,labels=paste(round(map)))
-  if(!is.null(N)){text(x=N,y=-yloc,col=1,cex=0.5,labels="truth")}
+  if(!is.null(control$N)){text(x=control$N,y=-yloc,col=1,cex=0.5,labels="truth")}
 }
 #
 #cat(sprintf("Prior:\nMean = %d, Median = %d, Mode = %d, 25%% = %d, 75%% = %d.\n",
-# round(fit$mean.prior.size), round(fit$median.prior.size), round(fit$mode.prior.size), round(fit$quartiles.prior.size[1]), round(fit$quartiles.prior.size[2])))
+# round(x$mean.prior.size), round(x$median.prior.size), round(x$mode.prior.size), round(x$quartiles.prior.size[1]), round(x$quartiles.prior.size[2])))
 #cat(sprintf("Posterior:\nMean = %d, Median = %d, MAP = %d, 90%% = %d, HPD = (%d, %d).\n",
 # round(mp),round(l50),round(map),round(l90),round(hpd[1]),round(hpd[2])))
 #

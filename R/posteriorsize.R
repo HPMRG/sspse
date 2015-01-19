@@ -226,6 +226,7 @@ posteriorsize<-function(s,
   Cret$priorsizedistribution <- priorsizedistribution
 # Cret$mean.prior.size <- mean.prior.size
   ### return result
+  class(Cret) <- "psess"
   Cret
 }
 

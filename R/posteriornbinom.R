@@ -72,7 +72,7 @@ posteriornbinom<-function(s,
     attr(Cret$sample, "class") <- "mcmc"
     
     ### define function that will compute mode of a sample
-    require(locfit, quietly=TRUE)
+#   require(locfit, quietly=TRUE)
     mapfn <- function(x,lbound=min(x),ubound=max(x)){
       posdensN <- locfit(~ lp(x,maxk=500),xlim=c(lbound,ubound))
       locx <- seq(lbound,ubound,length=2000)
