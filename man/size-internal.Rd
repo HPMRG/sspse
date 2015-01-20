@@ -325,7 +325,6 @@
 \alias{sppsestN}
 \alias{sppssample}
 \alias{sppssamplei}
-\alias{summary.size}
 \alias{unposN}
 \alias{unposNwar}
 \alias{unposf}
@@ -336,7 +335,6 @@
 
 \alias{as.directed}
 \alias{as.edgelist}
-\alias{size.degeneracy} % At least this needs to be documented in summary.size and/or mcmc.diagnostics.size
 \alias{print.network.series}
 \alias{summary.statsmatrix.size}
 \alias{summary.network.series}
@@ -351,7 +349,6 @@
 \alias{degreedist}
 \alias{mixingmatrix}
 \alias{print.mixingmatrix}
-\alias{print.summary.size} 
 \alias{Summary.size.future}
 
 \description{

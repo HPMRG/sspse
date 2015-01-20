@@ -11,9 +11,9 @@ It uses the order of selection of the sample to
 provide information on the distribution of network sizes 
 over the population members. 
 
-It does not use the disease states of the sampled individuals to improve the
-estimation.  See \code{\link{posteriordisease}} for a version that uses the
-joint sample of degrees and disease states. 
+%It does not use the disease states of the sampled individuals to improve the
+%estimation.  See \code{\link{posteriordisease}} for a version that uses the
+%joint sample of degrees and disease states. 
 
 %By default, the probability that a randomly chosen
 %person has degree \eqn{k} is modeled as a Conway-Maxwell-Poisson distribution

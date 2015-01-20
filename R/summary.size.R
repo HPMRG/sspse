@@ -1,6 +1,8 @@
-summary.psess <- function(fit,support=1000,HPD.level=0.95){
+summary.psess <- function(object, support=1000, HPD.level=0.95, ...){
+#summary.psess <- function(object, ...){
   p.args <- as.list( sys.call() )[-c(1,2)]
   formal.args<-formals(sys.function())[-1]
+# control <- list(support=1000,HPD.level=0.95)
 
   control<-list()
   for(arg in names(formal.args)){ control[arg]<-list(get(arg)) }
@@ -8,20 +10,20 @@ summary.psess <- function(fit,support=1000,HPD.level=0.95){
 
 #suppressMessages(require(locfit, quietly=TRUE))
 #require(coda)
-out <- fit$sample
+out <- object$sample
 if(is.null(out)){
-  fit$n <- min(fit$x)
-  fit$lpriorm <- log(fit$lprior)
+  object$n <- min(object$x)
+  object$lpriorm <- log(object$lprior)
 }
 if(!is.null(out)){
   outN <- out[,"N"]
   #a=locfit( ~ lp(outN, nn=0.35, h=0, maxk=500))
   a=locfit::locfit( ~ lp(outN,nn=0.5))
-  xp <- seq(fit$n,fit$maxN, length=control$support)
+  xp <- seq(object$n,object$maxN, length=control$support)
   posdensN <- predict(a, newdata=xp)
-  posdensN <- control$support*posdensN / ((fit$maxN-fit$n)*sum(posdensN))
+  posdensN <- control$support*posdensN / ((object$maxN-object$n)*sum(posdensN))
   # Next from coda
-  #hpd <- HPDinterval(fit$sample[,"N"])[1:2]
+  #hpd <- HPDinterval(object$sample[,"N"])[1:2]
   # MSH using locfit
   cy <- cumsum(posdensN/sum(posdensN))
   hpd <- c(xp[which.max(cy>((1-control$HPD.level)/2))],
@@ -37,24 +39,24 @@ if(!is.null(out)){
   l75 <- xp[which.max(cy>0.75)]
 }
 #
-lpriorm <- exp(fit$lpriorm-max(fit$lpriorm))
-lpriorm <- lpriorm[fit$n+(1:length(lpriorm)) > fit$n & fit$n+(1:length(lpriorm)) < fit$maxN]
+lpriorm <- exp(object$lpriorm-max(object$lpriorm))
+lpriorm <- lpriorm[object$n+(1:length(lpriorm)) > object$n & object$n+(1:length(lpriorm)) < object$maxN]
 lpriorm <- lpriorm / sum(lpriorm)
 cy <- cumsum(lpriorm)
-xp <- seq(fit$n,fit$maxN)
+xp <- seq(object$n,object$maxN)
 pl025 <- xp[which.max(cy>((1-control$HPD.level)/2))]
 pl95  <- xp[which.max(cy>((1+control$HPD.level)/2))]
 pl90  <- xp[which.max(cy>0.9)]
 #
 #cat(sprintf("Prior:\nMean = %d, Median = %d, Mode = %d, 90%% = %d, 25%% = %d, 75%% = %d.\n",
-# round(fit$mean.prior.size), round(fit$median.prior.size), round(fit$mode.prior.size), round(pl90), round(fit$quartiles.prior.size[1]), round(fit$quartiles.prior.size[2])))
+# round(object$mean.prior.size), round(object$median.prior.size), round(object$mode.prior.size), round(pl90), round(object$quartiles.prior.size[1]), round(object$quartiles.prior.size[2])))
 #cat(sprintf("Posterior:\nMean = %d, Median = %d, MAP = %d, 90%% = %d, HPD = (%d, %d).\n",
 # round(mp),round(l50),round(map),round(l90),round(hpd[1]),round(hpd[2])))
 #
 if(!is.null(out)){
  res <- matrix(c(
-  round(fit$mean.prior.size), round(fit$median.prior.size), round(fit$mode.prior.size),
-  round(fit$quartiles.prior.size[1]),round(fit$quartiles.prior.size[2]),
+  round(object$mean.prior.size), round(object$median.prior.size), round(object$mode.prior.size),
+  round(object$quartiles.prior.size[1]),round(object$quartiles.prior.size[2]),
   round(pl90),round(pl025),round(pl95),
   round(mp),round(l50),round(map),round(l25),round(l75),round(l90),round(hpd[1]),round(hpd[2])),byrow=TRUE,nrow=2)
   rownames(res) <- c("Prior","Posterior")
@@ -63,7 +65,7 @@ if(!is.null(out)){
     paste(round(100*(1+control$HPD.level)/2,1),"%",sep=""))
 }else{
  res <- matrix(c(
-  round(fit$mean.prior.size), round(fit$median.prior.size), round(fit$mode.prior.size), round(fit$quartiles.prior.size[1]), round(fit$quartiles.prior.size[2]), round(pl90), round(pl025), round(pl95)
+  round(object$mean.prior.size), round(object$median.prior.size), round(object$mode.prior.size), round(object$quartiles.prior.size[1]), round(object$quartiles.prior.size[2]), round(pl90), round(pl025), round(pl95)
   ),byrow=TRUE,nrow=1)
   rownames(res) <- c("Prior")
   colnames(res) <- c("Mean","Median","Mode","25%","75%","90%",

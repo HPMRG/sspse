@@ -1,17 +1,20 @@
-plot.psess <- function(x,y=NULL,
-		       xlim=NULL,data=NULL,support=1000,HPD.level=0.90,N=NULL,ylim=NULL,mcmc=FALSE,type="both"){
+plot.psess <- function(x,
+		       xlim=NULL,data=NULL,support=1000,HPD.level=0.90,N=NULL,ylim=NULL,mcmc=FALSE,type="both",
+		       ...){
+#plot.psess <- function(x, ...){
 	p.args <- as.list( sys.call() )[-c(1,2)]
-	formal.args<-formals(sys.function())[-c(1,2)]
+ 	formal.args<-formals(sys.function())[-c(1)]
+#       control <- list(xlim=NULL,data=NULL,support=1000,HPD.level=0.90,N=NULL,ylim=NULL,mcmc=FALSE,type="both")
 
-	control<-list()
-	for(arg in names(formal.args)){ control[arg]<-list(get(arg)) }
+ 	control<-list()
+ 	for(arg in names(formal.args)){ control[arg]<-list(get(arg)) }
 	for(arg in names(p.args)){ control[arg]<-list(get(arg)) }
 
 out <- x$sample
 if(!is.null(out) & control$mcmc){
 # suppressPackageStartupMessages(require(coda, quietly=TRUE))
   mcmc.len <- min(1000, nrow(out))
-  a=round(seq.int(from=1,to=nrow(out),length=mcmc.len))
+  a=round(seq.int(from=1,to=nrow(out),length.out=mcmc.len))
   mcp <- attr(out,"mcpar")
   b=coda::mcmc(out[a,],start=mcp[1],end=mcp[2],thin=floor((mcp[2]-mcp[1])/mcmc.len + 1))
   plot(b)
