@@ -35,7 +35,7 @@ poscmp<-function(s,maxN=NULL,
     # Transform observed mean parametrization to log-normal
     # parametrization
     #
-    out <- cmp.natural(mean.prior.degree, sd.prior.degree)
+    out <- cmp.natural(mu=mean.prior.degree, sigma=sd.prior.degree)
     mu <- log(out$lambda)
     sigma <- out$nu
 #   sigma <- max(0.00001, sigma)
@@ -46,7 +46,7 @@ poscmp<-function(s,maxN=NULL,
        out <- list(lambda=8,nu=8)
        map <- dispersion*(1:K)
        for(i in 1:K){
-        out <- cmp.natural(i, map[i], guess=c(log(out$lambda),log(out$nu)))
+        out <- cmp.natural(mu=i, sigma=map[i], guess=c(log(out$lambda),log(out$nu)))
         lambdad[i] <- log(out$lambda)
         nud[i] <- out$nu
        }
