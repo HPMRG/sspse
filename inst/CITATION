@@ -3,24 +3,22 @@
 
 citHeader("If you are using 'size' for research that will be published, we request that you acknowledge this with the following citation:")
 
-desc <- packageDescription("size")
-
-# auts <- eval(parse(text=desc$`Authors@R`))
+# auts <- eval(parse(text=meta$`Authors@R`))
 # auts <- auts[sapply(auts, function(aut) "aut" %in% aut$role)]
 
 bibentry("Manual",
-         title = paste(desc$Package,": ", desc$Title, sep=""),
+         title = paste(meta$Package,": ", meta$Title, sep=""),
          author = personList(as.person("Mark S. Handcock"),
                              as.person("Krista J. Gile")),
-         year         = substr(desc$Date,1,4),
-         note         = paste("R package version ", desc$Version, sep=""),
+         year         = substr(meta$Date,1,4),
+         note         = paste("R package version ", meta$Version, sep=""),
          address      = "Los Angeles, CA",
          url          = "http://CRAN.R-project.org/package=size",
          
          textVersion = 
-         paste("Mark S. Handcock and Krista J. Gile (2012) ", 
-               paste(desc$Package,": ", desc$Title, sep=""),
-               ", Version ", desc$Version, ". Project home page at http://hpmrg.org",
+         paste("Mark S. Handcock and Krista J. Gile (2014) ", 
+               paste(meta$Package,": ", meta$Title, sep=""),
+               ", Version ", meta$Version, ". Project home page at http://hpmrg.org",
                ",", " URL http://CRAN.R-project.org/package=size.",
                sep="")
          )
