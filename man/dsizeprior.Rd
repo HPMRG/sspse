@@ -10,30 +10,33 @@ collected by Respondent Driven Sampling.
 }
 \usage{
  dsizeprior(n,
-   type=c("beta","nbinom","pln","flat","continuous"),
+   type=c("beta","nbinom","pln","flat","continuous","supplied"),
    mean.prior.size=NULL, sd.prior.size=NULL,
    mode.prior.sample.proportion=NULL,
    median.prior.sample.proportion=NULL,
    median.prior.size=NULL,
-   median.mid.prior.size=NULL,
    mode.prior.size=NULL,
    quartiles.prior.size=NULL,
    effective.prior.df=1,
    alpha = NULL,
+   beta=NULL,
    maxN=NULL,
    log=FALSE,
-   maxbeta = 100,
+   maxbeta = 120,
    maxNmax = 200000,
+   supplied=list(maxN=maxN),
    verbose=TRUE)
 }
 \arguments{
   \item{n}{count; the sample size.}
-  \item{type}{character; the type of parametric distribution to use for the prior on population size. The options are \code{beta}
+  \item{type}{character; the type of parametric distribution to use for the prior on population size. The options are \code{"beta"}
 (for a Beta-type prior on the sample proportion (i.e. \eqn{n/N}), 
-\code{nbinom} (Negative-Binomial), \code{pln} (Poisson-log-normal),
-\code{flat} (uniform), and \code{continuous} (the continuous version of
+\code{"nbinom"} (Negative-Binomial), \code{"pln"} (Poisson-log-normal),
+\code{"flat"} (uniform), \code{continuous} (the continuous version of
 the Beta-type prior on the sample proportion).
-The default is \code{beta}.}
+The last option is \code{"supplied"} which enables a numeric prior to be specified. See the
+argument \code{supplied} for the format of the information.
+The default \code{type} is \code{beta}.}
   \item{mean.prior.size}{scalar; A hyperparameter being the mean of the prior distribution on the population size.}
   \item{sd.prior.size}{scalar; A hyperparameter being the standard deviation of the prior distribution on the population size.}
   \item{mode.prior.sample.proportion}{scalar; A hyperparameter being the mode of the prior distribution on the sample proportion \eqn{n/N}.}
@@ -45,10 +48,16 @@ For example, \code{quartiles.prior.size=c(1000,4000)} corresponds to a prior
 where the lower quartile (25\%) is 1000 and the upper (75\%) is 4000.}
   \item{effective.prior.df}{scalar; A hyperparameter being the effective number of samples worth of information represented in the prior distribution on the population size. By default this is 1, but it can be greater (or less!) to allow for different levels of uncertainty.}
   \item{alpha}{scalar; A hyperparameter being the first parameter of the Beta prior model for the sample proportion. By default this is NULL, meaning that 1 is chosen. it can be any value at least 1 to allow for different levels of uncertainty.}
+  \item{beta}{scalar; A hyperparameter being the second parameter of the Beta prior model for the sample proportion. By default this is NULL, meaning that 1 is chosen. it can be any value at least 1 to allow for different levels of uncertainty.}
   \item{maxN}{integer; maximum possible population size. By default this is determined from an upper quantile of the prior distribution.}
   \item{log}{logical; return the prior or the the logarithm of the prior.}
   \item{maxbeta}{integer; maximum beta in the prior for population size. By default this is determined to ensure numerical stability.}
   \item{maxNmax}{integer; maximum possible population size. By default this is determined to ensure numerical stability.}
+  \item{supplied}{list; If the argument \code{type="supplied"} then this 
+should be a list object, typically of class \code{psess}. It is
+primarily used to pass the posterior sample from a separate \code{size} call for use as the
+prior to this call. Essentially, it must have two components named \code{maxN} and \code{sample}. \code{maxN} is the maximum population
+envisaged and \code{sample} is random sample from the prior distribution.}
   \item{verbose}{logical; if this is
     \code{TRUE}, the program will print out additional
     information, including goodness of fit statistics.
@@ -69,7 +78,7 @@ prior.}
   \item{effective.prior.df}{scalar; A hyperparameter being the effective number of samples worth of information represented in the prior distribution on the population size. By default this is 1, but it can be greater (or less!) to allow for different levels of uncertainty.}
   \item{mode.prior.sample.proportion}{scalar; A hyperparameter being the mode of the prior distribution on the sample proportion \eqn{n/N}.}
   \item{median.prior.size}{scalar; A hyperparameter being the mode of the prior distribution on the population size.}
-  \item{beta}{scalar; A hyperparameter being the second parameter of the Beta distribuion that is a component of the prior distribution on the sample proportion \eqn{n/N}.}
+  \item{beta}{scalar; A hyperparameter being the second parameter of the Beta distribution that is a component of the prior distribution on the sample proportion \eqn{n/N}.}
   \item{type}{character; the type of parametric distribution to use for the prior on population size. The possible values are \code{beta}
 (for a Beta prior on the sample proportion (i.e. \eqn{n/N}), 
 \code{nbinom} (Negative-Binomial), \code{pln} (Poisson-log-normal),

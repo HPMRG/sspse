@@ -25,7 +25,7 @@ posteriorsize(s,
                   interval=10,
                   burnin=5000,
                   maxN=NULL,
-                  K=NULL,
+                  K=max(s, na.rm = TRUE),
                   samplesize=1000,
                   quartiles.prior.size=NULL,
                   mean.prior.size=NULL,
@@ -111,7 +111,7 @@ The default is 1, that is not to use parallel processing.}
   }
   \item{dispersion}{scalar; dispersion to use in the reported network size
       compared to the actual network size.}
-  \item{supplied}{list; If supplied, is a list with components \code{maxN} and \code{asample}.
+  \item{supplied}{list; If supplied, is a list with components \code{maxN} and \code{sample}.
 In this case \code{supplied} is a matrix with a column named \code{N} being a sample from a
 prior distribution for the population size. The value 
 \code{maxN} specifies the maximum value of the population size, a priori.}
@@ -150,9 +150,9 @@ the model away from the parametric degree distribution model.}
 distribution for the standard deviation of the degree.}
   \item{N}{vector of length 5; summary statistics for the posterior population size. 
    \describe{
-      \item{\code{MAP}}{maximum aposteriori value of N}
-      \item{\code{Mean AP}}{mean aposteriori value of N}
-      \item{\code{Median AP}}{median aposteriori value of N}
+      \item{\code{MAP}}{maximum a posterioriori value of N}
+      \item{\code{Mean AP}}{mean a posterioriori value of N}
+      \item{\code{Median AP}}{median a posterioriori value of N}
       \item{\code{P025}}{the 2.5th percentile of the (posterior) distribution
 for the N. That is, the lower point on a 95\% probability interval.}
       \item{\code{P975}}{the 97.5th percentile of the (posterior) distribution
@@ -167,8 +167,8 @@ for the N. That is, the upper point on a 95\% probability interval.}
       \item{sigma}{scalar; The standard deviation of the degree for 
     a randomly chosen person. The prior has this standard deviation.}
       \item{degree1}{scalar; the number of nodes of degree 1 in the population (it is assumed all nodes have degree 1 or more).}
-      \item{lambda}{scalar; This is only present for the \code{cmp} model. It is the \eqn{\lambda} parameter in the standard parametrization of the Conway-Maxwell-Poisson model for the degree distribution.}
-      \item{nu}{scalar; This is only present for the \code{cmp} model. It is the \eqn{\nu} parameter in the standard parametrization of the Conway-Maxwell-Poisson model for the degree distribution.}
+      \item{lambda}{scalar; This is only present for the \code{cmp} model. It is the \eqn{\lambda} parameter in the standard parameterization of the Conway-Maxwell-Poisson model for the degree distribution.}
+      \item{nu}{scalar; This is only present for the \code{cmp} model. It is the \eqn{\nu} parameter in the standard parameterization of the Conway-Maxwell-Poisson model for the degree distribution.}
      }
 }
   \item{lpriorm}{vector; the vector of (log) prior probabilities on each value
@@ -194,8 +194,8 @@ people with each degree in the population.}
       \item{sigma}{scalar; The standard deviation of the degree for 
     a randomly chosen person. The prior has this standard deviation.}
       \item{degree1}{scalar; the number of nodes of degree 1 in the population (it is assumed all nodes have degree 1 or more).}
-      \item{lambda}{scalar; This is only present for the \code{cmp} model. It is the \eqn{\lambda} parameter in the standard parametrization of the Conway-Maxwell-Poisson model for the degree distribution.}
-      \item{nu}{scalar; This is only present for the \code{cmp} model. It is the \eqn{\nu} parameter in the standard parametrization of the Conway-Maxwell-Poisson model for the degree distribution.}
+      \item{lambda}{scalar; This is only present for the \code{cmp} model. It is the \eqn{\lambda} parameter in the standard parameterization of the Conway-Maxwell-Poisson model for the degree distribution.}
+      \item{nu}{scalar; This is only present for the \code{cmp} model. It is the \eqn{\nu} parameter in the standard parameterization of the Conway-Maxwell-Poisson model for the degree distribution.}
      }
   }
   \item{mode.prior.sample.proportion}{scalar; A hyperparameter being the mode of the prior distribution on the sample proportion \eqn{n/N}.}
@@ -274,41 +274,36 @@ Hunter DR, Handcock MS, Butts CT, Goodreau SM, Morris M (2008b).
 \seealso{network, statnet, degreenet}
 
 \examples{
-library(degreenet)
-
+%\donttest{
+if(require("degreenet")){
 N0 <- 200
-n <- 100
+n <- 180
 K <- 10
 rho <- 3
 mu <- 5
 
-# Look at the degree distribution for the prior
 p0 <- mu*(rho-2)-rho+1
 probs <- dwar(v=c(rho,p0),x=1:K)
 probs <- probs / sum(probs)
-# Plot these if you want
-# plot(x=1:K,y=probs,type="l")
-# points(x=1:K,y=probs)
-#
-# Create an RD sample
-#
-set.seed(1)
- pop<-sample(1:K, size=N0, replace = TRUE, prob = probs)
-s<-sample(pop, size=n, replace = FALSE, prob = pop)
-dis<-sample(1*(pop>quantile(pop,0.2)), size=n, replace = TRUE, prob = pop)
- 
-out <- posteriorsize(s=s,K=K,interval=10)
-out
-x <- out$n+(seq(along=out$lpriorm)-1)
-plot(density(out$sample[,"N"]), xlim=c(n,500),main="Posterior",
-     xlab="population size",ylab="Probability")
-lpriorm <- exp(out$lpriorm)
-lpriorm <- lpriorm/(diff(range(x))*mean(lpriorm))
-lines(x=x, y=lpriorm, lty=2)
-abline(v=N0,lty=3)
-abline(v=n,lty=2)
+sum(probs*(1:K))
+sqrt(sum(probs*(1:K)^2)-sum(probs*(1:K))^2)
+pop<-sample(1:K, size=N0, replace = TRUE, prob = probs)
+# The population is here is synthetic, being N=200
+# draws from a Waring distribution with mena 5 and
+# scaling parameter rho=3. The distribution is truncated at 10.
+
+# Let's draw a sample
+s<-sample(1:N0, size=n, replace = FALSE, prob = pop)
+  
+out <- posteriorsize(s=pop[s],K=K+5,interval=100,burnin=1000,
+	 samplesize=100,
+         priorsizedistribution="flat",
+         maxN=500,maxbeta=30,verbose=TRUE)
 # Let's look at some MCMC diagnostics
-library(coda)
-plot(out$sample)
+plot(out, HPD.level=0.9,mcmc=TRUE)
+plot(out, HPD.level=0.9,data=pop[s])
+summary(out, HPD.level=0.9)
+}
+%}
 }
 \keyword{models}

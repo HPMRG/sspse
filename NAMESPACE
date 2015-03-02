@@ -1,5 +1,9 @@
 import(parallel)
 import(locfit)
+importFrom(coda, mcmc)
+importFrom(Rmpi, mpi.finalize)
+importFrom(degreenet, dwar)
+
 useDynLib(size)
 
 importFrom(utils, packageDescription)

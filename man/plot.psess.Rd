@@ -15,7 +15,7 @@ passed to \code{\link{posteriorsize}}.}
         posterior density function.}
   \item{HPD.level}{numeric; probability level of the highest probability density interval
     determined from the estimated posterior.}
-  \item{N}{Optionally, an estiamte of the population size to mark on the plots as a reference
+  \item{N}{Optionally, an estimate of the population size to mark on the plots as a reference
 point.}
   \item{ylim}{the (optional) vertical limits (y1, y2) of the plot of the posterior of the population size. A vertical axis is the probability density scale.}
   \item{mcmc}{logical; If TRUE, additionally create simple diagnostic plots for the MCMC sampled statistics produced from the fit.}
@@ -93,8 +93,36 @@ Six plots (selectable by \code{which}) are currently available: a plot
   with standard errors, t-statistics and p-values.
 }
 \examples{
-\dontrun{
-1+1
+\donttest{
+if(require("degreenet")){
+N0 <- 200
+n <- 180
+K <- 10
+rho <- 3
+mu <- 5
+
+p0 <- mu*(rho-2)-rho+1
+probs <- dwar(v=c(rho,p0),x=1:K)
+probs <- probs / sum(probs)
+sum(probs*(1:K))
+sqrt(sum(probs*(1:K)^2)-sum(probs*(1:K))^2)
+pop<-sample(1:K, size=N0, replace = TRUE, prob = probs)
+# The population is here is synthetic, being N=200
+# draws from a Waring distribution with mena 5 and
+# scaling parameter rho=3. The distribution is truncated at 10.
+
+# Let's draw a sample
+s<-sample(1:N0, size=n, replace = FALSE, prob = pop)
+  
+out <- posteriorsize(s=pop[s],K=K+5,interval=100,burnin=1000,
+	 samplesize=100,
+         priorsizedistribution="flat",
+         maxN=500,maxbeta=30,verbose=TRUE)
+# Let's look at some MCMC diagnostics
+plot(out, HPD.level=0.9,mcmc=TRUE)
+plot(out, HPD.level=0.9,data=pop[s])
+summary(out, HPD.level=0.9)
+}
 }
 }
 \keyword{hplot}
