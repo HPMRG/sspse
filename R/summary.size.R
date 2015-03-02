@@ -1,15 +1,16 @@
-summary.psess <- function(object, support=1000, HPD.level=0.95, ...){
+summary.psess <- function(object, support=1000, HPD.level=0.95,...){
 #summary.psess <- function(object, ...){
   p.args <- as.list( sys.call() )[-c(1,2)]
   formal.args<-formals(sys.function())[-1]
 # control <- list(support=1000,HPD.level=0.95)
 
   control<-list()
-  for(arg in names(formal.args)){ control[arg]<-list(get(arg)) }
+  names.formal.args <- names(formal.args)
+  names.formal.args <- names.formal.args[-match("...",names.formal.args)]
+  for(arg in names.formal.args){ control[arg]<-list(get(arg)) }
   for(arg in names(p.args)){ control[arg]<-list(get(arg)) }
 
 #suppressMessages(require(locfit, quietly=TRUE))
-#require(coda)
 out <- object$sample
 if(is.null(out)){
   object$n <- min(object$x)
@@ -23,7 +24,7 @@ if(!is.null(out)){
   posdensN <- predict(a, newdata=xp)
   posdensN <- control$support*posdensN / ((object$maxN-object$n)*sum(posdensN))
   # Next from coda
-  #hpd <- HPDinterval(object$sample[,"N"])[1:2]
+  # hpd <- HPDinterval(object$sample[,"N"])[1:2]
   # MSH using locfit
   cy <- cumsum(posdensN/sum(posdensN))
   hpd <- c(xp[which.max(cy>((1-control$HPD.level)/2))],
