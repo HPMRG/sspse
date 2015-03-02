@@ -4,7 +4,6 @@ dsizeprior<-function(n,
 		  mode.prior.sample.proportion=NULL,
 		  median.prior.sample.proportion=NULL,
 		  median.prior.size=NULL,
-		  median.mid.prior.size=NULL,
 		  mode.prior.size=NULL,
 		  quartiles.prior.size=NULL,
 		  effective.prior.df=1,
@@ -112,30 +111,6 @@ dsizeprior<-function(n,
      }
      if(!is.null(median.prior.sample.proportion)){
       beta <- -log(2)/log(1-median.prior.sample.proportion)
-     }
-     if(!is.null(median.mid.prior.size)){
-      if(median.prior.size < n){median.prior.size = n}
-      if(median.prior.size < 750){effective.prior.df=max(effective.prior.df,3)}
-      beta <- -log(2)/log(1-n/median.prior.size)
-      if(is.null(alpha)) alpha=median.prior.size/(median.prior.size-n)
-      if(is.null(maxN)){maxN <- min(maxNmax,ceiling( n/(1-0.90^(1/beta)) ))}
-      fn0 <- function(beta,x,n,median.prior.size,effective.prior.df,alpha){
-       priorm <- dfn(alpha,beta,x,n,effective.prior.df)
-       abs(median.prior.size - 
-         0.5*( (x+0.5)[match(TRUE,cumsum(priorm) >= 0.5)] 
-          +(x+0.5)[which.max(priorm)] )
-          )
-      }
-      x <- n:maxN
-      while( {
-       p=dfn(alpha,beta,x,n,effective.prior.df);
-       abs(p[length(p)]/max(p,na.rm=TRUE) - 0.01)>0.005}){
-        maxN <- round(maxN*(c(0.9,1.1)[(p[length(p)]/max(p,na.rm=TRUE) > 0.01)+1]))
-        x <- n:maxN
-        a = optimize(f=fn0,interval=c(1,maxbeta),x,n,median.prior.size,
-                    effective.prior.df,alpha,tol=0.01)
-        beta <- a$minimum
-      }
      }
      if(!is.null(median.prior.size)){
       if(median.prior.size < n){median.prior.size = n}
