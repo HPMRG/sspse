@@ -289,8 +289,11 @@ dsizeprior<-function(n,
      x <- n:maxN
      out <- supplied$sample
      outN <- out[,"N"]
-     a=locfit( ~ lp(outN,nn=0.5))
-     posdensN <- predict(a, newdata=x)
+     a=bgk_kde(outN,n=2^(ceiling(log(maxN-n)/log(2))),MIN=n,MAX=maxN)
+     # Use an interpolating cubic spline
+     posdensN <- spline(x=a[1,],y=a[2,],xout=x)$y
+#    a=locfit( ~ lp(outN,nn=0.5))
+#    posdensN <- predict(a, newdata=x)
      posdensN <- posdensN / sum(posdensN)
      lpriorm <- log(posdensN)
      lpriorm

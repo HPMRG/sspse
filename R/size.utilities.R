@@ -27,12 +27,14 @@ ll.density <- function(x,lbound=min(x,na.rm=TRUE),ubound=max(x,na.rm=TRUE), smoo
       x <- x[!is.na(x)]
       if(length(x)==0){return(NA)}
       xp <- seq(lbound, ubound, length=10000)
-      posdensN <- try(locfit( ~ lp(x, nn=2*smooth, h=h, maxk=500)),silent=TRUE)
+#     posdensN <- try(locfit( ~ lp(x, nn=2*smooth, h=h, maxk=500)),silent=TRUE)
+      posdensN <- try(bgk_kde(x,n=2^(ceiling(log(ubound-lbound)/log(2))),MIN=lbound,MAX=ubound),silent=TRUE)
       if(inherits(posdensN,"try-error")){
        posdensN <- density(x, from=lbound, to=ubound)
        list(x=xp,y=posdensN)
       }else{
-       posdensN <- try(predict(posdensN, newdata=xp),silent=TRUE)
+#      posdensN <- try(predict(posdensN, newdata=xp),silent=TRUE)
+       posdensN <- try(spline(x=posdensN[1,],y=posdensN[2,],xout=xp)$y,silent=TRUE)
        if(inherits(posdensN,"try-error")){
         posdensN <- density(x, from=lbound, to=ubound)
         list(x=xp,y=posdensN)

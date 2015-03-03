@@ -7,7 +7,7 @@
 
 \method{print}{summary.psess}(x, digits = max(3, getOption("digits") - 3),
       correlation = FALSE, covariance = FALSE,
-      signif.stars = getOption("show.signif.stars"), eps = 1e-04, \dots)
+      signif.stars = getOption("show.signif.stars"), eps.Pvalue = 1e-04, \dots)
 }
 \arguments{
   \item{object}{an object of class \code{"psess"}, usually, a result of a
@@ -25,7 +25,7 @@
     the estimated parameters is returned and printed.}
   \item{signif.stars}{logical. If \code{TRUE}, \sQuote{significance stars}
     are printed for each coefficient.}
-  \item{eps}{number; indicates the smallest p-value. See \code{\link{printCoefmat}}.}
+  \item{eps.Pvalue}{number; indicates the smallest p-value. See \code{\link{printCoefmat}}.}
   \item{\dots}{further arguments passed to or from other methods.}
 }
 \description{
