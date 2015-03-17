@@ -159,7 +159,7 @@ priorsize<-function(s,
                 n=as.integer(N-n),
                 K=as.integer(K),
                 err=as.double(0.00000001),
-                PACKAGE="size")$x
+                PACKAGE="sspse")$x
      nk=nk+( tabulate(c(s,pcmp),nbins=K) / (sum(nk > 0) ) )
      mx[m] <- mean(c(s,pcmp))
      sdx[m] <- sqrt(var(c(s,pcmp)))

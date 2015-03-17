@@ -1,7 +1,7 @@
 #cat("'RDS Analyst' is a suite of packages for the statistical modeling of network data.\n")
 #cat('Please read the license using license.statnet()\n')
 
-citHeader("If you are using 'size' for research that will be published, we request that you acknowledge this with the following citation:")
+citHeader("If you are using 'sspse' for research that will be published, we request that you acknowledge this with the following citation:")
 
 # auts <- eval(parse(text=meta$`Authors@R`))
 # auts <- auts[sapply(auts, function(aut) "aut" %in% aut$role)]
@@ -13,16 +13,16 @@ bibentry("Manual",
          year         = substr(meta$Date,1,4),
          note         = paste("R package version ", meta$Version, sep=""),
          address      = "Los Angeles, CA",
-         url          = "http://CRAN.R-project.org/package=size",
+         url          = "http://CRAN.R-project.org/package=sspse",
          
          textVersion = 
          paste("Mark S. Handcock and Krista J. Gile (2014) ", 
                paste(meta$Package,": ", meta$Title, sep=""),
                ", Version ", meta$Version, ". Project home page at http://hpmrg.org",
-               ",", " URL http://CRAN.R-project.org/package=size.",
+               ",", " URL http://CRAN.R-project.org/package=sspse.",
                sep="")
          )
 
 citFooter("We have invested a lot of time and effort in creating the",
-          "'size' package for use by other researchers.",
+          "'sspse' package for use by other researchers.",
           "Please cite it in all papers where it is used.")

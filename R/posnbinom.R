@@ -40,7 +40,7 @@ posnbinom<-function(s,maxN=4*length(s),
               ppos=double(K),
               lpriorm=as.double(lpriorm),
               burnintheta=as.integer(burnintheta),
-              verbose=as.integer(verbose), PACKAGE="size")
+              verbose=as.integer(verbose), PACKAGE="sspse")
     Cret$sample<-matrix(Cret$sample,nrow=samplesize,ncol=dimsample,byrow=TRUE)
     degnames <- NULL
     if(Np>0){degnames <- c(degnames,paste("pdeg",1:Np,sep=""))}

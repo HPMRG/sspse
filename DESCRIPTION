@@ -1,7 +1,7 @@
-Package: size
+Package: sspse
 Type: Package
-Version: 0.2
-Date: 2014-08-24
+Version: 0.5
+Date: 2015-01-26
 Title: Estimating Hidden Population Size using Respondent Driven
         Sampling Data
 Authors@R: c( person("Mark S.", "Handcock", role=c("aut","cre","cph"),
@@ -10,7 +10,7 @@ Authors@R: c( person("Mark S.", "Handcock", role=c("aut","cre","cph"),
 Maintainer: Mark S. Handcock <handcock@stat.ucla.edu>
 Depends: parallel
 Suggests: network, testthat
-Description: An integrated set of tools to analyze respondent-driven sampling data. In particular it estimates population size.  "size" is a part of the "statnet" suite of packages for network analysis.  For a list of functions type: help(package='size')
+Description: An integrated set of tools to estimate the size of a networked population based on respondent-driven sampling data. The "sspse" packages is part of the "RDS Analyst" suite of packages for the analysis of respondent-driven sampling data.  For a list of functions type: help(package='sspse')
 License: file LICENSE
 URL: http://www.hpmrg.org
-Imports: coda, Rmpi
+Imports: coda

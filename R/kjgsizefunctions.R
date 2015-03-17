@@ -1,3 +1,4 @@
+#' @keywords internal
 llspps<-function(counts, sizes, s){
   #note counts and sizes refer to the counts of each size in the full population.  
   # s is the sample.
@@ -11,6 +12,7 @@ llspps<-function(counts, sizes, s){
 }
 
 
+#' @keywords internal
 lllspps<-function(lcountdif,sizes,s){
   #couputes the log likelihood.  This is used to feed to optim.  The first argument is the log of the 
   # difference between the population counts and the sample counts.  This formulation forces this difference 
@@ -20,6 +22,7 @@ lllspps<-function(lcountdif,sizes,s){
   llspps(counts,sizes,s)  
 }
 
+#' @keywords internal
 sppssample<-function(counts,sizes,n){
    rstuff<-counts
    ss<-rep(0,n)
@@ -30,10 +33,12 @@ sppssample<-function(counts,sizes,n){
    ss
 }
 
+#' @keywords internal
 sppssamplei<-function(pop,n){
   sample(x=(1:length(pop)),size=n,prob=pop,replace=FALSE)
 }
 
+#' @keywords internal
 roundstoc<-function(vec){# takes a vector and makes it integers, keeping the total the same
 	#vec<-c(1.2,1.3,2.5)
 	target<-sum(vec)
@@ -50,12 +55,14 @@ roundstoc<-function(vec){# takes a vector and makes it integers, keeping the tot
 	temp
 	}
 
+#' @keywords internal
 Zee<-function(lam,n,nk,sizes,D){
 (1/n)*
 sum(1/(sum((nk*sizes/n)/(1-exp(-lam*sizes)))-(D/n)))-lam
 }
 
 
+#' @keywords internal
 bnwnest<-function(lst,toplam=10,bottomlam=1e-10){
   s<-lst
   sizes<-sort(unique(s))
@@ -73,6 +80,7 @@ bnwnest<-function(lst,toplam=10,bottomlam=1e-10){
   out
 }
 
+#' @keywords internal
 mleNest<-function(lst,start=NULL){
   if(is.null(start)){start<-bnwnest(lst)}
   s<-lst
@@ -93,6 +101,7 @@ mleNest<-function(lst,start=NULL){
 }
 
 
+#' @keywords internal
 bins<-function(vec,breaks,maxval, below=TRUE){
 #returns the vec re-coded to assign the values of vec to bins
 #defined by the values of breaks, with ranges of [ ) structure

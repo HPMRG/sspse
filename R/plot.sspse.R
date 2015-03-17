@@ -1,4 +1,112 @@
-plot.psess <- function(x,
+#' Plot Summary and Diagnostics for Population Size Estimation Model Fits
+#' 
+#' This is the \code{plot} method for class \code{"sspse"}. Objects of
+#' this class encapsulate the 
+#' estimate of the posterior distribution of the
+#' population size based on data collected by Respondent Driven Sampling. The
+#' approach approximates the RDS via the Sequential Sampling model of Gile
+#' (2008).  As such, it is referred to as the Sequential Sampling - Population Size Estimate (SS-PSE).
+#' It uses the order of selection of the sample to provide information
+#' on the distribution of network sizes over the population members.
+#' 
+#' By default it produces a density plot of the posterior for population size
+#' and the prior for population size is overlaid. It also produces a
+#' density plot of the posterior for mean network size in the population, the
+#' posterior for standard deviation of the network size, and a density plot of
+#' the posterior mean network size distribution with sample histogram overlaid.
+#' 
+#' @param x an object of class \code{"plot.sspse"}, usually, a result of a call
+#' to \code{plot.sspse}.
+#' @param xlim the (optional) x limits (x1, x2) of the plot of the posterior of
+#' the population size.
+#' @param data Optionally, the vector of degrees from the RDS in order they are
+#' recorded and as passed to \code{\link{posteriorsize}}.
+#' @param support the number of equally-spaced points to use for the support of
+#' the estimated posterior density function.
+#' @param HPD.level numeric; probability level of the highest probability
+#' density interval determined from the estimated posterior.
+#' @param N Optionally, an estimate of the population size to mark on the plots
+#' as a reference point.
+#' @param ylim the (optional) vertical limits (y1, y2) of the plot of the
+#' posterior of the population size. A vertical axis is the probability density
+#' scale.
+#' @param mcmc logical; If TRUE, additionally create simple diagnostic plots
+#' for the MCMC sampled statistics produced from the fit.
+#' @param type character; This controls the types of plots produced.  If
+#' \code{"N"}, a density plot of the posterior for population size is produced.
+#' and the prior for population size is overlaid. If \code{"others"}, a 
+#' density plot of the prior for population size, a
+#' density plot of the posterior for mean network size in the population, the
+#' posterior for standard deviation of the network size, and a density plot of
+#' the posterior mean network size distribution with sample histogram overlaid
+#' is produced.  If \code{"both"}, then all plots for \code{"N"} and
+#' \code{"others"} are produced.
+#' @param \dots further arguments passed to or from other methods.
+#' @seealso The model fitting function \code{\link{posteriorsize}},
+#' \code{\link[graphics]{plot}}.
+#' 
+#' Function \code{\link[stats]{coef}} will extract the matrix of coefficients with
+#' standard errors, t-statistics and p-values.
+#' @keywords hplot
+#' @references
+#'
+#' Gile, Krista J. (2008) \emph{Inference from Partially-Observed Network
+#' Data}, Ph.D. Thesis, Department of Statistics, University of Washington.
+#' 
+#' Gile, Krista J. and Handcock, Mark S. (2010) \emph{Respondent-Driven
+#' Sampling: An Assessment of Current Methodology}, Sociological Methodology
+#' 40, 285-327.
+#' 
+#' Gile, Krista J. and Handcock, Mark S. (2014) \pkg{sspse}: Estimating Hidden 
+#' Population Size using Respondent Driven Sampling Data
+#' R package, Los Angeles, CA.  Version 0.5, \url{http://hpmrg.org}.
+#' 
+#' Handcock MS (2003).  \pkg{degreenet}: Models for Skewed Count Distributions
+#' Relevant to Networks.  Statnet Project, Seattle, WA.  Version 1.2,
+#' \url{http://statnetproject.org}.
+#' 
+#' Handcock, Mark S., Gile, Krista J. and Mar, Corinne M. (2014)
+#' \emph{Estimating Hidden Population Size using Respondent-Driven Sampling
+#' Data}, Electronic Journal of Statistics, 8, 1, 1491-1521
+#' 
+#' Handcock, Mark S., Gile, Krista J. and Mar, Corinne M. (2015)
+#' \emph{Estimating the Size of Populations at High Risk for HIV using Respondent-Driven 
+#' Sampling Data}, Biometrics.
+#' @examples
+#' 
+#' \donttest{
+#' \dontrun{
+#' N0 <- 200
+#' n <- 100
+#' K <- 10
+#' 
+#' # Create probabilities for a Waring distribution 
+#' # with scaling parameter 3 and mean 5, but truncated at K=10.
+#' probs <- c(0.33333333,0.19047619,0.11904762,0.07936508,0.05555556,
+#'            0.04040404,0.03030303,0.02331002,0.01831502,0.01465201)
+#' probs <- probs / sum(probs)
+#' 
+#' # Look at the degree distribution for the prior
+#' # Plot these if you want
+#' # plot(x=1:K,y=probs,type="l")
+#' # points(x=1:K,y=probs)
+#' #
+#' # Create a sample
+#' #
+#' set.seed(1)
+#' pop<-sample(1:K, size=N0, replace = TRUE, prob = probs)
+#' s<-sample(pop, size=n, replace = FALSE, prob = pop)
+#'  
+#' out <- posteriorsize(s=s,interval=10)
+#' plot(out, HPD.level=0.9,data=pop[s])
+#' summary(out, HPD.level=0.9)
+#' # Let's look at some MCMC diagnostics
+#' plot(out, HPD.level=0.9,mcmc=TRUE)
+#' }}
+#' 
+#' @importFrom coda mcmc
+#' @export plot.sspse
+plot.sspse <- function(x,
 		       xlim=NULL,data=NULL,support=1000,HPD.level=0.90,N=NULL,ylim=NULL,mcmc=FALSE,type="both",...){
   p.args <- as.list( sys.call() )[-c(1,2)]
   formal.args<-formals(sys.function())[-c(1)]

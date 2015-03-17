@@ -1,3 +1,4 @@
+#' @keywords internal
 posteriornbinom<-function(s,
                   maxN=4*length(s),
                   K=2*max(s), nk=tabulate(s,nbins=K), n=length(s),

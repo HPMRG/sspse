@@ -1,3 +1,4 @@
+#' @keywords internal
 akestN<-function(N,s,
           K=max(s),
           verbose=FALSE, 
@@ -24,6 +25,7 @@ akestN<-function(N,s,
     out$NNhat
   }
 }
+#' @keywords internal
 sppsestN<-function(N,s,
           K=max(s),
           verbose=FALSE, 
@@ -45,6 +47,7 @@ sppsestN<-function(N,s,
     out$NNhat
   }
 }
+#' @keywords internal
 roundstoc<-function(vec){# takes a vector and makes it integers, keeping the total the same
 	#vec<-c(1.2,1.3,2.5)
 	target<-sum(vec)
@@ -61,7 +64,7 @@ roundstoc<-function(vec){# takes a vector and makes it integers, keeping the tot
 	temp
 	}
 
-
+#' @keywords internal
 probtodist<-function(classes,nums,prob,n){
   #classes: size value of each class 
   #nums: number of members of that class 
@@ -78,6 +81,7 @@ probtodist<-function(classes,nums,prob,n){
 	}
 
 
+#' @keywords internal
 getincl<-function(classes,props,n,nsamp,nsampsamp){
 	#print(paste("n starting getincl is",n))
 # 2a) Estimate set of degrees for all nodes
@@ -157,6 +161,7 @@ popclass<-rep(classes,times=nbyclass)
     list(degvec=degvec,pvec=pvec,nbyclass=nbyclass)
 }
 
+#' @keywords internal
 getest<-function(samp,n,nit=5, nsampsamp=1000, trace=FALSE,remember=FALSE){
   classes<-sort(unique(samp))
   nums<-table(samp)
@@ -174,6 +179,7 @@ getest<-function(samp,n,nit=5, nsampsamp=1000, trace=FALSE,remember=FALSE){
   list(probs=newprobs$pvec,NNhat=n*temp$props,sizes=temp$classes)
 }
 
+#' @keywords internal
 getincl.raw<-function(size,
                   Nk=sort(unique(size)),
 		  n=500,
@@ -194,7 +200,7 @@ getincl.raw<-function(size,
               K=as.integer(K),
               n=as.integer(n),
               samplesize=as.integer(M),
-              Nk=as.integer(Nk), PACKAGE="size")
+              Nk=as.integer(Nk), PACKAGE="sspse")
 #             verbose=as.integer(verbose))
     Cret
 }

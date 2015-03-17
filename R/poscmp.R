@@ -100,7 +100,7 @@ poscmp<-function(s,maxN=NULL,
               burnintheta=as.integer(burnintheta),
               lambdad=as.double(lambdad),
               nud=as.double(nud),
-              verbose=as.integer(verbose), PACKAGE="size")
+              verbose=as.integer(verbose), PACKAGE="sspse")
     Cret$sample<-matrix(Cret$sample,nrow=samplesize,ncol=dimsample,byrow=TRUE)
     degnames <- NULL
     if(Np>0){degnames <- c(degnames,paste("pdeg",1:Np,sep=""))}

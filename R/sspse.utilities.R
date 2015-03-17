@@ -1,3 +1,4 @@
+#' @keywords internal
 mode.density <- function(x,lbound=min(x,na.rm=TRUE),ubound=max(x,na.rm=TRUE), smooth=0.35, h=0){
 #     posdensN <- locfit(~ x, alpha=c(2*smooth,0.3))
 #     posdensN <- locfit(~ x)
@@ -20,6 +21,7 @@ mode.density <- function(x,lbound=min(x,na.rm=TRUE),ubound=max(x,na.rm=TRUE), sm
 #     }
       posdensN$x[which.max(posdensN$y)]
 }
+#' @keywords internal
 ll.density <- function(x,lbound=min(x,na.rm=TRUE),ubound=max(x,na.rm=TRUE), smooth=0.35, h=0){
 #     posdensN <- locfit(~ x, alpha=c(2*smooth,0.3))
 #     posdensN <- locfit(~ x)
@@ -43,6 +45,7 @@ ll.density <- function(x,lbound=min(x,na.rm=TRUE),ubound=max(x,na.rm=TRUE), smoo
        }
       }
 }
+#' @keywords internal
 HPD.density <- function(x,lbound=min(x,na.rm=TRUE),ubound=max(x,na.rm=TRUE)){
       x <- x[!is.na(x)]
       if(length(x)==0){return(c(NA,NA))}

@@ -1,4 +1,5 @@
-bgk_kde <- function(data,n,MIN,MAX,smooth=1){
+#' @keywords internal
+bgk_kde <- function(data,n,MIN,MAX,smooth=4){
 #       State-of-the-art gaussian kernel density estimator for one-dimensional data;
 #       The estimator does not use the commonly employed 'gaussian rule of thumb'.
 #       As a result it outperforms many plug-in methods on multimodal densities 

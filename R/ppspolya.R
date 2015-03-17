@@ -1,3 +1,4 @@
+#' @keywords internal
 ppspolya <- function(s, n=length(s), N=2*n, c=1, wts=1/s, 
                      y=1:n, seed=NULL) {
       n <- length(s)
@@ -20,6 +21,6 @@ ppspolya <- function(s, n=length(s), N=2*n, c=1, wts=1/s,
                w=as.double(cumsum(wts)),
                nin=as.integer(n),
                Nin=as.integer(N),
-               PACKAGE="size")
+               PACKAGE="sspse")
        return(out)
 }
