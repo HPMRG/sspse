@@ -39,7 +39,8 @@ if (nargin<4)
 {# define the default  interval [MIN,MAX]
   minimum=min(data); maximum=max(data);
   Range=maximum-minimum;
-  MIN=minimum-Range/10; MAX=maximum+Range/10;
+  if(missing(MIN)){MIN=minimum-Range/10};
+  if(missing(MAX)){MAX=maximum+Range/10};
 }
 # set up the grid over which the density estimate is computed;
 R=MAX-MIN; dx=R/n; xmesh=MIN+seq(from=0,to=R,by=dx); N=length(data); 
