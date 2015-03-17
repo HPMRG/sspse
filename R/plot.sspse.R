@@ -141,8 +141,8 @@ if(!is.null(out)){
   outN <- out[,"N"]
   ##a=locfit( ~ lp(outN, nn=0.35, h=0, maxk=500))
   xp <- seq(x$n,x$maxN, length=control$support)
-  a=bgk_kde(outN,n=2^(ceiling(log(x$maxN-x$n)/log(2))),MIN=x$n,MAX=x$maxN)
-  posdensN <- spline(x=a[1,],y=a[2,],xout=xp)$y
+  posdensN=bgk_kde(data=outN,n=2^(ceiling(log(x$maxN-x$n)/log(2))),MIN=x$n)
+  posdensN <- spline(x=posdensN[1,],y=posdensN[2,],xout=xp)$y
   #a=locfit::locfit( ~ lp(outN,nn=0.5))
   #posdensN <- predict(a, newdata=xp)
   posdensN <- control$support*posdensN / ((x$maxN-x$n)*sum(posdensN))
