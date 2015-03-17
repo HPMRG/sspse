@@ -1,3 +1,4 @@
+#' @keywords internal
 posteriornbinom<-function(s,
                   maxN=4*length(s),
                   K=2*max(s), nk=tabulate(s,nbins=K), n=length(s),
@@ -72,11 +73,13 @@ posteriornbinom<-function(s,
     attr(Cret$sample, "class") <- "mcmc"
     
     ### define function that will compute mode of a sample
-    require(locfit, quietly=TRUE)
+#   require(locfit, quietly=TRUE)
     mapfn <- function(x,lbound=min(x),ubound=max(x)){
-      posdensN <- locfit(~ lp(x,maxk=500),xlim=c(lbound,ubound))
       locx <- seq(lbound,ubound,length=2000)
-      locy <- predict(posdensN,newdata=locx)
+#     posdensN <- locfit(~ lp(x,maxk=500),xlim=c(lbound,ubound))
+#     locy <- predict(posdensN,newdata=locx)
+      bgk_fit=bgk_kde(x,n=2^(ceiling(log(ubound-lbound)/log(2))),MIN=lbound,MAX=ubound)
+      locy <- spline(x=bgk_fit[1,],y=bgk_fit[2,],xout=locx)$y
       locx[which.max(locy)]
     }
     mapfn <- function(x,lbound=min(x),ubound=max(x)){
@@ -91,7 +94,7 @@ posteriornbinom<-function(s,
      cat("parallel samplesize=", parallel,"by", samplesize.parallel,"\n")
     }
     
-    ### stop cluster and PVM (in case PVM is flakey)
+    ### stop cluster
     endparallel(cl)
   }
   if(Cret$ppos[length(Cret$ppos)] > 0.01){

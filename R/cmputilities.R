@@ -4,7 +4,7 @@ cmpmle <-function(xv,xp,cutoff=1,cutabove=1000,guess=c(7,3)){
  xp <- xp[xv <= cutabove]
  xv <- xv[xv <= cutabove]
  xp <- length(xv)*xp/sum(xp)
- guess <- cmp.natural(mu=guess[1],sig=guess[2])
+ guess <- cmp.natural(mu=guess[1],sigma=guess[2])
  guess <- c(log(guess$lambda), log(guess$nu))
   aaa <- optim(par=guess,fn=allcmp,
    method="BFGS",
@@ -49,7 +49,7 @@ dcmp.natural <- function(v, x, cutoff=0, err=0.000000001, log=FALSE){
             err=as.double(err),
             give_log=as.integer(log),
             val=double(length(x)),
-            PACKAGE="size")$val
+            PACKAGE="sspse")$val
   if (cutoff > 0) {
     c0 <- 1 - sum(dcmp.natural(v = v, x = (0:(cutoff - 1)), cutoff=0))
     y <- y/c0
@@ -71,6 +71,6 @@ dcmp <- function(x, lambda, nu, err=0.000000001, log=FALSE){
             err=as.double(err),
             give_log=as.integer(log),
             val=double(length(x)),
-            PACKAGE="size")
+            PACKAGE="sspse")
    return(out$val)
 }

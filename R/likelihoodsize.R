@@ -120,7 +120,7 @@ likelihoodsize<-function(s,
      cat("parallel samplesize=", parallel,"by", samplesize.parallel,"\n")
     }
     
-    ### stop cluster and PVM (in case PVM is flakey)
+    ### stop cluster
     endparallel(cl)
   }
   Cret$N <- c(Cret$MAP["N"], 

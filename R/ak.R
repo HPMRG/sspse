@@ -1,3 +1,4 @@
+#' @keywords internal
 getestC<-function(samp,n,nit=5, nsampsamp=1000){
 # samp: sample
 # n: population size
@@ -27,6 +28,7 @@ getestC<-function(samp,n,nit=5, nsampsamp=1000){
   #probs: Probabilities of selection for a member of that class
   list(probs=newprobs$pvec,props=temp$props,classes=temp$classes)
 }
+#' @keywords internal
 getinclC<-function(classes,props,n,nsamp,nsampsamp){
   props2<-props/sum(props)
   nbyclass<-round(n*props2)
@@ -65,7 +67,7 @@ getinclC<-function(classes,props,n,nsamp,nsampsamp){
               K=as.integer(length(classes)),
               n=as.integer(nsamp),
               samplesize=as.integer(nsampsamp),
-              Nk=as.integer(classes), PACKAGE="size")
+              Nk=as.integer(classes), PACKAGE="sspse")
 #             verbose=as.integer(0))
 # list(degvec=classes,pvec=Cret$Nk/(nbyclass*nsampsamp),nbyclass=nbyclass)
   Ninf <- Cret$Nk
@@ -75,10 +77,7 @@ getinclC<-function(classes,props,n,nsamp,nsampsamp){
   list(degvec=classes,pvec=Ninf,nbyclass=nbyclass)
 }
 
-HTestimator<-function(diseaseobs,weightobs){
-  sum(diseaseobs*weightobs)/sum(weightobs)
-}
-
+#' @keywords internal
 getestCstacked<-function(samp,n,nit=5, nsampsamp=1000){
 # samp: sample
 # n: population size
@@ -110,6 +109,7 @@ getestCstacked<-function(samp,n,nit=5, nsampsamp=1000){
   #probs: Probabilities of selection for a member of that class
   list(probs=newprobs$pvec,props=temp$props,classes=temp$classes)
 }
+#' @keywords internal
 getinclCstacked<-function(classes,props,n,nsamp,nsampsamp){
   props2<-props/sum(props)
   nbyclass<-round(n*props2)
@@ -145,7 +145,7 @@ getinclCstacked<-function(classes,props,n,nsamp,nsampsamp){
               K=as.integer(length(classes)),
               n=as.integer(nsamp),
               samplesize=as.integer(nsampsamp),
-              Nk=as.integer(classes), PACKAGE="size")
+              Nk=as.integer(classes), PACKAGE="sspse")
   Ninf <- Cret$Nk
   Ninf[Ninf==0] <- 1
   Ninf <- Ninf/nbyclass

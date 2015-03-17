@@ -23,9 +23,9 @@ pospln<-function(s,maxN=4*length(s),
     mu0 <- log(mean.prior.degree)-0.5*sigma0*sigma0
     #
     dimsample <- 4+Np
-    lpriorm <- dnbinommu(x=n:maxN,
-                         mu=mean.prior.size, sd=sd.prior.size,
-			 log=TRUE)
+    lpriorm <- dnbinom(x=n:maxN,
+                       mu=mean.prior.size, prob=mean.prior.size/(sd.prior.size^2),
+		       log=TRUE)
     Cret <- .C("gpln",
               pop=as.integer(c(s,rep(0,maxN-n))),
               nk=as.integer(nk),
@@ -45,7 +45,7 @@ pospln<-function(s,maxN=4*length(s),
               ppos=double(K),
               lpriorm=as.double(lpriorm),
               burnintheta=as.integer(burnintheta),
-              verbose=as.integer(verbose), PACKAGE="size")
+              verbose=as.integer(verbose), PACKAGE="sspse")
     Cret$sample<-matrix(Cret$sample,nrow=samplesize,ncol=dimsample,byrow=TRUE)
     degnames <- NULL
     if(Np>0){degnames <- c(degnames,paste("pdeg",1:Np,sep=""))}

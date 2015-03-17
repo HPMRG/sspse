@@ -19,18 +19,18 @@
 ######################################################################
 
 .onLoad <-function(libname, pkgname){
-  library.dynam("size", package=pkgname, lib.loc=libname)
+  library.dynam("sspse", package=pkgname, lib.loc=libname)
 }
 
 .onAttach <- function(libname, pkgname){
-  temp<-packageDescription("size")
+  temp<-packageDescription("sspse")
   msg<-paste(temp$Package,": ",temp$Title,"\n",
       "Version ",temp$Version,
       " created on ",
       temp$Date,".\n", sep="")
-  msg<-paste(msg,"copyright (c) 2009, Krista J. Gile, University of Massachusetts - Amherst\n",
+  msg<-paste(msg,"copyright (c) 2014, Krista J. Gile, University of Massachusetts - Amherst\n",
 "                    Mark S. Handcock, University of California - Los Angeles\n",sep="")
-  msg<-paste(msg,'For citation information, type citation("size").\n')
-  msg<-paste(msg,'Type help("size-package") to get started.\n')
+  msg<-paste(msg,'For citation information, type citation("sspse").\n')
+  msg<-paste(msg,'Type help("sspse-package") to get started.\n')
   packageStartupMessage(msg)
 }
