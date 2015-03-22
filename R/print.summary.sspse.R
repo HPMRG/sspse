@@ -18,7 +18,8 @@
 #' Correlations are printed to two decimal places (or symbolically): to see the
 #' actual correlations print \code{summary(object)$correlation} directly.
 #' 
-#' @export print.summary.sspse
+#' @method print summary.sspse
+#' @S3method print summary.sspse
 #' @aliases print.summary.sspse
 #' @param x an object of class \code{"summary.sspse"}, usually, a result of a
 #' call to \code{summary.sspse}.

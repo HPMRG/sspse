@@ -105,7 +105,8 @@
 #' }}
 #' 
 #' @importFrom coda mcmc
-#' @export plot.sspse
+#' @method plot sspse
+#' @S3method plot sspse
 plot.sspse <- function(x,
 		       xlim=NULL,data=NULL,support=1000,HPD.level=0.90,N=NULL,ylim=NULL,mcmc=FALSE,type="both",...){
   p.args <- as.list( sys.call() )[-c(1,2)]

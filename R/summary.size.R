@@ -73,7 +73,8 @@
 #' plot(out, HPD.level=0.9,mcmc=TRUE)
 #' }}
 #' 
-#' @export summary.sspse
+#' @method summary sspse
+#' @S3method summary sspse
 summary.sspse <- function(object, support=1000, HPD.level=0.95,...){
 #summary.sspse <- function(object, ...){
   p.args <- as.list( sys.call() )[-c(1,2)]

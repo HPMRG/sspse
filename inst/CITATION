@@ -13,13 +13,13 @@ bibentry("Manual",
          year         = substr(meta$Date,1,4),
          note         = paste("R package version ", meta$Version, sep=""),
          address      = "Los Angeles, CA",
-         url          = "http://CRAN.R-project.org/package=sspse",
+         url          = "http://CRAN.R-project.org/package=RDS",
          
          textVersion = 
          paste("Mark S. Handcock and Krista J. Gile (2014) ", 
                paste(meta$Package,": ", meta$Title, sep=""),
                ", Version ", meta$Version, ". Project home page at http://hpmrg.org",
-               ",", " URL http://CRAN.R-project.org/package=sspse.",
+               ",", " URL http://CRAN.R-project.org/package=RDS.",
                sep="")
          )
 
