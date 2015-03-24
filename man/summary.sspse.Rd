@@ -52,7 +52,6 @@ Correlations are printed to two decimal places (or symbolically): to see the
 actual correlations print \code{summary(object)$correlation} directly.
 }
 \examples{
-\donttest{
 \dontrun{
 N0 <- 200
 n <- 100
@@ -80,7 +79,7 @@ plot(out, HPD.level=0.9,data=pop[s])
 summary(out, HPD.level=0.9)
 # Let's look at some MCMC diagnostics
 plot(out, HPD.level=0.9,mcmc=TRUE)
-}}
+}
 }
 \seealso{
 The model fitting function \code{\link{posteriorsize}},

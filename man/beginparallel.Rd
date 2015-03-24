@@ -46,7 +46,6 @@ This method works with the base installation of R on all platforms, and does
 not require additional software.
 }
 \examples{
-\donttest{
 \dontrun{
 # Uses 2 SOCK clusters for MCMLE estimation
 N0 <- 200
@@ -75,6 +74,6 @@ plot(out, HPD.level=0.9,data=pop[s])
 summary(out, HPD.level=0.9)
 # Let's look at some MCMC diagnostics
 plot(out, HPD.level=0.9,mcmc=TRUE)
-}}
+}
 }
 

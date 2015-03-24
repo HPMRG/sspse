@@ -64,7 +64,6 @@ posterior for standard deviation of the network size, and a density plot of
 the posterior mean network size distribution with sample histogram overlaid.
 }
 \examples{
-\donttest{
 \dontrun{
 N0 <- 200
 n <- 100
@@ -92,7 +91,7 @@ plot(out, HPD.level=0.9,data=pop[s])
 summary(out, HPD.level=0.9)
 # Let's look at some MCMC diagnostics
 plot(out, HPD.level=0.9,mcmc=TRUE)
-}}
+}
 }
 \references{
 Gile, Krista J. (2008) \emph{Inference from Partially-Observed Network

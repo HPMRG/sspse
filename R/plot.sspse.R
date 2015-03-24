@@ -74,7 +74,6 @@
 #' Sampling Data}, Biometrics.
 #' @examples
 #' 
-#' \donttest{
 #' \dontrun{
 #' N0 <- 200
 #' n <- 100
@@ -102,7 +101,7 @@
 #' summary(out, HPD.level=0.9)
 #' # Let's look at some MCMC diagnostics
 #' plot(out, HPD.level=0.9,mcmc=TRUE)
-#' }}
+#' }
 #' 
 #' @importFrom coda mcmc
 #' @method plot sspse
