@@ -6,7 +6,7 @@ Title: Estimating Hidden Population Size using Respondent Driven
         Sampling Data
 Authors@R: c( person("Mark S.", "Handcock", role=c("aut","cre","cph"),
     email="handcock@stat.ucla.edu"), person("Krista J.", "Gile", role=c("aut","cph"),
-    email="gile@math.umass.edu"))
+    email="gile@math.umass.edu")) 
 Maintainer: Mark S. Handcock <handcock@stat.ucla.edu>
 Depends: parallel
 Suggests: network, testthat
