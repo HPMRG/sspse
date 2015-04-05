@@ -6,7 +6,7 @@ citHeader("If you are using 'sspse' for research that will be published, we requ
 # auts <- eval(parse(text=meta$`Authors@R`))
 # auts <- auts[sapply(auts, function(aut) "aut" %in% aut$role)]
 
-bibentry("Manual",
+bibentry(bibtype="Manual",
          title = paste(meta$Package,": ", meta$Title, sep=""),
          author = personList(as.person("Mark S. Handcock"),
                              as.person("Krista J. Gile")),
