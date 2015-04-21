@@ -19,7 +19,7 @@
 #' actual correlations print \code{summary(object)$correlation} directly.
 #' 
 #' @method print summary.sspse
-#' @S3method print summary.sspse
+#' @export
 #' @aliases print.summary.sspse
 #' @param x an object of class \code{"summary.sspse"}, usually, a result of a
 #' call to \code{summary.sspse}.
