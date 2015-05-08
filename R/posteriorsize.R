@@ -514,4 +514,7 @@ posteriorsize<-function(s,
   Cret
 }
 
-posize.warning <- "POSTERIOR SIZE CALCULATION FAILED" #added for posteriorsize dialog to hide error message unless needed
+#' @export posize_warning
+posize_warning <- function(){
+	"POSTERIOR SIZE CALCULATION FAILED" #added for posteriorsize dialog to hide error message unless needed
+}
