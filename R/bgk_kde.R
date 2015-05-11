@@ -35,6 +35,7 @@ data=data[!is.na(data)]
 nargin=length(as.list(match.call()))-1;
 if (nargin<2) n=2^14
 n=2^ceiling(log2(n)); # round up n to the next power of 2;
+if(n < 32){n <- 32}
 if (nargin<4) 
 {# define the default  interval [MIN,MAX]
   minimum=min(data); maximum=max(data);
