@@ -514,6 +514,16 @@ posteriorsize<-function(s,
   Cret
 }
 
+#' Warning message for posteriorsize fit failure
+#' 
+#' \code{\link{posteriorsize}} computes the posterior distribution of the
+#' population size based on data collected by Respondent Driven Sampling.
+#' This function returns the warning message if it fails. 
+#' It enables packages that call \code{\link{posteriorsize}} to use
+#' a consistent error message.
+#' @return \code{\link{posize_warning}} returns a character string witn the warning message.
+#' @seealso posteriorsize
+#' @keywords models
 #' @export posize_warning
 posize_warning <- function(){
 	"POSTERIOR SIZE CALCULATION FAILED" #added for posteriorsize dialog to hide error message unless needed
