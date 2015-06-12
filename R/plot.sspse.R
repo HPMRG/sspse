@@ -141,8 +141,10 @@ if(!is.null(out)){
   outN <- out[,"N"]
   ##a=locfit( ~ lp(outN, nn=0.35, h=0, maxk=500))
   xp <- seq(x$n,x$maxN, length=control$support)
-  posdensN=bgk_kde(data=outN,n=2^(ceiling(log(x$maxN-x$n)/log(2))),MIN=x$n)
+  posdensN=bgk_kde(data=outN,n=2^(ceiling(log(x$maxN-x$n)/log(2))),MIN=x$n,MAX=x$maxN)
+  maxposdensN <- max(posdensN[1,],na.rm=TRUE)
   posdensN <- spline(x=posdensN[1,],y=posdensN[2,],xout=xp)$y
+  posdensN[xp > maxposdensN] <- 0
   #a=locfit::locfit( ~ lp(outN,nn=0.5))
   #posdensN <- predict(a, newdata=xp)
   posdensN <- control$support*posdensN / ((x$maxN-x$n)*sum(posdensN))
@@ -150,7 +152,7 @@ if(!is.null(out)){
   if(is.null(control$xlim)){control$xlim <- quantile(outN,0.99)}
   if(is.null(control$ylim)){control$ylim <- c(0,max(posdensN,lpriorm))}
   if(control$type %in% c("N","both")){
-  plot(x=xp,y=posdensN,type='l', xlab="population size", 
+  out <- plot(x=xp,y=posdensN,type='l', xlab="population size", 
     main="posterior for population size",
   # ylim=c(0,max(posdensN,lpriorm)),
   # sub="mean prior = 1000",
@@ -161,7 +163,9 @@ if(!is.null(out)){
              paste(round(control$HPD.level*100),"% interval",sep=""),
              "mode"),
     bty="n",cex=0.75)
-  abline(v=x$n,lty=2)
+# sabline <- function(v,...){segments(x0=v,...,y0=control$ylim[1],y1=control$ylim[2])}
+  sabline <- function(v,...){segments(x0=v,...,y0=par("usr")[3],y1=par("usr")[4])}
+  sabline(v=x$n,lty=2)
   #
   lpriorm <- exp(x$lpriorm-max(x$lpriorm))
   lpriorm <- lpriorm/sum(lpriorm)
@@ -180,13 +184,13 @@ if(!is.null(out)){
   l90 <- xp[which.max(cy>0.9)]
   l50 <- xp[which.max(cy>0.5)]
 #
-# abline(v=median(outN,na.rm=TRUE),col=2)
-# abline(v=mean(outN,na.rm=TRUE),col=3)
-  abline(v=l50,col=2)
-  abline(v=mp,col=3)
-  abline(v=c(x$n,x$maxN),lty=2)
-  if(!is.null(control$N)){abline(v=control$N,lty=1,col=1)}
-  abline(v=hpd,lty=2,col=4)
+# sabline(v=median(outN,na.rm=TRUE),col=2)
+# sabline(v=mean(outN,na.rm=TRUE),col=3)
+  sabline(v=l50,col=2)
+  sabline(v=mp,col=3)
+  sabline(v=c(x$n,x$maxN),lty=2)
+  if(!is.null(control$N)){sabline(v=control$N,lty=1,col=1)}
+  sabline(v=hpd,lty=2,col=4)
   yloc <- control$ylim[2]*0.06
   par(xpd=NA)
   text(x=hpd[1],y=-yloc,col=4,cex=0.5,labels=paste(round(hpd[1])))
@@ -240,7 +244,7 @@ if(control$type %in% c("others","both")){
     main="prior for population size",
     ylab="prior density",xlim=c(x$n,control$xlim),ylim=control$ylim)
   #
-  abline(v=x$n,lty=2)
+  sabline(v=x$n,lty=2)
   #
 #
   map <- xp[which.max(lpriorm)]
@@ -249,11 +253,11 @@ if(control$type %in% c("others","both")){
   l50 <- xp[which.max(cy>0.5)]
   hpd <- c(xp[which.max(cy>0.25)],xp[which.max(cy>0.75)])
 #
-  abline(v=l50,col=2)
-  abline(v=mp,col=3)
-  abline(v=c(x$n,x$maxN),lty=2)
-  if(!is.null(control$N)){abline(v=control$N,lty=1,col=1)}
-  abline(v=hpd,lty=2,col=4)
+  sabline(v=l50,col=2)
+  sabline(v=mp,col=3)
+  sabline(v=c(x$n,x$maxN),lty=2)
+  if(!is.null(control$N)){sabline(v=control$N,lty=1,col=1)}
+  sabline(v=hpd,lty=2,col=4)
   yloc <- control$ylim[2]*0.06
   par(xpd=NA)
   text(x=hpd[1],y=-yloc,col=4,cex=0.5,labels=paste(round(hpd[1])))
