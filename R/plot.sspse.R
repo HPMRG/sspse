@@ -152,7 +152,7 @@ if(!is.null(out)){
   if(is.null(control$xlim)){control$xlim <- quantile(outN,0.99)}
   if(is.null(control$ylim)){control$ylim <- c(0,max(posdensN,lpriorm))}
   if(control$type %in% c("N","both")){
-  out <- plot(x=xp,y=posdensN,type='l', xlab="population size", 
+  outp <- plot(x=xp,y=posdensN,type='l', xlab="population size", 
     main="posterior for population size",
   # ylim=c(0,max(posdensN,lpriorm)),
   # sub="mean prior = 1000",
