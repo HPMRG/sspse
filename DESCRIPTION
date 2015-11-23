@@ -3,14 +3,22 @@ Type: Package
 Version: 0.5-1
 Date: 2015-04-22
 Title: Estimating Hidden Population Size using Respondent Driven
-        Sampling Data
+    Sampling Data
 Authors@R: c( person("Mark S.", "Handcock", role=c("aut","cre","cph"),
     email="handcock@stat.ucla.edu"), person("Krista J.", "Gile", role=c("aut","cph"),
-    email="gile@math.umass.edu")) 
+    email="gile@math.umass.edu"))
 Maintainer: Mark S. Handcock <handcock@stat.ucla.edu>
-Depends: parallel
-Suggests: network, testthat
-Description: An integrated set of tools to estimate the size of a networked population based on respondent-driven sampling data. The package is part of the "RDS Analyst" suite of packages for the analysis of respondent-driven sampling data.
+Depends:
+    parallel
+Suggests:
+    network,
+    testthat
+Description: An integrated set of tools to estimate the size of a networked
+    population based on respondent-driven sampling data. The package is part of the
+    "RDS Analyst" suite of packages for the analysis of respondent-driven sampling
+    data.
 License: GPL-3 + file LICENSE
 URL: http://www.hpmrg.org
-Imports: coda
+Imports:
+    coda
+RoxygenNote: 5.0.1
