@@ -41,6 +41,7 @@
 #' the posterior mean network size distribution with sample histogram overlaid
 #' is produced.  If \code{"both"}, then all plots for \code{"N"} and
 #' \code{"others"} are produced.
+#' @param main an overall title for the posterior plot.
 #' @param \dots further arguments passed to or from other methods.
 #' @seealso The model fitting function \code{\link{posteriorsize}},
 #' \code{\link[graphics]{plot}}.
@@ -107,7 +108,8 @@
 #' @method plot sspse
 #' @export
 plot.sspse <- function(x,
-		       xlim=NULL,data=NULL,support=1000,HPD.level=0.90,N=NULL,ylim=NULL,mcmc=FALSE,type="both",...){
+		       xlim=NULL,data=NULL,support=1000,HPD.level=0.90,N=NULL,ylim=NULL,mcmc=FALSE,type="both",
+		       main="posterior for population size",...){
   p.args <- as.list( sys.call() )[-c(1,2)]
   formal.args<-formals(sys.function())[-c(1)]
 
@@ -153,10 +155,9 @@ if(!is.null(out)){
   if(is.null(control$ylim)){control$ylim <- c(0,max(posdensN,lpriorm))}
   if(control$type %in% c("N","both")){
   outp <- plot(x=xp,y=posdensN,type='l', xlab="population size", 
-    main="posterior for population size",
   # ylim=c(0,max(posdensN,lpriorm)),
   # sub="mean prior = 1000",
-    ylab="posterior density",xlim=c(x$n,control$xlim),ylim=control$ylim)
+    ylab="posterior density",xlim=c(x$n,control$xlim),ylim=control$ylim, main=main)
   #
   legend('topright',lty=c(1,2,1,1,1,1,1),col=c(1,1,2,3,4,5),
     legend=c("posterior","prior","median","mean",
