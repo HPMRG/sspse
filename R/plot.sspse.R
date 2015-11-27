@@ -159,7 +159,7 @@ if(!is.null(out)){
   # sub="mean prior = 1000",
     ylab="posterior density",xlim=c(x$n,control$xlim),ylim=control$ylim, main=main)
   #
-  legend('topright',lty=c(1,2,1,1,1,1,1),col=c(1,1,2,3,4,5),
+  legend('topright',lty=c(1,2,1,1,2,1),col=c(1,1,2,3,4,5),
     legend=c("posterior","prior","median","mean",
              paste(round(control$HPD.level*100),"% interval",sep=""),
              "mode"),
@@ -187,8 +187,9 @@ if(!is.null(out)){
 #
 # sabline(v=median(outN,na.rm=TRUE),col=2)
 # sabline(v=mean(outN,na.rm=TRUE),col=3)
-  sabline(v=l50,col=2)
   sabline(v=mp,col=3)
+  sabline(v=l50,col=2)
+  sabline(v=map,col=5)
   sabline(v=c(x$n,x$maxN),lty=2)
   if(!is.null(control$N)){sabline(v=control$N,lty=1,col=1)}
   sabline(v=hpd,lty=2,col=4)
@@ -256,6 +257,7 @@ if(control$type %in% c("others","both")){
 #
   sabline(v=l50,col=2)
   sabline(v=mp,col=3)
+  sabline(v=map,col=5)
   sabline(v=c(x$n,x$maxN),lty=2)
   if(!is.null(control$N)){sabline(v=control$N,lty=1,col=1)}
   sabline(v=hpd,lty=2,col=4)
