@@ -89,10 +89,10 @@
 #' sub-step for the degree distribution parameters (\eqn{\theta}) before any
 #' MCMC sampling is done. It typically is set to a modestly large number.
 #' @param parallel count; the number of parallel processes to run for the
-#' Monte-Carlo sample.  This uses PVM or MPI. The default is 1, that is not to
+#' Monte-Carlo sample.  This uses MPI or PSOCK. The default is 1, that is not to
 #' use parallel processing.
 #' @param parallel.type The type of parallel processing to use. The options are
-#' "PVM" or "MPI". This requires the corresponding type to be installed.
+#' "PSOCK" or "MPI". This requires the corresponding type to be installed.
 #' @param seed integer; random number integer seed.  Defaults to \code{NULL} to
 #' use whatever the state of the random number generator is at the time of the
 #' call.
@@ -386,6 +386,8 @@ posteriorsize<-function(s,
     }
     mean.prior.degree = fit[1]
     sd.prior.degree = fit[2]
+  }else{
+    if(is.null(sd.prior.degree)){sd.prior.degree <- sqrt(mean.prior.degree)}
   }
   if(verbose){
     cat(sprintf("The mean of the prior distribution for degree is %f.\n",mean.prior.degree))

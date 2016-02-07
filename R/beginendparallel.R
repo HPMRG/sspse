@@ -22,7 +22,7 @@
 #' @param parallel scale; Number of threads in which to run the sampling. 
 #' Defaults to 1 (no parallelism). 
 #' @param type API to use for parallel processing. Supported values are \code{"MPI"} and
-#' \code{"PSOCK"}. Defaults to using the \code{parallel} package with MPI clusters.
+#' \code{"PSOCK"}. Defaults to using the \code{parallel} package with PSOCK clusters.
 #' @param seed integer; random number integer seed.  Defaults to \code{NULL} to
 #' use whatever the state of the random number generator is at the time of the
 #' @param packagenames Names of packages in which load to get the package to run
@@ -63,10 +63,10 @@
 #' plot(out, HPD.level=0.9,mcmc=TRUE)
 #' }
 #' @export
-beginparallel<-function(parallel=1, type="MPI", seed=NULL, packagenames=c("sspse"),verbose=TRUE){
+beginparallel<-function(parallel=1, type="PSOCK", seed=NULL, packagenames=c("sspse"),verbose=TRUE){
 #   require(parallel)
     if(verbose){
-     cat("Engaging warp drive using MPI ...\n")
+     cat(paste("Engaging warp drive using",type,"...\n",sep=" "))
     }
 #
 #   Start Cluster

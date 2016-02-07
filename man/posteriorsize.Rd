@@ -127,11 +127,11 @@ sub-step for the degree distribution parameters (\eqn{\theta}) before any
 MCMC sampling is done. It typically is set to a modestly large number.}
 
 \item{parallel}{count; the number of parallel processes to run for the
-Monte-Carlo sample.  This uses PVM or MPI. The default is 1, that is not to
+Monte-Carlo sample.  This uses MPI or PSOCK. The default is 1, that is not to
 use parallel processing.}
 
 \item{parallel.type}{The type of parallel processing to use. The options are
-"PVM" or "MPI". This requires the corresponding type to be installed.}
+"PSOCK" or "MPI". This requires the corresponding type to be installed.}
 
 \item{seed}{integer; random number integer seed.  Defaults to \code{NULL} to
 use whatever the state of the random number generator is at the time of the

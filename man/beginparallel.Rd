@@ -6,7 +6,7 @@
 \alias{endparallel}
 \title{Parallel Processing in the \code{\link[=sspse-package]{sspse}} Package}
 \usage{
-beginparallel(parallel = 1, type = "MPI", seed = NULL,
+beginparallel(parallel = 1, type = "PSOCK", seed = NULL,
   packagenames = c("sspse"), verbose = TRUE)
 }
 \arguments{
@@ -14,7 +14,7 @@ beginparallel(parallel = 1, type = "MPI", seed = NULL,
 Defaults to 1 (no parallelism).}
 
 \item{type}{API to use for parallel processing. Supported values are \code{"MPI"} and
-\code{"PSOCK"}. Defaults to using the \code{parallel} package with MPI clusters.}
+\code{"PSOCK"}. Defaults to using the \code{parallel} package with PSOCK clusters.}
 
 \item{seed}{integer; random number integer seed.  Defaults to \code{NULL} to
 use whatever the state of the random number generator is at the time of the}
