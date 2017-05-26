@@ -188,7 +188,7 @@ void gplndisease (int *pop, int *dis,
      lpm[i]=lgamma(ni+i+1.)-lgamma(i+1.)+i*gamma0rt;
      //  Add in the (log) prior on m: P(m)
      lpm[i]=lpm[i]+lpriorm[i];
-     if(lpm[i] > tU) tU = lpm[i];
+     if(lpm[i] > tU) tU = (int)lpm[i];
     }
     for (i=0; i<imaxm; i++){
       lpm[i]=exp(lpm[i]-tU);

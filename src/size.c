@@ -143,7 +143,7 @@ void bnw_NC(int *N, int *K, int *n, int *s, int *nk, int *Nk,
     vhtd=0.;
     nvalidhtn=0;
     nvalidhtd=0;
-    minvalid=trunc(0.05*Mi);
+    minvalid=(int)trunc(0.05*Mi);
     if(minvalid < 100) minvalid=100;
     while(nvalidhtn < minvalid){
      for(i=0;i<Mi;i++){

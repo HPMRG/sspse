@@ -129,7 +129,7 @@ void gspps (int *pop,
     tU = -1000000000;
     for (i=0; i<imaxm; i++){
       lpm[i]=i*gammart+lgamma(ni+i+1.)-lgamma(i+1.);
-      if(lpm[i] > tU) tU = lpm[i];
+      if(lpm[i] > tU) tU = (int)lpm[i];
     }
     for (i=0; i<imaxm; i++){
       lpm[i]=exp(lpm[i]-tU);
@@ -165,7 +165,7 @@ void gspps (int *pop,
       while((popi == 0) || (log(1.0-unif_rand()) > -r*popi)){
        mu = exp(rnorm(mui, sigmai));
        if(mu < 5.*Ki){
-         popi=rpois(mu);
+         popi=(int)rpois(mu);
          if(popi < 0){popi=0;}
        }else{
     if (*verbose) Rprintf("mu > 5.*Ki; mu %f K %d\n", mu, Ki);
@@ -292,7 +292,7 @@ void gsppsN (int *pop,
       popi=0;
       while((popi == 0) || (log(1.0-unif_rand()) > -r*popi)){
        if(mu < 5.*Ki){
-        popi=rpois(mu);
+        popi=(int)rpois(mu);
         if(popi < 0){popi=0;}
        }else{
         popi=0;

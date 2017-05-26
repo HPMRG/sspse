@@ -71,7 +71,7 @@ void bnw_NCwar(int *N, int *K, int *n, int *s, int *nk, int *Nk,
     vhtd=0.;
     nvalidhtn=0;
     nvalidhtd=0;
-    minvalid=trunc(0.05*Mi);
+    minvalid=(int)trunc(0.05*Mi);
     if(minvalid < 100) minvalid=100;
     while(nvalidhtn < minvalid){
     for(i=0;i<Mi;i++){
@@ -172,7 +172,7 @@ void bnw_mp(int *N, int *lenN, int *K, int *n, int *s, int *nk,
     j=0;
     while(i < Mi){
 /*  Generate a random draw from the size prior (here uniform) */
-     Ntotpriori = trunc(Nlen*unif_rand());
+     Ntotpriori = (int)trunc(Nlen*unif_rand());
      Ntotprior = N[Ntotpriori];
 /*   Generate a random draw from the population of sizes */
      rmultinom(Ntotprior, dprob, *K, Nprior);
@@ -248,7 +248,7 @@ void bnw_mpwar(int *N, int *lenN, int *K, int *n, int *s, int *nk,
     i=0;
     while(i < Mi){
 /*  Generate a random draw from the size prior (here uniform) */
-     Ntotpriori = trunc(Nlen*unif_rand());
+     Ntotpriori = (int)trunc(Nlen*unif_rand());
      Ntotprior = N[Ntotpriori];
 /*  Generate a random draw from the population of sizes */
      rmultinom(Ntotprior, dprob, *K, Nprior);

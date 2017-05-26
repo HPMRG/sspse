@@ -182,7 +182,7 @@ void gsppsdis (int *pop, int *dis,
     tU = -1000000000;
     for (i=0; i<imaxm; i++){
      lpm[i]=lgamma(ni+i+1.)-lgamma(i+1)+i*gamma0rt;
-     if(lpm[i] > tU) tU = lpm[i];
+     if(lpm[i] > tU) tU = (int)lpm[i];
     }
     for (i=0; i<imaxm; i++){
       lpm[i]=exp(lpm[i]-tU);
@@ -231,7 +231,7 @@ void gsppsdis (int *pop, int *dis,
         }
         /* Now propose unseen size for unit i based on disease status */
         if(mu < 5.*Ki){
-          popi=rpois(mu);
+          popi=(int)rpois(mu);
           if(popi < 0){popi=0;}
         }else{
           popi=0;
