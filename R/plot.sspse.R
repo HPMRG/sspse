@@ -120,6 +120,8 @@ plot.sspse <- function(x,
   for(arg in names(p.args)){ control[arg]<-list(get(arg)) }
 
 out <- x$sample
+# sabline <- function(v,...){segments(x0=v,...,y0=control$ylim[1],y1=control$ylim[2])}
+sabline <- function(v,...){segments(x0=v,...,y0=par("usr")[3],y1=par("usr")[4])}
 if(!is.null(out) & control$mcmc){
   mcmc.len <- min(1000, nrow(out))
   a=round(seq.int(from=1,to=nrow(out),length.out=mcmc.len))
@@ -164,8 +166,6 @@ if(!is.null(out)){
              paste(round(control$HPD.level*100),"% interval",sep=""),
              "mode"),
     bty="n",cex=0.75)
-# sabline <- function(v,...){segments(x0=v,...,y0=control$ylim[1],y1=control$ylim[2])}
-  sabline <- function(v,...){segments(x0=v,...,y0=par("usr")[3],y1=par("usr")[4])}
   sabline(v=x$n,lty=2)
   #
   lpriorm <- exp(x$lpriorm-max(x$lpriorm))
