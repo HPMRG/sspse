@@ -129,4 +129,3 @@ Function \code{\link[stats]{coef}} will extract the matrix of coefficients with
 standard errors, t-statistics and p-values.
 }
 \keyword{hplot}
-

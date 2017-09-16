@@ -18,7 +18,7 @@ posnbinom<-function(s,maxN=4*length(s),
     mu0 <- mean.prior.degree
     if(!is.null(seed))  set.seed(as.integer(seed))
     dimsample <- 4+Np
-    lpriorm <- dnbinom(x=n:maxN,
+    lpriorm <- stats::dnbinom(x=n:maxN,
                        mu=mean.prior.size, prob=mean.prior.size/(sd.prior.size^2),
 		       log=TRUE)
     Cret <- .C("gnbinom",
@@ -57,7 +57,7 @@ posnbinom<-function(s,maxN=4*length(s),
     attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
     attr(Cret$sample, "class") <- "mcmc"
     mapfn <- function(x,lbound=min(x),ubound=max(x)){
-      posdensN <- density(x, from=lbound, to=ubound)
+      posdensN <- stats::density(x, from=lbound, to=ubound)
       posdensN$x[which.max(posdensN$y)]
     }
     ### compute modes of posterior samples,Maximum A Posterior (MAP) values N, mu, sigma, degree1

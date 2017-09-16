@@ -79,11 +79,11 @@ posteriornbinom<-function(s,
 #     posdensN <- locfit(~ lp(x,maxk=500),xlim=c(lbound,ubound))
 #     locy <- predict(posdensN,newdata=locx)
       bgk_fit=bgk_kde(x,n=2^(ceiling(log(ubound-lbound)/log(2))),MIN=lbound,MAX=ubound)
-      locy <- spline(x=bgk_fit[1,],y=bgk_fit[2,],xout=locx)$y
+      locy <- stats::spline(x=bgk_fit[1,],y=bgk_fit[2,],xout=locx)$y
       locx[which.max(locy)]
     }
     mapfn <- function(x,lbound=min(x),ubound=max(x)){
-      posdensN <- density(x, from=lbound, to=ubound)
+      posdensN <- stats::density(x, from=lbound, to=ubound)
       posdensN$x[which.max(posdensN$y)]
     }
     

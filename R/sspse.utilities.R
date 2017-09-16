@@ -9,12 +9,12 @@ mode.density <- function(x,lbound=min(x,na.rm=TRUE),ubound=max(x,na.rm=TRUE), sm
       if(length(x[x>=lbound&x<=ubound])==1){return(x[x>=lbound&x<=ubound])}
 #     posdensN <- try(locfit( ~ lp(x, nn=2*smooth, h=h, maxk=500)),silent=TRUE)
 #     if(inherits(posdensN,"try-error")){
-       posdensN <- density(x, from=lbound, to=ubound)
+       posdensN <- stats::density(x, from=lbound, to=ubound)
 #     }else{
 #      xp <- seq(lbound, ubound, length=10000)
 #      posdensN <- try(predict(posdensN, newdata=xp),silent=TRUE)
 #      if(inherits(posdensN,"try-error")){
-#       posdensN <- density(x, from=lbound, to=ubound)
+#       posdensN <- stats::density(x, from=lbound, to=ubound)
 #      }else{
 #       posdensN <- list(x=xp,y=posdensN)
 #      }
@@ -32,13 +32,13 @@ ll.density <- function(x,lbound=min(x,na.rm=TRUE),ubound=max(x,na.rm=TRUE), smoo
 #     posdensN <- try(locfit( ~ lp(x, nn=2*smooth, h=h, maxk=500)),silent=TRUE)
       posdensN <- .catchToList(bgk_kde(x,n=2^(ceiling(log(ubound-lbound)/log(2))),MIN=lbound,MAX=ubound))
       if(!is.null(posdensN$error)){
-       posdensN <- density(x, from=lbound, to=ubound)
+       posdensN <- stats::density(x, from=lbound, to=ubound)
        list(x=xp,y=posdensN)
       }else{
 #      posdensN <- try(predict(posdensN, newdata=xp),silent=TRUE)
-       posdensN <- .catchToList(spline(x=posdensN$value[1,],y=posdensN$value[2,],xout=xp)$y)
+       posdensN <- .catchToList(stats::spline(x=posdensN$value[1,],y=posdensN$value[2,],xout=xp)$y)
        if(!is.null(posdensN$error)){
-        posdensN <- density(x, from=lbound, to=ubound)
+        posdensN <- stats::density(x, from=lbound, to=ubound)
         list(x=xp,y=posdensN)
        }else{
         list(x=xp,y=posdensN$value)
@@ -49,7 +49,7 @@ ll.density <- function(x,lbound=min(x,na.rm=TRUE),ubound=max(x,na.rm=TRUE), smoo
 HPD.density <- function(x,lbound=min(x,na.rm=TRUE),ubound=max(x,na.rm=TRUE)){
       x <- x[!is.na(x)]
       if(length(x)==0){return(c(NA,NA))}
-      posdensN <- density(x, from=lbound, to=ubound)
+      posdensN <- stats::density(x, from=lbound, to=ubound)
       cy <- cumsum(posdensN$y/sum(posdensN$y))
       cy <- c(posdensN$x[which.max(cy>0.025)],
               posdensN$x[which.max(cy>0.975)])

@@ -36,12 +36,6 @@ the Hard-to-Reach Population Methods Research Group website: \url{http://hpmrg.o
 A tutorial, support
 newsgroup, references and links to further resources are provided there.
 }
-\author{
-Krista J. Gile \email{gile@math.umass.edu},\cr
-Mark S. Handcock \email{handcock@stat.ucla.edu}
-
-Maintainer: Mark S. Handcock \email{handcock@stat.ucla.edu}
-}
 \references{
 Gile, Krista J. (2008) \emph{Inference from Partially-Observed Network
 Data}, Ph.D. Thesis, Department of Statistics, University of Washington.
@@ -66,6 +60,11 @@ Handcock, Mark S., Gile, Krista J. and Mar, Corinne M. (2015)
 \emph{Estimating the Size of Populations at High Risk for HIV using Respondent-Driven 
 Sampling Data}, Biometrics.
 }
+\author{
+Krista J. Gile \email{gile@math.umass.edu},\cr
+Mark S. Handcock \email{handcock@stat.ucla.edu}
+
+Maintainer: Mark S. Handcock \email{handcock@stat.ucla.edu}
+}
 \keyword{models}
 \keyword{package}
-

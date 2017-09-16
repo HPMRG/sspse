@@ -33,7 +33,7 @@ done. It typically is set to a fairly large number.}
 determined from an upper quantile of the prior distribution.}
 
 \item{K}{count; the maximum degree for an individual. This is usually
-calculated as \code{round(quantile(s,0.80))}.}
+calculated as \code{round(stats::quantile(s,0.80))}.}
 
 \item{samplesize}{count; the number of Monte-Carlo samples to draw to
 compute the posterior. This is the number returned by the
@@ -282,6 +282,7 @@ proportion of the population size in the sample. Finally, you can specify
 \code{quartiles.prior.size} as a vector of length 2 being the pair of lower
 and upper quartiles of the prior distribution on the population size.
 }
+
 \examples{
 
 \dontrun{
@@ -341,4 +342,3 @@ Sampling Data}, Biometrics.
 network, statnet, degreenet
 }
 \keyword{models}
-

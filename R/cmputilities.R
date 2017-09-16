@@ -6,7 +6,7 @@ cmpmle <-function(xv,xp,cutoff=1,cutabove=1000,guess=c(7,3)){
  xp <- length(xv)*xp/sum(xp)
  guess <- cmp.natural(mu=guess[1],sigma=guess[2])
  guess <- c(log(guess$lambda), log(guess$nu))
-  aaa <- optim(par=guess,fn=allcmp,
+  aaa <- stats::optim(par=guess,fn=allcmp,
    method="BFGS",
    hessian=FALSE,control=list(fnscale=-10),
    xv=xv,xp=xp,cutoff=cutoff,cutabove=cutabove)

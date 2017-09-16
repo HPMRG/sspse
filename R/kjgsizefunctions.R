@@ -72,7 +72,7 @@ bnwnest<-function(lst,toplam=10,bottomlam=1e-10){
   n<-length(s)
   if(sign(Zee(bottomlam,n=n,nk=nk,sizes=sizes,D=D))!=
     sign(Zee(toplam,n=n,nk=nk,sizes=sizes,D=D))){
-  lest<-uniroot(Zee,n=n,nk=nk,sizes=sizes,D=D,
+  lest<-stats::uniroot(Zee,n=n,nk=nk,sizes=sizes,D=D,
     interval=c(bottomlam,toplam))$root
   bbnest<-nk/(1-exp(-lest*sizes))
   out<-bbnest
@@ -92,7 +92,7 @@ mleNest<-function(lst,start=NULL){
   if(sum(start)>0){
   xstart<-log(start-tabulate(s)[sizes])
   }else{xstart<-log(tabulate(s)[sizes])}
-  out<-optim(par=xstart,
+  out<-stats::optim(par=xstart,
     fn=lllspps,
     sizes=sizes, s=s,
     control=list(maxit=100000,fnscale=-1))

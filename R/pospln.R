@@ -23,7 +23,7 @@ pospln<-function(s,maxN=4*length(s),
     mu0 <- log(mean.prior.degree)-0.5*sigma0*sigma0
     #
     dimsample <- 4+Np
-    lpriorm <- dnbinom(x=n:maxN,
+    lpriorm <- stats::dnbinom(x=n:maxN,
                        mu=mean.prior.size, prob=mean.prior.size/(sd.prior.size^2),
 		       log=TRUE)
     Cret <- .C("gpln",
@@ -73,7 +73,7 @@ pospln<-function(s,maxN=4*length(s),
     attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
     attr(Cret$sample, "class") <- "mcmc"
     mapfn <- function(x,lbound=min(x),ubound=max(x)){
-      posdensN <- density(x, from=lbound, to=ubound)
+      posdensN <- stats::density(x, from=lbound, to=ubound)
       posdensN$x[which.max(posdensN$y)]
     }
     ### compute modes of posterior samples, Maximum A Posterior (MAP) values

@@ -87,7 +87,7 @@ beginparallel<-function(parallel=1, type="PSOCK", seed=NULL, packagenames=c("ssp
 #   Run the jobs with Rmpi
 #
     ### make sure that R has printed out console messages before go parallel
-    flush.console()
+    utils::flush.console()
     return(cl)
 }
 #' @export

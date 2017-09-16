@@ -130,6 +130,7 @@ prior distribution on the population size, or \code{mode.prior.sample
 proportion} which specifies the mode of the prior distribution on the
 proportion of the population size in the sample.
 }
+
 \examples{
 
 dsizeprior(n=100,
@@ -165,4 +166,3 @@ Sampling Data}, Biometrics.
 network, statnet, degreenet
 }
 \keyword{models}
-

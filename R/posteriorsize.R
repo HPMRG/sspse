@@ -17,7 +17,7 @@
 #' @param maxN integer; maximum possible population size. By default this is
 #' determined from an upper quantile of the prior distribution.
 #' @param K count; the maximum degree for an individual. This is usually
-#' calculated as \code{round(quantile(s,0.80))}.
+#' calculated as \code{round(stats::quantile(s,0.80))}.
 #' @param samplesize count; the number of Monte-Carlo samples to draw to
 #' compute the posterior. This is the number returned by the
 #' Metropolis-Hastings algorithm.The default is 1000.
@@ -329,7 +329,7 @@ posteriorsize<-function(s,
     stop("You need to specify 'mean.prior.size', and possibly 'sd.prior.size' if you use the 'nbinom' prior.") 
   }
   if(is.null(K)){
-    K=round(quantile(s,0.90))+1
+    K=round(stats::quantile(s,0.90))+1
     degs <- s
     degs[degs>K] <- K
     degs[degs==0]<-1
@@ -349,11 +349,11 @@ posteriorsize<-function(s,
     xp <- weights
     xp <- length(xp)*xp/sum(xp)
     txp <- tapply(xp,xv,sum)
-    txv <- tapply(xv,xv,median)
+    txv <- tapply(xv,xv,stats::median)
     fit <- cmpmle(txv,txp,cutoff=1,cutabove=K-1,guess=c(mean.pd, sd.pd))
     y=dcmp.natural(v=fit,x=(0:max(s)))
     K=(0:max(s))[which.max(cumsum(y)>0.99)]
-#   K=round(quantile(s,0.99))
+#   K=round(stats::quantile(s,0.99))
   }
   cat(sprintf("The cap on influence of the personal network size is K = %d.\n",K))
   if(is.null(mean.prior.degree)){
@@ -376,7 +376,7 @@ posteriorsize<-function(s,
     xp[is.na(xp)] <- 0
     xp <- length(xp)*xp/sum(xp)
     txp <- tapply(xp,xv,sum)
-    txv <- tapply(xv,xv,median)
+    txv <- tapply(xv,xv,stats::median)
     fit <- cmpmle(txv,txp,cutoff=1,cutabove=K-1,
             guess=c(mean.prior.degree,sd.prior.degree))
     fit <- cmp.mu(fit,max.mu=5*mean.prior.degree)
@@ -473,7 +473,7 @@ posteriorsize<-function(s,
      colnamessample <- c(colnamessample, c("lambda","nu"))
     }
     colnames(Cret$sample) <- colnamessample
-    m <- apply(Cret$sample,2,median,na.rm=TRUE)
+    m <- apply(Cret$sample,2,stats::median,na.rm=TRUE)
     Cret$sample[is.na(Cret$sample[,"mu"]),"mu"] <- m["mu"]
     Cret$sample[is.na(Cret$sample[,"sigma"]),"sigma"] <- m["sigma"]
 #   Any NA and NaN are typically in pdeg and so should be 0.
@@ -501,8 +501,8 @@ posteriorsize<-function(s,
   }
   Cret$N <- c(Cret$MAP["N"], 
               mean(Cret$sample[,"N"]),
-              median(Cret$sample[,"N"]),
-	      quantile(Cret$sample[,"N"],c(0.025,0.975)))
+              stats::median(Cret$sample[,"N"]),
+	      stats::quantile(Cret$sample[,"N"],c(0.025,0.975)))
   names(Cret$N) <- c("MAP","Mean AP","Median AP","P025","P975")
   #
   if(Cret$predictive.degree[length(Cret$predictive.degree)] > 0.01){

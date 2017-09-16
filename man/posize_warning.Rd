@@ -20,4 +20,3 @@ a consistent error message.
 posteriorsize
 }
 \keyword{models}
-

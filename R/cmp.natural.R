@@ -8,7 +8,7 @@ cmp.natural <- function (mu,sigma,K=max(ceiling(mu+10*sigma),10),guess=NULL)
     if(is.null(guess)){
       guess = c(2*log(mu+0.25), log(2))
     }
-    result = optim(par=guess, fn=function(p,mu,sigma,K) {
+    result = stats::optim(par=guess, fn=function(p,mu,sigma,K) {
         j <- 0:K
         a <- dcmp(x=j, lambda=exp(p[1]), nu=exp(p[2]), err=0.000000001)
 	sqrt(abs(sum(a*j)^2-mu*mu)+abs(sum(a*j*j)-sigma*sigma-mu*mu))

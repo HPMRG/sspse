@@ -45,6 +45,7 @@ cores on a system can be determined with the \code{detectCores} function.
 This method works with the base installation of R on all platforms, and does
 not require additional software.
 }
+
 \examples{
 
 \dontrun{
@@ -77,4 +78,3 @@ summary(out, HPD.level=0.9)
 plot(out, HPD.level=0.9,mcmc=TRUE)
 }
 }
-

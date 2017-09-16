@@ -88,4 +88,3 @@ The model fitting function \code{\link{posteriorsize}},
 \code{\link{summary}}.
 }
 \keyword{models}
-

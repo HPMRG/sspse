@@ -164,14 +164,14 @@ dsizeprior<-function(n,
     nbinom={
       if(is.null(sd.prior.size)){sd.prior.size <- mean.prior.size}
       if(is.null(maxN)){
-        maxN <- min(maxNmax,ceiling(qnbinom(p=0.995,
+        maxN <- min(maxNmax,ceiling(stats::qnbinom(p=0.995,
                     mu=mean.prior.size, prob=mean.prior.size/(sd.prior.size^2))))
       }
       if(is.null(N)){
-        maxN <- min(maxNmax,ceiling(qnbinom(p=0.5,
+        maxN <- min(maxNmax,ceiling(stats::qnbinom(p=0.5,
                     mu=mean.prior.size, prob=mean.prior.size/(sd.prior.size^2))))
       }
-      lpriorm <- dnbinom(x=n:maxN,
+      lpriorm <- stats::dnbinom(x=n:maxN,
                            mu=mean.prior.size, prob=mean.prior.size/(sd.prior.size^2),
                            log=log)
       if(is.null(median.prior.size)) median.prior.size <- maxN/2
@@ -254,7 +254,7 @@ dsizeprior<-function(n,
       }
       if(is.null(maxN.set)){maxN = ceiling(3*median.prior.size)}
       x <- n:maxN
-      a = optimize(f=fn1,interval=c(1,maxbeta),x,n,median.prior.size,
+      a = stats::optimize(f=fn1,interval=c(1,maxbeta),x,n,median.prior.size,
                    effective.prior.df,alpha,tol=0.01)
       beta <- a$minimum
       if(verbose){
@@ -267,7 +267,7 @@ dsizeprior<-function(n,
        abs(p[length(p)]/max(p,na.rm=TRUE) - 0.01)>0.005}){
         maxN <- round(maxN*(c(0.9,1.1)[(p[length(p)]/max(p,na.rm=TRUE) > 0.01)+1]))
         x <- n:maxN
-        a = optimize(f=fn1,interval=c(1,maxbeta),x,n,median.prior.size,
+        a = stats::optimize(f=fn1,interval=c(1,maxbeta),x,n,median.prior.size,
                      effective.prior.df,alpha,tol=0.01)
         beta <- a$minimum
         if(verbose){
@@ -289,7 +289,7 @@ dsizeprior<-function(n,
       if(is.null(maxN)){
       if(is.null(maxN.set)){maxN = ceiling(3*mean.prior.size)}
       x <- n:maxN
-      a = optimize(f=fn2,interval=c(1,maxbeta),x,n,mean.prior.size,
+      a = stats::optimize(f=fn2,interval=c(1,maxbeta),x,n,mean.prior.size,
                    effective.prior.df,alpha,tol=0.01)
       beta <- a$minimum
       if(verbose){
@@ -302,7 +302,7 @@ dsizeprior<-function(n,
        abs(p[length(p)]/max(p,na.rm=TRUE) - 0.01)>0.005}){
         maxN <- round(maxN*(c(0.9,1.1)[(p[length(p)]/max(p,na.rm=TRUE) > 0.01)+1]))
         x <- n:maxN
-        a = optimize(f=fn2,interval=c(1,maxbeta),x,n,mean.prior.size,
+        a = stats::optimize(f=fn2,interval=c(1,maxbeta),x,n,mean.prior.size,
                     effective.prior.df,alpha,tol=0.01)
         beta <- a$minimum
         if(verbose){
@@ -312,7 +312,7 @@ dsizeprior<-function(n,
       if(is.null(maxN.set)){maxN = min(maxNmax,maxN)}
       }else{
       x <- 0:(maxN-1-n) + n
-      a = optimize(f=fn2,interval=c(1,maxbeta),x,n,mean.prior.size,
+      a = stats::optimize(f=fn2,interval=c(1,maxbeta),x,n,mean.prior.size,
                    effective.prior.df,alpha,tol=0.01)
       beta <- a$minimum
       }
@@ -328,7 +328,7 @@ dsizeprior<-function(n,
       }
       if(is.null(maxN.set)){maxN = ceiling(3*mode.prior.size)}
       x <- n:maxN
-      a = optimize(f=fn3,interval=c(1,maxbeta),x,n,mode.prior.size,
+      a = stats::optimize(f=fn3,interval=c(1,maxbeta),x,n,mode.prior.size,
                    effective.prior.df,alpha,tol=0.01)
       beta <- a$minimum
       if(verbose){
@@ -341,7 +341,7 @@ dsizeprior<-function(n,
        abs(p[length(p)]/max(p,na.rm=TRUE) - 0.01)>0.005}){
         maxN <- round(maxN*(c(0.9,1.1)[(p[length(p)]/max(p,na.rm=TRUE) > 0.01)+1]))
         x <- n:maxN
-        a = optimize(f=fn3,interval=c(1,maxbeta),x,n,mode.prior.size,
+        a = stats::optimize(f=fn3,interval=c(1,maxbeta),x,n,mode.prior.size,
                      effective.prior.df,alpha,tol=0.01)
         beta <- a$minimum
         if(verbose){
@@ -364,7 +364,7 @@ dsizeprior<-function(n,
       }
       if(is.null(maxN.set)){maxN = ceiling(10*quartiles.prior.size[2])}
       x <- n:maxN
-      a = optim(par=log(c(1,10)),fn=fn4,
+      a = stats::optim(par=log(c(1,10)),fn=fn4,
         x=x,n=n,quartiles.prior.size=quartiles.prior.size,
         effective.prior.df=effective.prior.df,
         control=list(abstol=10))
@@ -381,7 +381,7 @@ dsizeprior<-function(n,
        abs(p[length(p)]/max(p,na.rm=TRUE) - 0.01)>0.005}){
         maxN <- round(maxN*(c(0.9,1.1)[(p[length(p)]/max(p,na.rm=TRUE) > 0.01)+1]))
         x <- n:maxN
-        a = optim(par=a$par,fn=fn4,
+        a = stats::optim(par=a$par,fn=fn4,
          x=x,n=n,quartiles.prior.size=quartiles.prior.size,effective.prior.df=effective.prior.df,
          control=list(abstol=10))
         alpha <- exp(a$par[1])
@@ -420,7 +420,7 @@ dsizeprior<-function(n,
      outN <- out[,"N"]
      a=bgk_kde(outN,n=2^(ceiling(log(maxN-n)/log(2))),MIN=n,MAX=maxN)
      # Use an interpolating cubic spline
-     posdensN <- spline(x=a[1,],y=a[2,],xout=x)$y
+     posdensN <- stats::spline(x=a[1,],y=a[2,],xout=x)$y
 #    a=locfit( ~ lp(outN,nn=0.5))
 #    posdensN <- predict(a, newdata=x)
      posdensN <- posdensN / sum(posdensN)

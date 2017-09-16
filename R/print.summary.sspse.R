@@ -142,7 +142,7 @@ print.summary.sspse <- function (x,
      }
   }
 
-  printCoefmat(x$coefs, digits=digits, signif.stars=signif.stars,
+  stats::printCoefmat(x$coefs, digits=digits, signif.stars=signif.stars,
                P.values=TRUE, has.Pvalue=TRUE, na.print="NA",
                eps.Pvalue=eps.Pvalue, ...)
   

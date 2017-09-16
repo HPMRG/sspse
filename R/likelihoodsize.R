@@ -13,7 +13,7 @@ likelihoodsize<-function(s,
 		  alpha=NULL,
 		  degreedistribution=c("cmp","nbinom","pln"),
                   maxN=NULL,
-                  K=round(quantile(s,0.80)), n=length(s),
+                  K=round(stats::quantile(s,0.80)), n=length(s),
                   nk=tabulate(s,nbins=K),
                   muproposal=0.1, 
                   sigmaproposal=0.15, 
@@ -125,8 +125,8 @@ likelihoodsize<-function(s,
   }
   Cret$N <- c(Cret$MAP["N"], 
               mean(Cret$sample[,"N"]),
-              median(Cret$sample[,"N"]),
-	      quantile(Cret$sample[,"N"],c(0.025,0.975)))
+              stats::median(Cret$sample[,"N"]),
+	      stats::quantile(Cret$sample[,"N"],c(0.025,0.975)))
   names(Cret$N) <- c("MAP","Mean AP","Median AP","P025","P975")
   #
   if(Cret$predictive.degree[length(Cret$predictive.degree)] > 0.01){

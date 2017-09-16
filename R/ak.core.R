@@ -13,7 +13,7 @@ akestN<-function(N,s,
   enroot<-function(llam,N,nk,sizes){
     sum(nk/(1-exp(-exp(llam)*sizes)))-N
   }
-  out <- uniroot(f=enroot, interval=c(-20,5),
+  out <- stats::uniroot(f=enroot, interval=c(-20,5),
      N=N, nk=n, sizes=sizes,
 #    f.lower=Inf, f.upper=sum(nk)-N,
      maxiter=maxit,tol=tol)

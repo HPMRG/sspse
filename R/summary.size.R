@@ -99,7 +99,7 @@ if(!is.null(out)){
 # a=locfit::locfit( ~ lp(outN,nn=0.5))
 # posdensN <- predict(a, newdata=xp)
   a=bgk_kde(outN,n=2^(ceiling(log((object$maxN-object$n))/log(2))),MIN=object$n,MAX=object$maxN)
-  posdensN <- spline(x=a[1,],y=a[2,],xout=xp)$y
+  posdensN <- stats::spline(x=a[1,],y=a[2,],xout=xp)$y
   posdensN <- control$support*posdensN / ((object$maxN-object$n)*sum(posdensN))
   # Next from coda
   # hpd <- HPDinterval(object$sample[,"N"])[1:2]

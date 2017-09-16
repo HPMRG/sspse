@@ -62,10 +62,7 @@
 #' Sampling Data}, Biometrics.
 #' 
 #' @keywords package models
-#' @useDynLib sspse
+#' @useDynLib sspse, .registration = TRUE
 #' @importFrom utils packageDescription
 #' @import parallel
 NULL
-
-
-

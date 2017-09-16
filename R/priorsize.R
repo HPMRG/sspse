@@ -31,7 +31,7 @@ priorsize<-function(s,
     stop("You need to specify 'mean.prior.size', and possibly 'sd.prior.size' if you use the 'nbinom' prior.") 
   }
   if(is.null(K)){
-    K=round(quantile(s,0.80))
+    K=round(stats::quantile(s,0.80))
     degs <- s
     degs[degs>K] <- K
     degs[degs==0]<-1
@@ -149,8 +149,8 @@ priorsize<-function(s,
    for(m in 1:M){
     N <- sample(prior$x,size=1,prob=prior$lprior)
     if(N > n){
-     sigma <- sd.prior.degree*sqrt(1/rchisq(n=1, df = df.sd.prior))
-     mu <- rnorm(n=1,mean=mean.prior.degree, sd=sigma / df.mean.prior)
+     sigma <- sd.prior.degree*sqrt(1/(stats::rchisq(n=1, df = df.sd.prior)))
+     mu <- stats::rnorm(n=1,mean=mean.prior.degree, sd=sigma / df.mean.prior)
      pcmp <- cmp.natural(mu=mu,sigma=sigma)
      pcmp <- .C("rcmp",
                 x=integer(N-n),
@@ -162,7 +162,7 @@ priorsize<-function(s,
                 PACKAGE="sspse")$x
      nk=nk+( tabulate(c(s,pcmp),nbins=K) / (sum(nk > 0) ) )
      mx[m] <- mean(c(s,pcmp))
-     sdx[m] <- sqrt(var(c(s,pcmp)))
+     sdx[m] <- sqrt(stats::var(c(s,pcmp)))
     }
    }
    list(mu=mean(mx),sd=mean(sdx),pmf=nk / M)

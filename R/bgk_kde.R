@@ -48,7 +48,7 @@ R=MAX-MIN; dx=R/n; xmesh=MIN+seq(from=0,to=R,by=dx); N=length(data);
 # if data has repeated observations use the N below
 # N=length(as.numeric(names(table(data))));
 # bin the data uniformly using the grid defined above;
-w=hist(x=data,breaks=xmesh,plot=FALSE);initial_data=(w$counts)/N;
+w=graphics::hist(x=data,breaks=xmesh,plot=FALSE);initial_data=(w$counts)/N;
 initial_data=initial_data/sum(initial_data);
 
 dct1d <- function(data){
@@ -59,7 +59,7 @@ dct1d <- function(data){
   # Re-order the elements of the columns of x
   data = c(data[seq(1,n-1,2)], data[seq(n,2,-2)]);
   # Multiply FFT by weights:
-  data= Re(weight* fft(data));
+  data= Re(weight* stats::fft(data));
 data}
 
 a=dct1d(initial_data); # discrete cosine transform of initial data
@@ -79,7 +79,7 @@ fixed_point <- function(t,N,I,a2){
   out=t-(2*N*sqrt(pi)*f)^(-2/5);
 }
 
-t_star=tryCatch(uniroot(fixed_point,c(0,.1),N=N,I=I,a2=a2,tol=10^(-14))$root,error=function(e) .28*N^(-2/5));
+t_star=tryCatch(stats::uniroot(fixed_point,c(0,.1),N=N,I=I,a2=a2,tol=10^(-14))$root,error=function(e) .28*N^(-2/5));
 t_star = t_star * smooth
 # smooth the discrete cosine transform of initial data using t_star
 a_t=a*exp(-(0:(n-1))^2*pi^2*t_star/2);
@@ -92,7 +92,7 @@ idct1d <-  function(data){
   # Compute weights
   weights = n*exp(1i*(0:(n-1))*pi/(2*n));
   # Compute x tilde using equation (5.93) in Jain
-  data = Re(fft(weights*data,inverse=TRUE))/n;
+  data = Re(stats::fft(weights*data,inverse=TRUE))/n;
   # Re-order elements of each column according to equations (5.93) and
   # (5.94) in Jain
   out = rep(0,n);
