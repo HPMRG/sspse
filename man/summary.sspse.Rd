@@ -64,10 +64,6 @@ probs <- c(0.33333333,0.19047619,0.11904762,0.07936508,0.05555556,
            0.04040404,0.03030303,0.02331002,0.01831502,0.01465201)
 probs <- probs / sum(probs)
 
-# Look at the degree distribution for the prior
-# Plot these if you want
-# plot(x=1:K,y=probs,type="l")
-# points(x=1:K,y=probs)
 #
 # Create a sample
 #

@@ -67,7 +67,6 @@ the posterior mean network size distribution with sample histogram overlaid.
 }
 \examples{
 
-\dontrun{
 N0 <- 200
 n <- 100
 K <- 10
@@ -78,10 +77,6 @@ probs <- c(0.33333333,0.19047619,0.11904762,0.07936508,0.05555556,
            0.04040404,0.03030303,0.02331002,0.01831502,0.01465201)
 probs <- probs / sum(probs)
 
-# Look at the degree distribution for the prior
-# Plot these if you want
-# plot(x=1:K,y=probs,type="l")
-# points(x=1:K,y=probs)
 #
 # Create a sample
 #
@@ -89,12 +84,13 @@ set.seed(1)
 pop<-sample(1:K, size=N0, replace = TRUE, prob = probs)
 s<-sample(pop, size=n, replace = FALSE, prob = pop)
  
-out <- posteriorsize(s=s,interval=10)
+# Here interval=1 so that it will run faster. It should be higher in a 
+# real application.
+out <- posteriorsize(s=s,interval=1)
 plot(out, HPD.level=0.9,data=pop[s])
 summary(out, HPD.level=0.9)
 # Let's look at some MCMC diagnostics
 plot(out, HPD.level=0.9,mcmc=TRUE)
-}
 
 }
 \references{
