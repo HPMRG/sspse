@@ -418,7 +418,7 @@ posteriorsize<-function(s,
   }
   ### since running job in parallel, start pvm (if not already running)
   else{
-    cl <- sspse::beginparallel(parallel,type=parallel.type)
+    cl <- beginparallel(parallel,type=parallel.type)
     ### divide the samplesize by the number of parallel runs (number of MCMC samples)
     samplesize.parallel=round(samplesize/parallel)
     ### cluster call, send following to each of the virtual machines, posnbinom function
@@ -493,7 +493,7 @@ posteriorsize<-function(s,
     }
     
     ### stop cluster
-    sspse::endparallel(cl,type=parallel.type)
+    endparallel(cl,type=parallel.type)
   }
   Cret$N <- c(Cret$MAP["N"], 
               mean(Cret$sample[,"N"]),
