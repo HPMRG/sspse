@@ -24,14 +24,14 @@ void bnw_unpos(int *K, int *n, int *s, int *snk, double *Nk, double *mu,
 	  }
     }
     ll+=lgammafn(N+1.);
-    Rprintf("N=%f llik=%f\n",N,ll);
+//  Rprintf("N=%f llik=%f\n",N,ll);
     Nc=N;
     for(i=0;i<(*n);i++){
-    Rprintf("ll=%f s=%d Nc=%f\n",ll,s[i],Nc);
+//  Rprintf("ll=%f s=%d Nc=%f\n",ll,s[i],Nc);
 	  ll+=log(s[i]/Nc);
 	  Nc-=s[i];
     }
-    Rprintf("llik=%f",ll);
+//  Rprintf("llik=%f",ll);
     *unpos=ll;
 }
 

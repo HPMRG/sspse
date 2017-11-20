@@ -193,8 +193,8 @@ void bnw_NC(int *N, int *K, int *n, int *s, int *nk, int *Nk,
      vhtd=(nvalidhtd*vhtd+Mi*vhtdi)/(nvalidhtd+Mi);
      nvalidhtn+=nvalidthistime;
      nvalidhtd+=Mi;
-     Rprintf("N=%d minvalid=%d nvalidhtn=%d nvalidhtd=%d\n",
-	     *N,minvalid,nvalidhtn, nvalidhtd);
+//   Rprintf("N=%d minvalid=%d nvalidhtn=%d nvalidhtd=%d\n",
+//    *N,minvalid,nvalidhtn, nvalidhtd);
     }
 //  htn=mhtn+0.5*vhtn+log(1.*nvalidhtn);
     htn=mhtn+0.5*vhtn+log(1.*nvalidhtd);
@@ -205,8 +205,8 @@ void bnw_NC(int *N, int *K, int *n, int *s, int *nk, int *Nk,
 //  htn=mhtn+0.5*vhtn;
 //  htd=mhtd+0.5*vhtd;
     *unpos=htn-htd+lcardN;
-    Rprintf("N=%d Pct Valid=%f\n",Ni,(nvalidhtn*1.)/(1.*nvalidhtd));
-    Rprintf("htn=%f htd=%f lcardN=%f\n",htn,htd,lcardN);
+//  Rprintf("N=%d Pct Valid=%f\n",Ni,(nvalidhtn*1.)/(1.*nvalidhtd));
+//  Rprintf("htn=%f htd=%f lcardN=%f\n",htn,htd,lcardN);
 //  htn=htn-htd;
 //  htn=log(htn)-log(htd)+lcardN;
 //    cpos=log(cpos/(1.*(*M)));

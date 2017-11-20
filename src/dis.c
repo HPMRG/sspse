@@ -191,8 +191,9 @@ void gsppsdis (int *pop, int *dis,
       lpm[i]=lpm[i-1]+lpm[i];
     }
     gamma0rt = lpm[imaxm-1] * unif_rand();
-    Ni = 0;
-    while(gamma0rt > lpm[Ni]){Ni++;}
+    for (Ni=0; Ni<imaxm; Ni++){
+      if(gamma0rt <= lpm[Ni]) break;
+    }
 //  if (*verbose) Rprintf("Ni %d lpm[imaxm-1] %f lpm[Ni] %f\n", Ni, lpm[imaxm-1],
 //  lpm[Ni]);
 //  }

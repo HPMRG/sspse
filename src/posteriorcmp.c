@@ -60,7 +60,7 @@ void gcmp (int *pop,
   dimsample=5+Np;
 
   double *pi = (double *) malloc(sizeof(double) * Ki);
-  double *pd = (double *) malloc(sizeof(double) * ni);
+  double *pd = (double *) malloc(sizeof(double) * Ki);
   int *d = (int *) malloc(sizeof(int) * ni);
   int *b = (int *) malloc(sizeof(int) * ni);
   int *Nk = (int *) malloc(sizeof(int) * Ki);
@@ -171,14 +171,15 @@ void gcmp (int *pop,
       lpm[i]=lpm[i-1]+lpm[i];
     }
     temp = lpm[imaxm-1] * unif_rand();
-    Ni = 0;
-    while(temp > lpm[Ni]){Ni++;}
+    for (Ni=0; Ni<imaxm; Ni++){
+      if(temp <= lpm[Ni]) break;
+    }
     // Add back the sample size
     Ni += ni;
     if(Ni > imaxN) Ni = imaxN;
 		    
     if((fabs(lambdad[0])>0.0000001) | (fabs(nud[0])>0.0000001)){
-Rprintf("No! lambdad[0] %f nud[0] %f\n", lambdad[0], nud[0]);
+//Rprintf("No! lambdad[0] %f nud[0] %f\n", lambdad[0], nud[0]);
     for (i=0; i<Ki; i++){
       nk[i]=0;
     }
@@ -203,9 +204,9 @@ Rprintf("No! lambdad[0] %f nud[0] %f\n", lambdad[0], nud[0]);
 //        if((j)>0){
 //         pd[i] -= pgamma(2.0*lambdad[i]/((j)-0.5),1.0,1.0,0,0);
 //        }
-if((pd[i]<0.0 ) | (pd[i]>1.0)){ Rprintf("j %d pop[j] %d i %d pd[i] %f\n", j, pop[j],i, pd[i]);
- Rprintf("i %d pi[i] %f, gammart %f\n", i, pi[i],  gammart);
- }
+//if((pd[i]<0.0 ) | (pd[i]>1.0)){ Rprintf("j %d pop[j] %d i %d pd[i] %f\n", j, pop[j],i, pd[i]);
+// Rprintf("i %d pi[i] %f, gammart %f\n", i, pi[i],  gammart);
+// }
 //       if(j==75 & isamp == 4){
 ////      for (i=0; i<100; i++){
 //Rprintf("j %d dis %d i %d l[i] %f pd[i] %f\n", j, ddis, i, lambdad[i], pd[i]);
@@ -215,16 +216,17 @@ if((pd[i]<0.0 ) | (pd[i]>1.0)){ Rprintf("j %d pop[j] %d i %d pd[i] %f\n", j, pop
       // Set up pd to be cumulative for the random draws
       for (i=1; i<Ki; i++){
        pd[i]=pd[i-1]+pd[i];
-if((pd[i]<0.0 ) | (pd[i]>1.0)){ Rprintf("j %d pop[j] %d i %d pd[i] %f\n", j, pop[j],i, pd[i]);}
+//if((pd[i]<0.0 ) | (pd[i]>1.0)){ Rprintf("j %d pop[j] %d i %d pd[i] %f\n", j, pop[j],i, pd[i]);}
       }
       /* Draw unobserved degrees sizes */
       for (i=0; i<ni; i++){
        if(pop[i]==(j)){
         /* Now propose the true size for unit i based on reported size and disease status */
         /* In the next three lines a sizei is chosen */
-        sizei=1;
         temp = pd[Ki-1] * unif_rand();
-        while(temp > pd[sizei-1]){sizei++;}
+        for (sizei=1; sizei<=Ki; sizei++){
+          if(temp <= pd[sizei-1]) break;
+        }
         nk[sizei-1]=nk[sizei-1]+1;
         d[i]=sizei;
 //Rprintf("j %d dis %d sizei %d pd[Ki-1] %f\n", j, ddis, sizei, pd[Ki-1]);
@@ -269,10 +271,11 @@ if((pd[i]<0.0 ) | (pd[i]>1.0)){ Rprintf("j %d pop[j] %d i %d pd[i] %f\n", j, pop
         /* Now propose unseen size for unit i */
         /* In the next two lines a sizei is chosen */
         /* with parameters mui and sigmai */
-        sizei = 1;
 	temp = unif_rand();
 //      gammart = pi[Ki-1] * unif_rand();
-        while(temp > pi[sizei-1]){sizei++;}
+        for (sizei=1; sizei<=Ki; sizei++){
+          if(temp <= pi[sizei-1]) break;
+        }
 //      Rprintf("sizei %d pi[Ki-1] %f gammart %f\n", sizei, pi[Ki-1],gammart);
        }
       }
@@ -318,6 +321,8 @@ if((pd[i]<0.0 ) | (pd[i]>1.0)){ Rprintf("j %d pop[j] %d i %d pd[i] %f\n", j, pop
   }
   PutRNGstate();  /* Disable RNG before returning */
   free(pi);
+  free(pd);
+  free(d);
   free(psample);
   free(pdegi);
   free(b);

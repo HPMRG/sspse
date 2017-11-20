@@ -122,9 +122,9 @@
 #' @keywords models
 #' @examples
 #' 
-#' dsizeprior(n=100,
-#'            type="beta",
-#'            mode.prior.size=1000)
+#' prior <- dsizeprior(n=100,
+#'                     type="beta",
+#'                     mode.prior.size=1000)
 #' 
 #' @export dsizeprior
 dsizeprior<-function(n,

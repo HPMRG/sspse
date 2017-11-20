@@ -64,7 +64,7 @@ void gcmpdisease (int *pop, int *dis,
 
   double *p0i = (double *) malloc(sizeof(double) * Ki);
   double *p1i = (double *) malloc(sizeof(double) * Ki);
-  double *pd = (double *) malloc(sizeof(double) * ni);
+  double *pd = (double *) malloc(sizeof(double) * Ki);
   int *d = (int *) malloc(sizeof(int) * ni);
   int *b = (int *) malloc(sizeof(int) * ni);
   int *Nk0 = (int *) malloc(sizeof(int) * Ki);
@@ -228,8 +228,9 @@ void gcmpdisease (int *pop, int *dis,
       lpm[i]=lpm[i-1]+lpm[i];
     }
     temp = lpm[imaxm-1] * unif_rand();
-    Ni = 0;
-    while(temp > lpm[Ni]){Ni++;}
+    for (Ni=0; Ni<imaxm; Ni++){
+      if(temp <= lpm[Ni]) break;
+    }
 //  if (*verbose) Rprintf("Ni %d lpm[imaxm-1] %f lpm[Ni] %f\n", Ni, lpm[imaxm-1],
 //  lpm[Ni]);
 //  }
@@ -307,9 +308,10 @@ void gcmpdisease (int *pop, int *dis,
        if((pop[i]==(j)) && (dis[i]==ddis)){
         /* Now propose the true size for unit i based on reported size and disease status */
         /* In the next three lines a sizei is chosen */
-        sizei=1;
         temp = pd[Ki-1] * unif_rand();
-        while(temp > pd[sizei-1]){sizei++;}
+        for (sizei=1; sizei<=Ki; sizei++){
+          if(temp <= pd[sizei-1]) break;
+        }
         if(dis[i]==1){
           nk1[sizei-1]=nk1[sizei-1]+1;
         }else{
@@ -356,7 +358,6 @@ void gcmpdisease (int *pop, int *dis,
        sizei=1000000;
        while(log(1.0-unif_rand()) > -r*sizei){
         /* First propose unseen disease status for unit i */
-        sizei = 1;
         if(unif_rand() < pbeta){
           dis[i]=1;
           /* Now propose unseen size for unit i based on disease status */
@@ -364,7 +365,9 @@ void gcmpdisease (int *pop, int *dis,
           /* with parameters mu1i and sigma1i */
 //        temp = p1i[Ki-1] * unif_rand();
           temp = unif_rand();
-          while(temp > p1i[sizei-1]){sizei++;}
+          for (sizei=1; sizei<=Ki; sizei++){
+            if(temp <= p1i[sizei-1]) break;
+          }
         }else{
           dis[i]=0;
           /* Now propose unseen size for unit i based on non-disease status */
@@ -372,7 +375,9 @@ void gcmpdisease (int *pop, int *dis,
           /* with parameters mu0i and sigma0i */
 //        temp = p0i[Ki-1] * unif_rand();
           temp = unif_rand();
-          while(temp > p0i[sizei-1]){sizei++;}
+          for (sizei=1; sizei<=Ki; sizei++){
+            if(temp <= p0i[sizei-1]) break;
+          }
         }
        }
       }
@@ -441,9 +446,11 @@ void gcmpdisease (int *pop, int *dis,
   free(psample);
   free(pdeg0i);
   free(pdeg1i);
+  free(pd);
   free(p0i);
   free(p1i);
   free(b);
+  free(d);
   free(Nk0);
   free(Nk0pos);
   free(Nk1);

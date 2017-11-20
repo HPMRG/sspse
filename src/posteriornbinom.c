@@ -143,8 +143,9 @@ void gnbinom (int *pop,
       lpm[i]=lpm[i-1]+lpm[i];
     }
     gammart = lpm[imaxm-1] * unif_rand();
-    Ni = 0;
-    while(gammart > lpm[Ni]){Ni++;}
+    for (Ni=0; Ni<imaxm; Ni++){
+      if(gammart <= lpm[Ni]) break;
+    }
     // Add back the sample size
     Ni+= ni;
     if(Ni > imaxN) Ni = imaxN;
@@ -177,9 +178,10 @@ void gnbinom (int *pop,
       while(log(1.0-unif_rand()) > -r*popi){
        /* In the next 3 lines a CMP (popi) is chosen with */
        /* log-lambda mui and nu sigmai */
-       popi = 1;
        gammart = pi[Ki-1] * unif_rand();
-       while(gammart > pi[popi-1]){popi++;}
+       for (popi=1; popi<=Ki; popi++){
+         if(gammart <= pi[popi-1]) break;
+       }
 //    Rprintf("pis %f popi %d pi[Ki-1] %f gammart %f\n", pis, popi, pi[Ki-1],gammart);
       }
       if(popi > Ki){popi=Ki;}
@@ -216,6 +218,8 @@ void gnbinom (int *pop,
   free(Nk);
   free(Nkpos);
   free(lpm);
+  free(pdegi);
+  free(psample);
   free(musample);
   free(sigmasample);
 }
@@ -398,6 +402,10 @@ void MHnbinom (int *Nk, int *K,
   }
   free(pi);
   free(pstar);
+  free(odegstar);
+  free(odegi);
+  free(pdegstar);
+  free(pdegi);
   PutRNGstate();  /* Disable RNG before returning */
   *staken = taken;
 }

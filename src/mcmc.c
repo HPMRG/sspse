@@ -138,8 +138,9 @@ void gspps (int *pop,
       lpm[i]=lpm[i-1]+lpm[i];
     }
     gammart = lpm[imaxm-1] * unif_rand();
-    Ni = 0;
-    while(gammart > lpm[Ni]){Ni++;}
+    for (Ni=0; Ni<imaxm; Ni++){
+      if(gammart <= lpm[Ni]) break;
+    }
     Ni+= ni;
     if(Ni > imaxN) Ni = imaxN;
 		    
@@ -205,6 +206,8 @@ void gspps (int *pop,
   free(Nk);
   free(Nkpos);
   free(lpm);
+  free(pdegi);
+  free(psample);
   free(musample);
   free(sigmasample);
 }
@@ -319,6 +322,7 @@ void gsppsN (int *pop,
   free(b);
   free(Nk);
   free(phi);
+  free(psample);
   free(musample);
   free(sigmasample);
 }
@@ -501,6 +505,10 @@ void MHplnorig (int *Nk, int *K,
   }
   free(pi);
   free(pstar);
+  free(odegstar);
+  free(odegi);
+  free(pdegstar);
+  free(pdegi);
   PutRNGstate();  /* Disable RNG before returning */
   *staken = taken;
 }

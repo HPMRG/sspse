@@ -133,9 +133,9 @@ proportion of the population size in the sample.
 
 \examples{
 
-dsizeprior(n=100,
-           type="beta",
-           mode.prior.size=1000)
+prior <- dsizeprior(n=100,
+                    type="beta",
+                    mode.prior.size=1000)
 
 }
 \references{

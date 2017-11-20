@@ -53,7 +53,6 @@ actual correlations print \code{summary(object)$correlation} directly.
 }
 \examples{
 
-\dontrun{
 N0 <- 200
 n <- 100
 K <- 10
@@ -71,12 +70,13 @@ set.seed(1)
 pop<-sample(1:K, size=N0, replace = TRUE, prob = probs)
 s<-sample(pop, size=n, replace = FALSE, prob = pop)
  
-out <- posteriorsize(s=s,interval=10)
+# Here interval=1 so that it will run faster. It should be higher in a 
+# real application.
+out <- posteriorsize(s=s,interval=1)
 plot(out, HPD.level=0.9,data=pop[s])
 summary(out, HPD.level=0.9)
 # Let's look at some MCMC diagnostics
 plot(out, HPD.level=0.9,mcmc=TRUE)
-}
 
 }
 \seealso{

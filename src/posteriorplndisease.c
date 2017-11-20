@@ -197,8 +197,9 @@ void gplndisease (int *pop, int *dis,
       lpm[i]=lpm[i-1]+lpm[i];
     }
     gamma0rt = lpm[imaxm-1] * unif_rand();
-    Ni = 0;
-    while(gamma0rt > lpm[Ni]){Ni++;}
+    for (Ni=0; Ni<imaxm; Ni++){
+      if(gamma0rt <= lpm[Ni]) break;
+    }
 //  if (*verbose) Rprintf("Ni %d lpm[imaxm-1] %f lpm[Ni] %f\n", Ni, lpm[imaxm-1],
 //  lpm[Ni]);
 //  }
@@ -236,21 +237,24 @@ void gplndisease (int *pop, int *dis,
        popi=1000000;
        while((log(1.0-unif_rand()) > -r*popi)){
         /* First propose unseen disease status for unit i */
-        popi = 1;
         if(unif_rand() < pbeta){
           dis[i]=1;
           /* Now propose unseen size for unit i based on disease status */
           /* In the next two lines a popi is chosen */
           /* with parameters mu1i and sigma1i */
           gamma1rt = p1i[Ki-1] * unif_rand();
-          while(gamma1rt > p1i[popi-1]){popi++;}
+          for (popi=1; popi<=Ki; popi++){
+            if(gamma1rt <= p1i[popi-1]) break;
+          }
         }else{
           dis[i]=0;
           /* Now propose unseen size for unit i based on non-disease status */
           /* In the next two lines a popi is chosen */
           /* with parameters mu0i and sigma0i */
           gamma0rt = p0i[Ki-1] * unif_rand();
-          while(gamma0rt > p0i[popi-1]){popi++;}
+          for (popi=1; popi<=Ki; popi++){
+            if(gamma0rt <= p0i[popi-1]) break;
+          }
         }
        }
       }

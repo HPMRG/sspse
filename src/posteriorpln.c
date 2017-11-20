@@ -148,8 +148,9 @@ void gpln (int *pop,
       lpm[i]=lpm[i-1]+lpm[i];
     }
     gammart = lpm[imaxm-1] * unif_rand();
-    Ni = 0;
-    while(gammart > lpm[Ni]){Ni++;}
+    for (Ni=0; Ni<imaxm; Ni++){
+      if(gammart <= lpm[Ni]) break;
+    }
     // Add back the sample size
     Ni+= ni;
     if(Ni > imaxN) Ni = imaxN;
@@ -183,9 +184,10 @@ void gpln (int *pop,
         /* Now propose unseen size for unit i */
         /* In the next two lines a popi is chosen */
         /* with parameters mui and sigmai */
-        popi = 1;
         gammart = pi[Ki-1] * unif_rand();
-        while(gammart > pi[popi-1]){popi++;}
+        for (popi=1; popi<=Ni; popi++){
+          if(gammart <= pi[popi-1]) break;
+        }
 //      Rprintf("popi %d pi[Ki-1] %f gammart %f\n", popi, pi[Ki-1],gammart);
        }
       }
