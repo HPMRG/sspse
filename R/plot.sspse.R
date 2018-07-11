@@ -42,6 +42,7 @@
 #' is produced.  If \code{"both"}, then all plots for \code{"N"} and
 #' \code{"others"} are produced.
 #' @param main an overall title for the posterior plot.
+#' @param smooth the (optional) smoothing parameter for the density estimate.
 #' @param \dots further arguments passed to or from other methods.
 #' @seealso The model fitting function \code{\link{posteriorsize}},
 #' \code{\link[graphics]{plot}}.
@@ -105,7 +106,7 @@
 #' @export
 plot.sspse <- function(x,
 		       xlim=NULL,data=NULL,support=1000,HPD.level=0.90,N=NULL,ylim=NULL,mcmc=FALSE,type="both",
-		       main="posterior for population size",...){
+		       main="posterior for population size",smooth=4,...){
   p.args <- as.list( sys.call() )[-c(1,2)]
   formal.args<-formals(sys.function())[-c(1)]
 
@@ -141,7 +142,7 @@ if(!is.null(out)){
   outN <- out[,"N"]
   ##a=locfit( ~ lp(outN, nn=0.35, h=0, maxk=500))
   xp <- seq(x$n,x$maxN, length=control$support)
-  posdensN=bgk_kde(data=outN,n=2^(ceiling(log(x$maxN-x$n)/log(2))),MIN=x$n,MAX=x$maxN)
+  posdensN=bgk_kde(data=outN,n=2^(ceiling(log(x$maxN-x$n)/log(2))),MIN=x$n,MAX=x$maxN, smooth=smooth)
   maxposdensN <- max(posdensN[1,],na.rm=TRUE)
   posdensN <- stats::spline(x=posdensN[1,],y=posdensN[2,],xout=xp)$y
   posdensN[xp > maxposdensN] <- 0

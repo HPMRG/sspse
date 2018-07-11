@@ -1,7 +1,7 @@
 Package: sspse
 Type: Package
-Version: 0.5-5
-Date: 2017-11-20
+Version: 0.5-6
+Date: 2018-07-12
 Title: Estimating Hidden Population Size using Respondent Driven
     Sampling Data
 Authors@R: c( person("Mark S.", "Handcock", role=c("aut","cre","cph"),

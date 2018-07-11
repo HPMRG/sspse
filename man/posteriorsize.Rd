@@ -4,22 +4,30 @@
 \alias{posteriorsize}
 \title{Estimating hidden population size using RDS data}
 \usage{
-posteriorsize(s, median.prior.size = NULL, interval = 10, burnin = 5000,
-  maxN = NULL, K = max(s, na.rm = TRUE), samplesize = 1000,
+posteriorsize(s, s2 = NULL, rc = rep(FALSE, length(s2)),
+  median.prior.size = NULL, interval = 10, burnin = 5000, maxN = NULL,
+  K = max(c(s, s2), na.rm = TRUE), samplesize = 1000,
   quartiles.prior.size = NULL, mean.prior.size = NULL,
   mode.prior.size = NULL, priorsizedistribution = c("beta", "flat",
   "nbinom", "pln", "supplied"), effective.prior.df = 1,
   sd.prior.size = NULL, mode.prior.sample.proportion = NULL, alpha = NULL,
   degreedistribution = c("cmp", "nbinom", "pln"), mean.prior.degree = NULL,
   sd.prior.degree = NULL, max.sd.prior.degree = 4, df.mean.prior = 1,
-  df.sd.prior = 3, Np = 0, nk = NULL, n = length(s), muproposal = 0.1,
-  sigmaproposal = 0.15, burnintheta = 500, parallel = 1,
-  parallel.type = "MPI", seed = NULL, maxbeta = 120, dispersion = 0,
-  supplied = list(maxN = maxN), verbose = TRUE)
+  df.sd.prior = 3, Np = 0, nk = NULL, n = length(s), n2 = length(s2),
+  muproposal = 0.1, sigmaproposal = 0.15, burnintheta = 500,
+  parallel = 1, parallel.type = "MPI", seed = NULL, maxbeta = 120,
+  dispersion = 0, supplied = list(maxN = maxN), verbose = TRUE)
 }
 \arguments{
-\item{s}{vector of integers; the vector of degrees from the RDS in order
+\item{s}{vector of integers; the vector of degrees from the RDS in the order
 they are recorded.}
+
+\item{s2}{vector of integers; optionally, the vector of degrees from a second RDS,
+subsequent to the first RDS recorded in \eqn{s}. These are also in the order
+they are recorded.}
+
+\item{rc}{vector of logicals; optionally, a vector of the same length as \eqn{s2} indicating if the 
+corresponding unit was sampled in the first RDS.}
 
 \item{median.prior.size}{scalar; A hyperparameter being the mode of the
 prior distribution on the population size.}
@@ -112,9 +120,12 @@ parametric degree distribution model.}
 sample with degree k. This is usually computed from \eqn{s} automatically as
 \code{tabulate(s,nbins=K)} and not usually specified by the user.}
 
-\item{n}{vector; the vector of counts for the number of people in the sample
-with degree k. This is usually computed from \eqn{s} automatically and not
-usually specified by the user.}
+\item{n}{integer; the number of people in the sample. This is usually computed from
+\eqn{s} automatically and not usually specified by the user.}
+
+\item{n2}{integer; If \eqn{s2} is specified, this is the number of people in the second sample. 
+This is usually computed from
+\eqn{s} automatically and not usually specified by the user.}
 
 \item{muproposal}{scalar; The standard deviation of the proposal
 distribution for the mean degree.}

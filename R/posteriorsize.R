@@ -7,8 +7,13 @@
 #' It uses the order of selection of the sample to provide information
 #' on the distribution of network sizes over the population members.
 #' 
-#' @param s vector of integers; the vector of degrees from the RDS in order
+#' @param s vector of integers; the vector of degrees from the RDS in the order
 #' they are recorded.
+#' @param s2 vector of integers; optionally, the vector of degrees from a second RDS,
+#' subsequent to the first RDS recorded in \eqn{s}. These are also in the order
+#' they are recorded.
+#' @param rc vector of logicals; optionally, a vector of the same length as \eqn{s2} indicating if the 
+#' corresponding unit was sampled in the first RDS.
 #' @param median.prior.size scalar; A hyperparameter being the mode of the
 #' prior distribution on the population size.
 #' @param interval count; the number of proposals between sampled statistics.
@@ -78,9 +83,11 @@
 #' @param nk vector; the vector of counts for the number of people in the
 #' sample with degree k. This is usually computed from \eqn{s} automatically as
 #' \code{tabulate(s,nbins=K)} and not usually specified by the user.
-#' @param n vector; the vector of counts for the number of people in the sample
-#' with degree k. This is usually computed from \eqn{s} automatically and not
-#' usually specified by the user.
+#' @param n integer; the number of people in the sample. This is usually computed from
+#' \eqn{s} automatically and not usually specified by the user.
+#' @param n2 integer; If \eqn{s2} is specified, this is the number of people in the second sample. 
+#' This is usually computed from
+#' \eqn{s} automatically and not usually specified by the user.
 #' @param muproposal scalar; The standard deviation of the proposal
 #' distribution for the mean degree.
 #' @param sigmaproposal scalar; The standard deviation of the proposal
@@ -279,11 +286,12 @@
 #' plot(out, HPD.level=0.9,mcmc=TRUE)
 #' @export posteriorsize
 posteriorsize<-function(s,
+                  s2=NULL, rc=rep(FALSE, length(s2)),
 		  median.prior.size=NULL,
                   interval=10,
                   burnin=5000,
                   maxN=NULL,
-                  K=max(s,na.rm=TRUE),
+                  K=max(c(s,s2),na.rm=TRUE),
                   samplesize=1000,
 		  quartiles.prior.size=NULL,
 		  mean.prior.size=NULL,
@@ -299,6 +307,7 @@ posteriorsize<-function(s,
                   Np=0,
                   nk=NULL,
                   n=length(s),
+                  n2=length(s2),
                   muproposal=0.1, 
                   sigmaproposal=0.15, 
                   burnintheta=500,
@@ -320,13 +329,28 @@ posteriorsize<-function(s,
    s <- s[remvalues]
    n <- length(s)
   }
+  s.prior <- s
+  if(!is.null(s2)){
+    if(!is.logical(rc) | length(s2)!=length(rc)){
+      stop("The argument rc should be a logical vector of the same length as s2, indicating if the corresponding unit was sampled in the first RDS.")
+    }
+    remvalues <- !is.na(s2)
+    if(sum(remvalues) < length(s2)){
+     warning(paste(length(s2)-sum(remvalues),"of",length(s2),
+  	  "sizes values from the second RDS were missing and were removed."), call. = FALSE)
+     s2 <- s2[remvalues]
+     rc <- rc[remvalues]
+     n2 <- length(s2)
+    }
+  }
+  s.prior <- c(s.prior,s2[!rc])
   priorsizedistribution=match.arg(priorsizedistribution)
   if(priorsizedistribution=="nbinom" && missing(mean.prior.size)){
     stop("You need to specify 'mean.prior.size', and possibly 'sd.prior.size' if you use the 'nbinom' prior.") 
   }
   if(is.null(K)){
-    K=round(stats::quantile(s,0.90))+1
-    degs <- s
+    K=round(stats::quantile(s.prior,0.90))+1
+    degs <- s.prior
     degs[degs>K] <- K
     degs[degs==0]<-1
     ds<-degs
@@ -347,13 +371,13 @@ posteriorsize<-function(s,
     txp <- tapply(xp,xv,sum)
     txv <- tapply(xv,xv,stats::median)
     fit <- cmpmle(txv,txp,cutoff=1,cutabove=K-1,guess=c(mean.pd, sd.pd))
-    y=dcmp.natural(v=fit,x=(0:max(s)))
-    K=(0:max(s))[which.max(cumsum(y)>0.99)]
+    y=dcmp.natural(v=fit,x=(0:max(s.prior)))
+    K=(0:max(s.prior))[which.max(cumsum(y)>0.99)]
 #   K=round(stats::quantile(s,0.99))
   }
   cat(sprintf("The cap on influence of the personal network size is K = %d.\n",K))
   if(is.null(mean.prior.degree)){
-    degs <- s
+    degs <- s.prior
     degs[degs>K] <- K
     degs[degs==0]<-1
     ds<-degs
@@ -396,7 +420,7 @@ posteriorsize<-function(s,
   ### are we running the job in parallel (parallel > 1), if not just 
   #   call the degree specific function
   if(parallel==1){
-      Cret <- posfn(s=s,K=K,nk=nk,n=n,maxN=maxN,
+      Cret <- posfn(s=s,s2=s2,rc=rc,K=K,nk=nk,maxN=maxN,
                     mean.prior.degree=mean.prior.degree,df.mean.prior=df.mean.prior,
                     sd.prior.degree=sd.prior.degree,df.sd.prior=df.sd.prior,
                     muproposal=muproposal, sigmaproposal=sigmaproposal, 
@@ -424,7 +448,7 @@ posteriorsize<-function(s,
     ### cluster call, send following to each of the virtual machines, posnbinom function
     ### with it's arguments
     outlist <- parallel::clusterCall(cl, posfn,
-      s=s,K=K,nk=nk,n=n,maxN=maxN,
+      s=s,s2=s2,rc=rc,K=K,nk=nk,maxN=maxN,
       mean.prior.degree=mean.prior.degree,df.mean.prior=df.mean.prior,
       sd.prior.degree=sd.prior.degree,df.sd.prior=df.sd.prior,
       muproposal=muproposal, sigmaproposal=sigmaproposal, 

@@ -1,5 +1,5 @@
-poscmp<-function(s,maxN=NULL,
-                  K=2*max(s), nk=NULL, n=length(s),
+poscmp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
+                  K=2*max(c(s,s2)), nk=NULL, n=length(s), n2=length(s2),
                   mean.prior.degree=7, sd.prior.degree=3,
                   df.mean.prior=1, df.sd.prior=5,
                   muproposal=0.1, 
@@ -30,6 +30,7 @@ poscmp<-function(s,maxN=NULL,
      #
      s[s>K] <- K
      if(is.null(nk)){nk=tabulate(s,nbins=K)}
+     if(!is.null(s2)) s2[s2>K] <- K
     }
     #
     # Transform observed mean parametrization to log-normal
@@ -62,6 +63,13 @@ poscmp<-function(s,maxN=NULL,
     #
     dimsample <- 5+Np
     #
+    # Determine if we are in the two-sample case or the one-sample
+    if(!is.null(s2)){
+     n1 = n
+     n0 = sum(rc)
+     n = n1 + n2 - n0 # The number of unique people seen
+    }
+    #
     priorsizedistribution=match.arg(priorsizedistribution)
     prior <- dsizeprior(n=n,
 		  type=priorsizedistribution,
@@ -79,7 +87,34 @@ poscmp<-function(s,maxN=NULL,
                   log=TRUE,
                   supplied=supplied,
                   verbose=verbose)
-    Cret <- .C("gcmp",
+    if(!is.null(s2)){
+      Cret <- .C("gcmp2",
+              pop12=as.integer(c(s, s2[!rc], rep(0,prior$maxN-length(s)-length(s2[!rc])))),
+              pop21=as.integer(c(s2,sum(s)-sum(s2[rc]), rep(0,prior$maxN-length(s2)-1))),
+              nk=as.integer(nk),
+              K=as.integer(K),
+              n1=as.integer(n1),
+              n2=as.integer(n2),
+              n0=as.integer(n0),
+              samplesize=as.integer(samplesize),
+              burnin=as.integer(burnin),
+              interval=as.integer(interval),
+              mu=as.double(mu), df.mean.prior=as.double(df.mean.prior),
+              sigma=as.double(sigma), df.sd.prior=as.double(df.sd.prior),
+              Np=as.integer(Np),
+              muproposal=as.double(muproposal),
+              sigmaproposal=as.double(sigmaproposal),
+              N=as.integer(prior$N),
+              maxN=as.integer(prior$maxN),
+              sample=double(samplesize*dimsample),
+              ppos=double(K),
+              lpriorm=as.double(prior$lprior),
+              burnintheta=as.integer(burnintheta),
+              lambdad=as.double(lambdad),
+              nud=as.double(nud),
+              verbose=as.integer(verbose), PACKAGE="sspse")
+    }else{
+      Cret <- .C("gcmp",
               pop=as.integer(c(s,rep(0,prior$maxN-n))),
               nk=as.integer(nk),
               K=as.integer(K),
@@ -101,6 +136,7 @@ poscmp<-function(s,maxN=NULL,
               lambdad=as.double(lambdad),
               nud=as.double(nud),
               verbose=as.integer(verbose), PACKAGE="sspse")
+    }
     Cret$sample<-matrix(Cret$sample,nrow=samplesize,ncol=dimsample,byrow=TRUE)
     degnames <- NULL
     if(Np>0){degnames <- c(degnames,paste("pdeg",1:Np,sep=""))}
@@ -139,6 +175,7 @@ poscmp<-function(s,maxN=NULL,
     ### compute modes of posterior samples,Maximum A Posterior (MAP) values N, mu, sigma, degree1
     Cret$MAP <- apply(Cret$sample,2,mode.density)
     Cret$MAP["N"] <- mode.density(Cret$sample[,"N"],lbound=n,ubound=prior$maxN)
+    if(!is.null(s2)){Cret$n <- Cret$n1 +  Cret$n2 - Cret$n0}
 #
 #   Cret$MSE <- c(((prior$x-mean.prior.degree)^2)*prior$lprior/sum(prior$lprior),mean((Cret$sample[,"N"]-mean.prior.degree)^2))
     Cret$maxN <- prior$maxN
