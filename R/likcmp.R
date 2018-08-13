@@ -16,18 +16,15 @@ likcmp<-function(s,maxN=NULL,
 		  effective.prior.df=1,
 		  alpha=NULL,
                   seed=NULL,
-                  dispersion=0,
                   verbose=TRUE){
     #this function takes a vector of population sizes and a vector s of 
     #sequential sizes of sampled units and returns a log likelihood value
     #s values must all be positive integers
     if(!is.null(seed))  set.seed(as.integer(seed))
-    if(dispersion == 0) {
-     #
-     # Cap the maximum degree to K
-     #
-     s[s>K] <- K
-    }
+    #
+    # Cap the maximum degree to K
+    #
+    s[s>K] <- K
     #
     # Transform observed mean parametrization to log-normal
     # parametrization
@@ -35,26 +32,6 @@ likcmp<-function(s,maxN=NULL,
     out <- cmp.natural(mu=mean.prior.degree, sigma=sd.prior.degree)
     mu <- log(out$lambda)
     sigma <- out$nu
-    #
-    lambdad <- rep(dispersion,K)
-    nud <- rep(dispersion,K)
-    if(dispersion > 0) {
-       out <- list(lambda=8,nu=8)
-       map <- dispersion*(1:K)
-       for(i in 1:K){
-        out <- cmp.natural(mu=i, sigma=map[i], guess=c(log(out$lambda),log(out$nu)))
-        lambdad[i] <- log(out$lambda)
-        nud[i] <- out$nu
-       }
-    }
-    if(dispersion < 0) {
-#      proportion distribution
-# Mode
-       lambdad <- (1:K)
-# Median
-#      lambdad <- -log(2)/log(1-1/((1:K)+1))
-#      print(cbind(1:K,lambdad,nud))
-    }
     #
     dimsample <- 4+Np
     #
@@ -92,8 +69,6 @@ likcmp<-function(s,maxN=NULL,
               ppos=double(K),
               lpriorm=as.double(prior$lprior),
               burnintheta=as.integer(burnintheta),
-              lambdad=as.double(lambdad),
-              nud=as.double(nud),
               verbose=as.integer(verbose), PACKAGE="sspse")
     Cret$sample<-matrix(Cret$sample,nrow=samplesize,ncol=dimsample,byrow=TRUE)
     degnames <- NULL

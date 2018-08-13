@@ -16,7 +16,7 @@ priorsize<-function(s,
                   Np=0,
                   nk=NULL,
                   n=length(s),
-                  seed=NULL, dispersion=0,
+                  seed=NULL, 
                   supplied=list(maxN=maxN),
                   verbose=TRUE){
 #
@@ -90,13 +90,11 @@ priorsize<-function(s,
   ### are we running the job in parallel (parallel > 1), if not just 
   #   call the degree specific function
     if(!is.null(seed))  set.seed(as.integer(seed))
-    if(dispersion == 0) {
-     #
-     # Cap the maximum degree to K
-     #
-     s[s>K] <- K
-     if(is.null(nk)){nk=tabulate(s,nbins=K)}
-    }
+    #
+    # Cap the maximum degree to K
+    #
+    s[s>K] <- K
+    if(is.null(nk)){nk=tabulate(s,nbins=K)}
     #
     # Transform observed mean parametrization to log-normal
     # parametrization
@@ -104,24 +102,6 @@ priorsize<-function(s,
     out <- cmp.natural(mu=mean.prior.degree, sigma=sd.prior.degree)
     mu <- log(out$lambda)
     sigma <- out$nu
-    lambdad <- rep(dispersion,K)
-    nud <- rep(dispersion,K)
-    if(dispersion > 0) {
-       out <- list(lambda=8,nu=8)
-       map <- dispersion*(1:K)
-       for(i in 1:K){
-        out <- cmp.natural(mu=i, sigma=map[i], guess=c(log(out$lambda),log(out$nu)))
-        lambdad[i] <- log(out$lambda)
-        nud[i] <- out$nu
-       }
-    }
-    if(dispersion < 0) {
-#      proportion distribution
-# Mode
-       lambdad <- (1:K)
-# Median
-#      lambdad <- -log(2)/log(1-1/((1:K)+1))
-    }
     #
     dimsample <- 5+Np
     #

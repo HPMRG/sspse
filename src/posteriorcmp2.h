@@ -19,8 +19,6 @@ void gcmp2 (int *pop12,
            double *ppos,
            double *lpriorm,
            int *burnintheta,
-           double *lambdad,
-           double *nud,
            int *verbose
 			 );
 #endif /* POSTERIORCMP2_H */

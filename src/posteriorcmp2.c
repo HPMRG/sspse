@@ -27,13 +27,11 @@ void gcmp2 (int *pop12,
             double *ppos, 
             double *lpriorm, 
             int *burnintheta,
-	    double *lambdad,
-	    double *nud,
 	    int *verbose
 			 ) {
   int dimsample, Np;
   int step, staken, getone=1, intervalone=1, verboseMHcmp = 0;
-  int i, j, compute, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
+  int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
   int ni1, ni2, ni0;
   double mui, sigmai, dsamp;
   double dkappa, ddf, dmu, dsigma, dmuproposal, dsigmaproposal;
@@ -144,7 +142,7 @@ void gcmp2 (int *pop12,
     /* Draw new theta */
     /* but less often than the other full conditionals */
     if (step == -iburnin || step==(10*(step/10))) { 
-     MHcmp(Nk,K,mu,kappa,sigma,df,muproposal,sigmaproposal,
+     MHcmptheta(Nk,K,mu,kappa,sigma,df,muproposal,sigmaproposal,
            &Ni, &Np, psample,
 	   musample, sigmasample, &getone, &staken, burnintheta, &intervalone, 
 	   &verboseMHcmp);
@@ -213,111 +211,6 @@ void gcmp2 (int *pop12,
     Ni += ni;
     if(Ni > imaxN) Ni = imaxN;
 		    
-     /* Now the imputation code. This is not used */
-     if((fabs(lambdad[0])>0.0000001) | (fabs(nud[0])>0.0000001)){
-     for (i=0; i<Ki; i++){
-       nk[i]=0;
-     }
- 
-     /* Draw true degrees (sizes) based on the reported degrees*/
-     /* First find the reported degree distribution */
-     for (j=0; j<=maxpop; j++){
-      compute=0;
-      for (i=0; i<ni2; i++){if(pop21[i]==(j)){compute=1;}}
-      if(compute==1){
- //    Next four lines for cmp reporting distribution
- //    ?? Should it be cmp(j+1,...) or cmp(j,...)??
-       for (i=0; i<Ki; i++){
-        lzcmp = zcmp(exp(lambdad[i]),nud[i], errval, Ki, give_log1);
- //     pd[i]=pi[i]*cmp(j,lambdad[i],nud[i],lzcmp,give_log0);
-        pd[i]=pi[i]*cmp(j+1,lambdad[i],nud[i],lzcmp,give_log0);
-       }
-       // Set up pd to be cumulative for the random draws
-       for (i=1; i<Ki; i++){
-        pd[i]=pd[i-1]+pd[i];
-       }
-       /* Draw unobserved degrees sizes */
-       for (i=0; i<ni2; i++){
-        if(pop21[i]==(j)){
-         /* Now propose the true size for unit i based on reported size and disease status */
-         /* In the next three lines a sizei is chosen */
-         temp = pd[Ki-1] * unif_rand();
-         for (sizei=1; sizei<=Ki; sizei++){
-           if(temp <= pd[sizei-1]) break;
-         }
-         nk[sizei-1]=nk[sizei-1]+1;
-         d2[i]=sizei;
-        }
-       }
-      } //compute
-     } //for j
-     b2[ni2-1]=d2[ni2-1];
-     for (i=(ni2-2); i>=0; i--){
-       b2[i]=b2[i+1]+d2[i];
-     }
- 
-     /* Now impute the first population */
-     for (i=0; i<Ki; i++){
-       nk[i]=0;
-     }
- 
-     /* Draw true degrees (sizes) based on the reported degrees*/
-     /* First find the reported degree distribution */
-     for (j=0; j<=maxpop; j++){
- //Rprintf("j %d pop12[j] %d\n", j, pop12[j]);
-      compute=0;
-      for (i=0; i<ni1; i++){if(pop12[i]==(j)){compute=1;}}
-      if(compute==1){
- //    Next four lines for cmp reporting distribution
- //    ?? Should it be cmp(j+1,...) or cmp(j,...)??
-       for (i=0; i<Ki; i++){
-        lzcmp = zcmp(exp(lambdad[i]),nud[i], errval, Ki, give_log1);
- //     pd[i]=pi[i]*cmp(j,lambdad[i],nud[i],lzcmp,give_log0);
-        pd[i]=pi[i]*cmp(j+1,lambdad[i],nud[i],lzcmp,give_log0);
-       }
- //     Next seven lines for proportional reporting distribution
- //       for (i=0; i<Ki; i++){
- //        pd[i]   = pgamma(2.0*lambdad[i]/((j)+0.5),1.0,1.0,0,0);
- //        if((j)>0){
- //         pd[i] -= pgamma(2.0*lambdad[i]/((j)-0.5),1.0,1.0,0,0);
- //        }
- //if((pd[i]<0.0 ) | (pd[i]>1.0)){ Rprintf("j %d pop12[j] %d i %d pd[i] %f\n", j, pop12[j],i, pd[i]);
- // Rprintf("i %d pi[i] %f, gammart %f\n", i, pi[i],  gammart);
- // }
- //       if(j==75 & isamp == 4){
- ////      for (i=0; i<100; i++){
- //Rprintf("j %d dis %d i %d l[i] %f pd[i] %f\n", j, ddis, i, lambdad[i], pd[i]);
- //}// }
- //      pd[i]=p1i[i]*pd[i];
- //       }
-       // Set up pd to be cumulative for the random draws
-       for (i=1; i<Ki; i++){
-        pd[i]=pd[i-1]+pd[i];
- //if((pd[i]<0.0 ) | (pd[i]>1.0)){ Rprintf("j %d pop12[j] %d i %d pd[i] %f\n", j, pop12[j],i, pd[i]);}
-       }
-       /* Draw unobserved degrees sizes */
-       for (i=0; i<ni1; i++){
-        if(pop12[i]==(j)){
-         /* Now propose the true size for unit i based on reported size and disease status */
-         /* In the next three lines a sizei is chosen */
-         temp = pd[Ki-1] * unif_rand();
-         for (sizei=1; sizei<=Ki; sizei++){
-           if(temp <= pd[sizei-1]) break;
-         }
-         nk[sizei-1]=nk[sizei-1]+1;
-         d1[i]=sizei;
- //Rprintf("j %d dis %d sizei %d pd[Ki-1] %f\n", j, ddis, sizei, pd[Ki-1]);
-        }
-       }
-      } //compute
-     } //for j
-     b1[ni1-1]=d1[ni1-1];
-     for (i=(ni1-2); i>=0; i--){
-       b1[i]=b1[i+1]+d1[i];
-     }
- // Rprintf("j %d d[j] %d pd[Ki-1] %f\n", j, d[j], pd[Ki-1]);
-     } /* End of the impute */
-
     /* Draw phis */
     // tU1 is the total unit sizes from first list
     tU1=0;

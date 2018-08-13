@@ -16,8 +16,6 @@ void lcmp (int *pop,
            double *ppos,
            double *lpriorm,
            int *burnintheta,
-           double *lambdad,
-           double *nud,
            int *verbose
 			 );
 void MHlcmp (int *Nk, int *K,
