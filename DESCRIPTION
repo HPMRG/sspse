@@ -1,18 +1,15 @@
 Package: sspse
 Type: Package
-Version: 0.5-6
-Date: 2018-07-12
+Version: 0.6
+Date: 2018-08-13
 Title: Estimating Hidden Population Size using Respondent Driven
-    Sampling Data
+        Sampling Data
 Authors@R: c( person("Mark S.", "Handcock", role=c("aut","cre","cph"),
     email="handcock@stat.ucla.edu"), person("Krista J.", "Gile", role=c("aut","cph"),
     email="gile@math.umass.edu"))
 Maintainer: Mark S. Handcock <handcock@stat.ucla.edu>
-Depends:
-    parallel
-Suggests:
-    network,
-    testthat
+Depends: methods, parallel
+Suggests: network, testthat
 Description: Estimate the size of a networked population based on
     respondent-driven sampling data. The package is part of the "RDS Analyst"
     suite of packages for the analysis of respondent-driven sampling data.
@@ -20,6 +17,10 @@ Description: Estimate the size of a networked population based on
     Handcock, Gile and Mar (2015) <doi:10.1111/biom.12255>.
 License: GPL-3 + file LICENSE
 URL: http://www.hpmrg.org
-Imports:
-    coda
-RoxygenNote: 6.0.1
+Imports: RDS, coda
+RoxygenNote: 6.1.0
+Encoding: UTF-8
+NeedsCompilation: yes
+Packaged: 2018-08-13 21:23:57 UTC; handcock
+Author: Mark S. Handcock [aut, cre, cph],
+  Krista J. Gile [aut, cph]

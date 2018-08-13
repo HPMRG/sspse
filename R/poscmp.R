@@ -2,10 +2,17 @@ poscmp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
                   K=2*max(c(s,s2)), nk=NULL, n=length(s), n2=length(s2),
                   mean.prior.degree=7, sd.prior.degree=3,
                   df.mean.prior=1, df.sd.prior=5,
+		  beta0.mean.prior=-3, beta1.mean.prior=0,
+		  beta0.sd.prior=10, beta1.sd.prior=10,
+		  mem.mean.prior=0, df.mem.mean.prior=5, 
+		  mem.sd.prior=5, df.mem.sd.prior=3, 
                   muproposal=0.1, 
                   sigmaproposal=0.15, 
+                  beta0proposal=0.1, beta1proposal=0.001,
+                  memmuproposal=0.1, memsdproposal=0.15,
+		  visibility=TRUE,
                   Np=0,
-                  samplesize=10,burnin=0,interval=1,burnintheta=500,
+                  samplesize=10,burnin=0,interval=1,burnintheta=500,burninbeta=20,
 		  priorsizedistribution=c("beta","nbinom","pln","flat","supplied"),
 		  mean.prior.size=NULL, sd.prior.size=NULL,
 		  mode.prior.sample.proportion=NULL,
@@ -16,22 +23,22 @@ poscmp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
 		  effective.prior.df=1,
 		  alpha=NULL,
                   seed=NULL,
-                  dispersion=0,
                   maxbeta=120,
                   supplied=list(maxN=maxN),
+              num.recruits=NULL,
+              recruit.times=NULL,
+              max.coupons=NULL,
                   verbose=TRUE){
     #this function takes a vector of population sizes and a vector s of 
     #sequential sizes of sampled units and returns a log likelihood value
     #s values must all be positive integers
     if(!is.null(seed))  set.seed(as.integer(seed))
-    if(dispersion == 0) {
-     #
-     # Cap the maximum degree to K
-     #
-     s[s>K] <- K
-     if(is.null(nk)){nk=tabulate(s,nbins=K)}
-     if(!is.null(s2)) s2[s2>K] <- K
-    }
+    #
+    # Cap the maximum degree to K
+    #
+    s[s>K] <- K
+    if(is.null(nk)){nk=tabulate(s,nbins=K)}
+    if(!is.null(s2)) s2[s2>K] <- K
     #
     # Transform observed mean parametrization to log-normal
     # parametrization
@@ -41,27 +48,11 @@ poscmp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
     sigma <- out$nu
 #   sigma <- max(0.00001, sigma)
     #
-    lambdad <- rep(dispersion,K)
-    nud <- rep(dispersion,K)
-    if(dispersion > 0) {
-       out <- list(lambda=8,nu=8)
-       map <- dispersion*(1:K)
-       for(i in 1:K){
-        out <- cmp.natural(mu=i, sigma=map[i], guess=c(log(out$lambda),log(out$nu)))
-        lambdad[i] <- log(out$lambda)
-        nud[i] <- out$nu
-       }
+    if(visibility){
+      dimsample <- 5+Np+4
+    }else{
+      dimsample <- 5+Np
     }
-    if(dispersion < 0) {
-#      proportion distribution
-# Mode
-       lambdad <- (1:K)
-# Median
-#      lambdad <- -log(2)/log(1-1/((1:K)+1))
-#      print(cbind(1:K,lambdad,nud))
-    }
-    #
-    dimsample <- 5+Np
     #
     # Determine if we are in the two-sample case or the one-sample
     if(!is.null(s2)){
@@ -110,10 +101,43 @@ poscmp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
               ppos=double(K),
               lpriorm=as.double(prior$lprior),
               burnintheta=as.integer(burnintheta),
-              lambdad=as.double(lambdad),
-              nud=as.double(nud),
+              burninbeta=as.integer(burninbeta),
               verbose=as.integer(verbose), PACKAGE="sspse")
     }else{
+     if(visibility){
+      Cret <- .C("gcmpvis",
+              pop=as.integer(c(s,rep(0,prior$maxN-n))),
+              nk=as.integer(nk),
+              K=as.integer(K),
+              n=as.integer(n),
+              samplesize=as.integer(samplesize),
+              burnin=as.integer(burnin),
+              interval=as.integer(interval),
+              mu=as.double(mu), df.mean.prior=as.double(df.mean.prior),
+              sigma=as.double(sigma), df.sd.prior=as.double(df.sd.prior),
+              beta0.mean.prior=as.double(beta0.mean.prior), beta0.sd.prior=as.double(beta0.sd.prior),
+              beta1.mean.prior=as.double(beta1.mean.prior), beta1.sd.prior=as.double(beta1.sd.prior),
+              mem.mean.prior=as.double(mem.mean.prior), df.mem.mean.prior=as.double(df.mem.mean.prior),
+              mem.sd.prior=as.double(mem.sd.prior), df.mem.sd.prior=as.double(df.mem.sd.prior),
+              Np=as.integer(Np),
+              srd=as.integer(s),
+              numrec=as.double(num.recruits),
+              rectime=as.double(recruit.times),
+              maxcoupons=as.integer(max.coupons),
+              muproposal=as.double(muproposal),
+              sigmaproposal=as.double(sigmaproposal),
+              beta0proposal=as.double(beta0proposal), beta1proposal=as.double(beta1proposal),
+              memmuproposal=as.double(memmuproposal), memsdproposal=as.double(memsdproposal),
+              N=as.integer(prior$N),
+              maxN=as.integer(prior$maxN),
+              sample=double(samplesize*dimsample),
+              vsample=integer(samplesize*n),
+              ppos=double(K),
+              lpriorm=as.double(prior$lprior),
+              burnintheta=as.integer(burnintheta),
+              burninbeta=as.integer(burninbeta),
+              verbose=as.integer(verbose), PACKAGE="sspse")
+     }else{
       Cret <- .C("gcmp",
               pop=as.integer(c(s,rep(0,prior$maxN-n))),
               nk=as.integer(nk),
@@ -133,14 +157,19 @@ poscmp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
               ppos=double(K),
               lpriorm=as.double(prior$lprior),
               burnintheta=as.integer(burnintheta),
-              lambdad=as.double(lambdad),
-              nud=as.double(nud),
               verbose=as.integer(verbose), PACKAGE="sspse")
+     }
     }
     Cret$sample<-matrix(Cret$sample,nrow=samplesize,ncol=dimsample,byrow=TRUE)
     degnames <- NULL
     if(Np>0){degnames <- c(degnames,paste("pdeg",1:Np,sep=""))}
-    colnamessample <- c("N","mu","sigma","degree1","totalsize")
+    if(visibility){
+     colnamessample <- c("N","mu","sigma","degree1","totalsize","beta0","beta1","mem.mean","mem.sd")
+     Cret$vsample<-matrix(Cret$vsample,nrow=samplesize,ncol=n,byrow=TRUE)
+     colnames(Cret$vsample) <- 1:n
+    }else{
+     colnamessample <- c("N","mu","sigma","degree1","totalsize")
+    }
     if(length(degnames)>0){
      colnames(Cret$sample) <- c(colnamessample, degnames)
     }else{
@@ -159,10 +188,20 @@ poscmp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
     a <- t(apply(Cret$sample[,c("mu","sigma")],1,cmp.mu,
            max.mu=2*mean.prior.degree))
     nas <- apply(a,1,function(x){any(is.na(x))})
-    inas <- sample(seq_along(nas)[!nas],size=sum(nas),replace=TRUE)
-    a[nas,] <- a[inas,]
-#   Cret$sample[,c("mu","sigma")] <- t(apply(Cret$sample[,c("mu","sigma")],1,cmp.mu,max.mu=5*mean.prior.degree)))
-    Cret$sample[,c("mu","sigma")] <- a
+    if(!all(nas)){
+     inas <- sample(seq_along(nas)[!nas],size=sum(nas),replace=TRUE)
+     a[nas,] <- a[inas,]
+#    Cret$sample[,c("mu","sigma")] <- t(apply(Cret$sample[,c("mu","sigma")],1,cmp.mu,max.mu=5*mean.prior.degree)))
+     Cret$sample[,c("mu","sigma")] <- a
+    }else{
+      warning(paste("All the lambda and nu parameters are extreme. mean and sigma are on the natural scale."), call. = FALSE)
+    }
+#   # PLN mean
+#   Cret$sample <- cbind(Cret$sample,Cret$sample[,c("mem.mean")])
+#   colnames(Cret$sample)[ncol(Cret$sample)] <- c("mem.degree.mean")
+#   mean.degree <- sum(seq(along=Cret$nk)*Cret$ppos)
+#   print(mean.degree)
+#   Cret$sample[,"mem.degree.mean"] <- exp(log(mean.degree)+Cret$sample[,"mem.mean"]+0.5*Cret$sample[,"mem.sd"])
     #
 #   Cret$Nk<-Cret$nk/sum(Cret$nk)
     Cret$predictive.degree.count<-Cret$nk / samplesize

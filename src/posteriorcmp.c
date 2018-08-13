@@ -4,7 +4,6 @@
 
 #include "posteriorcmp.h"
 #include "cmp.h"
-//#include "cmp179.h"
 #include <R.h>
 #include <Rmath.h>
 #include <math.h>
@@ -14,9 +13,9 @@ void gcmp (int *pop,
             int *K, 
             int *n, 
             int *samplesize, int *burnin, int *interval,
-            double *mu, double *kappa, 
-            double *sigma,  double *df,
-	    int *Npi,
+            double *mu, double *dfmu, 
+            double *sigma, double *dfsigma,
+            int *Npi,
             double *muproposal, 
             double *sigmaproposal, 
             int *N, int *maxN, 
@@ -24,15 +23,13 @@ void gcmp (int *pop,
             double *ppos, 
             double *lpriorm, 
             int *burnintheta,
-	    double *lambdad,
-	    double *nud,
-	    int *verbose
-			 ) {
+            int *verbose
+                         ) {
   int dimsample, Np;
   int step, staken, getone=1, intervalone=1, verboseMHcmp = 0;
-  int i, j, compute, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
+  int i, j, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
   double mui, sigmai, dsamp;
-  double dkappa, ddf, dmu, dsigma, dmuproposal, dsigmaproposal;
+  double dmu, dsigma;
   int tU, sizei, imaxN, imaxm, give_log0=0, give_log1=1;
   int maxpop;
   double r, gammart, pis, Nd;
@@ -50,17 +47,12 @@ void gcmp (int *pop,
   iinterval=(*interval);
   iburnin=(*burnin);
   Np=(*Npi);
-  dkappa=(*kappa);
-  ddf=(*df);
   dsigma=(*sigma);
   dmu=(*mu);
-  dsigmaproposal=(*sigmaproposal);
-  dmuproposal=(*muproposal);
 
   dimsample=5+Np;
 
   double *pi = (double *) malloc(sizeof(double) * Ki);
-  double *pd = (double *) malloc(sizeof(double) * Ki);
   int *d = (int *) malloc(sizeof(int) * ni);
   int *b = (int *) malloc(sizeof(int) * ni);
   int *Nk = (int *) malloc(sizeof(int) * Ki);
@@ -106,25 +98,24 @@ void gcmp (int *pop,
   isamp = 0;
   step = -iburnin;
   while (isamp < isamplesize) {
+
     /* Draw new theta */
     /* but less often than the other full conditionals */
     if (step == -iburnin || step==(10*(step/10))) { 
-     MHcmp(Nk,K,mu,kappa,sigma,df,muproposal,sigmaproposal,
-           &Ni, &Np, psample,
-	   musample, sigmasample, &getone, &staken, burnintheta, &intervalone, 
-	   &verboseMHcmp);
-    }
+     MHcmptheta(Nk,K,mu,dfmu,sigma,dfsigma,muproposal,sigmaproposal,
+       &Ni, &Np, psample,
+       musample, sigmasample, &getone, &staken, burnintheta, &intervalone, 
+       &verboseMHcmp);
 
-    for (i=0; i<Np; i++){
+     for (i=0; i<Np; i++){
       pdegi[i] = psample[i];
+     }
+     mui=musample[0];
+     sigmai=sigmasample[0];
+  if(sigmai > 4.0 || mui > 4.5) Rprintf("mui %f sigmai %f dfmu %f\n", mui, sigmai, (*dfmu));
     }
-    mui=musample[0];
-    sigmai=sigmasample[0];
-//  if(sigmai > 4.0 || mui > 4.5) Rprintf("mui %f sigmai %f kappa %f\n", mui, sigmai, kappa);
 
-    /* Draw new N */
-
-    /* First find the degree distribution */
+    /* Compute the unit distribution (given the new theta = (mu, sigma)) */
     pis=0.;
     lzcmp = zcmp(exp(mui), sigmai, errval, Ki, give_log1);
     if(lzcmp < -100000.0){continue;}
@@ -150,6 +141,9 @@ void gcmp (int *pop,
     for (i=0; i<Np; i++){
       pi[i]=pdegi[i];
     }
+
+    /* Draw new N */
+
     gammart=0.;
     for (i=0; i<Ki; i++){
       gammart+=(exp(-r*(i+1))*pi[i]);
@@ -177,69 +171,6 @@ void gcmp (int *pop,
     // Add back the sample size
     Ni += ni;
     if(Ni > imaxN) Ni = imaxN;
-		    
-    if((fabs(lambdad[0])>0.0000001) | (fabs(nud[0])>0.0000001)){
-//Rprintf("No! lambdad[0] %f nud[0] %f\n", lambdad[0], nud[0]);
-    for (i=0; i<Ki; i++){
-      nk[i]=0;
-    }
-
-    /* Draw true degrees (sizes) based on the reported degrees*/
-    /* First find the reported degree distribution */
-    for (j=0; j<=maxpop; j++){
-//Rprintf("j %d pop[j] %d\n", j, pop[j]);
-     compute=0;
-     for (i=0; i<ni; i++){if(pop[i]==(j)){compute=1;}}
-     if(compute==1){
-//    Next four lines for cmp reporting distribution
-//    ?? Should it be cmp(j+1,...) or cmp(j,...)??
-      for (i=0; i<Ki; i++){
-       lzcmp = zcmp(exp(lambdad[i]),nud[i], errval, Ki, give_log1);
-//     pd[i]=pi[i]*cmp(j,lambdad[i],nud[i],lzcmp,give_log0);
-       pd[i]=pi[i]*cmp(j+1,lambdad[i],nud[i],lzcmp,give_log0);
-      }
-//     Next seven lines for proportional reporting distribution
-//       for (i=0; i<Ki; i++){
-//        pd[i]   = pgamma(2.0*lambdad[i]/((j)+0.5),1.0,1.0,0,0);
-//        if((j)>0){
-//         pd[i] -= pgamma(2.0*lambdad[i]/((j)-0.5),1.0,1.0,0,0);
-//        }
-//if((pd[i]<0.0 ) | (pd[i]>1.0)){ Rprintf("j %d pop[j] %d i %d pd[i] %f\n", j, pop[j],i, pd[i]);
-// Rprintf("i %d pi[i] %f, gammart %f\n", i, pi[i],  gammart);
-// }
-//       if(j==75 & isamp == 4){
-////      for (i=0; i<100; i++){
-//Rprintf("j %d dis %d i %d l[i] %f pd[i] %f\n", j, ddis, i, lambdad[i], pd[i]);
-//}// }
-//      pd[i]=p1i[i]*pd[i];
-//       }
-      // Set up pd to be cumulative for the random draws
-      for (i=1; i<Ki; i++){
-       pd[i]=pd[i-1]+pd[i];
-//if((pd[i]<0.0 ) | (pd[i]>1.0)){ Rprintf("j %d pop[j] %d i %d pd[i] %f\n", j, pop[j],i, pd[i]);}
-      }
-      /* Draw unobserved degrees sizes */
-      for (i=0; i<ni; i++){
-       if(pop[i]==(j)){
-        /* Now propose the true size for unit i based on reported size and disease status */
-        /* In the next three lines a sizei is chosen */
-        temp = pd[Ki-1] * unif_rand();
-        for (sizei=1; sizei<=Ki; sizei++){
-          if(temp <= pd[sizei-1]) break;
-        }
-        nk[sizei-1]=nk[sizei-1]+1;
-        d[i]=sizei;
-//Rprintf("j %d dis %d sizei %d pd[Ki-1] %f\n", j, ddis, sizei, pd[Ki-1]);
-       }
-      }
-     } //compute
-    } //for j
-    b[ni-1]=d[ni-1];
-    for (i=(ni-2); i>=0; i--){
-      b[i]=b[i+1]+d[i];
-    }
-// Rprintf("j %d d[j] %d pd[Ki-1] %f\n", j, d[j], pd[Ki-1]);
-    }
 
     /* Draw phis */
     tU=0;
@@ -254,6 +185,7 @@ void gcmp (int *pop,
 
     /* Draw unseen sizes */
     for (i=0; i<Ki; i++){
+//Rprintf("i %d nk[i] %f\n", i, nk[i]/(1.0*ni));
       Nk[i]=nk[i];
     }
     // Set up pi to be cumulative for random draws
@@ -271,7 +203,7 @@ void gcmp (int *pop,
         /* Now propose unseen size for unit i */
         /* In the next two lines a sizei is chosen */
         /* with parameters mui and sigmai */
-	temp = unif_rand();
+        temp = unif_rand();
 //      gammart = pi[Ki-1] * unif_rand();
         for (sizei=1; sizei<=Ki; sizei++){
           if(temp <= pi[sizei-1]) break;
@@ -321,7 +253,6 @@ void gcmp (int *pop,
   }
   PutRNGstate();  /* Disable RNG before returning */
   free(pi);
-  free(pd);
   free(d);
   free(psample);
   free(pdegi);
@@ -333,16 +264,16 @@ void gcmp (int *pop,
   free(sigmasample);
 }
 
-void MHcmp (int *Nk, int *K,
-	    double *mu, double *kappa, 
-            double *sigma,  double *df,
+void MHcmptheta (int *Nk, int *K,
+            double *mu, double *dfmu, 
+            double *sigma,  double *dfsigma,
             double *muproposal, 
             double *sigmaproposal, 
             int *N, int *Npi, double *psample,
             double *musample, double *sigmasample,
             int *samplesize, int *staken, int *burnin, int *interval,
-	    int *verbose
-			 ) {
+            int *verbose
+         ) {
   int Np;
   int step, taken, give_log1=1, give_log0=0;
   int i, Ki, Ni, isamp, iinterval, isamplesize, iburnin;
@@ -351,7 +282,7 @@ void MHcmp (int *Nk, int *K,
   double pis, pstars;
   double sigmastar, sigmai, sigma2star, sigma2i, qsigma2star, qsigma2i;
   double pithetastar, pithetai;
-  double dkappa, rkappa, ddf, dmu;
+  double ddfmu, rdfmu, ddfsigma, dmu;
   double dsigma, dsigma2, dmuproposal, dsigmaproposal;
   double errval=0.0000000001, lzcmp;
 
@@ -370,9 +301,9 @@ void MHcmp (int *Nk, int *K,
   isamplesize=(*samplesize);
   iinterval=(*interval);
   iburnin=(*burnin);
-  dkappa=(*kappa);
-  rkappa=sqrt(dkappa);
-  ddf=(*df);
+  ddfmu=(*dfmu);
+  rdfmu=sqrt(ddfmu);
+  ddfsigma=(*dfsigma);
   dsigma=(*sigma);
   dsigma2=(dsigma*dsigma);
   dmu=(*mu);
@@ -395,8 +326,8 @@ void MHcmp (int *Nk, int *K,
 // if(sigmai > 4.0 || mui > 4.5) Rprintf("%f %f\n", mui,sigmai);
 // Rprintf("%f %f\n", mui,sigmai);
   sigma2i  = sigmai*sigmai;
-  pithetai = dnorm(mui, dmu, sigmai/rkappa, give_log1);
-  pithetai = pithetai+dsclinvchisq(sigma2i, ddf, dsigma2);
+  pithetai = dnorm(mui, dmu, sigmai/rdfmu, give_log1);
+  pithetai = pithetai+dsclinvchisq(sigma2i, ddfsigma, dsigma2);
 //    Rprintf("mui %f sigmai %f lzcmp %f\n", mui, sigmai, lzcmp);
   pis=0.;
   lzcmp = zcmp(exp(mui), sigmai, errval, 2*Ki, give_log1);
@@ -449,12 +380,12 @@ void MHcmp (int *Nk, int *K,
     sigmastar = sqrt(sigma2star);
     /* Check for magnitude */
 
-//  if(sigmastar > 4.0 || mustar > 4.5) Rprintf("%f %f %f %f %f\n", mustar, dmu, sigmastar, dkappa, sigma2i);
+//  if(sigmastar > 4.0 || mustar > 4.5) Rprintf("%f %f %f %f %f\n", mustar, dmu, sigmastar, ddfmu, sigma2i);
     /* Calculate pieces of the posterior. */
     qsigma2star = dnorm(log(sigma2star/sigma2i)/dsigmaproposal,0.,1.,give_log1)
                   -log(dsigmaproposal*sigma2star);
-    pithetastar = dnorm(mustar, dmu, sigmastar/rkappa, give_log1);
-    pithetastar = pithetastar+dsclinvchisq(sigma2star, ddf, dsigma2);
+    pithetastar = dnorm(mustar, dmu, sigmastar/rdfmu, give_log1);
+    pithetastar = pithetastar+dsclinvchisq(sigma2star, ddfsigma, dsigma2);
     qsigma2i = dnorm(log(sigma2i/sigma2star)/dsigmaproposal,0.,1.,give_log1)
                -log(dsigmaproposal*sigma2i);
 

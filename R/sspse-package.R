@@ -65,4 +65,5 @@
 #' @useDynLib sspse, .registration = TRUE
 #' @importFrom utils packageDescription
 #' @import parallel
+#' @import RDS
 NULL

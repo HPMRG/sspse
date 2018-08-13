@@ -232,6 +232,10 @@ if(!is.null(control$data)){
     xlab="degree",ylab="probability", xlim=c(1,Kmax),
     main="posterior with sample histogram overlaid")
   graphics::lines(x=-0.25+seq_along(x$predictive.degree),y=x$predictive.degree, type='h', col='red', lwd=2)
+  if(!is.null(x$visibilities)){
+	  graphics::plot(y=x$visibilities, x=control$data,ylab="estimated visibilities",
+	       xlab="network sizes",main="Estimated Visibilites for each individual's network size")
+  }
 }}
 }else{
 if(control$type %in% c("others","both")){

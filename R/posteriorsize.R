@@ -7,13 +7,17 @@
 #' It uses the order of selection of the sample to provide information
 #' on the distribution of network sizes over the population members.
 #' 
-#' @param s vector of integers; the vector of degrees from the RDS in the order
-#' they are recorded.
+#' @param s either a vector of integers or an \code{rds.data.frame} providing network 
+#' size information.
+#' If a \code{rds.data.frame} is passed and \code{visibility=TRUE}, the default, then
+#' the measurement error model is to  used, whereby latent visibilities are used in place 
+#' of the reported network sizes as the size variable. If a vector of integers is passed these 
+#' are the network sizes in sequential order of recording.
 #' @param s2 vector of integers; optionally, the vector of degrees from a second RDS,
 #' subsequent to the first RDS recorded in \eqn{s}. These are also in the order
 #' they are recorded.
-#' @param rc vector of logicals; optionally, a vector of the same length as \eqn{s2} indicating if the 
-#' corresponding unit was sampled in the first RDS.
+#' @param rc vector of logicals; optionally, a vector of the same length as \eqn{s2}
+#' indicating if the corresponding unit was sampled in the first RDS.
 #' @param median.prior.size scalar; A hyperparameter being the mode of the
 #' prior distribution on the population size.
 #' @param interval count; the number of proposals between sampled statistics.
@@ -73,6 +77,30 @@
 #' the prior for the standard deviation. This gives the equivalent sample size
 #' that would contain the same amount of information inherent in the prior for
 #' the standard deviation.
+#' @param beta0.mean.prior scalar; A hyper parameter being the mean of the 
+#' beta0 parameter distribution in the model for the number of recruits.
+#' @param beta1.mean.prior scalar; A hyper parameter being the mean of the 
+#' beta1 parameter distribution in the model for the number of recruits.
+#' @param beta0.sd.prior scalar; A hyper parameter being the standard deviation of the 
+#' beta0 parameter distribution in the model for the number of recruits.
+#' @param beta1.sd.prior scalar; A hyper parameter being the standard deviation of the 
+#' beta0 parameter distribution in the model for the number of recruits.
+#' @param mem.mean.prior scalar; A hyper parameter being the mean of the 
+#' distribution of the optimism parameter.
+#' @param df.mem.mean.prior scalar; A hyper parameter being the degrees-of-freedom
+#' of the prior for the optimism parameter. This gives the equivalent sample size that would
+#' contain the same amount of information inherent in the prior.
+#' @param mem.sd.prior scalar; A hyper parameter being the mean of the 
+#' distribution of the dispersion parameter in the visibility model.
+#' @param df.mem.sd.prior scalar; A hyper parameter being the degrees-of-freedom of
+#' the prior for the standard deviation of the dispersion parameter in the visibility model.
+#' This gives the equivalent sample size
+#' that would contain the same amount of information inherent in the prior for
+#' the standard deviation.
+#' @param visibility logical; Indicate if the measurement error model
+#' is to be used, whereby latent visibilities are used in place of the reported 
+#' network sizes as the unit size variable. If \code{TRUE} then a \code{rds.data.frame}
+#' need to be passed to provide the RDS information needed for the measurement error model.
 #' @param Np integer; The overall degree distribution is a mixture of the
 #' \code{Np} rates for \code{1:Np} and a parametric degree distribution model
 #' truncated below \code{Np}. Thus the model fits the proportions of the
@@ -92,125 +120,198 @@
 #' distribution for the mean degree.
 #' @param sigmaproposal scalar; The standard deviation of the proposal
 #' distribution for the standard deviation of the degree.
+#' @param beta0proposal scalar; The standard deviation of the proposal
+#' distribution for the beta0 parameter of the recruit model.
+#' @param beta1proposal scalar; The standard deviation of the proposal
+#' distribution for the beta1 parameter of the recruit model.
+#' @param memmuproposal scalar; The standard deviation of the proposal
+#' distribution for the log of the optimism parameter (that is, gamma).
+#' @param memsdproposal scalar; The standard deviation of the proposal
+#' distribution for the log of the s.d. in the optimism model.
 #' @param burnintheta count; the number of proposals in the Metropolis-Hastings
 #' sub-step for the degree distribution parameters (\eqn{\theta}) before any
+#' MCMC sampling is done. It typically is set to a modestly large number.
+#' @param burninbeta count; the number of proposals in the Metropolis-Hastings
+#' sub-step for the visibility distribution parameters (\eqn{\beta}) before any
 #' MCMC sampling is done. It typically is set to a modestly large number.
 #' @param parallel count; the number of parallel processes to run for the
 #' Monte-Carlo sample.  This uses MPI or PSOCK. The default is 1, that is not to
 #' use parallel processing.
 #' @param parallel.type The type of parallel processing to use. The options are
 #' "PSOCK" or "MPI". This requires the corresponding type to be installed.
+#' The default is "PSOCK".
 #' @param seed integer; random number integer seed.  Defaults to \code{NULL} to
 #' use whatever the state of the random number generator is at the time of the
 #' call.
 #' @param maxbeta scalar; The maximum allowed value of the \code{beta} parameter.
 #' If the implied or computed value is higher, it is reduced to this value.
 #' This is done for numerical stability reasons.
-#' @param dispersion scalar; dispersion to use in the reported network size
-#' compared to the actual network size.
 #' @param supplied list; If supplied, is a list with components \code{maxN} and
 #' \code{sample}. In this case \code{supplied} is a matrix with a column named
 #' \code{N} being a sample from a prior distribution for the population size.
 #' The value \code{maxN} specifies the maximum value of the population size, a
 #' priori.
+#' @param max.coupons The number of recruitment coupons distributed to each 
+#' enrolled subject (i.e. the maximum number of recruitees for any subject).
+#' By default it is taken by the attribute or data, else the maximum recorded number of coupons.
+#' @param recruit.time vector; An optional value for the data/time that the person was interviewed.
+#' It needs to resolve as a numeric vector with number of elements the number
+#' of rows of the data with non-missing values of the network variable. If it
+#' is a character name of a variable in the data then that variable is used.
+#' If it is NULL then the sequence number of the recruit in the data is used.
+#' If it is NA then the recruitment is not used in the model.
+#' Otherwise, the recruitment time is used in the model to better predict the visibility of the person.
+#' @param include.tree logical; If \code{TRUE}, 
+#' augment the reported network size by the number of recruits and one for the recruiter (if any).
+#' This reflects a more accurate value for the visibility, but is not the self-reported degree.
+#' In particular, it typically produces a positive visibility (compared to a possibility zero self-reported degree). 
+#' @param unit.scale numeric; If not \code{NULL} it sets the numeric value of the scale parameter
+#' of the distribution of the unit sizes.
+#' For the negative binomial, it is the multiplier on the variance of the negative binomial 
+#' compared to a Poisson (via the Poisson-Gamma mixture representation). Sometimes the scale is 
+#' unnaturally large (e.g. 40) so this give the option of fixing it (rather than using
+#' the MLE of it). The model is fit with the parameter fixed at this passed value.
+#' @param optimism logical; If \code{TRUE} then add a term to the model allowing
+#' the (proportional) inflation of the self-reported degrees relative to the unit sizes.
+#' @param reflect.time logical; If \code{FALSE} then the \code{recruit.time} is the time before the 
+#' end of the study (instead of the time since the survey started or chronological time).
 #' @param verbose logical; if this is \code{TRUE}, the program will print out
 #' additional information, including goodness of fit statistics.
 #' @return \code{\link{posteriorsize}} returns a list consisting of the
-#' following elements: \item{pop}{vector; The final posterior draw for the
+#' following elements:
+#'\item{pop}{vector; The final posterior draw for the
 #' degrees of the population. The first \eqn{n} are the sample in sequence and
-#' the reminder are non-sequenced.} \item{K}{count; the maximum degree for an
+#' the reminder are non-sequenced.}
+#'\item{K}{count; the maximum degree for an
 #' individual. This is usually calculated as twice the maximum observed
-#' degree.} \item{n}{count; the sample size.} \item{samplesize}{count; the
+#' degree.}
+#'\item{n}{count; the sample size.}
+#'\item{samplesize}{count; the
 #' number of Monte-Carlo samples to draw to compute the posterior. This is the
 #' number returned by the Metropolis-Hastings algorithm.The default is 1000.}
-#' \item{burnin}{count; the number of proposals before any MCMC sampling is
-#' done. It typically is set to a fairly large number.} \item{interval}{count;
-#' the number of proposals between sampled statistics.} \item{mu}{scalar; The
+#'\item{burnin}{count; the number of proposals before any MCMC sampling is
+#' done. It typically is set to a fairly large number.}
+#'\item{interval}{count; the number of proposals between sampled statistics.}
+#'\item{mu}{scalar; The
 #' hyper parameter \code{mean.prior.degree} being the mean degree for the prior
 #' distribution for a randomly chosen person. The prior has this mean.}
-#' \item{sigma}{scalar; The hyper parameter \code{sd.prior.degree} being the
+#'\item{sigma}{scalar; The hyper parameter \code{sd.prior.degree} being the
 #' standard deviation of the degree for a randomly chosen person. The prior has
-#' this standard deviation.} \item{df.mean.prior}{scalar; A hyper parameter
+#' this standard deviation.}
+#'\item{df.mean.prior}{scalar; A hyper parameter
 #' being the degrees-of-freedom of the prior for the mean. This gives the
 #' equivalent sample size that would contain the same amount of information
-#' inherent in the prior.} \item{df.sd.prior}{scalar; A hyper parameter being
+#' inherent in the prior.}
+#'\item{df.sd.prior}{scalar; A hyper parameter being
 #' the degrees-of-freedom of the prior for the standard deviation. This gives
 #' the equivalent sample size that would contain the same amount of information
-#' inherent in the prior for the standard deviation.} \item{Np}{integer; The
+#' inherent in the prior for the standard deviation.}
+#'\item{Np}{integer; The
 #' overall degree distribution is a mixture of the \code{1:Np} rates and a
 #' parametric degree distribution model truncated below Np. Thus the model fits
 #' the proportions of the population with degree \code{1:Np} each with a
 #' separate parameter. This should adjust for an lack-of-fit of the parametric
 #' degree distribution model at lower degrees, although it also changes the
 #' model away from the parametric degree distribution model.}
-#' \item{muproposal}{scalar; The standard deviation of the proposal
-#' distribution for the mean degree.} \item{sigmaproposal}{scalar; The standard
+#'\item{muproposal}{scalar; The standard deviation of the proposal
+#' distribution for the mean degree.}
+#'\item{sigmaproposal}{scalar; The standard
 #' deviation of the proposal distribution for the standard deviation of the
-#' degree.} \item{N}{vector of length 5; summary statistics for the posterior
-#' population size.  \describe{ \item{MAP}{maximum aposteriori value of
-#' N} \item{Mean AP}{mean aposteriori value of N} \item{Median
-#' AP}{median aposteriori value of N} \item{P025}{the 2.5th
+#' degree.}
+#'\item{N}{vector of length 5; summary statistics for the posterior
+#' population size.
+#' \describe{
+#'\item{MAP}{maximum aposteriori value of N}
+#'\item{Mean AP}{mean aposteriori value of N}
+#'\item{Median AP}{median aposteriori value of N}
+#'\item{P025}{the 2.5th
 #' percentile of the (posterior) distribution for the N. That is, the lower
-#' point on a 95\% probability interval.} \item{P975}{the 97.5th
+#' point on a 95\% probability interval.}
+#'\item{P975}{the 97.5th
 #' percentile of the (posterior) distribution for the N. That is, the upper
-#' point on a 95\% probability interval.} } } \item{maxN}{integer; maximum
+#' point on a 95\% probability interval.} } }
+#'\item{maxN}{integer; maximum
 #' possible population size. By default this is determined from an upper
-#' quantile of the prior distribution.} \item{sample}{matrix of dimension
+#' quantile of the prior distribution.}
+#'\item{sample}{matrix of dimension
 #' \code{samplesize}\eqn{\times} \code{10} matrix of summary statistics from
-#' the posterior. this is also an object of class \code{mcmc} so it can be
+#' the posterior. This is also an object of class \code{mcmc} so it can be
 #' plotted and summarized via the \code{mcmc.diagnostics} function in the
 #' \code{ergm} package (and also the \code{coda} package). The statistics are:
-#' \describe{ \item{N}{population size.} \item{mu}{scalar; The mean
+#'\describe{
+#'\item{N}{population size.}
+#'\item{mu}{scalar; The mean
 #' degree for the prior distribution for a randomly chosen person. The prior
-#' has this mean.} \item{sigma}{scalar; The standard deviation of the degree
+#' has this mean.}
+#'\item{sigma}{scalar; The standard deviation of the degree
 #' for a randomly chosen person. The prior has this standard deviation.}
-#' \item{degree1}{scalar; the number of nodes of degree 1 in the population (it
-#' is assumed all nodes have degree 1 or more).} \item{lambda}{scalar; This is
+#'\item{degree1}{scalar; the number of nodes of degree 1 in the population (it
+#' is assumed all nodes have degree 1 or more).}
+#'\item{lambda}{scalar; This is
 #' only present for the \code{cmp} model. It is the \eqn{\lambda} parameter in
-#' the standard parametrization of the Conway-Maxwell-Poisson model for the
-#' degree distribution.} \item{nu}{scalar; This is only present for the
+#' the standard parameterization of the Conway-Maxwell-Poisson model for the
+#' degree distribution.}
+#'\item{nu}{scalar; This is only present for the
 #' \code{cmp} model. It is the \eqn{\nu} parameter in the standard
-#' parametrization of the Conway-Maxwell-Poisson model for the degree
-#' distribution.} } } \item{lpriorm}{vector; the vector of (log) prior
+#' parameterization of the Conway-Maxwell-Poisson model for the degree
+#' distribution.} } }
+#'\item{sample}{matrix of dimension \code{samplesize}\eqn{\times} \code{n} matrix of 
+#' posterior.draws from the unit size distribution for those in the survey.
+#' The sample for the \code{i}th person is the \code{i}th column.}
+#'\item{lpriorm}{vector; the vector of (log) prior
 #' probabilities on each value of \eqn{m=N-n} - that is, the number of
 #' unobserved members of the population. The values are
-#' \code{n:(length(lpriorm)-1+n)}.} \item{burnintheta}{count; the number of
+#' \code{n:(length(lpriorm)-1+n)}.}
+#'\item{burnintheta}{count; the number of
 #' proposals in the Metropolis-Hastings sub-step for the degree distribution
 #' parameters (\eqn{\theta}) before any MCMC sampling is done. It typically is
-#' set to a modestly large number.} \item{verbose}{logical; if this is
+#' set to a modestly large number.}
+#'\item{verbose}{logical; if this is
 #' \code{TRUE}, the program printed out additional information, including
-#' goodness of fit statistics.} \item{predictive.degree.count}{vector; a vector
+#' goodness of fit statistics.}
+#'\item{predictive.degree.count}{vector; a vector
 #' of length the maximum degree (\code{K}) (by default \cr \code{K=2*max(sample
 #' degree)}).  The \code{k}th entry is the posterior predictive number persons
 #' with degree \code{k}.  That is, it is the posterior predictive distribution
 #' of the number of people with each degree in the population.}
-#' \item{predictive.degree}{vector; a vector of length the maximum degree
+#'\item{predictive.degree}{vector; a vector of length the maximum degree
 #' (\code{K}) (by default \cr \code{K=2*max(sample degree)}).  The \code{k}th entry
 #' is the posterior predictive proportion of persons with degree \code{k}.
 #' That is, it is the posterior predictive distribution of the proportion of
-#' people with each degree in the population.} \item{MAP}{vector of length 6
+#' people with each degree in the population.}
+#'\item{MAP}{vector of length 6
 #' of MAP estimates corresponding to the output \code{sample}. These are:
-#' \describe{ \item{N}{population size.} \item{mu}{scalar; The mean
+#'\describe{
+#'\item{N}{population size.}
+#'\item{mu}{scalar; The mean
 #' degree for the prior distribution for a randomly chosen person. The prior
-#' has this mean.} \item{sigma}{scalar; The standard deviation of the degree
+#' has this mean.}
+#'\item{sigma}{scalar; The standard deviation of the degree
 #' for a randomly chosen person. The prior has this standard deviation.}
-#' \item{degree1}{scalar; the number of nodes of degree 1 in the population (it
-#' is assumed all nodes have degree 1 or more).} \item{lambda}{scalar; This is
+#'\item{degree1}{scalar; the number of nodes of degree 1 in the population (it
+#' is assumed all nodes have degree 1 or more).}
+#'\item{lambda}{scalar; This is
 #' only present for the \code{cmp} model. It is the \eqn{\lambda} parameter in
-#' the standard parametrization of the Conway-Maxwell-Poisson model for the
-#' degree distribution.} \item{nu}{scalar; This is only present for the
+#' the standard parameterization of the Conway-Maxwell-Poisson model for the
+#' degree distribution.}
+#'\item{nu}{scalar; This is only present for the
 #' \code{cmp} model. It is the \eqn{\nu} parameter in the standard
-#' parametrization of the Conway-Maxwell-Poisson model for the degree
-#' distribution.} } } \item{mode.prior.sample.proportion}{scalar; A
+#' parameterization of the Conway-Maxwell-Poisson model for the degree
+#' distribution.} } }
+#'\item{mode.prior.sample.proportion}{scalar; A
 #' hyperparameter being the mode of the prior distribution on the sample
-#' proportion \eqn{n/N}.} \item{median.prior.size}{scalar; A hyperparameter
+#' proportion \eqn{n/N}.}
+#'\item{median.prior.size}{scalar; A hyperparameter
 #' being the mode of the prior distribution on the population size.}
-#' \item{mode.prior.size}{scalar; A hyperparameter being the mode of the prior
-#' distribution on the population size.} \item{mean.prior.size}{scalar; A
+#'\item{mode.prior.size}{scalar; A hyperparameter being the mode of the prior
+#' distribution on the population size.}
+#'\item{mean.prior.size}{scalar; A
 #' hyperparameter being the mean of the prior distribution on the population
-#' size.} \item{quartiles.prior.size}{vector of length 2; A pair of
+#' size.}
+#'\item{quartiles.prior.size}{vector of length 2; A pair of
 #' hyperparameters being the lower and upper quartiles of the prior
-#' distribution on the population size.} \item{degreedistribution}{count; the
+#' distribution on the population size.}
+#'\item{degreedistribution}{count; the
 #' parametric distribution to use for the individual network sizes (i.e.,
 #' degrees). The options are \code{cmp}, \code{nbinom}, and \code{pln}.  These
 #' correspond to the Conway-Maxwell-Poisson, Negative-Binomial, and
@@ -291,7 +392,7 @@ posteriorsize<-function(s,
                   interval=10,
                   burnin=5000,
                   maxN=NULL,
-                  K=max(c(s,s2),na.rm=TRUE),
+                  K=NULL,
                   samplesize=1000,
 		  quartiles.prior.size=NULL,
 		  mean.prior.size=NULL,
@@ -304,16 +405,28 @@ posteriorsize<-function(s,
 		  degreedistribution=c("cmp","nbinom","pln"),
                   mean.prior.degree=NULL, sd.prior.degree=NULL, max.sd.prior.degree=4,
                   df.mean.prior=1,df.sd.prior=3,
+		  beta0.mean.prior=-3, beta1.mean.prior=0,
+		  beta0.sd.prior=10, beta1.sd.prior=10,
+		  mem.mean.prior=0, df.mem.mean.prior=5, 
+		  mem.sd.prior=5, df.mem.sd.prior=3, 
+                  visibility=TRUE,
                   Np=0,
                   nk=NULL,
-                  n=length(s),
+                  n=NULL,
                   n2=length(s2),
                   muproposal=0.1, 
                   sigmaproposal=0.15, 
+                  beta0proposal=0.2, beta1proposal=0.001,
+                  memmuproposal=0.1, memsdproposal=0.15,
                   burnintheta=500,
-                  parallel=1, parallel.type="MPI", seed=NULL, 
-                  maxbeta=120, dispersion=0,
+                  burninbeta=50,
+                  parallel=1, parallel.type="PSOCK", seed=NULL, 
+                  maxbeta=120, 
                   supplied=list(maxN=maxN),
+                  max.coupons=NULL,
+                  recruit.time=NULL,include.tree=FALSE, unit.scale=FALSE, 
+                  optimism = TRUE,
+                  reflect.time=TRUE,
                   verbose=TRUE){
 #
   degreedistribution=match.arg(degreedistribution)
@@ -322,11 +435,101 @@ posteriorsize<-function(s,
                   pln=pospln,
 		  cmp=poscmp,
 		  poscmp)
-  remvalues <- !is.na(s)
-  if(sum(remvalues) < length(s)){
-   warning(paste(length(s)-sum(remvalues),"of",length(s),
+  # If the passed "s" is an rds.rata.frame, extract out the components
+  if(!methods::is(s,"rds.data.frame")){
+   visibility <- FALSE
+   if(is.null(K)) K=max(c(s,s2),na.rm=TRUE)
+   if(is.null(n)) n=length(s)
+  }else{
+  rds.data <- s
+  n <- nrow(rds.data)
+  if(is.null(attr(rds.data,"network.size.variable")))
+    stop("rds.data must have a network.size attribute.")
+  nr <- RDS::get.number.of.recruits(rds.data)
+  nw <- RDS::get.wave(rds.data)
+  ns <- RDS::get.seed.id(rds.data)
+  is.seed <- (RDS::get.rid(rds.data)=="seed")
+  
+  if(is.null(max.coupons)){
+    max.coupons <- attr(rds.data,"max.coupons")
+    if(is.null(max.coupons)){
+      max.coupons <- max(nr,na.rm=TRUE)
+    }
+  }
+  if(length(recruit.time)==1){
+    if(is.character(recruit.time)){
+      if(recruit.time=="wave"){
+        recruit.times <- nw
+      }else{
+        recruit.times <- as.numeric(rds.data[[recruit.time]])
+      }
+      recruit.time <- TRUE
+    }else{
+      if(is.na(recruit.time)){
+        recruit.times <- rep(0,n)
+        recruit.time <- FALSE
+      }else{
+        stop("The recruitment time should be a variable in the RDS data, or 'wave' to indicate the wave number or NA/NULL to indicate that the recruitment time is not available and/or used.")
+      }
+    }
+  }else{
+    if(length(recruit.time)==0 & is.null(recruit.time)){
+      recruit.time <- 1:n
+    }else{
+      if(length(recruit.time)!=n | (!is.numeric(recruit.time) & !methods::is(recruit.time,"POSIXt") & !methods::is(recruit.time,"Date"))){
+        stop("The recruitment time should be a variable in the RDS data, or 'wave' to indicate the wave number or NA/NULL to indicate that the recruitment time is not available and/or used.")
+      }
+    }
+    if(length(recruit.time)==n & (methods::is(recruit.time,"POSIXt") | methods::is(recruit.time,"Date"))){
+      recruit.times <- as.numeric(recruit.time)
+    }else{
+      recruit.times <- recruit.time
+    }
+    recruit.time <- TRUE
+  }
+  if(any(is.na(recruit.times))){
+    med.index <- cbind(c(2,1:(n-1)),c(3,3:n,n))
+    moving.median=function(i){stats::median(recruit.times[med.index[i,]],na.rm=TRUE)}
+    while(any(is.na(recruit.times))){
+      for(i in which(is.na(recruit.times))){recruit.times[i] <- moving.median(i)}
+    }
+  }
+  recruit.times <- recruit.times - min(recruit.times)
+  if(reflect.time){
+    recruit.times <- max(recruit.times)-recruit.times
+  }
+  network.size <- as.numeric(rds.data[[attr(rds.data,"network.size.variable")]])
+  remvalues <- is.na(network.size)
+  if(any(remvalues)){
+    warning(paste(sum(remvalues),"of",nrow(rds.data),
+                  "network sizes were missing. These will be imputed from the marginal distribution"), call. = FALSE)
+  }
+  
+  if(is.null(K)){
+    if(length(network.size[!remvalues])>0){
+      K <- round(stats::quantile(network.size[!remvalues],0.95))
+    }
+  }
+  
+  #Augment the reported network size by the number of recruits and the recruiter (if any).
+  if(include.tree){
+    nsize <- pmax(network.size,nr+!is.seed)
+  }else{
+    nsize <- network.size
+  }
+  
+  gmean <- HT.estimate(RDS::vh.weights(nsize[!is.na(nsize)]),nsize[!is.na(nsize)])
+  if(is.na(gmean)) gmean <- 38
+  
+  s <- network.size
+  }
+  # End of measurement model information extraction
+
+  remvalues <- is.na(s)
+  if(sum(!remvalues) < length(s)){
+   warning(paste(length(s)-sum(!remvalues),"of",length(s),
   	"sizes values were missing and were removed."), call. = FALSE)
-   s <- s[remvalues]
+   s <- s[!remvalues]
    n <- length(s)
   }
   s.prior <- s
@@ -334,12 +537,12 @@ posteriorsize<-function(s,
     if(!is.logical(rc) | length(s2)!=length(rc)){
       stop("The argument rc should be a logical vector of the same length as s2, indicating if the corresponding unit was sampled in the first RDS.")
     }
-    remvalues <- !is.na(s2)
-    if(sum(remvalues) < length(s2)){
-     warning(paste(length(s2)-sum(remvalues),"of",length(s2),
+    remvalues <- is.na(s2)
+    if(sum(!remvalues) < length(s2)){
+     warning(paste(length(s2)-sum(!remvalues),"of",length(s2),
   	  "sizes values from the second RDS were missing and were removed."), call. = FALSE)
-     s2 <- s2[remvalues]
-     rc <- rc[remvalues]
+     s2 <- s2[!remvalues]
+     rc <- rc[!remvalues]
      n2 <- length(s2)
     }
   }
@@ -423,10 +626,18 @@ posteriorsize<-function(s,
       Cret <- posfn(s=s,s2=s2,rc=rc,K=K,nk=nk,maxN=maxN,
                     mean.prior.degree=mean.prior.degree,df.mean.prior=df.mean.prior,
                     sd.prior.degree=sd.prior.degree,df.sd.prior=df.sd.prior,
+		    beta0.mean.prior=beta0.mean.prior, beta1.mean.prior=beta1.mean.prior,
+		    beta0.sd.prior=beta0.sd.prior, beta1.sd.prior=beta1.sd.prior,
+		    mem.mean.prior=mem.mean.prior, df.mem.mean.prior=df.mem.mean.prior,
+                    mem.sd.prior=mem.sd.prior, df.mem.sd.prior=df.mem.sd.prior,
                     muproposal=muproposal, sigmaproposal=sigmaproposal, 
+		    beta0proposal=beta0proposal, beta1proposal=beta1proposal,
+		    memmuproposal=memmuproposal, memsdproposal=memsdproposal,
+		    visibility=visibility,
 		    Np=Np,
                     samplesize=samplesize,burnin=burnin,interval=interval,
 		    burnintheta=burnintheta,
+		    burninbeta=burninbeta,
 		    priorsizedistribution=priorsizedistribution,
 		    mean.prior.size=mean.prior.size, sd.prior.size=sd.prior.size,
 		    mode.prior.sample.proportion=mode.prior.sample.proportion,
@@ -437,8 +648,10 @@ posteriorsize<-function(s,
                     alpha=alpha,
                     seed=seed,
                     supplied=supplied,
-                    maxbeta=maxbeta,
-                    dispersion=dispersion)
+		    num.recruits=nr[!remvalues],
+		    recruit.times=recruit.times[!remvalues],
+		    max.coupons=max.coupons,
+                    maxbeta=maxbeta)
   }
   ### since running job in parallel, start pvm (if not already running)
   else{
@@ -451,10 +664,18 @@ posteriorsize<-function(s,
       s=s,s2=s2,rc=rc,K=K,nk=nk,maxN=maxN,
       mean.prior.degree=mean.prior.degree,df.mean.prior=df.mean.prior,
       sd.prior.degree=sd.prior.degree,df.sd.prior=df.sd.prior,
+      beta0.mean.prior=beta0.mean.prior, beta1.mean.prior=beta1.mean.prior,
+      beta0.sd.prior=beta0.sd.prior, beta1.sd.prior=beta1.sd.prior,
+      mem.mean.prior=mem.mean.prior, df.mem.mean.prior=df.mem.mean.prior,
+      mem.sd.prior=mem.sd.prior, df.mem.sd.prior=df.mem.sd.prior,
       muproposal=muproposal, sigmaproposal=sigmaproposal, 
+      beta0proposal=beta0proposal, beta1proposal=beta1proposal,
+      memmuproposal=memmuproposal, memsdproposal=memsdproposal,
+      visibility=visibility,
       Np=Np,
       samplesize=samplesize.parallel,burnin=burnin,interval=interval,
       burnintheta=burnintheta,
+      burninbeta=burninbeta,
       priorsizedistribution=priorsizedistribution,
       mean.prior.size=mean.prior.size, sd.prior.size=sd.prior.size,
       mode.prior.sample.proportion=mode.prior.sample.proportion,
@@ -463,8 +684,11 @@ posteriorsize<-function(s,
       quartiles.prior.size=quartiles.prior.size,
       effective.prior.df=effective.prior.df,
       alpha=alpha,
+      seed=seed,
       supplied=supplied,
-      dispersion=dispersion,
+      num.recruits=nr[!remvalues],
+      recruit.times=recruit.times[!remvalues],
+      max.coupons=max.coupons,
       maxbeta=maxbeta)
 #
 #   Process the results
@@ -485,14 +709,15 @@ posteriorsize<-function(s,
     #
     degnames <- NULL
     if(Np>0){degnames <- c(degnames,paste("pdeg",1:Np,sep=""))}
-    colnamessample <- c("N","mu","sigma","degree1","totalsize")
-    if(length(degnames)>0){
-     colnamessample <- c(colnamessample, degnames)
-    }
-    if(degreedistribution=="cmp"){
-     colnamessample <- c(colnamessample, c("lambda","nu"))
-    }
-    colnames(Cret$sample) <- colnamessample
+#   colnamessample <- c("N","mu","sigma","degree1","totalsize","beta0","beta1","mem.mean","mem.sd","mem.degree.mean")
+#   colnamessample <- Cret$sample
+#   if(length(degnames)>0){
+#    colnamessample <- c(colnamessample, degnames)
+#   }
+#   if(degreedistribution=="cmp"){
+#    colnamessample <- c(colnamessample, c("lambda","nu"))
+#   }
+#   colnames(Cret$sample) <- colnamessample
     m <- apply(Cret$sample,2,stats::median,na.rm=TRUE)
     Cret$sample[is.na(Cret$sample[,"mu"]),"mu"] <- m["mu"]
     Cret$sample[is.na(Cret$sample[,"sigma"]),"sigma"] <- m["sigma"]
@@ -530,6 +755,8 @@ posteriorsize<-function(s,
   }
   Cret$degreedistribution <- degreedistribution
   Cret$priorsizedistribution <- priorsizedistribution
+  #
+  Cret$visibilities<- Cret$pop[1:Cret$n]
 # Cret$mean.prior.size <- mean.prior.size
   ### return result
   class(Cret) <- "sspse"

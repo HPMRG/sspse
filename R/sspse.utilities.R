@@ -73,3 +73,17 @@ HPD.density <- function(x,lbound=min(x,na.rm=TRUE),ubound=max(x,na.rm=TRUE)){
   val <- tryCatch(withCallingHandlers(expr, warning = wHandler), error = eHandler)
   list(value = val, warnings = myWarnings, error=myError)
 } 
+
+# Compute the horvitz thompson estimate
+HT.estimate<-function(weights,outcome){
+  nas <- is.na(weights)|is.na(outcome)
+  if(is.factor(outcome)){
+    num <- rep(0,length=length(levels(outcome[!nas])))
+    a <- tapply(weights[!nas],as.numeric(outcome[!nas]),sum)
+    num[as.numeric(names(a))] <- a
+  }else{
+    num<-sum(outcome[!nas]*weights[!nas])
+  }
+  den<-sum(weights[!nas])
+  num/den
+}
