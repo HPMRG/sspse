@@ -461,7 +461,12 @@ posteriorsize<-function(s,
       if(recruit.time=="wave"){
         recruit.times <- nw
       }else{
-        recruit.times <- as.numeric(rds.data[[recruit.time]])
+       recruit.times <- rds.data[[recruit.time]]
+       if(methods::is(recruit.times,"POSIXt") | methods::is(recruit.times,"Date")){
+        recruit.times <- as.numeric(recruit.times) / (24*60*60)
+       }else{
+        recruit.times <- as.numeric(recruit.times)
+       }
       }
       recruit.time <- TRUE
     }else{
@@ -481,7 +486,7 @@ posteriorsize<-function(s,
       }
     }
     if(length(recruit.time)==n & (methods::is(recruit.time,"POSIXt") | methods::is(recruit.time,"Date"))){
-      recruit.times <- as.numeric(recruit.time)
+      recruit.times <- as.numeric(recruit.time) / (24*60*60)
     }else{
       recruit.times <- recruit.time
     }
@@ -494,6 +499,9 @@ posteriorsize<-function(s,
       for(i in which(is.na(recruit.times))){recruit.times[i] <- moving.median(i)}
     }
   }
+# gap <- diff(sort(recruit.times))
+# gap <- min(gap[gap > 0])
+# recruit.times <- recruit.times + 0.01*(1:n)*gap/(n+1)
   recruit.times <- recruit.times - min(recruit.times)
   if(reflect.time){
     recruit.times <- max(recruit.times)-recruit.times
@@ -623,6 +631,7 @@ posteriorsize<-function(s,
   ### are we running the job in parallel (parallel > 1), if not just 
   #   call the degree specific function
   if(parallel==1){
+	  browser()
       Cret <- posfn(s=s,s2=s2,rc=rc,K=K,nk=nk,maxN=maxN,
                     mean.prior.degree=mean.prior.degree,df.mean.prior=df.mean.prior,
                     sd.prior.degree=sd.prior.degree,df.sd.prior=df.sd.prior,
