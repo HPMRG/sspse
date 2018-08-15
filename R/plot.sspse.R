@@ -225,16 +225,33 @@ graphics::plot(seq_along(x$predictive.degree),y=x$predictive.degree, type='h',
 col='red', lwd=2, xlab="degree",ylab="probability",
   main="mean posterior network size distribution")
 if(!is.null(control$data)){
+  if(methods::is(control$data,"rds.data.frame")){
+  if(is.null(attr(control$data,"network.size.variable")))
+    stop("Passed data must have a network.size attribute.")
+# nr <- RDS::get.number.of.recruits(control$data)
+# nw <- RDS::get.wave(control$data)
+# ns <- RDS::get.seed.id(rds.datacontrol$data
+# is.seed <- (RDS::get.rid(control$data)=="seed")
+   network.size <- as.numeric(control$data[[attr(control$data,"network.size.variable")]])
+  }else{
+   network.size <- as.numeric(control$data)
+  }
+  remvalues <- is.na(network.size)
   Kmax <- max(seq_along(x$predictive.degree))
-  bbb <- tabulate(control$data,nbins=Kmax) #, nbins=max(control$data))
+  bbb <- tabulate(network.size[!remvalues],nbins=Kmax) #, nbins=max(control$data))
   bbb <- bbb/sum(bbb)
   aaa <- graphics::barplot(bbb,names.arg=1:Kmax,add=FALSE,axes=TRUE,width=rep(0.5,length(bbb)),space=1,col=0,
     xlab="degree",ylab="probability", xlim=c(1,Kmax),
     main="posterior with sample histogram overlaid")
   graphics::lines(x=-0.25+seq_along(x$predictive.degree),y=x$predictive.degree, type='h', col='red', lwd=2)
   if(!is.null(x$visibilities)){
-	  graphics::plot(y=x$visibilities, x=control$data,ylab="estimated visibilities",
-	       xlab="network sizes",main="Estimated Visibilites for each individual's network size")
+	  require("mgcv")
+	  gfit <- gam(x$visibilities ~ s(network.size), family=poisson(link=log))
+	  pfit <- predict(gfit, newdata=list(network.size=1:max(network.size,na.rm=TRUE)))
+	  graphics::plot(y=x$visibilities, x=network.size,ylab="estimated visibilities",
+	       xlab="network sizes", ylim=range(c(x$visibilities,pfit),na.rm=TRUE),
+	       main="Estimated Visibilites for each individual's network size")
+	  lines(x=1:max(network.size,na.rm=TRUE),y=pfit)
   }
 }}
 }else{

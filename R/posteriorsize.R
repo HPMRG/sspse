@@ -424,7 +424,7 @@ posteriorsize<-function(s,
                   maxbeta=120, 
                   supplied=list(maxN=maxN),
                   max.coupons=NULL,
-                  recruit.time=NULL,include.tree=FALSE, unit.scale=FALSE, 
+                  recruit.time=NULL,include.tree=TRUE, unit.scale=FALSE, 
                   optimism = TRUE,
                   reflect.time=TRUE,
                   verbose=TRUE){
@@ -631,7 +631,6 @@ posteriorsize<-function(s,
   ### are we running the job in parallel (parallel > 1), if not just 
   #   call the degree specific function
   if(parallel==1){
-	  browser()
       Cret <- posfn(s=s,s2=s2,rc=rc,K=K,nk=nk,maxN=maxN,
                     mean.prior.degree=mean.prior.degree,df.mean.prior=df.mean.prior,
                     sd.prior.degree=sd.prior.degree,df.sd.prior=df.sd.prior,

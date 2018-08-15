@@ -146,7 +146,7 @@ void gcmpvis (int *pop,
      }
      mui=musample[0];
      sigmai=sigmasample[0];
-  if(sigmai > 4.0 || mui > 4.5) Rprintf("mui %f sigmai %f dfmu %f\n", mui, sigmai, (*dfmu));
+//if(sigmai > 4.0 || mui > 4.5) Rprintf("mui %f sigmai %f dfmu %f\n", mui, sigmai, (*dfmu));
     }
 
     /* Compute the unit distribution (given the new theta = (mu, sigma)) */
