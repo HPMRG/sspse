@@ -709,6 +709,7 @@ posteriorsize<-function(s,
     for(i in (2 : Nparallel)){
      z <- outlist[[i]]
      Cret$sample <- rbind(Cret$sample,z$sample)
+     Cret$vsample <- rbind(Cret$vsample,z$vsample)
      Cret$predictive.degree.count<-Cret$predictive.degree.count+z$predictive.degree.count
      Cret$predictive.degree<-Cret$predictive.degree+z$predictive.degree
     }
