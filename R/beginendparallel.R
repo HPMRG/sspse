@@ -1,6 +1,10 @@
 #' @keywords internal
 beginparallel<-function(parallel=1, type="PSOCK", seed=NULL, packagenames=c("sspse"),verbose=TRUE){
 #   require(parallel)
+ 
+#   Make FORK the default on the Mac
+    if(missing(type) && Sys.info()["sysname"]=="Darwin"){type <- "FORK"}
+
     if(verbose){
      cat(paste("Engaging warp drive using",type,"...\n",sep=" "))
     }
@@ -27,7 +31,7 @@ beginparallel<-function(parallel=1, type="PSOCK", seed=NULL, packagenames=c("ssp
     return(cl)
 }
 #' @keywords internal
-endparallel<-function(cl, type="MPI", finalize=TRUE, verbose=TRUE){
+endparallel<-function(cl, type="PSOCK", finalize=TRUE, verbose=TRUE){
     parallel::stopCluster(cl)
 # Activate the next line for Rmpi
 #   if(finalize & type=="MPI"){Rmpi::mpi.finalize()}

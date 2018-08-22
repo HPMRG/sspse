@@ -6,7 +6,8 @@
 \usage{
 \method{plot}{sspse}(x, xlim = NULL, data = NULL, support = 1000,
   HPD.level = 0.9, N = NULL, ylim = NULL, mcmc = FALSE, type = "both",
-  main = "posterior for population size", smooth = 4, ...)
+  main = "posterior for population size", smooth = 4, include.tree = TRUE,
+  ...)
 }
 \arguments{
 \item{x}{an object of class \code{"plot.sspse"}, usually, a result of a call
@@ -47,6 +48,11 @@ is produced.  If \code{"both"}, then all plots for \code{"N"} and
 \item{main}{an overall title for the posterior plot.}
 
 \item{smooth}{the (optional) smoothing parameter for the density estimate.}
+
+\item{include.tree}{logical; If \code{TRUE}, 
+augment the reported network size by the number of recruits and one for the recruiter (if any).
+This reflects a more accurate value for the visibility, but is not the self-reported degree.
+In particular, it typically produces a positive visibility (compared to a possibility zero self-reported degree).}
 
 \item{\dots}{further arguments passed to or from other methods.}
 }

@@ -14,15 +14,16 @@ posteriorsize(s, s2 = NULL, rc = rep(FALSE, length(s2)),
   degreedistribution = c("cmp", "nbinom", "pln"), mean.prior.degree = NULL,
   sd.prior.degree = NULL, max.sd.prior.degree = 4, df.mean.prior = 1,
   df.sd.prior = 3, beta0.mean.prior = -3, beta1.mean.prior = 0,
-  beta0.sd.prior = 10, beta1.sd.prior = 10, mem.mean.prior = 0,
-  df.mem.mean.prior = 5, mem.sd.prior = 5, df.mem.sd.prior = 3,
-  visibility = TRUE, Np = 0, nk = NULL, n = NULL, n2 = length(s2),
+  beta0.sd.prior = 10, beta1.sd.prior = 10, mem.optimism.prior = 1,
+  df.mem.optimism.prior = 5, mem.sd.prior = 5, df.mem.sd.prior = 3,
+  visibility = TRUE, type.impute = c("mode", "distribution", "median",
+  "mean"), Np = 0, nk = NULL, n = NULL, n2 = length(s2),
   muproposal = 0.1, sigmaproposal = 0.15, beta0proposal = 0.2,
   beta1proposal = 0.001, memmuproposal = 0.1, memsdproposal = 0.15,
   burnintheta = 500, burninbeta = 50, parallel = 1,
   parallel.type = "PSOCK", seed = NULL, maxbeta = 120,
   supplied = list(maxN = maxN), max.coupons = NULL, recruit.time = NULL,
-  include.tree = FALSE, unit.scale = FALSE, optimism = TRUE,
+  include.tree = TRUE, unit.scale = FALSE, optimism = TRUE,
   reflect.time = TRUE, verbose = TRUE)
 }
 \arguments{
@@ -131,10 +132,10 @@ beta0 parameter distribution in the model for the number of recruits.}
 \item{beta1.sd.prior}{scalar; A hyper parameter being the standard deviation of the 
 beta0 parameter distribution in the model for the number of recruits.}
 
-\item{mem.mean.prior}{scalar; A hyper parameter being the mean of the 
+\item{mem.optimism.prior}{scalar; A hyper parameter being the mean of the 
 distribution of the optimism parameter.}
 
-\item{df.mem.mean.prior}{scalar; A hyper parameter being the degrees-of-freedom
+\item{df.mem.optimism.prior}{scalar; A hyper parameter being the degrees-of-freedom
 of the prior for the optimism parameter. This gives the equivalent sample size that would
 contain the same amount of information inherent in the prior.}
 
@@ -151,6 +152,12 @@ the standard deviation.}
 is to be used, whereby latent visibilities are used in place of the reported 
 network sizes as the unit size variable. If \code{TRUE} then a \code{rds.data.frame}
 need to be passed to provide the RDS information needed for the measurement error model.}
+
+\item{type.impute}{The type of imputation to use for the summary visibilities 
+(returned in the component \code{visibilities}. The imputes are based on the posterior 
+draws of the visibilities. 
+It can be of type \code{distribution},\code{mode},\code{median}, or \code{mean} 
+with \code{mode} the default, being the posterior mode of the visibility for that person.}
 
 \item{Np}{integer; The overall degree distribution is a mixture of the
 \code{Np} rates for \code{1:Np} and a parametric degree distribution model

@@ -85,9 +85,9 @@
 #' beta0 parameter distribution in the model for the number of recruits.
 #' @param beta1.sd.prior scalar; A hyper parameter being the standard deviation of the 
 #' beta0 parameter distribution in the model for the number of recruits.
-#' @param mem.mean.prior scalar; A hyper parameter being the mean of the 
+#' @param mem.optimism.prior scalar; A hyper parameter being the mean of the 
 #' distribution of the optimism parameter.
-#' @param df.mem.mean.prior scalar; A hyper parameter being the degrees-of-freedom
+#' @param df.mem.optimism.prior scalar; A hyper parameter being the degrees-of-freedom
 #' of the prior for the optimism parameter. This gives the equivalent sample size that would
 #' contain the same amount of information inherent in the prior.
 #' @param mem.sd.prior scalar; A hyper parameter being the mean of the 
@@ -101,6 +101,11 @@
 #' is to be used, whereby latent visibilities are used in place of the reported 
 #' network sizes as the unit size variable. If \code{TRUE} then a \code{rds.data.frame}
 #' need to be passed to provide the RDS information needed for the measurement error model.
+#' @param type.impute The type of imputation to use for the summary visibilities 
+#' (returned in the component \code{visibilities}. The imputes are based on the posterior 
+#' draws of the visibilities. 
+#' It can be of type \code{distribution},\code{mode},\code{median}, or \code{mean} 
+#' with \code{mode} the default, being the posterior mode of the visibility for that person.
 #' @param Np integer; The overall degree distribution is a mixture of the
 #' \code{Np} rates for \code{1:Np} and a parametric degree distribution model
 #' truncated below \code{Np}. Thus the model fits the proportions of the
@@ -388,28 +393,29 @@
 #' @export posteriorsize
 posteriorsize<-function(s,
                   s2=NULL, rc=rep(FALSE, length(s2)),
-		  median.prior.size=NULL,
+                  median.prior.size=NULL,
                   interval=10,
                   burnin=5000,
                   maxN=NULL,
                   K=NULL,
                   samplesize=1000,
-		  quartiles.prior.size=NULL,
-		  mean.prior.size=NULL,
-		  mode.prior.size=NULL,
-		  priorsizedistribution=c("beta","flat","nbinom","pln","supplied"),
-		  effective.prior.df=1,
+                  quartiles.prior.size=NULL,
+                  mean.prior.size=NULL,
+                  mode.prior.size=NULL,
+                  priorsizedistribution=c("beta","flat","nbinom","pln","supplied"),
+                  effective.prior.df=1,
                   sd.prior.size=NULL,
-		  mode.prior.sample.proportion=NULL,
-		  alpha=NULL,
-		  degreedistribution=c("cmp","nbinom","pln"),
+                  mode.prior.sample.proportion=NULL,
+                  alpha=NULL,
+                  degreedistribution=c("cmp","nbinom","pln"),
                   mean.prior.degree=NULL, sd.prior.degree=NULL, max.sd.prior.degree=4,
                   df.mean.prior=1,df.sd.prior=3,
-		  beta0.mean.prior=-3, beta1.mean.prior=0,
-		  beta0.sd.prior=10, beta1.sd.prior=10,
-		  mem.mean.prior=0, df.mem.mean.prior=5, 
-		  mem.sd.prior=5, df.mem.sd.prior=3, 
+                  beta0.mean.prior=-3, beta1.mean.prior=0,
+                  beta0.sd.prior=10, beta1.sd.prior=10,
+                  mem.optimism.prior=1, df.mem.optimism.prior=5, 
+                  mem.sd.prior=5, df.mem.sd.prior=3, 
                   visibility=TRUE,
+                  type.impute = c("mode","distribution","median","mean"),
                   Np=0,
                   nk=NULL,
                   n=NULL,
@@ -433,8 +439,8 @@ posteriorsize<-function(s,
   posfn <- switch(degreedistribution,
                   nbinom=posnbinom,
                   pln=pospln,
-		  cmp=poscmp,
-		  poscmp)
+                  cmp=poscmp,
+                  poscmp)
   # If the passed "s" is an rds.rata.frame, extract out the components
   if(!methods::is(s,"rds.data.frame")){
    visibility <- FALSE
@@ -529,14 +535,14 @@ posteriorsize<-function(s,
   gmean <- HT.estimate(RDS::vh.weights(nsize[!is.na(nsize)]),nsize[!is.na(nsize)])
   if(is.na(gmean)) gmean <- 38
   
-  s <- network.size
+  s <- nsize
   }
   # End of measurement model information extraction
 
   remvalues <- is.na(s)
   if(sum(!remvalues) < length(s)){
    warning(paste(length(s)-sum(!remvalues),"of",length(s),
-  	"sizes values were missing and were removed."), call. = FALSE)
+          "sizes values were missing and were removed."), call. = FALSE)
    s <- s[!remvalues]
    n <- length(s)
   }
@@ -548,7 +554,7 @@ posteriorsize<-function(s,
     remvalues <- is.na(s2)
     if(sum(!remvalues) < length(s2)){
      warning(paste(length(s2)-sum(!remvalues),"of",length(s2),
-  	  "sizes values from the second RDS were missing and were removed."), call. = FALSE)
+            "sizes values from the second RDS were missing and were removed."), call. = FALSE)
      s2 <- s2[!remvalues]
      rc <- rc[!remvalues]
      n2 <- length(s2)
@@ -634,31 +640,31 @@ posteriorsize<-function(s,
       Cret <- posfn(s=s,s2=s2,rc=rc,K=K,nk=nk,maxN=maxN,
                     mean.prior.degree=mean.prior.degree,df.mean.prior=df.mean.prior,
                     sd.prior.degree=sd.prior.degree,df.sd.prior=df.sd.prior,
-		    beta0.mean.prior=beta0.mean.prior, beta1.mean.prior=beta1.mean.prior,
-		    beta0.sd.prior=beta0.sd.prior, beta1.sd.prior=beta1.sd.prior,
-		    mem.mean.prior=mem.mean.prior, df.mem.mean.prior=df.mem.mean.prior,
+                    beta0.mean.prior=beta0.mean.prior, beta1.mean.prior=beta1.mean.prior,
+                    beta0.sd.prior=beta0.sd.prior, beta1.sd.prior=beta1.sd.prior,
+                    mem.optimism.prior=mem.optimism.prior, df.mem.optimism.prior=df.mem.optimism.prior,
                     mem.sd.prior=mem.sd.prior, df.mem.sd.prior=df.mem.sd.prior,
                     muproposal=muproposal, sigmaproposal=sigmaproposal, 
-		    beta0proposal=beta0proposal, beta1proposal=beta1proposal,
-		    memmuproposal=memmuproposal, memsdproposal=memsdproposal,
-		    visibility=visibility,
-		    Np=Np,
+                    beta0proposal=beta0proposal, beta1proposal=beta1proposal,
+                    memmuproposal=memmuproposal, memsdproposal=memsdproposal,
+                    visibility=visibility,
+                    Np=Np,
                     samplesize=samplesize,burnin=burnin,interval=interval,
-		    burnintheta=burnintheta,
-		    burninbeta=burninbeta,
-		    priorsizedistribution=priorsizedistribution,
-		    mean.prior.size=mean.prior.size, sd.prior.size=sd.prior.size,
-		    mode.prior.sample.proportion=mode.prior.sample.proportion,
-		    median.prior.size=median.prior.size,
-		    mode.prior.size=mode.prior.size,
-		    quartiles.prior.size=quartiles.prior.size,
+                    burnintheta=burnintheta,
+                    burninbeta=burninbeta,
+                    priorsizedistribution=priorsizedistribution,
+                    mean.prior.size=mean.prior.size, sd.prior.size=sd.prior.size,
+                    mode.prior.sample.proportion=mode.prior.sample.proportion,
+                    median.prior.size=median.prior.size,
+                    mode.prior.size=mode.prior.size,
+                    quartiles.prior.size=quartiles.prior.size,
                     effective.prior.df=effective.prior.df,
                     alpha=alpha,
                     seed=seed,
                     supplied=supplied,
-		    num.recruits=nr[!remvalues],
-		    recruit.times=recruit.times[!remvalues],
-		    max.coupons=max.coupons,
+                    num.recruits=nr[!remvalues],
+                    recruit.times=recruit.times[!remvalues],
+                    max.coupons=max.coupons,
                     maxbeta=maxbeta)
   }
   ### since running job in parallel, start pvm (if not already running)
@@ -674,7 +680,7 @@ posteriorsize<-function(s,
       sd.prior.degree=sd.prior.degree,df.sd.prior=df.sd.prior,
       beta0.mean.prior=beta0.mean.prior, beta1.mean.prior=beta1.mean.prior,
       beta0.sd.prior=beta0.sd.prior, beta1.sd.prior=beta1.sd.prior,
-      mem.mean.prior=mem.mean.prior, df.mem.mean.prior=df.mem.mean.prior,
+      mem.optimism.prior=mem.optimism.prior, df.mem.optimism.prior=df.mem.optimism.prior,
       mem.sd.prior=mem.sd.prior, df.mem.sd.prior=df.mem.sd.prior,
       muproposal=muproposal, sigmaproposal=sigmaproposal, 
       beta0proposal=beta0proposal, beta1proposal=beta1proposal,
@@ -709,7 +715,7 @@ posteriorsize<-function(s,
     for(i in (2 : Nparallel)){
      z <- outlist[[i]]
      Cret$sample <- rbind(Cret$sample,z$sample)
-     Cret$vsample <- rbind(Cret$vsample,z$vsample)
+     if(visibility) Cret$vsample <- rbind(Cret$vsample,z$vsample)
      Cret$predictive.degree.count<-Cret$predictive.degree.count+z$predictive.degree.count
      Cret$predictive.degree<-Cret$predictive.degree+z$predictive.degree
     }
@@ -718,7 +724,7 @@ posteriorsize<-function(s,
     #
     degnames <- NULL
     if(Np>0){degnames <- c(degnames,paste("pdeg",1:Np,sep=""))}
-#   colnamessample <- c("N","mu","sigma","degree1","totalsize","beta0","beta1","mem.mean","mem.sd","mem.degree.mean")
+#   colnamessample <- c("N","mu","sigma","degree1","totalsize","beta0","beta1","mem.optimism","mem.sd","mem.degree.mean")
 #   colnamessample <- Cret$sample
 #   if(length(degnames)>0){
 #    colnamessample <- c(colnamessample, degnames)
@@ -756,16 +762,39 @@ posteriorsize<-function(s,
   Cret$N <- c(Cret$MAP["N"], 
               mean(Cret$sample[,"N"]),
               stats::median(Cret$sample[,"N"]),
-	      stats::quantile(Cret$sample[,"N"],c(0.025,0.975)))
+              stats::quantile(Cret$sample[,"N"],c(0.025,0.975)))
   names(Cret$N) <- c("MAP","Mean AP","Median AP","P025","P975")
   #
+  Cret$sample <- Cret$sample[,-c("degree1","totalsize")]
+  #
   if(Cret$predictive.degree[length(Cret$predictive.degree)] > 0.01){
-   warning("There is a non-trivial proportion of the posterior mass on very high degrees. This may indicate convergence problems in the MCMC.")
+   warning("There is a non-trivial proportion of the posterior mass on very high degrees. This may indicate convergence problems in the MCMC.", call. = FALSE)
   }
   Cret$degreedistribution <- degreedistribution
   Cret$priorsizedistribution <- priorsizedistribution
   #
-  Cret$visibilities<- Cret$pop[1:Cret$n]
+  if(missing(type.impute)){type.impute <- "mode"}
+  type.impute <- match.arg(type.impute,
+                           c("mode","distribution","median","mean"))
+  if(is.na(type.impute)) { # User typed an unrecognizable name
+    stop(paste('You must specify a valid type.impute. The valid types are "distribution","mode","median", and "mean"'), call.=FALSE)
+  }
+  if(visibility){
+    Cret$visibilities <- switch(type.impute, 
+               `distribution` = {
+                 Cret$pop[1:Cret$n]
+               },
+               `mode` = {
+                 apply(Cret$vsample,2,function(x){a <- tabulate(x);mean(which(a==max(a,na.rm=TRUE)))})
+               },
+               `median` = {
+                 apply(Cret$vsample,2,stats::median)
+               },
+               `mean` = {
+                 apply(Cret$vsample,2,mean)
+               }
+    )
+  }
 # Cret$mean.prior.size <- mean.prior.size
   ### return result
   class(Cret) <- "sspse"
@@ -784,5 +813,5 @@ posteriorsize<-function(s,
 #' @keywords models
 #' @export posize_warning
 posize_warning <- function(){
-	"POSTERIOR SIZE CALCULATION FAILED" #added for posteriorsize dialog to hide error message unless needed
+        "POSTERIOR SIZE CALCULATION FAILED" #added for posteriorsize dialog to hide error message unless needed
 }

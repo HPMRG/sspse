@@ -43,6 +43,10 @@
 #' \code{"others"} are produced.
 #' @param main an overall title for the posterior plot.
 #' @param smooth the (optional) smoothing parameter for the density estimate.
+#' @param include.tree logical; If \code{TRUE}, 
+#' augment the reported network size by the number of recruits and one for the recruiter (if any).
+#' This reflects a more accurate value for the visibility, but is not the self-reported degree.
+#' In particular, it typically produces a positive visibility (compared to a possibility zero self-reported degree). 
 #' @param \dots further arguments passed to or from other methods.
 #' @seealso The model fitting function \code{\link{posteriorsize}},
 #' \code{\link[graphics]{plot}}.
@@ -106,7 +110,7 @@
 #' @export
 plot.sspse <- function(x,
 		       xlim=NULL,data=NULL,support=1000,HPD.level=0.90,N=NULL,ylim=NULL,mcmc=FALSE,type="both",
-		       main="posterior for population size",smooth=4,...){
+		       main="posterior for population size",smooth=4,include.tree=TRUE,...){
   p.args <- as.list( sys.call() )[-c(1,2)]
   formal.args<-formals(sys.function())[-c(1)]
 
@@ -222,37 +226,45 @@ if("mu0" %in% colnames(out)){
 }
 #
 graphics::plot(seq_along(x$predictive.degree),y=x$predictive.degree, type='h',
-col='red', lwd=2, xlab="degree",ylab="probability",
+col='red', lwd=2, xlab="degree",ylab="probability", ylim=c(0,max(x$predictive.degree)),
   main="mean posterior network size distribution")
 if(!is.null(control$data)){
   if(methods::is(control$data,"rds.data.frame")){
   if(is.null(attr(control$data,"network.size.variable")))
     stop("Passed data must have a network.size attribute.")
-# nr <- RDS::get.number.of.recruits(control$data)
 # nw <- RDS::get.wave(control$data)
 # ns <- RDS::get.seed.id(rds.datacontrol$data
-# is.seed <- (RDS::get.rid(control$data)=="seed")
-   network.size <- as.numeric(control$data[[attr(control$data,"network.size.variable")]])
+
+  network.size <- as.numeric(control$data[[attr(control$data,"network.size.variable")]])
+  #Augment the reported network size by the number of recruits and the recruiter (if any).
+  if(include.tree){
+   nr <- RDS::get.number.of.recruits(control$data)
+   is.seed <- (RDS::get.rid(control$data)=="seed")
+   network.size <- pmax(network.size,nr+!is.seed)
+   data.title <- "network sizes (augmented by the number of recruits and the recruiter, if any)"
   }else{
-   network.size <- as.numeric(control$data)
+   data.title <- "reported network sizes"
   }
-  remvalues <- is.na(network.size)
-  Kmax <- max(seq_along(x$predictive.degree))
-  bbb <- tabulate(network.size[!remvalues],nbins=Kmax) #, nbins=max(control$data))
-  bbb <- bbb/sum(bbb)
-  aaa <- graphics::barplot(bbb,names.arg=1:Kmax,add=FALSE,axes=TRUE,width=rep(0.5,length(bbb)),space=1,col=0,
-    xlab="degree",ylab="probability", xlim=c(1,Kmax),
-    main="posterior with sample histogram overlaid")
-  graphics::lines(x=-0.25+seq_along(x$predictive.degree),y=x$predictive.degree, type='h', col='red', lwd=2)
-  if(!is.null(x$visibilities)){
-	  require("mgcv")
-	  gfit <- gam(x$visibilities ~ s(network.size), family=poisson(link=log))
-	  pfit <- predict(gfit, newdata=list(network.size=1:max(network.size,na.rm=TRUE)))
+ }else{
+   network.size <- as.numeric(control$data)
+ }
+ remvalues <- is.na(network.size)
+ Kmax <- max(seq_along(x$predictive.degree))
+ bbb <- tabulate(network.size[!remvalues],nbins=Kmax) #, nbins=max(control$data))
+ bbb <- bbb/sum(bbb)
+ aaa <- graphics::barplot(bbb,names.arg=1:Kmax,add=FALSE,axes=TRUE,width=rep(0.5,length(bbb)),space=1,col=0,
+   xlab="degree",ylab="probability", xlim=c(1,Kmax), ylim=c(0,max(bbb)),
+   main="posterior with sample histogram overlaid")
+ graphics::lines(x=-0.25+seq_along(x$predictive.degree),y=x$predictive.degree, type='h', col='red', lwd=2)
+ if(methods::is(control$data,"rds.data.frame") & !is.null(x$visibilities)){
+	  dat <- data.frame(x=rep(network.size,rep(100,length(network.size))), y=as.vector(x$vsample[1:100,]))
+	  gfit <- scam::scam(y ~ s(x, bs="mpi"), family=poisson(link=log), data=dat)
+	  pfit <- predict(gfit, newdata=list(x=1:max(network.size,na.rm=TRUE)), type="response", se.fit=FALSE)
 	  graphics::plot(y=x$visibilities, x=network.size,ylab="estimated visibilities",
-	       xlab="network sizes", ylim=range(c(x$visibilities,pfit),na.rm=TRUE),
+	       xlab=data.title, ylim=range(c(x$visibilities,pfit),na.rm=TRUE),
 	       main="Estimated Visibilites for each individual's network size")
 	  lines(x=1:max(network.size,na.rm=TRUE),y=pfit)
-  }
+ }
 }}
 }else{
 if(control$type %in% c("others","both")){

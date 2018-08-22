@@ -64,6 +64,10 @@
 #' @keywords package models
 #' @useDynLib sspse, .registration = TRUE
 #' @importFrom utils packageDescription
+#' @importFrom graphics lines
+#' @importFrom stats median
+#' @importFrom stats poisson
 #' @import parallel
+#' @import scam
 #' @import RDS
 NULL
