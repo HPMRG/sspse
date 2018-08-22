@@ -765,7 +765,7 @@ posteriorsize<-function(s,
               stats::quantile(Cret$sample[,"N"],c(0.025,0.975)))
   names(Cret$N) <- c("MAP","Mean AP","Median AP","P025","P975")
   #
-  Cret$sample <- Cret$sample[,-c("degree1","totalsize")]
+  Cret$sample <- Cret$sample[,-match(c("degree1","totalsize"), colnames(Cret$sample))]
   #
   if(Cret$predictive.degree[length(Cret$predictive.degree)] > 0.01){
    warning("There is a non-trivial proportion of the posterior mass on very high degrees. This may indicate convergence problems in the MCMC.", call. = FALSE)
