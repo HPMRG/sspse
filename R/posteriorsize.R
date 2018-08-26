@@ -9,8 +9,8 @@
 #' 
 #' @param s either a vector of integers or an \code{rds.data.frame} providing network 
 #' size information.
-#' If a \code{rds.data.frame} is passed and \code{visibility=TRUE}, the default, then
-#' the measurement error model is to  used, whereby latent visibilities are used in place 
+#' If a \code{rds.data.frame} is passed and \code{visibility=TRUE}, not the default, then
+#' the measurement error model is used, whereby latent visibilities are used in place 
 #' of the reported network sizes as the size variable. If a vector of integers is passed these 
 #' are the network sizes in sequential order of recording.
 #' @param s2 vector of integers; optionally, the vector of degrees from a second RDS,
@@ -414,7 +414,7 @@ posteriorsize<-function(s,
                   beta0.sd.prior=10, beta1.sd.prior=10,
                   mem.optimism.prior=1, df.mem.optimism.prior=5, 
                   mem.sd.prior=5, df.mem.sd.prior=3, 
-                  visibility=TRUE,
+                  visibility=FALSE,
                   type.impute = c("mode","distribution","median","mean"),
                   Np=0,
                   nk=NULL,

@@ -461,6 +461,7 @@ void MHcmptheta (int *Nk, int *K,
 //  Rprintf("Now proposing %d MH steps %f ip1...\n", step, ip);
     cutoff = ip + qnui-qnustar;
       
+// Rprintf("mui %f mustar %f dmu %f ip %f pithetai, %f pithetastar %f cutoff %f\n", mui, mustar, dmu, ip, pithetai, pithetastar, cutoff);
 //  if (*verbose)
 //    Rprintf("Now proposing %d MH steps %f cutoff...\n", step, cutoff);
 

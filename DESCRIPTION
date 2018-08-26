@@ -1,7 +1,7 @@
 Package: sspse
 Type: Package
 Version: 0.6
-Date: 2018-08-13
+Date: 2018-08-24
 Title: Estimating Hidden Population Size using Respondent Driven
         Sampling Data
 Authors@R: c( person("Mark S.", "Handcock", role=c("aut","cre","cph"),
@@ -20,7 +20,3 @@ URL: http://www.hpmrg.org
 Imports: RDS, scam, coda
 RoxygenNote: 6.1.0
 Encoding: UTF-8
-NeedsCompilation: yes
-Packaged: 2018-08-13 21:23:57 UTC; handcock
-Author: Mark S. Handcock [aut, cre, cph],
-  Krista J. Gile [aut, cph]
