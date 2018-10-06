@@ -20,7 +20,7 @@ cmp.natural <- function (mu,sigma,K=max(ceiling(mu+10*sigma),10),guess=NULL)
     fit = c(lambda = lambda, nu = nu, result)
     return(fit)
 }
-cmp.mu <- function (p,K=1000,cutoff=1,max.mu=50) 
+cmp.mu <- function (p,K=1000,cutoff=1,max.mu=5,force=FALSE) 
 {
 # converts natural to mean
         j <- cutoff:K
@@ -44,7 +44,7 @@ cmp.mu <- function (p,K=1000,cutoff=1,max.mu=50)
 	mu <- sum(a*j)
 	sd <- sqrt(sum(a*j*j)-mu*mu)
 #   cat(sprintf("K= %d mu= %f sd= %f\n",K,mu,sd))
-        if(mu > max.mu){
+        if(!force & mu > max.mu){
           return(c(NA,NA))
         }else{
           return(c(mu,sd))

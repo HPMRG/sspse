@@ -616,7 +616,7 @@ posteriorsize<-function(s,
     txv <- tapply(xv,xv,stats::median)
     fit <- cmpmle(txv,txp,cutoff=1,cutabove=K-1,
             guess=c(mean.prior.degree,sd.prior.degree))
-    fit <- cmp.mu(fit,max.mu=5*mean.prior.degree)
+    fit <- cmp.mu(fit,max.mu=5*mean.prior.degree,force=TRUE)
     if(verbose){
       cat(sprintf("The preliminary empirical value of the mean of the prior distribution for degree is %f.\n",mean.prior.degree))
       cat(sprintf("The preliminary empirical value of the s.d. of the prior distribution for degree is %f.\n",sd.prior.degree))

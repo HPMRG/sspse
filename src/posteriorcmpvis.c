@@ -42,7 +42,7 @@ void gcmpvis (int *pop,
   int i, j, k, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
   double lnlami, nui, dsamp;
   double dmu, dsigma;
-  double dbeta0, dbeta0sd, dbeta1, dbeta1sd;
+  double dbeta0, dbeta1;
   double dmemlnopt, dmemnu;
   double beta0i, beta1i, memlnopti, memnui;
   int tU, sizei, imaxN, imaxm, give_log0=0, give_log1=1;
@@ -67,8 +67,6 @@ void gcmpvis (int *pop,
   dsigma=(*sigma);
   dbeta0=(*beta0muprior);
   dbeta1=(*beta1muprior);
-  dbeta0sd=(*beta0sigmaprior);
-  dbeta1sd=(*beta1sigmaprior);
   dmemlnopt=(*memlnopt);
   dmemnu=(*memnu);
   dmu=(*mu);
@@ -444,7 +442,7 @@ void MHcmpmem (int *d, int *n, int *K,
   double memlnoptstar, memnustar, memlnopti, memnui;
   double memnu2i, memnu2star;
   double pibeta0star, pibeta0i;
-  double pibeta1star, pibeta1i;
+  double pibeta1star=0.0, pibeta1i=0.0;
   double pimemstar, pimemi;
   double dbeta0, dbeta0sd, dbeta1, dbeta1sd;
   double dmemlnopt, dmemdflnopt, dmemdfnu, rmemdflnopt;
