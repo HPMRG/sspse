@@ -9,14 +9,17 @@
 #' 
 #' @param s either a vector of integers or an \code{rds.data.frame} providing network 
 #' size information.
-#' If a \code{rds.data.frame} is passed and \code{visibility=TRUE}, not the default, then
-#' the measurement error model is used, whereby latent visibilities are used in place 
+#' If a \code{rds.data.frame} is passed and \code{visibility=TRUE}, the default, then
+#' the measurement error model is to used, whereby latent visibilities are used in place 
 #' of the reported network sizes as the size variable. If a vector of integers is passed these 
-#' are the network sizes in sequential order of recording.
-#' @param s2 vector of integers; optionally, the vector of degrees from a second RDS,
-#' subsequent to the first RDS recorded in \eqn{s}. These are also in the order
-#' they are recorded.
-#' @param rc vector of logicals; optionally, a vector of the same length as \eqn{s2}
+#' are the network sizes in sequential order of recording (and the measurement model is not used).
+#' @param s2 either a vector of integers or an \code{rds.data.frame} providing network 
+#' size information for a second RDS sample subsequent to the first RDS recorded in \eqn{s}.
+#' If a \code{rds.data.frame} is passed and \code{visibility=TRUE}, the default, then
+#' the measurement error model is to used, whereby latent visibilities are used in place 
+#' of the reported network sizes as the size variable. If a vector of integers is passed these 
+#' are the network sizes in sequential order of recording (and the measurement model is not used).
+#' @param previous character; optionally, the name of the variable in \eqn{s2}
 #' indicating if the corresponding unit was sampled in the first RDS.
 #' @param median.prior.size scalar; A hyperparameter being the mode of the
 #' prior distribution on the population size.
@@ -104,7 +107,7 @@
 #' @param type.impute The type of imputation to use for the summary visibilities 
 #' (returned in the component \code{visibilities}. The imputes are based on the posterior 
 #' draws of the visibilities. 
-#' It can be of type \code{distribution},\code{mode},\code{median}, or \code{mean} 
+#' It can be of type \code{distribution}, \code{mode},\code{median}, or \code{mean} 
 #' with \code{mode} the default, being the posterior mode of the visibility for that person.
 #' @param Np integer; The overall degree distribution is a mixture of the
 #' \code{Np} rates for \code{1:Np} and a parametric degree distribution model
@@ -165,11 +168,21 @@
 #' is a character name of a variable in the data then that variable is used.
 #' If it is NULL then the sequence number of the recruit in the data is used.
 #' If it is NA then the recruitment is not used in the model.
-#' Otherwise, the recruitment time is used in the model to better predict the visibility of the person.
+#' Otherwise, the recruitment time is used in the model to better predict
+#' the visibility of the person.
+#' @param recruit.time2 vector; An optional value for the data/time that the person in the second RDS survey was interviewed.
+#' It needs to resolve as a numeric vector with number of elements the number
+#' of rows of the data with non-missing values of the network variable. If it
+#' is a character name of a variable in the data then that variable is used.
+#' If it is NULL, the default, then the sequence number of the recruit in the data is used.
+#' If it is NA then the recruitment is not used in the model.
+#' Otherwise, the recruitment time is used in the model to better predict
+#' the visibility of the person.
 #' @param include.tree logical; If \code{TRUE}, 
 #' augment the reported network size by the number of recruits and one for the recruiter (if any).
 #' This reflects a more accurate value for the visibility, but is not the self-reported degree.
-#' In particular, it typically produces a positive visibility (compared to a possibility zero self-reported degree). 
+#' In particular, it typically produces a positive visibility (compared to a
+#' possibility zero self-reported degree). 
 #' @param unit.scale numeric; If not \code{NULL} it sets the numeric value of the scale parameter
 #' of the distribution of the unit sizes.
 #' For the negative binomial, it is the multiplier on the variance of the negative binomial 
@@ -392,7 +405,7 @@
 #' plot(out, HPD.level=0.9,mcmc=TRUE)
 #' @export posteriorsize
 posteriorsize<-function(s,
-                  s2=NULL, rc=rep(FALSE, length(s2)),
+                  s2=NULL, previous=NULL,
                   median.prior.size=NULL,
                   interval=10,
                   burnin=5000,
@@ -414,12 +427,12 @@ posteriorsize<-function(s,
                   beta0.sd.prior=10, beta1.sd.prior=10,
                   mem.optimism.prior=1, df.mem.optimism.prior=5, 
                   mem.sd.prior=5, df.mem.sd.prior=3, 
-                  visibility=FALSE,
-                  type.impute = c("mode","distribution","median","mean"),
+                  visibility=TRUE,
+		  type.impute = c("mode","distribution","median","mean"),
                   Np=0,
                   nk=NULL,
                   n=NULL,
-                  n2=length(s2),
+                  n2=NULL,
                   muproposal=0.1, 
                   sigmaproposal=0.15, 
                   beta0proposal=0.2, beta1proposal=0.001,
@@ -430,7 +443,8 @@ posteriorsize<-function(s,
                   maxbeta=120, 
                   supplied=list(maxN=maxN),
                   max.coupons=NULL,
-                  recruit.time=NULL,include.tree=TRUE, unit.scale=FALSE, 
+                  recruit.time=NULL,recruit.time2=NULL,
+		  include.tree=TRUE, unit.scale=FALSE, 
                   optimism = TRUE,
                   reflect.time=TRUE,
                   verbose=TRUE){
@@ -537,6 +551,102 @@ posteriorsize<-function(s,
   
   s <- nsize
   }
+  # End of measurement model information extraction for the first RDS
+
+  # If the passed "s2" is an rds.rata.frame, extract out the components
+  if(!methods::is(s2,"rds.data.frame")){
+   visibility <- FALSE
+   if(is.null(K)) K=max(c(s,s2),na.rm=TRUE)
+   if(is.null(n2)) n2=length(s2)
+   rc <- NULL
+  }else{
+  rds.data2 <- s2
+  n2 <- nrow(rds.data2)
+  if(is.null(attr(rds.data2,"network.size.variable")))
+    stop("The second rds.data must have a network.size attribute.")
+  nr2 <- RDS::get.number.of.recruits(rds.data2)
+  nw2 <- RDS::get.wave(rds.data2)
+  ns2 <- RDS::get.seed.id(rds.data2)
+  is.seed2 <- (RDS::get.rid(rds.data2)=="seed")
+  
+  max.coupons2 <- attr(rds.data2,"max.coupons")
+  if(is.null(max.coupons2)){
+    max.coupons2 <- max(nr2,na.rm=TRUE)
+  }
+  if(length(recruit.time2)==1){
+    if(is.character(recruit.time2)){
+      if(recruit.time2=="wave"){
+        recruit.times2 <- nw2
+      }else{
+       recruit.times2 <- rds.data2[[recruit.time2]]
+       if(methods::is(recruit.times2,"POSIXt") | methods::is(recruit.times2,"Date")){
+        recruit.times2 <- as.numeric(recruit.times2) / (24*60*60)
+       }else{
+        recruit.times2 <- as.numeric(recruit.times2)
+       }
+      }
+      recruit.time2 <- TRUE
+    }else{
+      if(is.na(recruit.time2)){
+        recruit.times2 <- rep(0,n2)
+        recruit.time2 <- FALSE
+      }else{
+        stop("The recruitment time should be a variable in the second RDS data, or 'wave' to indicate the wave number or NA/NULL to indicate that the recruitment time is not available and/or used.")
+      }
+    }
+  }else{
+    if(length(recruit.time2)==0 & is.null(recruit.time2)){
+      recruit.time2 <- 1:n2
+    }else{
+      if(length(recruit.time2)!=n2 | (!is.numeric(recruit.time2) & !methods::is(recruit.time2,"POSIXt") & !methods::is(recruit.time2,"Date"))){
+        stop("The recruitment time should be a variable in the second RDS data, or 'wave' to indicate the wave number or NA/NULL to indicate that the recruitment time is not available and/or used.")
+      }
+    }
+    if(length(recruit.time2)==n & (methods::is(recruit.time2,"POSIXt") | methods::is(recruit.time2,"Date"))){
+      recruit.times2 <- as.numeric(recruit.time2) / (24*60*60)
+    }else{
+      recruit.times2 <- recruit.time2
+    }
+    recruit.time2 <- TRUE
+  }
+  if(any(is.na(recruit.times2))){
+    med.index <- cbind(c(2,1:(n2-1)),c(3,3:n2,n2))
+    moving.median=function(i){stats::median(recruit.times2[med.index[i,]],na.rm=TRUE)}
+    while(any(is.na(recruit.times2))){
+      for(i in which(is.na(recruit.times2))){recruit.times2[i] <- moving.median(i)}
+    }
+  }
+# gap <- diff(sort(recruit.times))
+# gap <- min(gap[gap > 0])
+# recruit.times <- recruit.times + 0.01*(1:n)*gap/(n+1)
+  recruit.times2 <- recruit.times2 - min(recruit.times2)
+  if(reflect.time){
+    recruit.times2 <- max(recruit.times2)-recruit.times2
+  }
+  network.size2 <- as.numeric(rds.data2[[attr(rds.data2,"network.size.variable")]])
+  remvalues2 <- is.na(network.size2)
+  if(any(remvalues2)){
+    warning(paste(sum(remvalues2),"of",nrow(rds.data2),
+                  "network sizes were missing in the second RDS data set. These will be imputed from the marginal distribution"), call. = FALSE)
+  }
+  
+ if(length(network.size2[!remvalues2])>0){
+   K <- max(K, round(stats::quantile(network.size2[!remvalues2],0.95)))
+ }
+  
+  #Augment the reported network size by the number of recruits and the recruiter (if any).
+  if(include.tree){
+    nsize2 <- pmax(network.size2,nr2+!is.seed2)
+  }else{
+    nsize2 <- network.size2
+  }
+  
+  gmean <- HT.estimate(RDS::vh.weights(nsize2[!is.na(nsize2)]),nsize2[!is.na(nsize2)])
+  if(is.na(gmean)) gmean <- 38
+  
+  s2 <- nsize2
+  }
+  # End of measurement model information extraction for the second survey
   # End of measurement model information extraction
 
   remvalues <- is.na(s)
@@ -548,15 +658,20 @@ posteriorsize<-function(s,
   }
   s.prior <- s
   if(!is.null(s2)){
-    if(!is.logical(rc) | length(s2)!=length(rc)){
-      stop("The argument rc should be a logical vector of the same length as s2, indicating if the corresponding unit was sampled in the first RDS.")
+    if(is.null(rds.data2[[previous]])){
+      stop("The argument 'previous' must have a variable in the second RDS data set indicating if the corresponding unit was sampled in the first RDS.")
     }
-    remvalues <- is.na(s2)
-    if(sum(!remvalues) < length(s2)){
-     warning(paste(length(s2)-sum(!remvalues),"of",length(s2),
+    rc <- rds.data2[[previous]]
+    if(!is.logical(rc) | length(s2)!=length(rc)){
+      stop("The argument 'previous' must have a variable in the second RDS data set that is a logical vector of the same length as s2, indicating if the corresponding unit was sampled in the first RDS.")
+    }
+    rc <- as.numeric(rc)
+    remvalues2 <- is.na(s2)
+    if(sum(!remvalues2) < length(s2)){
+     warning(paste(length(s2)-sum(!remvalues2),"of",length(s2),
             "sizes values from the second RDS were missing and were removed."), call. = FALSE)
-     s2 <- s2[!remvalues]
-     rc <- rc[!remvalues]
+     s2 <- s2[!remvalues2]
+     rc <- rc[!remvalues2]
      n2 <- length(s2)
     }
   }
@@ -664,11 +779,12 @@ posteriorsize<-function(s,
                     supplied=supplied,
                     num.recruits=nr[!remvalues],
                     recruit.times=recruit.times[!remvalues],
+                    num.recruits2=nr2[!remvalues2],
+                    recruit.times2=recruit.times2[!remvalues2],
                     max.coupons=max.coupons,
                     maxbeta=maxbeta)
-  }
-  ### since running job in parallel, start pvm (if not already running)
-  else{
+  }else{
+  ### since running job in parallel, start vm (if not already running)
     cl <- beginparallel(parallel,type=parallel.type)
     ### divide the samplesize by the number of parallel runs (number of MCMC samples)
     samplesize.parallel=round(samplesize/parallel)
@@ -702,6 +818,8 @@ posteriorsize<-function(s,
       supplied=supplied,
       num.recruits=nr[!remvalues],
       recruit.times=recruit.times[!remvalues],
+      num.recruits2=nr2[!remvalues2],
+      recruit.times2=recruit.times2[!remvalues2],
       max.coupons=max.coupons,
       maxbeta=maxbeta)
 #
@@ -715,7 +833,12 @@ posteriorsize<-function(s,
     for(i in (2 : Nparallel)){
      z <- outlist[[i]]
      Cret$sample <- rbind(Cret$sample,z$sample)
-     if(visibility) Cret$vsample <- rbind(Cret$vsample,z$vsample)
+     if(visibility){
+       Cret$vsample <- rbind(Cret$vsample,z$vsample)
+       if(!is.null(s2)){
+        Cret$vsample2 <- rbind(Cret$vsample2,z$vsample2)
+       }
+     }
      Cret$predictive.degree.count<-Cret$predictive.degree.count+z$predictive.degree.count
      Cret$predictive.degree<-Cret$predictive.degree+z$predictive.degree
     }
@@ -782,7 +905,7 @@ posteriorsize<-function(s,
   if(visibility){
     Cret$visibilities <- switch(type.impute, 
                `distribution` = {
-                 Cret$pop[1:Cret$n]
+                 Cret$pop[1:Cret$n1]
                },
                `mode` = {
                  apply(Cret$vsample,2,function(x){a <- tabulate(x);mean(which(a==max(a,na.rm=TRUE)))})

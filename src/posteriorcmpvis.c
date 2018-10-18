@@ -77,7 +77,7 @@ void gcmpvis (int *pop,
   double *pi = (double *) malloc(sizeof(double) * Ki);
   double *pd = (double *) malloc(sizeof(double) * Ki);
   double *pd2 = (double *) malloc(sizeof(double) * Ki);
-  int *d = (int *) malloc(sizeof(int) * ni);
+  int *d = (int *) malloc(sizeof(int) * imaxN);
   int *b = (int *) malloc(sizeof(int) * ni);
   int *Nk = (int *) malloc(sizeof(int) * Ki);
   int *Nkpos = (int *) malloc(sizeof(int) * Ki);
@@ -109,7 +109,7 @@ void gcmpvis (int *pop,
   }
   tU=0;
   for (i=ni; i<Ni; i++){
-    tU+=pop[i];
+    tU+=d[i];
   }
   /* Draw initial phis */
   r=0.;
@@ -315,7 +315,7 @@ if(d[j] < numrec[j]) Rprintf("Warning: j %d d[j] %d numrec[j] %d maxc %d: %f %f 
     /* Draw phis */
     tU=0;
     for (i=ni; i<Ni; i++){
-      tU+=pop[i];
+      tU+=d[i];
     }
     r=0.;
     for (i=0; i<ni; i++){
@@ -352,7 +352,7 @@ if(d[j] < numrec[j]) Rprintf("Warning: j %d d[j] %d numrec[j] %d maxc %d: %f %f 
        }
       }
 //    if(sizei >= Ki){sizei=Ki-1;}
-      pop[i]=sizei;
+      d[i]=sizei;
 //    if((sizei <= 0) | (sizei > Ki-1)) Rprintf("sizei %d r %f\n", sizei,r);
       Nk[sizei-1]=Nk[sizei-1]+1;
     }

@@ -43,7 +43,7 @@ void MHcmptheta (int *Nk, int *K,
             double *nuproposal, 
             int *N, int *Npi, double *psample,
             double *lnlamsample, double *nusample,
-            int *samplesize, int *staken, int *burnin, int *interval,
+            int *samplesize, int *staken, int *burnintheta, int *interval,
             int *verbose
          );
 

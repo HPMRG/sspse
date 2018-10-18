@@ -271,12 +271,12 @@ void MHcmptheta (int *Nk, int *K,
             double *nuproposal, 
             int *N, int *Npi, double *psample,
             double *lnlamsample, double *nusample,
-            int *samplesize, int *staken, int *burnin, int *interval,
+            int *samplesize, int *staken, int *burnintheta, int *interval,
             int *verbose
          ) {
   int Np;
   int step, taken, give_log1=1, give_log0=0;
-  int i, Ki, Ni, isamp, iinterval, isamplesize, iburnin;
+  int i, Ki, Ni, isamp, iinterval, isamplesize, iburnintheta;
   double ip, cutoff;
   double mui, mustar, lnlamstar, lnlami, lp;
   double pis, pstars;
@@ -301,7 +301,7 @@ void MHcmptheta (int *Nk, int *K,
   Ni=(*N);
   isamplesize=(*samplesize);
   iinterval=(*interval);
-  iburnin=(*burnin);
+  iburnintheta=(*burnintheta);
   ddfmu=(*dfmu);
   rdfmu=sqrt(ddfmu);
   ddfsigma=(*dfsigma);
@@ -313,7 +313,7 @@ void MHcmptheta (int *Nk, int *K,
 
   // First set starting values
   isamp = taken = 0;
-  step = -iburnin;
+  step = -iburnintheta;
   pis=1.;
   for (i=0; i<Np; i++){
     pdegi[i] = psample[i];

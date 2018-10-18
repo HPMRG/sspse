@@ -54,7 +54,7 @@ void MHcmptheta (int *Nk, int *K,
             double *sigmaproposal, 
             int *N, int *Npi, double *psample,
             double *musample, double *sigmasample,
-            int *samplesize, int *staken, int *burnin, int *interval,
+            int *samplesize, int *staken, int *burnintheta, int *interval,
             int *verbose
          );
 
