@@ -4,41 +4,46 @@
 \alias{posteriorsize}
 \title{Estimating hidden population size using RDS data}
 \usage{
-posteriorsize(s, s2 = NULL, rc = rep(FALSE, length(s2)),
-  median.prior.size = NULL, interval = 10, burnin = 5000, maxN = NULL,
-  K = NULL, samplesize = 1000, quartiles.prior.size = NULL,
-  mean.prior.size = NULL, mode.prior.size = NULL,
-  priorsizedistribution = c("beta", "flat", "nbinom", "pln", "supplied"),
-  effective.prior.df = 1, sd.prior.size = NULL,
-  mode.prior.sample.proportion = NULL, alpha = NULL,
-  degreedistribution = c("cmp", "nbinom", "pln"), mean.prior.degree = NULL,
-  sd.prior.degree = NULL, max.sd.prior.degree = 4, df.mean.prior = 1,
-  df.sd.prior = 3, beta0.mean.prior = -3, beta1.mean.prior = 0,
-  beta0.sd.prior = 10, beta1.sd.prior = 10, mem.optimism.prior = 1,
+posteriorsize(s, s2 = NULL, previous = NULL,
+  median.prior.size = NULL, interval = 10, burnin = 5000,
+  maxN = NULL, K = NULL, samplesize = 1000,
+  quartiles.prior.size = NULL, mean.prior.size = NULL,
+  mode.prior.size = NULL, priorsizedistribution = c("beta", "flat",
+  "nbinom", "pln", "supplied"), effective.prior.df = 1,
+  sd.prior.size = NULL, mode.prior.sample.proportion = NULL,
+  alpha = NULL, degreedistribution = c("cmp", "nbinom", "pln"),
+  mean.prior.degree = NULL, sd.prior.degree = NULL,
+  max.sd.prior.degree = 4, df.mean.prior = 1, df.sd.prior = 3,
+  beta0.mean.prior = -3, beta1.mean.prior = 0, beta0.sd.prior = 10,
+  beta1.sd.prior = 10, mem.optimism.prior = 1,
   df.mem.optimism.prior = 5, mem.sd.prior = 5, df.mem.sd.prior = 3,
-  visibility = FALSE, type.impute = c("mode", "distribution", "median",
-  "mean"), Np = 0, nk = NULL, n = NULL, n2 = length(s2),
+  visibility = TRUE, type.impute = c("mode", "distribution", "median",
+  "mean"), Np = 0, nk = NULL, n = NULL, n2 = NULL,
   muproposal = 0.1, sigmaproposal = 0.15, beta0proposal = 0.2,
   beta1proposal = 0.001, memmuproposal = 0.1, memsdproposal = 0.15,
   burnintheta = 500, burninbeta = 50, parallel = 1,
   parallel.type = "PSOCK", seed = NULL, maxbeta = 120,
-  supplied = list(maxN = maxN), max.coupons = NULL, recruit.time = NULL,
-  include.tree = TRUE, unit.scale = FALSE, optimism = TRUE,
-  reflect.time = TRUE, verbose = TRUE)
+  supplied = list(maxN = maxN), max.coupons = NULL,
+  recruit.time = NULL, recruit.time2 = NULL, include.tree = TRUE,
+  unit.scale = FALSE, optimism = TRUE, reflect.time = TRUE,
+  verbose = TRUE)
 }
 \arguments{
 \item{s}{either a vector of integers or an \code{rds.data.frame} providing network 
 size information.
 If a \code{rds.data.frame} is passed and \code{visibility=TRUE}, the default, then
-the measurement error model is to  used, whereby latent visibilities are used in place 
+the measurement error model is to used, whereby latent visibilities are used in place 
 of the reported network sizes as the size variable. If a vector of integers is passed these 
-are the network sizes in sequential order of recording.}
+are the network sizes in sequential order of recording (and the measurement model is not used).}
 
-\item{s2}{vector of integers; optionally, the vector of degrees from a second RDS,
-subsequent to the first RDS recorded in \eqn{s}. These are also in the order
-they are recorded.}
+\item{s2}{either a vector of integers or an \code{rds.data.frame} providing network 
+size information for a second RDS sample subsequent to the first RDS recorded in \eqn{s}.
+If a \code{rds.data.frame} is passed and \code{visibility=TRUE}, the default, then
+the measurement error model is to used, whereby latent visibilities are used in place 
+of the reported network sizes as the size variable. If a vector of integers is passed these 
+are the network sizes in sequential order of recording (and the measurement model is not used).}
 
-\item{rc}{vector of logicals; optionally, a vector of the same length as \eqn{s2}
+\item{previous}{character; optionally, the name of the variable in \eqn{s2}
 indicating if the corresponding unit was sampled in the first RDS.}
 
 \item{median.prior.size}{scalar; A hyperparameter being the mode of the
@@ -156,7 +161,7 @@ need to be passed to provide the RDS information needed for the measurement erro
 \item{type.impute}{The type of imputation to use for the summary visibilities 
 (returned in the component \code{visibilities}. The imputes are based on the posterior 
 draws of the visibilities. 
-It can be of type \code{distribution},\code{mode},\code{median}, or \code{mean} 
+It can be of type \code{distribution}, \code{mode},\code{median}, or \code{mean} 
 with \code{mode} the default, being the posterior mode of the visibility for that person.}
 
 \item{Np}{integer; The overall degree distribution is a mixture of the
@@ -236,12 +241,23 @@ of rows of the data with non-missing values of the network variable. If it
 is a character name of a variable in the data then that variable is used.
 If it is NULL then the sequence number of the recruit in the data is used.
 If it is NA then the recruitment is not used in the model.
-Otherwise, the recruitment time is used in the model to better predict the visibility of the person.}
+Otherwise, the recruitment time is used in the model to better predict
+the visibility of the person.}
+
+\item{recruit.time2}{vector; An optional value for the data/time that the person in the second RDS survey was interviewed.
+It needs to resolve as a numeric vector with number of elements the number
+of rows of the data with non-missing values of the network variable. If it
+is a character name of a variable in the data then that variable is used.
+If it is NULL, the default, then the sequence number of the recruit in the data is used.
+If it is NA then the recruitment is not used in the model.
+Otherwise, the recruitment time is used in the model to better predict
+the visibility of the person.}
 
 \item{include.tree}{logical; If \code{TRUE}, 
 augment the reported network size by the number of recruits and one for the recruiter (if any).
 This reflects a more accurate value for the visibility, but is not the self-reported degree.
-In particular, it typically produces a positive visibility (compared to a possibility zero self-reported degree).}
+In particular, it typically produces a positive visibility (compared to a
+possibility zero self-reported degree).}
 
 \item{unit.scale}{numeric; If not \code{NULL} it sets the numeric value of the scale parameter
 of the distribution of the unit sizes.

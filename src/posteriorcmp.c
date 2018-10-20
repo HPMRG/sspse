@@ -14,7 +14,7 @@ void gcmp (int *pop,
             int *n, 
             int *samplesize, int *burnin, int *interval,
             double *mu, double *dfmu, 
-            double *sigma, double *dfsigma,
+            double *nu, double *dfnu,
             int *Npi,
             double *lnlamproposal, 
             double *nuproposal, 
@@ -29,7 +29,7 @@ void gcmp (int *pop,
   int step, staken, getone=1, intervalone=1, verboseMHcmp = 0;
   int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
   double lnlami, nui, dsamp;
-  double dmu, dsigma;
+  double dmu, dnu;
   int tU, sizei, imaxN, imaxm, give_log0=0, give_log1=1;
   int maxpop;
   double r, gammart, pis, Nd;
@@ -47,7 +47,7 @@ void gcmp (int *pop,
   iinterval=(*interval);
   iburnin=(*burnin);
   Np=(*Npi);
-  dsigma=(*sigma);
+  dnu=(*nu);
   dmu=(*mu);
 
   dimsample=5+Np;
@@ -93,7 +93,7 @@ void gcmp (int *pop,
      psample[i] = 0.01;
   }
   lnlamsample[0] = dmu;
-  nusample[0] = dsigma;
+  nusample[0] = dnu;
 
   isamp = 0;
   step = -iburnin;
@@ -102,7 +102,7 @@ void gcmp (int *pop,
     /* Draw new theta */
     /* but less often than the other full conditionals */
     if (step == -iburnin || step==(10*(step/10))) { 
-     MHcmptheta(Nk,K,mu,dfmu,sigma,dfsigma,lnlamproposal,nuproposal,
+     MHcmptheta(Nk,K,mu,dfmu,nu,dfnu,lnlamproposal,nuproposal,
        &Ni, &Np, psample,
        lnlamsample, nusample, &getone, &staken, burnintheta, &intervalone, 
        &verboseMHcmp);
@@ -364,8 +364,11 @@ void MHcmptheta (int *Nk, int *K,
     sigma2i+=pi[i]*(i+1)*(i+1);
   }
   sigma2i=sigma2i-mui*mui;
-
   sigmai  = sqrt(sigma2i);
+
+//Rprintf("mu %f sigma %f\n", *mu, (*sigma));
+//Rprintf("mui %f sigmai %f\n", mui, sigmai);
+
   pithetai = dnorm(mui, dmu, sigmai/rdfmu, give_log1);
   pithetai = pithetai+dsclinvchisq(sigma2i, ddfsigma, dsigma2);
 

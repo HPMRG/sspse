@@ -67,16 +67,16 @@
 #' @param mean.prior.degree scalar; A hyper parameter being the mean degree for
 #' the prior distribution for a randomly chosen person. The prior has this
 #' mean.
-#' @param sd.prior.degree scalar; A hyper parameter being the standard
-#' deviation of the degree for a randomly chosen person.  The prior has this
+#' @param sigma.prior.degree scalar; A hyper parameter being the standard deviation
+#' of the degree for a randomly chosen person.  The prior has this
 #' standard deviation.
-#' @param max.sd.prior.degree scalar; The maximum allowed value of \code{sd.prior.degree}.
+#' @param max.sigma.prior.degree scalar; The maximum allowed value of \code{sigma.prior.degree}.
 #' If the passed or computed value is higher, it is reduced to this value.
 #' This is done for numerical stability reasons.
 #' @param df.mean.prior scalar; A hyper parameter being the degrees-of-freedom
 #' of the prior for the mean. This gives the equivalent sample size that would
 #' contain the same amount of information inherent in the prior.
-#' @param df.sd.prior scalar; A hyper parameter being the degrees-of-freedom of
+#' @param df.sigma.prior scalar; A hyper parameter being the degrees-of-freedom of
 #' the prior for the standard deviation. This gives the equivalent sample size
 #' that would contain the same amount of information inherent in the prior for
 #' the standard deviation.
@@ -93,9 +93,9 @@
 #' @param df.mem.optimism.prior scalar; A hyper parameter being the degrees-of-freedom
 #' of the prior for the optimism parameter. This gives the equivalent sample size that would
 #' contain the same amount of information inherent in the prior.
-#' @param mem.sd.prior scalar; A hyper parameter being the mean of the 
-#' distribution of the dispersion parameter in the visibility model.
-#' @param df.mem.sd.prior scalar; A hyper parameter being the degrees-of-freedom of
+#' @param mem.scale.prior scalar; A hyper parameter being the mean of the 
+#' distribution of the scale parameter in the CMP visibility model.
+#' @param df.mem.scale.prior scalar; A hyper parameter being the degrees-of-freedom of
 #' the prior for the standard deviation of the dispersion parameter in the visibility model.
 #' This gives the equivalent sample size
 #' that would contain the same amount of information inherent in the prior for
@@ -126,15 +126,15 @@
 #' \eqn{s} automatically and not usually specified by the user.
 #' @param muproposal scalar; The standard deviation of the proposal
 #' distribution for the mean degree.
-#' @param sigmaproposal scalar; The standard deviation of the proposal
-#' distribution for the standard deviation of the degree.
+#' @param nuproposal scalar; The standard deviation of the proposal
+#' distribution for the CMP scale parameter that determines the standard deviation of the degree.
 #' @param beta0proposal scalar; The standard deviation of the proposal
 #' distribution for the beta0 parameter of the recruit model.
 #' @param beta1proposal scalar; The standard deviation of the proposal
 #' distribution for the beta1 parameter of the recruit model.
 #' @param memmuproposal scalar; The standard deviation of the proposal
 #' distribution for the log of the optimism parameter (that is, gamma).
-#' @param memsdproposal scalar; The standard deviation of the proposal
+#' @param memscaleproposal scalar; The standard deviation of the proposal
 #' distribution for the log of the s.d. in the optimism model.
 #' @param burnintheta count; the number of proposals in the Metropolis-Hastings
 #' sub-step for the degree distribution parameters (\eqn{\theta}) before any
@@ -213,14 +213,14 @@
 #'\item{mu}{scalar; The
 #' hyper parameter \code{mean.prior.degree} being the mean degree for the prior
 #' distribution for a randomly chosen person. The prior has this mean.}
-#'\item{sigma}{scalar; The hyper parameter \code{sd.prior.degree} being the
+#'\item{sigma}{scalar; The hyper parameter \code{sigma} being the
 #' standard deviation of the degree for a randomly chosen person. The prior has
 #' this standard deviation.}
 #'\item{df.mean.prior}{scalar; A hyper parameter
 #' being the degrees-of-freedom of the prior for the mean. This gives the
 #' equivalent sample size that would contain the same amount of information
 #' inherent in the prior.}
-#'\item{df.sd.prior}{scalar; A hyper parameter being
+#'\item{df.sigma.prior}{scalar; A hyper parameter being
 #' the degrees-of-freedom of the prior for the standard deviation. This gives
 #' the equivalent sample size that would contain the same amount of information
 #' inherent in the prior for the standard deviation.}
@@ -233,9 +233,9 @@
 #' model away from the parametric degree distribution model.}
 #'\item{muproposal}{scalar; The standard deviation of the proposal
 #' distribution for the mean degree.}
-#'\item{sigmaproposal}{scalar; The standard
-#' deviation of the proposal distribution for the standard deviation of the
-#' degree.}
+#'\item{nuproposal}{scalar; The standard
+#' deviation of the proposal distribution for the CMP scale parameter of the
+#' degree distribution.}
 #'\item{N}{vector of length 5; summary statistics for the posterior
 #' population size.
 #' \describe{
@@ -421,12 +421,12 @@ posteriorsize<-function(s,
                   mode.prior.sample.proportion=NULL,
                   alpha=NULL,
                   degreedistribution=c("cmp","nbinom","pln"),
-                  mean.prior.degree=NULL, sd.prior.degree=NULL, max.sd.prior.degree=4,
-                  df.mean.prior=1,df.sd.prior=3,
+                  mean.prior.degree=NULL, sigma.prior.degree=NULL, max.sigma.prior.degree=4,
+                  df.mean.prior=1,df.sigma.prior=3,
                   beta0.mean.prior=-3, beta1.mean.prior=0,
                   beta0.sd.prior=10, beta1.sd.prior=10,
                   mem.optimism.prior=1, df.mem.optimism.prior=5, 
-                  mem.sd.prior=5, df.mem.sd.prior=3, 
+                  mem.scale.prior=1, df.mem.scale.prior=3, 
                   visibility=TRUE,
 		  type.impute = c("mode","distribution","median","mean"),
                   Np=0,
@@ -434,9 +434,9 @@ posteriorsize<-function(s,
                   n=NULL,
                   n2=NULL,
                   muproposal=0.1, 
-                  sigmaproposal=0.15, 
+                  nuproposal=0.15, 
                   beta0proposal=0.2, beta1proposal=0.001,
-                  memmuproposal=0.1, memsdproposal=0.15,
+                  memmuproposal=0.1, memscaleproposal=0.15,
                   burnintheta=500,
                   burninbeta=50,
                   parallel=1, parallel.type="PSOCK", seed=NULL, 
@@ -674,8 +674,8 @@ posteriorsize<-function(s,
      rc <- rc[!remvalues2]
      n2 <- length(s2)
     }
+    s.prior <- c(s.prior,s2[!rc])
   }
-  s.prior <- c(s.prior,s2[!rc])
   priorsizedistribution=match.arg(priorsizedistribution)
   if(priorsizedistribution=="nbinom" && missing(mean.prior.size)){
     stop("You need to specify 'mean.prior.size', and possibly 'sd.prior.size' if you use the 'nbinom' prior.") 
@@ -693,8 +693,8 @@ posteriorsize<-function(s,
     mean.pd <- sum(ds*weights)/sum(weights)
     sd.pd <- sum(ds*ds*weights)/sum(weights)
     sd.pd <- sqrt(sd.pd - mean.pd^2)
-    if(sd.pd > max.sd.prior.degree*mean.pd){
-     sd.pd <- min(max.sd.prior.degree*mean.pd, sd.pd)
+    if(sd.pd > max.sigma.prior.degree*mean.pd){
+     sd.pd <- min(max.sigma.prior.degree*mean.pd, sd.pd)
     }
     xv <- ds
 #   xp <- weights*ds
@@ -718,9 +718,9 @@ posteriorsize<-function(s,
     weights <- (1/degs)
     weights[is.na(weights)] <- 0
     mean.prior.degree <- sum(ds*weights)/sum(weights)
-    if(is.null(sd.prior.degree)){
-     sd.prior.degree <- sum(ds*ds*weights)/sum(weights)
-     sd.prior.degree <- sqrt(sd.prior.degree - mean.prior.degree^2)
+    if(is.null(sigma.prior.degree)){
+     sigma.prior.degree <- sum(ds*ds*weights)/sum(weights)
+     sigma.prior.degree <- sqrt(sigma.prior.degree - mean.prior.degree^2)
     }
     xv <- ds
 #   xp <- weights*ds
@@ -730,38 +730,38 @@ posteriorsize<-function(s,
     txp <- tapply(xp,xv,sum)
     txv <- tapply(xv,xv,stats::median)
     fit <- cmpmle(txv,txp,cutoff=1,cutabove=K-1,
-            guess=c(mean.prior.degree,sd.prior.degree))
+            guess=c(mean.prior.degree,sigma.prior.degree))
     fit <- cmp.mu(fit,max.mu=5*mean.prior.degree,force=TRUE)
     if(verbose){
       cat(sprintf("The preliminary empirical value of the mean of the prior distribution for degree is %f.\n",mean.prior.degree))
-      cat(sprintf("The preliminary empirical value of the s.d. of the prior distribution for degree is %f.\n",sd.prior.degree))
+      cat(sprintf("The preliminary empirical value of the s.d. of the prior distribution for degree is %f.\n",sigma.prior.degree))
     }
     mean.prior.degree = fit[1]
-    sd.prior.degree = fit[2]
+    sigma.prior.degree = fit[2]
   }else{
-    if(is.null(sd.prior.degree)){sd.prior.degree <- sqrt(mean.prior.degree)}
+    if(is.null(sigma.prior.degree)){sigma.prior.degree <- sqrt(mean.prior.degree)}
   }
   if(verbose){
     cat(sprintf("The mean of the prior distribution for degree is %f.\n",mean.prior.degree))
-    cat(sprintf("The s.d. of the prior distribution for degree is %f.\n",sd.prior.degree))
+    cat(sprintf("The s.d. of the prior distribution for degree is %f.\n",sigma.prior.degree))
   }
-  if(sd.prior.degree > max.sd.prior.degree*mean.prior.degree){
-    sd.prior.degree <- min(max.sd.prior.degree*mean.prior.degree, sd.prior.degree)
-    cat(sprintf("The suggested s.d. of the prior distribution for degree is too large and has been reduced to the more reasonable %f.\n",sd.prior.degree))
+  if(sigma.prior.degree > max.sigma.prior.degree*mean.prior.degree){
+    sigma.prior.degree <- min(max.sigma.prior.degree*mean.prior.degree, sigma.prior.degree)
+    cat(sprintf("The suggested s.d. of the prior distribution for degree is too large and has been reduced to the more reasonable %f.\n",sigma.prior.degree))
   }
   ### are we running the job in parallel (parallel > 1), if not just 
   #   call the degree specific function
   if(parallel==1){
       Cret <- posfn(s=s,s2=s2,rc=rc,K=K,nk=nk,maxN=maxN,
                     mean.prior.degree=mean.prior.degree,df.mean.prior=df.mean.prior,
-                    sd.prior.degree=sd.prior.degree,df.sd.prior=df.sd.prior,
+                    sigma.prior.degree=sigma.prior.degree,df.sigma.prior=df.sigma.prior,
                     beta0.mean.prior=beta0.mean.prior, beta1.mean.prior=beta1.mean.prior,
                     beta0.sd.prior=beta0.sd.prior, beta1.sd.prior=beta1.sd.prior,
                     mem.optimism.prior=mem.optimism.prior, df.mem.optimism.prior=df.mem.optimism.prior,
-                    mem.sd.prior=mem.sd.prior, df.mem.sd.prior=df.mem.sd.prior,
-                    muproposal=muproposal, sigmaproposal=sigmaproposal, 
+                    mem.scale.prior=mem.scale.prior, df.mem.scale.prior=df.mem.scale.prior,
+                    muproposal=muproposal, nuproposal=nuproposal, 
                     beta0proposal=beta0proposal, beta1proposal=beta1proposal,
-                    memmuproposal=memmuproposal, memsdproposal=memsdproposal,
+                    memmuproposal=memmuproposal, memscaleproposal=memscaleproposal,
                     visibility=visibility,
                     Np=Np,
                     samplesize=samplesize,burnin=burnin,interval=interval,
@@ -793,14 +793,14 @@ posteriorsize<-function(s,
     outlist <- parallel::clusterCall(cl, posfn,
       s=s,s2=s2,rc=rc,K=K,nk=nk,maxN=maxN,
       mean.prior.degree=mean.prior.degree,df.mean.prior=df.mean.prior,
-      sd.prior.degree=sd.prior.degree,df.sd.prior=df.sd.prior,
+      sigma.prior.degree=sigma.prior.degree,df.sigma.prior=df.sigma.prior,
       beta0.mean.prior=beta0.mean.prior, beta1.mean.prior=beta1.mean.prior,
       beta0.sd.prior=beta0.sd.prior, beta1.sd.prior=beta1.sd.prior,
       mem.optimism.prior=mem.optimism.prior, df.mem.optimism.prior=df.mem.optimism.prior,
-      mem.sd.prior=mem.sd.prior, df.mem.sd.prior=df.mem.sd.prior,
-      muproposal=muproposal, sigmaproposal=sigmaproposal, 
+      mem.scale.prior=mem.scale.prior, df.mem.scale.prior=df.mem.scale.prior,
+      muproposal=muproposal, nuproposal=nuproposal, 
       beta0proposal=beta0proposal, beta1proposal=beta1proposal,
-      memmuproposal=memmuproposal, memsdproposal=memsdproposal,
+      memmuproposal=memmuproposal, memscaleproposal=memscaleproposal,
       visibility=visibility,
       Np=Np,
       samplesize=samplesize.parallel,burnin=burnin,interval=interval,
@@ -847,7 +847,7 @@ posteriorsize<-function(s,
     #
     degnames <- NULL
     if(Np>0){degnames <- c(degnames,paste("pdeg",1:Np,sep=""))}
-#   colnamessample <- c("N","mu","sigma","degree1","totalsize","beta0","beta1","mem.optimism","mem.sd","mem.degree.mean")
+#   colnamessample <- c("N","mu","sigma","degree1","totalsize","beta0","beta1","mem.optimism","mem.scale","mem.degree.mean")
 #   colnamessample <- Cret$sample
 #   if(length(degnames)>0){
 #    colnamessample <- c(colnamessample, degnames)

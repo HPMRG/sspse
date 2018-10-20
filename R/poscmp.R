@@ -1,15 +1,15 @@
 poscmp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
                   K=2*max(c(s,s2)), nk=NULL, n=length(s), n2=length(s2),
-                  mean.prior.degree=7, sd.prior.degree=3,
-                  df.mean.prior=1, df.sd.prior=5,
+                  mean.prior.degree=7, sigma.prior.degree=3,
+                  df.mean.prior=1, df.sigma.prior=5,
 		  beta0.mean.prior=-3, beta1.mean.prior=0,
 		  beta0.sd.prior=10, beta1.sd.prior=10,
 		  mem.optimism.prior=1, df.mem.optimism.prior=5, 
-		  mem.sd.prior=5, df.mem.sd.prior=3, 
+		  mem.scale.prior=1, df.mem.scale.prior=3, 
                   muproposal=0.1, 
-                  sigmaproposal=0.15, 
+                  nuproposal=0.15, 
                   beta0proposal=0.1, beta1proposal=0.001,
-                  memmuproposal=0.1, memsdproposal=0.15,
+                  memmuproposal=0.1, memscaleproposal=0.15,
 		  visibility=TRUE,
                   Np=0,
                   samplesize=10,burnin=0,interval=1,burnintheta=500,burninbeta=20,
@@ -41,14 +41,16 @@ poscmp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
     s[s>K] <- K
     if(is.null(nk)){nk=tabulate(s,nbins=K)}
     if(!is.null(s2)) s2[s2>K] <- K
+if(F){
     #
     # Transform observed mean parametrization to log-normal
     # parametrization
     #
-    out <- cmp.natural(mu=mean.prior.degree, sigma=sd.prior.degree)
+    out <- cmp.natural(mu=mean.prior.degree, sigma=sigma.prior.degree)
     mu <- log(out$lambda)
-    sigma <- out$nu
-#   sigma <- max(0.00001, sigma)
+    nu <- out$nu
+}
+#   nu <- max(0.00001, nu)
     #
     if(visibility){
       dimsample <- 5+Np+4
@@ -93,11 +95,11 @@ poscmp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
               burnin=as.integer(burnin),
               interval=as.integer(interval),
               mu=as.double(mean.prior.degree), df.mean.prior=as.double(df.mean.prior),
-              sigma=as.double(sd.prior.degree), df.sd.prior=as.double(df.sd.prior),
+              sigma=as.double(sigma.prior.degree), df.sigma.prior=as.double(df.sigma.prior),
               beta0.mean.prior=as.double(beta0.mean.prior), beta0.sd.prior=as.double(beta0.sd.prior),
               beta1.mean.prior=as.double(beta1.mean.prior), beta1.sd.prior=as.double(beta1.sd.prior),
               mem.optimism.prior=as.double(log(mem.optimism.prior)), df.mem.optimism.prior=as.double(df.mem.optimism.prior),
-              mem.sd.prior=as.double(mem.sd.prior), df.mem.sd.prior=as.double(df.mem.sd.prior),
+              mem.scale.prior=as.double(mem.scale.prior), df.mem.scale.prior=as.double(df.mem.scale.prior),
               Np=as.integer(Np),
               srd=as.integer(s),
               numrec=as.integer(num.recruits),
@@ -108,9 +110,9 @@ poscmp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
               rc=as.integer(rc),
               maxcoupons=as.integer(max.coupons),
               muproposal=as.double(muproposal),
-              sigmaproposal=as.double(sigmaproposal),
+              nuproposal=as.double(nuproposal),
               beta0proposal=as.double(beta0proposal), beta1proposal=as.double(beta1proposal),
-              memmuproposal=as.double(memmuproposal), memsdproposal=as.double(memsdproposal),
+              memmuproposal=as.double(memmuproposal), memscaleproposal=as.double(memscaleproposal),
               N=as.integer(prior$N),
               maxN=as.integer(prior$maxN),
               sample=double(samplesize*dimsample),
@@ -132,20 +134,20 @@ poscmp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
               burnin=as.integer(burnin),
               interval=as.integer(interval),
               mu=as.double(mean.prior.degree), df.mean.prior=as.double(df.mean.prior),
-              sigma=as.double(sd.prior.degree), df.sd.prior=as.double(df.sd.prior),
+              sigma=as.double(sigma.prior.degree), df.sigma.prior=as.double(df.sigma.prior),
               beta0.mean.prior=as.double(beta0.mean.prior), beta0.sd.prior=as.double(beta0.sd.prior),
               beta1.mean.prior=as.double(beta1.mean.prior), beta1.sd.prior=as.double(beta1.sd.prior),
               mem.optimism.prior=as.double(log(mem.optimism.prior)), df.mem.optimism.prior=as.double(df.mem.optimism.prior),
-              mem.sd.prior=as.double(mem.sd.prior), df.mem.sd.prior=as.double(df.mem.sd.prior),
+              mem.scale.prior=as.double(mem.scale.prior), df.mem.scale.prior=as.double(df.mem.scale.prior),
               Np=as.integer(Np),
               srd=as.integer(s),
               numrec=as.integer(num.recruits),
               rectime=as.double(recruit.times),
               maxcoupons=as.integer(max.coupons),
               muproposal=as.double(muproposal),
-              sigmaproposal=as.double(sigmaproposal),
+              nuproposal=as.double(nuproposal),
               beta0proposal=as.double(beta0proposal), beta1proposal=as.double(beta1proposal),
-              memmuproposal=as.double(memmuproposal), memsdproposal=as.double(memsdproposal),
+              memmuproposal=as.double(memmuproposal), memscaleproposal=as.double(memscaleproposal),
               N=as.integer(prior$N),
               maxN=as.integer(prior$maxN),
               sample=double(samplesize*dimsample),
@@ -165,10 +167,10 @@ poscmp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
               burnin=as.integer(burnin),
               interval=as.integer(interval),
               mu=as.double(mean.prior.degree), df.mean.prior=as.double(df.mean.prior),
-              sigma=as.double(sd.prior.degree), df.sd.prior=as.double(df.sd.prior),
+              sigma=as.double(sigma.prior.degree), df.sigma.prior=as.double(df.sigma.prior),
               Np=as.integer(Np),
               muproposal=as.double(muproposal),
-              sigmaproposal=as.double(sigmaproposal),
+              nuproposal=as.double(nuproposal),
               N=as.integer(prior$N),
               maxN=as.integer(prior$maxN),
               sample=double(samplesize*dimsample),
@@ -182,7 +184,7 @@ poscmp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
     degnames <- NULL
     if(Np>0){degnames <- c(degnames,paste("pdeg",1:Np,sep=""))}
     if(visibility){
-     colnamessample <- c("N","mu","sigma","degree1","totalsize","beta0","beta1","mem.optimism","mem.sd")
+     colnamessample <- c("N","mu","sigma","degree1","totalsize","beta0","beta1","mem.optimism","mem.scale")
      Cret$vsample<-matrix(Cret$vsample,nrow=samplesize,ncol=n1,byrow=TRUE)
      colnames(Cret$vsample) <- 1:n1
      if(!is.null(s2)){
@@ -211,6 +213,7 @@ poscmp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
     #
     # Expectation and s.d. of normal from log-normal
     #
+if(F){
     Cret$sample[,"mu"] <- exp(Cret$sample[,"mu"])
     Cret$sample <- cbind(Cret$sample,Cret$sample[,c("mu","sigma")])
     colnames(Cret$sample)[ncol(Cret$sample)-(1:0)] <- c("lambda","nu")
@@ -225,12 +228,13 @@ poscmp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
     }else{
       warning(paste("All the lambda and nu parameters are extreme. mean and sigma are on the natural scale."), call. = FALSE)
     }
+}
 #   # PLN mean
 #   Cret$sample <- cbind(Cret$sample,Cret$sample[,c("mem.optimism")])
 #   colnames(Cret$sample)[ncol(Cret$sample)] <- c("mem.degree.mean")
 #   mean.degree <- sum(seq(along=Cret$nk)*Cret$ppos)
 #   print(mean.degree)
-#   Cret$sample[,"mem.degree.mean"] <- exp(log(mean.degree)+Cret$sample[,"mem.optimism"]+0.5*Cret$sample[,"mem.sd"])
+#   Cret$sample[,"mem.degree.mean"] <- exp(log(mean.degree)+Cret$sample[,"mem.optimism"]+0.5*Cret$sample[,"mem.scale"])
     #
 #   Cret$Nk<-Cret$nk/sum(Cret$nk)
     Cret$predictive.degree.count<-Cret$nk / samplesize

@@ -67,6 +67,8 @@
 #' @importFrom graphics lines
 #' @importFrom stats median
 #' @importFrom stats poisson
+#' @importFrom stats predict
+#' @import methods
 #' @import parallel
 #' @import scam
 #' @import RDS
