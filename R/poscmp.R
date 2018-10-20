@@ -198,6 +198,20 @@ if(F){
       colnames(Cret$sample) <- colnamessample
      }
      Cret$sample[,"mem.optimism"] <- exp(Cret$sample[,"mem.optimism"])
+     #
+     # Transform observed mean parametrization to log-normal
+     # parametrization
+     #
+     a <- Cret$sample[,c("mem.optimism","mem.scale")]
+     a[,1] <- a[,1]*mean(Cret$vsample)
+     a <- t(apply(a,1,cmp.mu,K=K,force=TRUE,max.mu=K))
+     a[,1] <- Cret$sample[,"mem.optimism"]
+     nas <- apply(a,1,function(x){any(is.na(x))})
+     if(!all(nas)){
+      inas <- sample(seq_along(nas)[!nas],size=sum(nas),replace=TRUE)
+      a[nas,] <- a[inas,]
+      Cret$sample[,c("mem.optimism","mem.scale")] <- a
+     }
     }else{
      colnamessample <- c("N","mu","sigma","degree1","totalsize")
      max.mu <- 2*mean.prior.degree
@@ -226,7 +240,7 @@ if(F){
 #    Cret$sample[,c("mu","sigma")] <- t(apply(Cret$sample[,c("mu","sigma")],1,cmp.mu,max.mu=5*mean.prior.degree)))
      Cret$sample[,c("mu","sigma")] <- a
     }else{
-      warning(paste("All the lambda and nu parameters are extreme. mean and sigma are on the natural scale."), call. = FALSE)
+      warning(paste("All the lambda and nu parameters are extreme. The mean and sigma are on the natural scale."), call. = FALSE)
     }
 }
 #   # PLN mean
