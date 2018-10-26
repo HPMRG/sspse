@@ -92,7 +92,7 @@
 #'  
 #' # Here interval=1 so that it will run faster. It should be higher in a 
 #' # real application.  
-#' out <- posteriorsize(s=s,interval=1)
+#' out <- posteriorsize(s=s,interval=1,median.prior.size=1.1*N0,verbose=FALSE)
 #' plot(out, HPD.level=0.9,data=pop[s])
 #' summary(out, HPD.level=0.9)
 #' # Let's look at some MCMC diagnostics

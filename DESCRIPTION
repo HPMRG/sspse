@@ -1,12 +1,12 @@
 Package: sspse
 Type: Package
-Version: 0.7
-Date: 2018-10-16
-Title: Estimating Hidden Population Size using Respondent Driven
-        Sampling Data
-Authors@R: c( person("Mark S.", "Handcock", role=c("aut","cre","cph"),
-    email="handcock@stat.ucla.edu"), person("Krista J.", "Gile", role=c("aut","cph"),
-    email="gile@math.umass.edu"))
+Version: 0.8
+Date: 2018-10-26
+Title: Estimating Hidden Population Size using Respondent Driven Sampling Data
+Authors@R: c(
+    person("Mark S.", "Handcock", role=c("aut","cre","cph"), email="handcock@stat.ucla.edu"),
+    person("Krista J.", "Gile", role=c("aut","cph"), email="gile@math.umass.edu"),
+    person("Kim","Brian",role=c("ctb"),email="kimbrian@umd.edu"))
 Maintainer: Mark S. Handcock <handcock@stat.ucla.edu>
 Depends: methods, parallel
 Suggests: network, testthat

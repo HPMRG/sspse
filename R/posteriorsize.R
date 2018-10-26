@@ -100,6 +100,17 @@
 #' This gives the equivalent sample size
 #' that would contain the same amount of information inherent in the prior for
 #' the standard deviation.
+#' @param mem.recapture.mean.prior scalar; A hyper parameter being the mean for
+#' the prior distribution of the recapture proportion parameter. This is the propensity for a person 
+#' captured in the first RDS survey to be recaptured in the second RDS survey. This parameter is
+#' greater than one if there is an increased tendency for people to be recaptured
+#' (above what would be expected due to their visibility).
+#' @param mem.recapture.sd.prior scalar; A hyper parameter being the standard deviation for
+#' the prior distribution of the recapture proportion parameter. This is the propensity for a person 
+#' captured in the first RDS survey to be recaptured in the second RDS survey. This parameter is
+#' greater than one if there is an increased tendency for people to be recaptured
+#' (above what would be expected due to their visibility).
+#' The prior has this standard deviation.
 #' @param visibility logical; Indicate if the measurement error model
 #' is to be used, whereby latent visibilities are used in place of the reported 
 #' network sizes as the unit size variable. If \code{TRUE} then a \code{rds.data.frame}
@@ -398,7 +409,7 @@
 #'  
 #' # Here interval=1 so that it will run faster. It should be higher in a 
 #' # real application.
-#' out <- posteriorsize(s=s,interval=1)
+#' out <- posteriorsize(s=s,interval=1,median.prior.size=1.1*N0,verbose=FALSE)
 #' plot(out, HPD.level=0.9,data=pop[s])
 #' summary(out, HPD.level=0.9)
 #' # Let's look at some MCMC diagnostics
@@ -427,6 +438,7 @@ posteriorsize<-function(s,
                   beta0.sd.prior=10, beta1.sd.prior=10,
                   mem.optimism.prior=1, df.mem.optimism.prior=5, 
                   mem.scale.prior=2, df.mem.scale.prior=20, 
+                  mem.recapture.mean.prior=1, mem.recapture.sd.prior=10,
                   visibility=TRUE,
 		  type.impute = c("mode","distribution","median","mean"),
                   Np=0,
@@ -759,6 +771,8 @@ posteriorsize<-function(s,
                     beta0.sd.prior=beta0.sd.prior, beta1.sd.prior=beta1.sd.prior,
                     mem.optimism.prior=mem.optimism.prior, df.mem.optimism.prior=df.mem.optimism.prior,
                     mem.scale.prior=mem.scale.prior, df.mem.scale.prior=df.mem.scale.prior,
+                    mem.recapture.mean.prior=mem.recapture.mean.prior,
+                    mem.recapture.sd.prior=mem.recapture.sd.prior,
                     muproposal=muproposal, nuproposal=nuproposal, 
                     beta0proposal=beta0proposal, beta1proposal=beta1proposal,
                     memmuproposal=memmuproposal, memscaleproposal=memscaleproposal,
@@ -798,6 +812,8 @@ posteriorsize<-function(s,
       beta0.sd.prior=beta0.sd.prior, beta1.sd.prior=beta1.sd.prior,
       mem.optimism.prior=mem.optimism.prior, df.mem.optimism.prior=df.mem.optimism.prior,
       mem.scale.prior=mem.scale.prior, df.mem.scale.prior=df.mem.scale.prior,
+      mem.recapture.mean.prior=mem.recapture.mean.prior,
+      mem.recapture.sd.prior=mem.recapture.sd.prior,
       muproposal=muproposal, nuproposal=nuproposal, 
       beta0proposal=beta0proposal, beta1proposal=beta1proposal,
       memmuproposal=memmuproposal, memscaleproposal=memscaleproposal,
@@ -890,7 +906,7 @@ posteriorsize<-function(s,
   #
   Cret$sample <- Cret$sample[,-match(c("degree1","totalsize"), colnames(Cret$sample))]
   #
-  if(Cret$predictive.degree[length(Cret$predictive.degree)] > 0.01){
+  if(verbose & Cret$predictive.degree[length(Cret$predictive.degree)] > 0.01){
    warning("There is a non-trivial proportion of the posterior mass on very high degrees. This may indicate convergence problems in the MCMC.", call. = FALSE)
   }
   Cret$degreedistribution <- degreedistribution

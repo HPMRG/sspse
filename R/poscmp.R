@@ -6,6 +6,7 @@ poscmp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
 		  beta0.sd.prior=10, beta1.sd.prior=10,
 		  mem.optimism.prior=1, df.mem.optimism.prior=5, 
 		  mem.scale.prior=1, df.mem.scale.prior=3, 
+		  mem.recapture.mean.prior=1, mem.recapture.sd.prior=10,
                   muproposal=0.1, 
                   nuproposal=0.15, 
                   beta0proposal=0.1, beta1proposal=0.001,
@@ -53,7 +54,7 @@ if(F){
 #   nu <- max(0.00001, nu)
     #
     if(visibility){
-      dimsample <- 5+Np+4
+      dimsample <- 5+Np+5
     }else{
       dimsample <- 5+Np
     }
@@ -83,6 +84,7 @@ if(F){
                   supplied=supplied,
                   verbose=verbose)
     if(!is.null(s2)){
+     if(visibility){
       Cret <- .C("gcmpvis2",
               pop12=as.integer(c(s, s2[!rc], rep(0,prior$maxN-length(s)-length(s2[!rc])))),
               pop21=as.integer(c(s2,sum(s)-sum(s2[rc]), rep(0,prior$maxN-length(s2)-1))),
@@ -100,6 +102,8 @@ if(F){
               beta1.mean.prior=as.double(beta1.mean.prior), beta1.sd.prior=as.double(beta1.sd.prior),
               mem.optimism.prior=as.double(log(mem.optimism.prior)), df.mem.optimism.prior=as.double(df.mem.optimism.prior),
               mem.scale.prior=as.double(mem.scale.prior), df.mem.scale.prior=as.double(df.mem.scale.prior),
+              mem.recapture.mean.prior=as.double(log(mem.recapture.mean.prior)),
+              mem.recapture.sd.prior=as.double(mem.recapture.sd.prior),
               Np=as.integer(Np),
               srd=as.integer(s),
               numrec=as.integer(num.recruits),
@@ -123,6 +127,31 @@ if(F){
               burnintheta=as.integer(burnintheta),
               burninbeta=as.integer(burninbeta),
               verbose=as.integer(verbose), PACKAGE="sspse")
+     }else{
+      Cret <- .C("gcmp2",
+              pop12=as.integer(c(s, s2[!rc], rep(0,prior$maxN-length(s)-length(s2[!rc])))),
+              pop21=as.integer(c(s2,sum(s)-sum(s2[rc]), rep(0,prior$maxN-length(s2)-1))),
+              nk=as.integer(nk),
+              K=as.integer(K),
+              n1=as.integer(n1),
+              n2=as.integer(n2),
+              n0=as.integer(n0),
+              samplesize=as.integer(samplesize),
+              burnin=as.integer(burnin),
+              interval=as.integer(interval),
+              mu=as.double(mean.prior.degree), df.mean.prior=as.double(df.mean.prior),
+              sigma=as.double(sigma.prior.degree), df.sigma.prior=as.double(df.sigma.prior),
+              Np=as.integer(Np),
+              muproposal=as.double(muproposal),
+              nuproposal=as.double(nuproposal),
+              N=as.integer(prior$N),
+              maxN=as.integer(prior$maxN),
+              sample=double(samplesize*dimsample),
+              ppos=double(K),
+              lpriorm=as.double(prior$lprior),
+              burnintheta=as.integer(burnintheta),
+              verbose=as.integer(verbose), PACKAGE="sspse")
+     }
     }else{
      if(visibility){
       Cret <- .C("gcmpvis",
@@ -139,6 +168,8 @@ if(F){
               beta1.mean.prior=as.double(beta1.mean.prior), beta1.sd.prior=as.double(beta1.sd.prior),
               mem.optimism.prior=as.double(log(mem.optimism.prior)), df.mem.optimism.prior=as.double(df.mem.optimism.prior),
               mem.scale.prior=as.double(mem.scale.prior), df.mem.scale.prior=as.double(df.mem.scale.prior),
+              mem.recapture.mean.prior=as.double(log(mem.recapture.mean.prior)),
+              mem.recapture.sd.prior=as.double(mem.recapture.sd.prior),
               Np=as.integer(Np),
               srd=as.integer(s),
               numrec=as.integer(num.recruits),
@@ -184,7 +215,7 @@ if(F){
     degnames <- NULL
     if(Np>0){degnames <- c(degnames,paste("pdeg",1:Np,sep=""))}
     if(visibility){
-     colnamessample <- c("N","mu","sigma","degree1","totalsize","beta0","beta1","mem.optimism","mem.scale")
+     colnamessample <- c("N","mu","sigma","degree1","totalsize","beta0","beta1","mem.optimism","mem.scale","mem.recapture")
      Cret$vsample<-matrix(Cret$vsample,nrow=samplesize,ncol=n1,byrow=TRUE)
      colnames(Cret$vsample) <- 1:n1
      if(!is.null(s2)){
@@ -198,6 +229,7 @@ if(F){
       colnames(Cret$sample) <- colnamessample
      }
      Cret$sample[,"mem.optimism"] <- exp(Cret$sample[,"mem.optimism"])
+     Cret$sample[,"mem.recapture"] <- exp(Cret$sample[,"mem.recapture"])
      #
      # Transform observed mean parametrization to log-normal
      # parametrization

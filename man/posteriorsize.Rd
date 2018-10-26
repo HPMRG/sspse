@@ -12,21 +12,22 @@ posteriorsize(s, s2 = NULL, previous = NULL,
   "nbinom", "pln", "supplied"), effective.prior.df = 1,
   sd.prior.size = NULL, mode.prior.sample.proportion = NULL,
   alpha = NULL, degreedistribution = c("cmp", "nbinom", "pln"),
-  mean.prior.degree = NULL, sd.prior.degree = NULL,
-  max.sd.prior.degree = 4, df.mean.prior = 1, df.sd.prior = 3,
+  mean.prior.degree = NULL, sigma.prior.degree = NULL,
+  max.sigma.prior.degree = 4, df.mean.prior = 1, df.sigma.prior = 3,
   beta0.mean.prior = -3, beta1.mean.prior = 0, beta0.sd.prior = 10,
   beta1.sd.prior = 10, mem.optimism.prior = 1,
-  df.mem.optimism.prior = 5, mem.sd.prior = 5, df.mem.sd.prior = 3,
-  visibility = TRUE, type.impute = c("mode", "distribution", "median",
-  "mean"), Np = 0, nk = NULL, n = NULL, n2 = NULL,
-  muproposal = 0.1, sigmaproposal = 0.15, beta0proposal = 0.2,
-  beta1proposal = 0.001, memmuproposal = 0.1, memsdproposal = 0.15,
-  burnintheta = 500, burninbeta = 50, parallel = 1,
-  parallel.type = "PSOCK", seed = NULL, maxbeta = 120,
-  supplied = list(maxN = maxN), max.coupons = NULL,
-  recruit.time = NULL, recruit.time2 = NULL, include.tree = TRUE,
-  unit.scale = FALSE, optimism = TRUE, reflect.time = TRUE,
-  verbose = TRUE)
+  df.mem.optimism.prior = 5, mem.scale.prior = 2,
+  df.mem.scale.prior = 20, mem.recapture.mean.prior = 1,
+  mem.recapture.sd.prior = 10, visibility = TRUE,
+  type.impute = c("mode", "distribution", "median", "mean"), Np = 0,
+  nk = NULL, n = NULL, n2 = NULL, muproposal = 0.1,
+  nuproposal = 0.15, beta0proposal = 0.2, beta1proposal = 0.001,
+  memmuproposal = 0.1, memscaleproposal = 0.15, burnintheta = 500,
+  burninbeta = 50, parallel = 1, parallel.type = "PSOCK",
+  seed = NULL, maxbeta = 120, supplied = list(maxN = maxN),
+  max.coupons = NULL, recruit.time = NULL, recruit.time2 = NULL,
+  include.tree = TRUE, unit.scale = FALSE, optimism = TRUE,
+  reflect.time = TRUE, verbose = TRUE)
 }
 \arguments{
 \item{s}{either a vector of integers or an \code{rds.data.frame} providing network 
@@ -108,11 +109,11 @@ default is \code{cmp}.}
 the prior distribution for a randomly chosen person. The prior has this
 mean.}
 
-\item{sd.prior.degree}{scalar; A hyper parameter being the standard
-deviation of the degree for a randomly chosen person.  The prior has this
+\item{sigma.prior.degree}{scalar; A hyper parameter being the standard deviation
+of the degree for a randomly chosen person.  The prior has this
 standard deviation.}
 
-\item{max.sd.prior.degree}{scalar; The maximum allowed value of \code{sd.prior.degree}.
+\item{max.sigma.prior.degree}{scalar; The maximum allowed value of \code{sigma.prior.degree}.
 If the passed or computed value is higher, it is reduced to this value.
 This is done for numerical stability reasons.}
 
@@ -120,7 +121,7 @@ This is done for numerical stability reasons.}
 of the prior for the mean. This gives the equivalent sample size that would
 contain the same amount of information inherent in the prior.}
 
-\item{df.sd.prior}{scalar; A hyper parameter being the degrees-of-freedom of
+\item{df.sigma.prior}{scalar; A hyper parameter being the degrees-of-freedom of
 the prior for the standard deviation. This gives the equivalent sample size
 that would contain the same amount of information inherent in the prior for
 the standard deviation.}
@@ -144,14 +145,27 @@ distribution of the optimism parameter.}
 of the prior for the optimism parameter. This gives the equivalent sample size that would
 contain the same amount of information inherent in the prior.}
 
-\item{mem.sd.prior}{scalar; A hyper parameter being the mean of the 
-distribution of the dispersion parameter in the visibility model.}
+\item{mem.scale.prior}{scalar; A hyper parameter being the mean of the 
+distribution of the scale parameter in the CMP visibility model.}
 
-\item{df.mem.sd.prior}{scalar; A hyper parameter being the degrees-of-freedom of
+\item{df.mem.scale.prior}{scalar; A hyper parameter being the degrees-of-freedom of
 the prior for the standard deviation of the dispersion parameter in the visibility model.
 This gives the equivalent sample size
 that would contain the same amount of information inherent in the prior for
 the standard deviation.}
+
+\item{mem.recapture.mean.prior}{scalar; A hyper parameter being the mean for
+the prior distribution of the recapture proportion parameter. This is the propensity for a person 
+captured in the first RDS survey to be recaptured in the second RDS survey. This parameter is
+greater than one if there is an increased tendency for people to be recaptured
+(above what would be expected due to their visibility).}
+
+\item{mem.recapture.sd.prior}{scalar; A hyper parameter being the standard deviation for
+the prior distribution of the recapture proportion parameter. This is the propensity for a person 
+captured in the first RDS survey to be recaptured in the second RDS survey. This parameter is
+greater than one if there is an increased tendency for people to be recaptured
+(above what would be expected due to their visibility).
+The prior has this standard deviation.}
 
 \item{visibility}{logical; Indicate if the measurement error model
 is to be used, whereby latent visibilities are used in place of the reported 
@@ -186,8 +200,8 @@ This is usually computed from
 \item{muproposal}{scalar; The standard deviation of the proposal
 distribution for the mean degree.}
 
-\item{sigmaproposal}{scalar; The standard deviation of the proposal
-distribution for the standard deviation of the degree.}
+\item{nuproposal}{scalar; The standard deviation of the proposal
+distribution for the CMP scale parameter that determines the standard deviation of the degree.}
 
 \item{beta0proposal}{scalar; The standard deviation of the proposal
 distribution for the beta0 parameter of the recruit model.}
@@ -198,7 +212,7 @@ distribution for the beta1 parameter of the recruit model.}
 \item{memmuproposal}{scalar; The standard deviation of the proposal
 distribution for the log of the optimism parameter (that is, gamma).}
 
-\item{memsdproposal}{scalar; The standard deviation of the proposal
+\item{memscaleproposal}{scalar; The standard deviation of the proposal
 distribution for the log of the s.d. in the optimism model.}
 
 \item{burnintheta}{count; the number of proposals in the Metropolis-Hastings
@@ -294,14 +308,14 @@ done. It typically is set to a fairly large number.}
 \item{mu}{scalar; The
 hyper parameter \code{mean.prior.degree} being the mean degree for the prior
 distribution for a randomly chosen person. The prior has this mean.}
-\item{sigma}{scalar; The hyper parameter \code{sd.prior.degree} being the
+\item{sigma}{scalar; The hyper parameter \code{sigma} being the
 standard deviation of the degree for a randomly chosen person. The prior has
 this standard deviation.}
 \item{df.mean.prior}{scalar; A hyper parameter
 being the degrees-of-freedom of the prior for the mean. This gives the
 equivalent sample size that would contain the same amount of information
 inherent in the prior.}
-\item{df.sd.prior}{scalar; A hyper parameter being
+\item{df.sigma.prior}{scalar; A hyper parameter being
 the degrees-of-freedom of the prior for the standard deviation. This gives
 the equivalent sample size that would contain the same amount of information
 inherent in the prior for the standard deviation.}
@@ -314,9 +328,9 @@ degree distribution model at lower degrees, although it also changes the
 model away from the parametric degree distribution model.}
 \item{muproposal}{scalar; The standard deviation of the proposal
 distribution for the mean degree.}
-\item{sigmaproposal}{scalar; The standard
-deviation of the proposal distribution for the standard deviation of the
-degree.}
+\item{nuproposal}{scalar; The standard
+deviation of the proposal distribution for the CMP scale parameter of the
+degree distribution.}
 \item{N}{vector of length 5; summary statistics for the posterior
 population size.
 \describe{
@@ -465,7 +479,7 @@ s<-sample(pop, size=n, replace = FALSE, prob = pop)
  
 # Here interval=1 so that it will run faster. It should be higher in a 
 # real application.
-out <- posteriorsize(s=s,interval=1)
+out <- posteriorsize(s=s,interval=1,median.prior.size=1.1*N0,verbose=FALSE)
 plot(out, HPD.level=0.9,data=pop[s])
 summary(out, HPD.level=0.9)
 # Let's look at some MCMC diagnostics
