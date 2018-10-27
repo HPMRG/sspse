@@ -17,17 +17,16 @@ posteriorsize(s, s2 = NULL, previous = NULL,
   beta0.mean.prior = -3, beta1.mean.prior = 0, beta0.sd.prior = 10,
   beta1.sd.prior = 10, mem.optimism.prior = 1,
   df.mem.optimism.prior = 5, mem.scale.prior = 2,
-  df.mem.scale.prior = 20, mem.recapture.mean.prior = 1,
-  mem.recapture.sd.prior = 10, visibility = TRUE,
-  type.impute = c("mode", "distribution", "median", "mean"), Np = 0,
-  nk = NULL, n = NULL, n2 = NULL, muproposal = 0.1,
-  nuproposal = 0.15, beta0proposal = 0.2, beta1proposal = 0.001,
-  memmuproposal = 0.1, memscaleproposal = 0.15, burnintheta = 500,
-  burninbeta = 50, parallel = 1, parallel.type = "PSOCK",
-  seed = NULL, maxbeta = 120, supplied = list(maxN = maxN),
-  max.coupons = NULL, recruit.time = NULL, recruit.time2 = NULL,
-  include.tree = TRUE, unit.scale = FALSE, optimism = TRUE,
-  reflect.time = TRUE, verbose = TRUE)
+  df.mem.scale.prior = 20, visibility = TRUE, type.impute = c("mode",
+  "distribution", "median", "mean"), Np = 0, nk = NULL, n = NULL,
+  n2 = NULL, muproposal = 0.1, nuproposal = 0.15,
+  beta0proposal = 0.2, beta1proposal = 0.001, memmuproposal = 0.1,
+  memscaleproposal = 0.15, burnintheta = 500, burninbeta = 50,
+  parallel = 1, parallel.type = "PSOCK", seed = NULL,
+  maxbeta = 120, supplied = list(maxN = maxN), max.coupons = NULL,
+  recruit.time = NULL, recruit.time2 = NULL, include.tree = TRUE,
+  unit.scale = FALSE, optimism = TRUE, reflect.time = TRUE,
+  verbose = TRUE)
 }
 \arguments{
 \item{s}{either a vector of integers or an \code{rds.data.frame} providing network 
@@ -153,19 +152,6 @@ the prior for the standard deviation of the dispersion parameter in the visibili
 This gives the equivalent sample size
 that would contain the same amount of information inherent in the prior for
 the standard deviation.}
-
-\item{mem.recapture.mean.prior}{scalar; A hyper parameter being the mean for
-the prior distribution of the recapture proportion parameter. This is the propensity for a person 
-captured in the first RDS survey to be recaptured in the second RDS survey. This parameter is
-greater than one if there is an increased tendency for people to be recaptured
-(above what would be expected due to their visibility).}
-
-\item{mem.recapture.sd.prior}{scalar; A hyper parameter being the standard deviation for
-the prior distribution of the recapture proportion parameter. This is the propensity for a person 
-captured in the first RDS survey to be recaptured in the second RDS survey. This parameter is
-greater than one if there is an increased tendency for people to be recaptured
-(above what would be expected due to their visibility).
-The prior has this standard deviation.}
 
 \item{visibility}{logical; Indicate if the measurement error model
 is to be used, whereby latent visibilities are used in place of the reported 
