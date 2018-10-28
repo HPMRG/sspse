@@ -14,7 +14,7 @@ void gcmp (int *pop,
             int *n, 
             int *samplesize, int *burnin, int *interval,
             double *mu, double *dfmu, 
-            double *nu, double *dfnu,
+            double *sigma, double *dfsigma,
             int *Npi,
             double *lnlamproposal, 
             double *nuproposal, 
@@ -28,8 +28,9 @@ void gcmp (int *pop,
   int dimsample, Np;
   int step, staken, getone=1, intervalone=1, verboseMHcmp = 0;
   int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
-  double lnlami, nui, dsamp;
-  double dmu, dnu;
+  double mui, sigmai, lnlami, nui, dsamp;
+  double sigma2i;
+  double dmu, dsigma;
   int tU, sizei, imaxN, imaxm, give_log0=0, give_log1=1;
   int maxpop;
   double r, gammart, pis, Nd;
@@ -47,7 +48,7 @@ void gcmp (int *pop,
   iinterval=(*interval);
   iburnin=(*burnin);
   Np=(*Npi);
-  dnu=(*nu);
+  dsigma=(*sigma);
   dmu=(*mu);
 
   dimsample=5+Np;
@@ -93,7 +94,7 @@ void gcmp (int *pop,
      psample[i] = 0.01;
   }
   lnlamsample[0] = dmu;
-  nusample[0] = dnu;
+  nusample[0] = dsigma;
 
   isamp = 0;
   step = -iburnin;
@@ -102,7 +103,7 @@ void gcmp (int *pop,
     /* Draw new theta */
     /* but less often than the other full conditionals */
     if (step == -iburnin || step==(10*(step/10))) { 
-     MHcmptheta(Nk,K,mu,dfmu,nu,dfnu,lnlamproposal,nuproposal,
+     MHcmptheta(Nk,K,mu,dfmu,sigma,dfsigma,lnlamproposal,nuproposal,
        &Ni, &Np, psample,
        lnlamsample, nusample, &getone, &staken, burnintheta, &intervalone, 
        &verboseMHcmp);
@@ -142,6 +143,15 @@ void gcmp (int *pop,
       pi[i]=pdegi[i];
     }
 
+    // Now computes mean and s.d. from log-lambda and nu
+    mui=0.0;
+    sigma2i=0.0;
+    for (i=0; i<Ki; i++){
+      mui+=pi[i]*(i+1);
+      sigma2i+=pi[i]*(i+1)*(i+1);
+    }
+    sigma2i=sigma2i-mui*mui;
+    sigmai = sqrt(sigma2i);
     /* Draw new N */
 
     gammart=0.;
@@ -222,8 +232,8 @@ void gcmp (int *pop,
       sample[isamp*dimsample  ]=Nd;
 //if(nui > 4.0 || lnlami > 4.5) Rprintf("sample: %f %f\n", lnlami,nui);
 // Rprintf("sample: %f %f\n", lnlami,nui);
-      sample[isamp*dimsample+1]=lnlami;
-      sample[isamp*dimsample+2]=nui;
+      sample[isamp*dimsample+1]=mui;
+      sample[isamp*dimsample+2]=sigmai;
       sample[isamp*dimsample+3]=(double)(Nk[0]);
       temp=0.0;
       for (i=0; i<Ki; i++){

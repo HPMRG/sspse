@@ -8,8 +8,8 @@ Authors@R: c(
     person("Krista J.", "Gile", role=c("aut","cph"), email="gile@math.umass.edu"),
     person("Kim","Brian",role=c("ctb"),email="kimbrian@umd.edu"))
 Maintainer: Mark S. Handcock <handcock@stat.ucla.edu>
-Depends: methods, parallel
-Suggests: network, testthat
+Depends: methods, parallel, RDS
+Suggests: testthat
 Description: Estimate the size of a networked population based on
     respondent-driven sampling data. The package is part of the "RDS Analyst"
     suite of packages for the analysis of respondent-driven sampling data.
@@ -17,6 +17,6 @@ Description: Estimate the size of a networked population based on
     Handcock, Gile and Mar (2015) <doi:10.1111/biom.12255>.
 License: GPL-3 + file LICENSE
 URL: http://www.hpmrg.org
-Imports: RDS, scam, coda
+Imports: scam, coda
 RoxygenNote: 6.1.0
 Encoding: UTF-8

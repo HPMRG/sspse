@@ -19,8 +19,6 @@
 #' to \code{plot.sspse}.
 #' @param xlim the (optional) x limits (x1, x2) of the plot of the posterior of
 #' the population size.
-#' @param data Optionally, the vector of degrees from the RDS in order they are
-#' recorded and as passed to \code{\link{posteriorsize}}.
 #' @param support the number of equally-spaced points to use for the support of
 #' the estimated posterior density function.
 #' @param HPD.level numeric; probability level of the highest probability
@@ -80,37 +78,21 @@
 #' Sampling Data}, Biometrics.
 #' @examples
 #' 
-#' N0 <- 200
-#' n <- 100
-#' K <- 10
-#' 
-#' # Create probabilities for a Waring distribution 
-#' # with scaling parameter 3 and mean 5, but truncated at K=10.
-#' probs <- c(0.33333333,0.19047619,0.11904762,0.07936508,0.05555556,
-#'            0.04040404,0.03030303,0.02331002,0.01831502,0.01465201)
-#' probs <- probs / sum(probs)
-#' 
-#' #
-#' # Create a sample
-#' #
-#' set.seed(1)
-#' pop<-sample(1:K, size=N0, replace = TRUE, prob = probs)
-#' s<-sample(pop, size=n, replace = FALSE, prob = pop)
-#'  
+#' data(fauxmadrona)
 #' # Here interval=1 so that it will run faster. It should be higher in a 
 #' # real application.
-#' out <- posteriorsize(s=s,interval=1,median.prior.size=1.1*N0,verbose=FALSE)
-#' plot(out, HPD.level=0.9,data=pop[s])
-#' summary(out, HPD.level=0.9)
+#' fit <- posteriorsize(fauxmadrona, median.prior.size=1000,
+#'                                  burnin=100, interval=1, samplesize=100)
+#' summary(fit)
 #' # Let's look at some MCMC diagnostics
-#' plot(out, HPD.level=0.9,mcmc=TRUE)
+#' plot(fit, mcmc=TRUE)
 #' 
 #' @importFrom coda mcmc
 #' @method plot sspse
 #' @export
 plot.sspse <- function(x,
-		       xlim=NULL,data=NULL,support=1000,HPD.level=0.90,N=NULL,ylim=NULL,mcmc=FALSE,type="both",
-		       main="posterior for population size",smooth=4,include.tree=TRUE,...){
+		       xlim=NULL,support=1000,HPD.level=0.90,N=NULL,ylim=NULL,mcmc=FALSE,type="both",
+		       main="Posterior for population size",smooth=4,include.tree=TRUE,...){
   p.args <- as.list( sys.call() )[-c(1,2)]
   formal.args<-formals(sys.function())[-c(1)]
 
@@ -160,7 +142,7 @@ if(!is.null(out)){
   outp <- graphics::plot(x=xp,y=posdensN,type='l', xlab="population size", 
   # ylim=c(0,max(posdensN,lpriorm)),
   # sub="mean prior = 1000",
-    ylab="posterior density",xlim=c(x$n,control$xlim),ylim=control$ylim, main=main)
+    ylab="Posterior Density",xlim=c(x$n,control$xlim),ylim=control$ylim, main=main)
   #
   graphics::legend('topright',lty=c(1,2,1,1,2,1),col=c(1,1,2,3,4,5),
     legend=c("posterior","prior","median","mean",
@@ -215,48 +197,49 @@ if(!is.null(out)){
 if(control$type %in% c("others","both")){
 out[is.na(out)] <- apply(out,2,stats::median,na.rm=TRUE)
 if("mu" %in% colnames(out)){
- graphics::plot(stats::density(out[,"mu"],na.rm=TRUE), xlab="mean network size", main="posterior for mean network size in the population")
- graphics::plot(stats::density(out[,"sigma"],na.rm=TRUE), xlab="s.d. network size", main="posterior for s.d. of the network size")
+ graphics::plot(stats::density(out[,"mu"],na.rm=TRUE), xlab="mean network size", main="Posterior for mean network size in the population")
+ graphics::plot(stats::density(out[,"sigma"],na.rm=TRUE), xlab="s.d. network size", main="Posterior for s.d. of the network size")
 }
 if("mu0" %in% colnames(out)){
- graphics::plot(stats::density(out[,"mu0"],na.rm=TRUE), xlab="mean network size for uninfected", main="posterior for mean network size in the uninfected population",sub="infected is dashed")
+ graphics::plot(stats::density(out[,"mu0"],na.rm=TRUE), xlab="mean network size for uninfected", main="Posterior for mean network size in the uninfected population",sub="infected is dashed")
  graphics::lines(stats::density(out[,"mu1"],na.rm=TRUE),lty=2)
- graphics::plot(stats::density(out[,"sigma0"],na.rm=TRUE), xlab="s.d. network size", main="posterior for s.d. of the network size for uninfected",sub="infected is dashed")
+ graphics::plot(stats::density(out[,"sigma0"],na.rm=TRUE), xlab="s.d. network size", main="Posterior for s.d. of the network size for uninfected",sub="infected is dashed")
  graphics::lines(stats::density(out[,"sigma1"],na.rm=TRUE),lty=2)
 }
 #
 graphics::plot(seq_along(x$predictive.degree),y=x$predictive.degree, type='h',
 col='red', lwd=2, xlab="degree",ylab="probability", ylim=c(0,max(x$predictive.degree)),
   main="mean posterior network size distribution")
-if(!is.null(control$data)){
-  if(methods::is(control$data,"rds.data.frame")){
-  if(is.null(attr(control$data,"network.size.variable")))
-    stop("Passed data must have a network.size attribute.")
-# nw <- RDS::get.wave(control$data)
-# ns <- RDS::get.seed.id(rds.datacontrol$data
+if(!is.null(x$data)){
+  if(methods::is(x$data,"rds.data.frame")){
+   if(is.null(attr(x$data,"network.size.variable"))){
+     stop("Passed data must have a network.size attribute.")
+   }
+# nw <- RDS::get.wave(x$data)
+# ns <- RDS::get.seed.id(rds.datax$data
 
-  network.size <- as.numeric(control$data[[attr(control$data,"network.size.variable")]])
-  #Augment the reported network size by the number of recruits and the recruiter (if any).
-  if(include.tree){
-   nr <- RDS::get.number.of.recruits(control$data)
-   is.seed <- (RDS::get.rid(control$data)=="seed")
-   network.size <- pmax(network.size,nr+!is.seed)
-   data.title <- "network sizes (augmented by the number of recruits and the recruiter, if any)"
+   network.size <- as.numeric(x$data[[attr(x$data,"network.size.variable")]])
+   #Augment the reported network size by the number of recruits and the recruiter (if any).
+   if(include.tree){
+    nr <- RDS::get.number.of.recruits(x$data)
+    is.seed <- (RDS::get.rid(x$data)=="seed")
+    network.size <- pmax(network.size,nr+!is.seed)
+    data.title <- "network sizes (augmented by the number of recruits and the recruiter, if any)"
+   }else{
+    data.title <- "reported network sizes"
+   }
   }else{
-   data.title <- "reported network sizes"
+    network.size <- as.numeric(x$data)
   }
- }else{
-   network.size <- as.numeric(control$data)
- }
- remvalues <- is.na(network.size)
- Kmax <- max(seq_along(x$predictive.degree))
- bbb <- tabulate(network.size[!remvalues],nbins=Kmax) #, nbins=max(control$data))
- bbb <- bbb/sum(bbb)
- aaa <- graphics::barplot(bbb,names.arg=1:Kmax,add=FALSE,axes=TRUE,width=rep(0.5,length(bbb)),space=1,col=0,
+  remvalues <- is.na(network.size)
+  Kmax <- max(seq_along(x$predictive.degree))
+  bbb <- tabulate(network.size[!remvalues],nbins=Kmax) #, nbins=max(x$data))
+  bbb <- bbb/sum(bbb)
+  aaa <- graphics::barplot(bbb,names.arg=1:Kmax,add=FALSE,axes=TRUE,width=rep(0.5,length(bbb)),space=1,col=0,
    xlab="degree",ylab="probability", xlim=c(1,Kmax), ylim=c(0,max(bbb)),
-   main="posterior with sample histogram overlaid")
- graphics::lines(x=-0.25+seq_along(x$predictive.degree),y=x$predictive.degree, type='h', col='red', lwd=2)
- if(methods::is(control$data,"rds.data.frame") & !is.null(x$visibilities)){
+   main="Posterior with sample histogram overlaid")
+  graphics::lines(x=-0.25+seq_along(x$predictive.degree),y=x$predictive.degree, type='h', col='red', lwd=2)
+  if(methods::is(x$data,"rds.data.frame") & !is.null(x$visibilities)){
 	  dat <- data.frame(x=rep(network.size,rep(100,length(network.size))), y=as.vector(x$vsample[1:100,1:length(network.size)]))
 	  gfit <- scam::scam(y ~ s(x, bs="mpi"), family=poisson(link=log), data=dat)
 	  pfit <- predict(gfit, newdata=list(x=1:max(network.size,na.rm=TRUE)), type="response", se.fit=FALSE)
@@ -264,8 +247,8 @@ if(!is.null(control$data)){
 	       xlab=data.title, ylim=range(c(x$visibilities,pfit),na.rm=TRUE),
 	       main="Estimated Visibilites for each individual's network size")
 	  lines(x=1:max(network.size,na.rm=TRUE),y=pfit)
- }
-}}
+  }
+ }}
 }else{
 if(control$type %in% c("others","both")){
   cy <- cumsum(lpriorm)

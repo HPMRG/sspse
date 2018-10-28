@@ -2,26 +2,26 @@ poscmp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
                   K=2*max(c(s,s2)), nk=NULL, n=length(s), n2=length(s2),
                   mean.prior.degree=7, sigma.prior.degree=3,
                   df.mean.prior=1, df.sigma.prior=5,
-		  beta0.mean.prior=-3, beta1.mean.prior=0,
-		  beta0.sd.prior=10, beta1.sd.prior=10,
-		  mem.optimism.prior=1, df.mem.optimism.prior=5, 
-		  mem.scale.prior=1, df.mem.scale.prior=3, 
+                  beta0.mean.prior=-3, beta1.mean.prior=0,
+                  beta0.sd.prior=10, beta1.sd.prior=10,
+                  mem.optimism.prior=1, df.mem.optimism.prior=5, 
+                  mem.scale.prior=1, df.mem.scale.prior=3, 
                   muproposal=0.1, 
                   nuproposal=0.15, 
                   beta0proposal=0.1, beta1proposal=0.001,
                   memmuproposal=0.1, memscaleproposal=0.15,
-		  visibility=TRUE,
+                  visibility=TRUE,
                   Np=0,
                   samplesize=10,burnin=0,interval=1,burnintheta=500,burninbeta=20,
-		  priorsizedistribution=c("beta","nbinom","pln","flat","supplied"),
-		  mean.prior.size=NULL, sd.prior.size=NULL,
-		  mode.prior.sample.proportion=NULL,
-		  median.prior.sample.proportion=NULL,
-		  median.prior.size=NULL,
-		  mode.prior.size=NULL,
-		  quartiles.prior.size=NULL,
-		  effective.prior.df=1,
-		  alpha=NULL,
+                  priorsizedistribution=c("beta","nbinom","pln","flat","supplied"),
+                  mean.prior.size=NULL, sd.prior.size=NULL,
+                  mode.prior.sample.proportion=NULL,
+                  median.prior.sample.proportion=NULL,
+                  median.prior.size=NULL,
+                  mode.prior.size=NULL,
+                  quartiles.prior.size=NULL,
+                  effective.prior.df=1,
+                  alpha=NULL,
                   seed=NULL,
                   maxbeta=120,
                   supplied=list(maxN=maxN),
@@ -67,14 +67,14 @@ if(F){
     #
     priorsizedistribution=match.arg(priorsizedistribution)
     prior <- dsizeprior(n=n,
-		  type=priorsizedistribution,
-		  sd.prior.size=sd.prior.size,
-		  mode.prior.sample.proportion=mode.prior.sample.proportion,
-		  median.prior.sample.proportion=median.prior.sample.proportion,
-		  median.prior.size=median.prior.size,
-		  mode.prior.size=mode.prior.size,
-		  mean.prior.size=mean.prior.size,
-		  quartiles.prior.size=quartiles.prior.size,
+                  type=priorsizedistribution,
+                  sd.prior.size=sd.prior.size,
+                  mode.prior.sample.proportion=mode.prior.sample.proportion,
+                  median.prior.sample.proportion=median.prior.sample.proportion,
+                  median.prior.size=median.prior.size,
+                  mode.prior.size=mode.prior.size,
+                  mean.prior.size=mean.prior.size,
+                  quartiles.prior.size=quartiles.prior.size,
                   effective.prior.df=effective.prior.df,
                   alpha=alpha,
                   maxN=maxN,
@@ -253,7 +253,7 @@ if(F){
     #
     # Expectation and s.d. of normal from log-normal
     #
-if(F){
+   if(F){
     Cret$sample[,"mu"] <- exp(Cret$sample[,"mu"])
     Cret$sample <- cbind(Cret$sample,Cret$sample[,c("mu","sigma")])
     colnames(Cret$sample)[ncol(Cret$sample)-(1:0)] <- c("lambda","nu")
@@ -268,7 +268,7 @@ if(F){
     }else{
       warning(paste("All the lambda and nu parameters are extreme. The mean and sigma are on the natural scale."), call. = FALSE)
     }
-}
+   }
 #   # PLN mean
 #   Cret$sample <- cbind(Cret$sample,Cret$sample[,c("mem.optimism")])
 #   colnames(Cret$sample)[ncol(Cret$sample)] <- c("mem.degree.mean")

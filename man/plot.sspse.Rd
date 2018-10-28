@@ -4,9 +4,9 @@
 \alias{plot.sspse}
 \title{Plot Summary and Diagnostics for Population Size Estimation Model Fits}
 \usage{
-\method{plot}{sspse}(x, xlim = NULL, data = NULL, support = 1000,
-  HPD.level = 0.9, N = NULL, ylim = NULL, mcmc = FALSE,
-  type = "both", main = "posterior for population size", smooth = 4,
+\method{plot}{sspse}(x, xlim = NULL, support = 1000, HPD.level = 0.9,
+  N = NULL, ylim = NULL, mcmc = FALSE, type = "both",
+  main = "Posterior for population size", smooth = 4,
   include.tree = TRUE, ...)
 }
 \arguments{
@@ -15,9 +15,6 @@ to \code{plot.sspse}.}
 
 \item{xlim}{the (optional) x limits (x1, x2) of the plot of the posterior of
 the population size.}
-
-\item{data}{Optionally, the vector of degrees from the RDS in order they are
-recorded and as passed to \code{\link{posteriorsize}}.}
 
 \item{support}{the number of equally-spaced points to use for the support of
 the estimated posterior density function.}
@@ -75,30 +72,14 @@ the posterior mean network size distribution with sample histogram overlaid.
 }
 \examples{
 
-N0 <- 200
-n <- 100
-K <- 10
-
-# Create probabilities for a Waring distribution 
-# with scaling parameter 3 and mean 5, but truncated at K=10.
-probs <- c(0.33333333,0.19047619,0.11904762,0.07936508,0.05555556,
-           0.04040404,0.03030303,0.02331002,0.01831502,0.01465201)
-probs <- probs / sum(probs)
-
-#
-# Create a sample
-#
-set.seed(1)
-pop<-sample(1:K, size=N0, replace = TRUE, prob = probs)
-s<-sample(pop, size=n, replace = FALSE, prob = pop)
- 
+data(fauxmadrona)
 # Here interval=1 so that it will run faster. It should be higher in a 
 # real application.
-out <- posteriorsize(s=s,interval=1,median.prior.size=1.1*N0,verbose=FALSE)
-plot(out, HPD.level=0.9,data=pop[s])
-summary(out, HPD.level=0.9)
+fit <- posteriorsize(fauxmadrona, median.prior.size=1000,
+                                 burnin=100, interval=1, samplesize=100)
+summary(fit)
 # Let's look at some MCMC diagnostics
-plot(out, HPD.level=0.9,mcmc=TRUE)
+plot(fit, mcmc=TRUE)
 
 }
 \references{

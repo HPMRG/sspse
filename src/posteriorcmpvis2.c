@@ -49,7 +49,7 @@ void gcmpvis2 (int *pop12, int *pop21,
   int ni0, ni1, ni2, itemp;
   int step, staken, getone=1, intervalone=1, verboseMHcmp = 0;
   int i, j, k, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
-  double mui, sigmai, dsamp, nui, lmui, sigma2i;
+  double mui, sigmai, dsamp, nui, lnlami, sigma2i;
   double dmu, dsigma;
   double dbeta0, dbeta1;
   double dlmemmu, dmemnu;
@@ -187,20 +187,20 @@ void gcmpvis2 (int *pop12, int *pop21,
      for (i=0; i<Np; i++){
       pdegi[i] = psample[i];
      }
-     lmui=musample[0];
+     lnlami=musample[0];
      nui=nusample[0];
-//if(nui > 4.0 || lmui > 4.5) Rprintf("lmui %f nui %f dfmu %f\n", lmui, nui, (*dfmu));
+//if(nui > 4.0 || lnlami > 4.5) Rprintf("lnlami %f nui %f dfmu %f\n", lnlami, nui, (*dfmu));
     }
 //Rprintf("Finished MHcmpthetavis : isamp %d\n", isamp);
 
     /* Compute the unit distribution (given the new theta = (mu, sigma)) */
     pis=0.;
-    lzcmp = zcmp(exp(lmui), nui, errval, Ki, give_log1);
+    lzcmp = zcmp(exp(lnlami), nui, errval, Ki, give_log1);
     if(lzcmp < -100000.0){continue;}
-    pi[Np]=cmp(Np+1,lmui,nui,lzcmp,give_log0);
-//Rprintf("lmui %f nui %f lzcmp %f pi %f\n", lmui, nui, lzcmp, pi[Np]);
+    pi[Np]=cmp(Np+1,lnlami,nui,lzcmp,give_log0);
+//Rprintf("lnlami %f nui %f lzcmp %f pi %f\n", lnlami, nui, lzcmp, pi[Np]);
     for (i=Np+1; i<Ki; i++){
-      pi[i]=pi[i-1]*exp(lmui-nui*log((double)(i+1)));
+      pi[i]=pi[i-1]*exp(lnlami-nui*log((double)(i+1)));
     }
 //  Rprintf("isamp %d pis %f\n", isamp, pis);
     pis=1.-exp(-lzcmp);
@@ -228,7 +228,7 @@ void gcmpvis2 (int *pop12, int *pop21,
       sigma2i+=pi[i]*(i+1)*(i+1);
     }
     sigma2i=sigma2i-mui*mui;
-    sigmai  = sqrt(sigma2i);
+    sigmai = sqrt(sigma2i);
 
     if (step == -iburnin || step==(10*(step/10))) { 
       Rprintf("mean unit size = %f s.d. = %f\n", mui, sigmai);
