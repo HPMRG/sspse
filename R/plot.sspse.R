@@ -240,7 +240,8 @@ if(!is.null(x$data)){
    main="Posterior with sample histogram overlaid")
   graphics::lines(x=-0.25+seq_along(x$predictive.visibility),y=x$predictive.visibility, type='h', col='red', lwd=2)
   if(methods::is(x$data,"rds.data.frame") & !is.null(x$visibilities)){
-	  dat <- data.frame(x=rep(network.size,rep(100,length(network.size))), y=as.vector(x$vsample[1:100,1:length(network.size)]))
+	  nplot <- min(nrow(x$vsample),200)
+	  dat <- data.frame(x=rep(network.size,rep(nplot,length(network.size))), y=as.vector(x$vsample[1:nplot,1:length(network.size)]))
 	  gfit <- scam::scam(y ~ s(x, bs="mpi"), family=poisson(link=log), data=dat)
 	  pfit <- predict(gfit, newdata=list(x=1:max(network.size,na.rm=TRUE)), type="response", se.fit=FALSE)
 	  graphics::plot(y=x$visibilities, x=network.size,ylab="estimated visibilities",
