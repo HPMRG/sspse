@@ -1,7 +1,7 @@
 poscmp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
                   K=2*max(c(s,s2)), nk=NULL, n=length(s), n2=length(s2),
-                  mean.prior.degree=7, sigma.prior.degree=3,
-                  df.mean.prior=1, df.sigma.prior=5,
+                  mean.prior.visibility=7, sd.prior.visibility=3,
+                  df.mean.prior.visibility=1, df.sd.prior.visibility=5,
                   beta0.mean.prior=-3, beta1.mean.prior=0,
                   beta0.sd.prior=10, beta1.sd.prior=10,
                   mem.optimism.prior=1, df.mem.optimism.prior=5, 
@@ -36,7 +36,7 @@ poscmp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
     #s values must all be positive integers
     if(!is.null(seed))  set.seed(as.integer(seed))
     #
-    # Cap the maximum degree to K
+    # Cap the maximum visibility to K
     #
     s[s>K] <- K
     if(is.null(nk)){nk=tabulate(s,nbins=K)}
@@ -46,7 +46,7 @@ if(F){
     # Transform observed mean parametrization to log-normal
     # parametrization
     #
-    out <- cmp.natural(mu=mean.prior.degree, sigma=sigma.prior.degree)
+    out <- cmp.natural(mu=mean.prior.visibility, sigma=sd.prior.visibility)
     mu <- log(out$lambda)
     nu <- out$nu
 }
@@ -95,8 +95,8 @@ if(F){
               samplesize=as.integer(samplesize),
               burnin=as.integer(burnin),
               interval=as.integer(interval),
-              mu=as.double(mean.prior.degree), df.mean.prior=as.double(df.mean.prior),
-              sigma=as.double(sigma.prior.degree), df.sigma.prior=as.double(df.sigma.prior),
+              mu=as.double(mean.prior.visibility), df.mean.prior.visibility=as.double(df.mean.prior.visibility),
+              sigma=as.double(sd.prior.visibility), df.sd.prior.visibility=as.double(df.sd.prior.visibility),
               beta0.mean.prior=as.double(beta0.mean.prior), beta0.sd.prior=as.double(beta0.sd.prior),
               beta1.mean.prior=as.double(beta1.mean.prior), beta1.sd.prior=as.double(beta1.sd.prior),
               mem.optimism.prior=as.double(log(mem.optimism.prior)), df.mem.optimism.prior=as.double(df.mem.optimism.prior),
@@ -136,8 +136,8 @@ if(F){
               samplesize=as.integer(samplesize),
               burnin=as.integer(burnin),
               interval=as.integer(interval),
-              mu=as.double(mean.prior.degree), df.mean.prior=as.double(df.mean.prior),
-              sigma=as.double(sigma.prior.degree), df.sigma.prior=as.double(df.sigma.prior),
+              mu=as.double(mean.prior.visibility), df.mean.prior.visibility=as.double(df.mean.prior.visibility),
+              sigma=as.double(sd.prior.visibility), df.sd.prior.visibility=as.double(df.sd.prior.visibility),
               Np=as.integer(Np),
               muproposal=as.double(muproposal),
               nuproposal=as.double(nuproposal),
@@ -159,8 +159,8 @@ if(F){
               samplesize=as.integer(samplesize),
               burnin=as.integer(burnin),
               interval=as.integer(interval),
-              mu=as.double(mean.prior.degree), df.mean.prior=as.double(df.mean.prior),
-              sigma=as.double(sigma.prior.degree), df.sigma.prior=as.double(df.sigma.prior),
+              mu=as.double(mean.prior.visibility), df.mean.prior.visibility=as.double(df.mean.prior.visibility),
+              sigma=as.double(sd.prior.visibility), df.sd.prior.visibility=as.double(df.sd.prior.visibility),
               beta0.mean.prior=as.double(beta0.mean.prior), beta0.sd.prior=as.double(beta0.sd.prior),
               beta1.mean.prior=as.double(beta1.mean.prior), beta1.sd.prior=as.double(beta1.sd.prior),
               mem.optimism.prior=as.double(log(mem.optimism.prior)), df.mem.optimism.prior=as.double(df.mem.optimism.prior),
@@ -192,8 +192,8 @@ if(F){
               samplesize=as.integer(samplesize),
               burnin=as.integer(burnin),
               interval=as.integer(interval),
-              mu=as.double(mean.prior.degree), df.mean.prior=as.double(df.mean.prior),
-              sigma=as.double(sigma.prior.degree), df.sigma.prior=as.double(df.sigma.prior),
+              mu=as.double(mean.prior.visibility), df.mean.prior.visibility=as.double(df.mean.prior.visibility),
+              sigma=as.double(sd.prior.visibility), df.sd.prior.visibility=as.double(df.sd.prior.visibility),
               Np=as.integer(Np),
               muproposal=as.double(muproposal),
               nuproposal=as.double(nuproposal),
@@ -210,7 +210,7 @@ if(F){
     degnames <- NULL
     if(Np>0){degnames <- c(degnames,paste("pdeg",1:Np,sep=""))}
     if(visibility){
-     colnamessample <- c("N","mu","sigma","degree1","totalsize","beta0","beta1","mem.optimism","mem.scale")
+     colnamessample <- c("N","mu","sigma","visibility1","totalsize","beta0","beta1","mem.optimism","mem.scale")
      Cret$vsample<-matrix(Cret$vsample,nrow=samplesize,ncol=n1,byrow=TRUE)
      colnames(Cret$vsample) <- 1:n1
      if(!is.null(s2)){
@@ -239,21 +239,21 @@ if(F){
       Cret$sample[,c("mem.optimism","mem.scale")] <- a
      }
     }else{
-     colnamessample <- c("N","mu","sigma","degree1","totalsize")
-     max.mu <- 2*mean.prior.degree
+     colnamessample <- c("N","mu","sigma","visibility1","totalsize")
+     max.mu <- 2*mean.prior.visibility
      if(length(degnames)>0){
       colnames(Cret$sample) <- c(colnamessample, degnames)
      }else{
       colnames(Cret$sample) <- colnamessample
      }
     }
+   if(F){
     #
     # Transform observed mean parametrization to log-normal
     # parametrization
     #
     # Expectation and s.d. of normal from log-normal
     #
-   if(F){
     Cret$sample[,"mu"] <- exp(Cret$sample[,"mu"])
     Cret$sample <- cbind(Cret$sample,Cret$sample[,c("mu","sigma")])
     colnames(Cret$sample)[ncol(Cret$sample)-(1:0)] <- c("lambda","nu")
@@ -263,7 +263,7 @@ if(F){
     if(!all(nas)){
      inas <- sample(seq_along(nas)[!nas],size=sum(nas),replace=TRUE)
      a[nas,] <- a[inas,]
-#    Cret$sample[,c("mu","sigma")] <- t(apply(Cret$sample[,c("mu","sigma")],1,cmp.mu,max.mu=5*mean.prior.degree)))
+#    Cret$sample[,c("mu","sigma")] <- t(apply(Cret$sample[,c("mu","sigma")],1,cmp.mu,max.mu=5*mean.prior.visibility)))
      Cret$sample[,c("mu","sigma")] <- a
     }else{
       warning(paste("All the lambda and nu parameters are extreme. The mean and sigma are on the natural scale."), call. = FALSE)
@@ -271,25 +271,25 @@ if(F){
    }
 #   # PLN mean
 #   Cret$sample <- cbind(Cret$sample,Cret$sample[,c("mem.optimism")])
-#   colnames(Cret$sample)[ncol(Cret$sample)] <- c("mem.degree.mean")
-#   mean.degree <- sum(seq(along=Cret$nk)*Cret$ppos)
-#   print(mean.degree)
-#   Cret$sample[,"mem.degree.mean"] <- exp(log(mean.degree)+Cret$sample[,"mem.optimism"]+0.5*Cret$sample[,"mem.scale"])
+#   colnames(Cret$sample)[ncol(Cret$sample)] <- c("mem.visibility.mean")
+#   mean.visibility <- sum(seq(along=Cret$nk)*Cret$ppos)
+#   print(mean.visibility)
+#   Cret$sample[,"mem.visibility.mean"] <- exp(log(mean.visibility)+Cret$sample[,"mem.optimism"]+0.5*Cret$sample[,"mem.scale"])
     #
 #   Cret$Nk<-Cret$nk/sum(Cret$nk)
-    Cret$predictive.degree.count<-Cret$nk / samplesize
+    Cret$predictive.visibility.count<-Cret$nk / samplesize
     Cret$nk<-NULL
-    Cret$predictive.degree<-Cret$ppos
+    Cret$predictive.visibility<-Cret$ppos
     Cret$ppos<-NULL
     endrun <- burnin+interval*(samplesize-1)
     attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
     attr(Cret$sample, "class") <- "mcmc"
-    ### compute modes of posterior samples,Maximum A Posterior (MAP) values N, mu, sigma, degree1
+    ### compute modes of posterior samples,Maximum A Posterior (MAP) values N, mu, sigma, visibility1
     Cret$MAP <- apply(Cret$sample,2,mode.density)
     Cret$MAP["N"] <- mode.density(Cret$sample[,"N"],lbound=n,ubound=prior$maxN)
     if(!is.null(s2)){Cret$n <- Cret$n1 +  Cret$n2 - Cret$n0}
 #
-#   Cret$MSE <- c(((prior$x-mean.prior.degree)^2)*prior$lprior/sum(prior$lprior),mean((Cret$sample[,"N"]-mean.prior.degree)^2))
+#   Cret$MSE <- c(((prior$x-mean.prior.visibility)^2)*prior$lprior/sum(prior$lprior),mean((Cret$sample[,"N"]-mean.prior.visibility)^2))
     Cret$maxN <- prior$maxN
     Cret$quartiles.prior.size <- prior$quartiles.prior.size
     Cret$mode.prior.size <- prior$mode.prior.size

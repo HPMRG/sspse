@@ -207,8 +207,8 @@ if("mu0" %in% colnames(out)){
  graphics::lines(stats::density(out[,"sigma1"],na.rm=TRUE),lty=2)
 }
 #
-graphics::plot(seq_along(x$predictive.degree),y=x$predictive.degree, type='h',
-col='red', lwd=2, xlab="degree",ylab="probability", ylim=c(0,max(x$predictive.degree)),
+graphics::plot(seq_along(x$predictive.visibility),y=x$predictive.visibility, type='h',
+col='red', lwd=2, xlab="visibility",ylab="probability", ylim=c(0,max(x$predictive.visibility)),
   main="mean posterior network size distribution")
 if(!is.null(x$data)){
   if(methods::is(x$data,"rds.data.frame")){
@@ -232,13 +232,13 @@ if(!is.null(x$data)){
     network.size <- as.numeric(x$data)
   }
   remvalues <- is.na(network.size)
-  Kmax <- max(seq_along(x$predictive.degree))
+  Kmax <- max(seq_along(x$predictive.visibility))
   bbb <- tabulate(network.size[!remvalues],nbins=Kmax) #, nbins=max(x$data))
   bbb <- bbb/sum(bbb)
   aaa <- graphics::barplot(bbb,names.arg=1:Kmax,add=FALSE,axes=TRUE,width=rep(0.5,length(bbb)),space=1,col=0,
-   xlab="degree",ylab="probability", xlim=c(1,Kmax), ylim=c(0,max(bbb)),
+   xlab="visibility",ylab="probability", xlim=c(1,Kmax), ylim=c(0,max(bbb)),
    main="Posterior with sample histogram overlaid")
-  graphics::lines(x=-0.25+seq_along(x$predictive.degree),y=x$predictive.degree, type='h', col='red', lwd=2)
+  graphics::lines(x=-0.25+seq_along(x$predictive.visibility),y=x$predictive.visibility, type='h', col='red', lwd=2)
   if(methods::is(x$data,"rds.data.frame") & !is.null(x$visibilities)){
 	  dat <- data.frame(x=rep(network.size,rep(100,length(network.size))), y=as.vector(x$vsample[1:100,1:length(network.size)]))
 	  gfit <- scam::scam(y ~ s(x, bs="mpi"), family=poisson(link=log), data=dat)

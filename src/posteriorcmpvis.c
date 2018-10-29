@@ -21,7 +21,7 @@ void gcmpvis (int *pop,
             double *memnu, double *memdfnu,
             int *Npi,
             int *srd, 
-            double *numrec, 
+            int *numrec, 
             double *rectime,
             int *maxcoupons,
             double *lnlamproposal, 
@@ -39,7 +39,8 @@ void gcmpvis (int *pop,
                          ) {
   int dimsample, Np;
   int step, staken, getone=1, intervalone=1, verboseMHcmp = 0;
-  int i, j, k, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
+  int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
+  int j, k;
   double mui, sigmai, lnlami, nui, dsamp, sigma2i;
   double dmu, dsigma;
   double dbeta0, dbeta1;
@@ -432,7 +433,7 @@ void MHcmpmem (int *d, int *n, int *K,
             double *lmemmu, double *memdfmu,
             double *memnu, double *memdfnu,
             int *srd, 
-            double *numrec, 
+            int *numrec, 
             double *rectime,
             int *maxcoupons,
             double *beta0proposal, double *beta1proposal, 

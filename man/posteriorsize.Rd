@@ -11,22 +11,22 @@ posteriorsize(s, s2 = NULL, previous = NULL,
   mode.prior.size = NULL, priorsizedistribution = c("beta", "flat",
   "nbinom", "pln", "supplied"), effective.prior.df = 1,
   sd.prior.size = NULL, mode.prior.sample.proportion = NULL,
-  alpha = NULL, degreedistribution = c("cmp", "nbinom", "pln"),
-  mean.prior.degree = NULL, sigma.prior.degree = NULL,
-  max.sigma.prior.degree = 4, df.mean.prior = 1, df.sigma.prior = 3,
-  beta0.mean.prior = -3, beta1.mean.prior = 0, beta0.sd.prior = 10,
-  beta1.sd.prior = 10, mem.optimism.prior = 1,
-  df.mem.optimism.prior = 5, mem.scale.prior = 2,
-  df.mem.scale.prior = 20, visibility = TRUE, type.impute = c("mode",
-  "distribution", "median", "mean"), Np = 0, nk = NULL, n = NULL,
-  n2 = NULL, muproposal = 0.1, nuproposal = 0.15,
-  beta0proposal = 0.2, beta1proposal = 0.001, memmuproposal = 0.1,
-  memscaleproposal = 0.15, burnintheta = 500, burninbeta = 50,
-  parallel = 1, parallel.type = "PSOCK", seed = NULL,
-  maxbeta = 120, supplied = list(maxN = maxN), max.coupons = NULL,
-  recruit.time = NULL, recruit.time2 = NULL, include.tree = TRUE,
-  unit.scale = FALSE, optimism = TRUE, reflect.time = TRUE,
-  verbose = TRUE)
+  alpha = NULL, visibilitydistribution = c("cmp", "nbinom", "pln"),
+  mean.prior.visibility = NULL, sd.prior.visibility = NULL,
+  max.sd.prior.visibility = 4, df.mean.prior.visibility = 1,
+  df.sd.prior.visibility = 3, beta0.mean.prior = -3,
+  beta1.mean.prior = 0, beta0.sd.prior = 10, beta1.sd.prior = 10,
+  mem.optimism.prior = 1, df.mem.optimism.prior = 5,
+  mem.scale.prior = 2, df.mem.scale.prior = 20, visibility = TRUE,
+  type.impute = c("mode", "distribution", "median", "mean"), Np = 0,
+  nk = NULL, n = NULL, n2 = NULL, muproposal = 0.1,
+  nuproposal = 0.15, beta0proposal = 0.2, beta1proposal = 0.001,
+  memmuproposal = 0.1, memscaleproposal = 0.15, burnintheta = 500,
+  burninbeta = 50, parallel = 1, parallel.type = "PSOCK",
+  seed = NULL, maxbeta = 120, supplied = list(maxN = maxN),
+  max.coupons = NULL, recruit.time = NULL, recruit.time2 = NULL,
+  include.tree = TRUE, unit.scale = FALSE, optimism = TRUE,
+  reflect.time = TRUE, verbose = TRUE)
 }
 \arguments{
 \item{s}{either a vector of integers or an \code{rds.data.frame} providing network 
@@ -57,8 +57,8 @@ done. It typically is set to a fairly large number.}
 \item{maxN}{integer; maximum possible population size. By default this is
 determined from an upper quantile of the prior distribution.}
 
-\item{K}{count; the maximum degree for an individual. This is usually
-calculated as \code{round(stats::quantile(s,0.80))}.}
+\item{K}{count; the maximum visibility for an individual. This is usually
+calculated as \code{round(stats::quantile(s,0.80))}. Applies to network sizes and (latent) visibilities.}
 
 \item{samplesize}{count; the number of Monte-Carlo samples to draw to
 compute the posterior. This is the number returned by the
@@ -98,29 +98,29 @@ prior model for the sample proportion. By default this is NULL, meaning that
 1 is chosen. it can be any value at least 1 to allow for different levels of
 uncertainty.}
 
-\item{degreedistribution}{count; the parametric distribution to use for the
+\item{visibilitydistribution}{count; the parametric distribution to use for the
 individual network sizes (i.e., degrees). The options are \code{cmp},
 \code{nbinom}, and \code{pln}.  These correspond to the
 Conway-Maxwell-Poisson, Negative-Binomial, and Poisson-log-normal. The
 default is \code{cmp}.}
 
-\item{mean.prior.degree}{scalar; A hyper parameter being the mean degree for
+\item{mean.prior.visibility}{scalar; A hyper parameter being the mean visibility for
 the prior distribution for a randomly chosen person. The prior has this
 mean.}
 
-\item{sigma.prior.degree}{scalar; A hyper parameter being the standard deviation
-of the degree for a randomly chosen person.  The prior has this
+\item{sd.prior.visibility}{scalar; A hyper parameter being the standard deviation
+of the visibility for a randomly chosen person.  The prior has this
 standard deviation.}
 
-\item{max.sigma.prior.degree}{scalar; The maximum allowed value of \code{sigma.prior.degree}.
+\item{max.sd.prior.visibility}{scalar; The maximum allowed value of \code{sd.prior.visibility}.
 If the passed or computed value is higher, it is reduced to this value.
 This is done for numerical stability reasons.}
 
-\item{df.mean.prior}{scalar; A hyper parameter being the degrees-of-freedom
+\item{df.mean.prior.visibility}{scalar; A hyper parameter being the degrees-of-freedom
 of the prior for the mean. This gives the equivalent sample size that would
 contain the same amount of information inherent in the prior.}
 
-\item{df.sigma.prior}{scalar; A hyper parameter being the degrees-of-freedom of
+\item{df.sd.prior.visibility}{scalar; A hyper parameter being the degrees-of-freedom of
 the prior for the standard deviation. This gives the equivalent sample size
 that would contain the same amount of information inherent in the prior for
 the standard deviation.}
@@ -164,13 +164,13 @@ draws of the visibilities.
 It can be of type \code{distribution}, \code{mode},\code{median}, or \code{mean} 
 with \code{mode} the default, being the posterior mode of the visibility for that person.}
 
-\item{Np}{integer; The overall degree distribution is a mixture of the
-\code{Np} rates for \code{1:Np} and a parametric degree distribution model
+\item{Np}{integer; The overall visibility distribution is a mixture of the
+\code{Np} rates for \code{1:Np} and a parametric visibility distribution model
 truncated below \code{Np}. Thus the model fits the proportions of the
-population with degree \code{1:Np} each with a separate parameter. This
-should adjust for an lack-of-fit of the parametric degree distribution model
-at lower degrees, although it also changes the model away from the
-parametric degree distribution model.}
+population with visibility \code{1:Np} each with a separate parameter. This
+should adjust for an lack-of-fit of the parametric visibility distribution model
+at lower visibilities, although it also changes the model away from the
+parametric visibility distribution model.}
 
 \item{nk}{vector; the vector of counts for the number of people in the
 sample with degree k. This is usually computed from \eqn{s} automatically as
@@ -184,10 +184,10 @@ This is usually computed from
 \eqn{s} automatically and not usually specified by the user.}
 
 \item{muproposal}{scalar; The standard deviation of the proposal
-distribution for the mean degree.}
+distribution for the mean visibility.}
 
 \item{nuproposal}{scalar; The standard deviation of the proposal
-distribution for the CMP scale parameter that determines the standard deviation of the degree.}
+distribution for the CMP scale parameter that determines the standard deviation of the visibility.}
 
 \item{beta0proposal}{scalar; The standard deviation of the proposal
 distribution for the beta0 parameter of the recruit model.}
@@ -202,7 +202,7 @@ distribution for the log of the optimism parameter (that is, gamma).}
 distribution for the log of the s.d. in the optimism model.}
 
 \item{burnintheta}{count; the number of proposals in the Metropolis-Hastings
-sub-step for the degree distribution parameters (\eqn{\theta}) before any
+sub-step for the visibility distribution parameters (\eqn{\theta}) before any
 MCMC sampling is done. It typically is set to a modestly large number.}
 
 \item{burninbeta}{count; the number of proposals in the Metropolis-Hastings
@@ -281,7 +281,7 @@ following elements:
 \item{pop}{vector; The final posterior draw for the
 degrees of the population. The first \eqn{n} are the sample in sequence and
 the reminder are non-sequenced.}
-\item{K}{count; the maximum degree for an
+\item{K}{count; the maximum visibility for an
 individual. This is usually calculated as twice the maximum observed
 degree.}
 \item{n}{count; the sample size.}
@@ -292,31 +292,31 @@ number returned by the Metropolis-Hastings algorithm.The default is 1000.}
 done. It typically is set to a fairly large number.}
 \item{interval}{count; the number of proposals between sampled statistics.}
 \item{mu}{scalar; The
-hyper parameter \code{mean.prior.degree} being the mean degree for the prior
+hyper parameter \code{mean.prior.visibility} being the mean visibility for the prior
 distribution for a randomly chosen person. The prior has this mean.}
 \item{sigma}{scalar; The hyper parameter \code{sigma} being the
-standard deviation of the degree for a randomly chosen person. The prior has
+standard deviation of the visibility for a randomly chosen person. The prior has
 this standard deviation.}
-\item{df.mean.prior}{scalar; A hyper parameter
+\item{df.mean.prior.visibility}{scalar; A hyper parameter
 being the degrees-of-freedom of the prior for the mean. This gives the
 equivalent sample size that would contain the same amount of information
 inherent in the prior.}
-\item{df.sigma.prior}{scalar; A hyper parameter being
+\item{df.sd.prior.visibility}{scalar; A hyper parameter being
 the degrees-of-freedom of the prior for the standard deviation. This gives
 the equivalent sample size that would contain the same amount of information
 inherent in the prior for the standard deviation.}
 \item{Np}{integer; The
-overall degree distribution is a mixture of the \code{1:Np} rates and a
-parametric degree distribution model truncated below Np. Thus the model fits
-the proportions of the population with degree \code{1:Np} each with a
+overall visibility distribution is a mixture of the \code{1:Np} rates and a
+parametric visibility distribution model truncated below Np. Thus the model fits
+the proportions of the population with visibility \code{1:Np} each with a
 separate parameter. This should adjust for an lack-of-fit of the parametric
-degree distribution model at lower degrees, although it also changes the
-model away from the parametric degree distribution model.}
+visibility distribution model at lower visibilities, although it also changes the
+model away from the parametric visibility distribution model.}
 \item{muproposal}{scalar; The standard deviation of the proposal
-distribution for the mean degree.}
+distribution for the mean visibility.}
 \item{nuproposal}{scalar; The standard
 deviation of the proposal distribution for the CMP scale parameter of the
-degree distribution.}
+visibility distribution.}
 \item{N}{vector of length 5; summary statistics for the posterior
 population size.
 \describe{
@@ -340,19 +340,19 @@ plotted and summarized via the \code{mcmc.diagnostics} function in the
 \describe{
 \item{N}{population size.}
 \item{mu}{scalar; The mean
-degree for the prior distribution for a randomly chosen person. The prior
+visibility for the prior distribution for a randomly chosen person. The prior
 has this mean.}
-\item{sigma}{scalar; The standard deviation of the degree
+\item{sigma}{scalar; The standard deviation of the visibility
 for a randomly chosen person. The prior has this standard deviation.}
-\item{degree1}{scalar; the number of nodes of degree 1 in the population (it
-is assumed all nodes have degree 1 or more).}
+\item{visibility1}{scalar; the number of nodes of visibility 1 in the population (it
+is assumed all nodes have visibility 1 or more).}
 \item{lambda}{scalar; This is
 only present for the \code{cmp} model. It is the \eqn{\lambda} parameter in
 the standard parameterization of the Conway-Maxwell-Poisson model for the
-degree distribution.}
+visibility distribution.}
 \item{nu}{scalar; This is only present for the
 \code{cmp} model. It is the \eqn{\nu} parameter in the standard
-parameterization of the Conway-Maxwell-Poisson model for the degree
+parameterization of the Conway-Maxwell-Poisson model for the visibility
 distribution.} } }
 \item{sample}{matrix of dimension \code{samplesize}\eqn{\times} \code{n} matrix of 
 posterior.draws from the unit size distribution for those in the survey.
@@ -362,40 +362,40 @@ probabilities on each value of \eqn{m=N-n} - that is, the number of
 unobserved members of the population. The values are
 \code{n:(length(lpriorm)-1+n)}.}
 \item{burnintheta}{count; the number of
-proposals in the Metropolis-Hastings sub-step for the degree distribution
+proposals in the Metropolis-Hastings sub-step for the visibility distribution
 parameters (\eqn{\theta}) before any MCMC sampling is done. It typically is
 set to a modestly large number.}
 \item{verbose}{logical; if this is
 \code{TRUE}, the program printed out additional information, including
 goodness of fit statistics.}
-\item{predictive.degree.count}{vector; a vector
-of length the maximum degree (\code{K}) (by default \cr \code{K=2*max(sample
-degree)}).  The \code{k}th entry is the posterior predictive number persons
-with degree \code{k}.  That is, it is the posterior predictive distribution
-of the number of people with each degree in the population.}
-\item{predictive.degree}{vector; a vector of length the maximum degree
-(\code{K}) (by default \cr \code{K=2*max(sample degree)}).  The \code{k}th entry
-is the posterior predictive proportion of persons with degree \code{k}.
+\item{predictive.visibility.count}{vector; a vector
+of length the maximum visibility (\code{K}) (by default \cr \code{K=2*max(sample
+visibility)}).  The \code{k}th entry is the posterior predictive number persons
+with visibility \code{k}.  That is, it is the posterior predictive distribution
+of the number of people with each visibility in the population.}
+\item{predictive.visibility}{vector; a vector of length the maximum visibility
+(\code{K}) (by default \cr \code{K=2*max(sample visibility)}).  The \code{k}th entry
+is the posterior predictive proportion of persons with visibility \code{k}.
 That is, it is the posterior predictive distribution of the proportion of
-people with each degree in the population.}
+people with each visibility in the population.}
 \item{MAP}{vector of length 6
 of MAP estimates corresponding to the output \code{sample}. These are:
 \describe{
 \item{N}{population size.}
 \item{mu}{scalar; The mean
-degree for the prior distribution for a randomly chosen person. The prior
+visibility for the prior distribution for a randomly chosen person. The prior
 has this mean.}
-\item{sigma}{scalar; The standard deviation of the degree
+\item{sigma}{scalar; The standard deviation of the visibility
 for a randomly chosen person. The prior has this standard deviation.}
-\item{degree1}{scalar; the number of nodes of degree 1 in the population (it
-is assumed all nodes have degree 1 or more).}
+\item{visibility1}{scalar; the number of nodes of visibility 1 in the population (it
+is assumed all nodes have visibility 1 or more).}
 \item{lambda}{scalar; This is
 only present for the \code{cmp} model. It is the \eqn{\lambda} parameter in
 the standard parameterization of the Conway-Maxwell-Poisson model for the
-degree distribution.}
+visibility distribution.}
 \item{nu}{scalar; This is only present for the
 \code{cmp} model. It is the \eqn{\nu} parameter in the standard
-parameterization of the Conway-Maxwell-Poisson model for the degree
+parameterization of the Conway-Maxwell-Poisson model for the visibility
 distribution.} } }
 \item{mode.prior.sample.proportion}{scalar; A
 hyperparameter being the mode of the prior distribution on the sample
@@ -410,9 +410,9 @@ size.}
 \item{quartiles.prior.size}{vector of length 2; A pair of
 hyperparameters being the lower and upper quartiles of the prior
 distribution on the population size.}
-\item{degreedistribution}{count; the
+\item{visibilitydistribution}{count; the
 parametric distribution to use for the individual network sizes (i.e.,
-degrees). The options are \code{cmp}, \code{nbinom}, and \code{pln}.  These
+visibilities). The options are \code{cmp}, \code{nbinom}, and \code{pln}.  These
 correspond to the Conway-Maxwell-Poisson, Negative-Binomial, and
 Poisson-log-normal. The default is \code{cmp}.}
 \item{priorsizedistribution}{character; the type of parametric distribution
