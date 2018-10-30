@@ -32,7 +32,6 @@ void gcmpdisease (int *pop, int *dis,
   double mu0i, mu1i, pbeta, beta, sigma0i, sigma1i, dsamp;
   double dkappa0, ddf0, dmu0, dmu1, dsigma0, dsigma1, dmuproposal, dsigmaproposal;
   int tU, sizei, imaxN, imaxm, itotdis0, itotdis, give_log0=0, give_log1=1;
-  int maxpop;
   double r, gamma0rt, gamma1rt, p0is, p1is, Nd;
   double gammart, temp;
   double errval=0.000000001, lzcmp;
@@ -77,12 +76,10 @@ void gcmpdisease (int *pop, int *dis,
   double *betasample = (double *) malloc(sizeof(double));
   double *sigmasample = (double *) malloc(sizeof(double) * 2);
 
-  maxpop=0;
   for (i=0; i<ni; i++){
     if((pop[i]>0) && (pop[i] <= Ki)){ d[i]=pop[i];}
     if(pop[i]==0){ d[i]=1;}
     if(pop[i]>Ki){ d[i]=Ki;}
-    if(pop[i]>maxpop){maxpop=pop[i];}
   }
   b[ni-1]=d[ni-1];
   for (i=(ni-2); i>=0; i--){

@@ -41,13 +41,13 @@ void gcmpvis (int *pop,
   int step, staken, getone=1, intervalone=1, verboseMHcmp = 0;
   int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
   int j, k;
-  double mui, sigmai, lnlami, nui, dsamp, sigma2i;
+  double mui, sigmai, lnlami, nui, dsamp;
+  double sigma2i;
   double dmu, dsigma;
   double dbeta0, dbeta1;
   double dlmemmu, dmemnu;
   double beta0i, beta1i, lmemmui, memnui;
   int tU, sizei, imaxN, imaxm, give_log0=0, give_log1=1;
-  int maxpop;
   double r, gammart, pis, Nd;
   double temp;
   double rtprob, lliki;
@@ -92,12 +92,10 @@ void gcmpvis (int *pop,
   double *lmemmusample = (double *) malloc(sizeof(double));
   double *memnusample = (double *) malloc(sizeof(double));
 
-  maxpop=0;
   for (i=0; i<ni; i++){
     if((pop[i]>0) && (pop[i] <= Ki)){ d[i]=pop[i];}
     if(pop[i]==0){ d[i]=1;}
     if(pop[i]>Ki){ d[i]=Ki;}
-    if(pop[i]>maxpop){maxpop=pop[i];}
   }
   b[ni-1]=d[ni-1];
   for (i=(ni-2); i>=0; i--){
@@ -110,6 +108,7 @@ void gcmpvis (int *pop,
   }
   tU=0;
   for (i=ni; i<Ni; i++){
+    d[i]=d[(int)trunc(10.0*unif_rand()+ni-10)];
     tU+=d[i];
   }
   /* Draw initial phis */
@@ -146,7 +145,6 @@ void gcmpvis (int *pop,
      for (i=0; i<Np; i++){
       pdegi[i] = psample[i];
      }
-//if(nui > 4.0 || lnlami > 4.5) Rprintf("lnlami %f nui %f dfmu %f\n", lnlami, nui, (*dfmu));
     }
 
     /* Compute the unit distribution (given the new theta = (lnlam, nu)) */
@@ -188,7 +186,7 @@ void gcmpvis (int *pop,
 
     /* Draw new beta using MCMC */
     if (step == -iburnin || step==(20*(step/20))) { 
-//  if (step == 3.141) { 
+//  if (step == -iburnin) { 
      MHcmpmem(d,n,K,beta0muprior,beta0sigmaprior,beta1muprior,beta1sigmaprior,
        lmemmu,memdfmu,memnu,memdfnu,srd,numrec,rectime,maxcoupons,
        beta0proposal,beta1proposal,
@@ -200,17 +198,18 @@ void gcmpvis (int *pop,
      beta1i=beta1sample[0];
      lmemmui=lmemmusample[0];
      memnui=memnusample[0];
-//Rprintf("lmemmui: %f memnui %f beta0i %f beta1i %f\n",lmemmui,memnui,beta0i,beta1i);
+//   beta0i= -3.063687833  ;
+//   beta1i=  0.001548059 ;
+//   lmemmui= 1.380479339 ;
+//   memnui= 0.913915196 ;
+//  }
+//  Rprintf("step %d lmemmui: %f memnui %f beta0i %f beta1i %f\n",step,lmemmui,memnui,beta0i,beta1i);
 
-//  if(i== -59){
     /* Draw true degrees (sizes) based on the reported degrees*/
     // First reset counts
-//Rprintf("nk[i]: ");
     for (i=0; i<Ki; i++){
-//Rprintf("%d ", nk[i]);
      nk[i]=0;
     }
-//Rprintf("\n");
     for (j=0; j<ni; j++){
       temp = beta0i + beta1i*rectime[j];
       rtprob = exp(temp)/(1.0+exp(temp));
@@ -263,7 +262,7 @@ void gcmpvis (int *pop,
 //if(j==6) Rprintf("\n");
 //if(j==6)Rprintf("beta0i %f beta1i %f lmemmui %f memnui %f rtprob %f pd[Ki-1] %f\n", beta0i,beta1i,lmemmui,memnui,rtprob,pd[Ki-1]);
       if(pd[Ki-1]<0.00000000001){
-   Rprintf("fixed bad pd[Ki-1] %f\n", pd[Ki-1]);
+       Rprintf("fixed bad pd[Ki-1] %f\n", pd[Ki-1]);
        for (i=0; i<Ki; i++){
         pd[i]=pi[i];
        }
@@ -278,9 +277,11 @@ void gcmpvis (int *pop,
       for (sizei=1; sizei<=Ki; sizei++){
         if(temp <= pd[sizei-1]) break;
       }
+
       nk[sizei-1]=nk[sizei-1]+1;
       d[j]=sizei;
-if(d[j] < numrec[j]) Rprintf("Warning: j %d d[j] %d numrec[j] %d maxc %d: %f %f %f %f\n",j,d[j],numrec[j],maxc,pd[0],pd[1],pd[2],pd[3]);
+
+      if(d[j] < numrec[j]) Rprintf("Warning: j %d d[j] %d numrec[j] %d maxc %d: %f %f %f %f\n",j,d[j],numrec[j],maxc,pd[0],pd[1],pd[2],pd[3]);
 //Rprintf("j %d dis %d sizei %d pd[Ki-1] %f\n", j, ddis, sizei, pd[Ki-1]);
      } 
      // Rebuild b
@@ -289,9 +290,23 @@ if(d[j] < numrec[j]) Rprintf("Warning: j %d d[j] %d numrec[j] %d maxc %d: %f %f 
       b[i]=b[i+1]+d[i];
      }
 // Rprintf("j %d d[j] %d pd[Ki-1] %f\n", j, d[j], pd[Ki-1]);
+//
      /* End of imputed unit sizes for observed */
     }
+
 //  }
+// Rprintf("step %d b[ni-2] %d; End of imputed unit sizes for observed\n", step, b[ni-2]);
+
+    /* Draw phis */
+    tU=0;
+    for (i=ni; i<Ni; i++){
+      tU+=d[i];
+    }
+    r=0.;
+    for (i=0; i<ni; i++){
+//    phi[i]=(tU+b[i])*exp_rand();
+      r+=exp_rand()/(tU+b[i]);
+    }
 
     /* Draw new N */
 
@@ -322,17 +337,6 @@ if(d[j] < numrec[j]) Rprintf("Warning: j %d d[j] %d numrec[j] %d maxc %d: %f %f 
     // Add back the sample size
     Ni += ni;
     if(Ni > imaxN) Ni = imaxN;
-
-    /* Draw phis */
-    tU=0;
-    for (i=ni; i<Ni; i++){
-      tU+=d[i];
-    }
-    r=0.;
-    for (i=0; i<ni; i++){
-//    phi[i]=(tU+b[i])*exp_rand();
-      r+=exp_rand()/(tU+b[i]);
-    }
 
     /* Draw unseen sizes */
     for (i=0; i<Ki; i++){
@@ -464,8 +468,6 @@ void MHcmpmem (int *d, int *n, int *K,
 
   Ki=(*K);
   double *pd = (double *) malloc(sizeof(double) * Ki);
-//double *pi = (double *) malloc(sizeof(double) * Ki);
-//double *pstar = (double *) malloc(sizeof(double) * Ki);
 
 //GetRNGstate();  /* R function enabling uniform RNG */
 
@@ -504,10 +506,11 @@ void MHcmpmem (int *d, int *n, int *K,
     temp = beta0i + beta1i*rectime[i];
     rtprob = exp(temp)/(1.0+exp(temp));
 //  if((numrec[i] <= d[i]) && ((maxc-1) <= d[i])){
+    if(numrec[i] <= d[i]){
      if((d[i] <= maxc)|(numrec[i]<maxc)){
-      lliki += dbinom(numrec[i],d[i],rtprob,give_log1);
+       lliki += dbinom(numrec[i],d[i],rtprob,give_log1);
      }else{
-      lliki += log(1.0-pbinom(maxc-1.0,d[i],rtprob,give_log0,give_log0));
+       lliki += log(1.0-pbinom(maxc-1.0,d[i],rtprob,give_log0,give_log0));
      }
      if(srd[i]>=0){
 //    lliki += log(poilog(srd[i],log((double)(d[i]))-lmemmui,memnui));
@@ -526,9 +529,9 @@ void MHcmpmem (int *d, int *n, int *K,
       }
       lliki += log(pd[srd[i]-1]);
      }
-//  }else{
-//   lliki = -100000.0; 
-//  }
+    }else{
+     lliki = -100000.0; 
+    }
   }
   if(!isfinite(lliki)) lliki = -100000.0; 
 
@@ -568,6 +571,7 @@ void MHcmpmem (int *d, int *n, int *K,
       rtprob = exp(temp)/(1.0+exp(temp));
 //    Rprintf("%f %f %f %f\n",llikstar,lmemmustar,memnustar,rtprob);
 //    if((numrec[i] <= d[i]) && ((maxc-1) <= d[i])){
+      if(numrec[i] <= d[i]){
        if((d[i] <= maxc)|(numrec[i]<maxc)){
         llikstar += dbinom(numrec[i],d[i],rtprob,give_log1);
 //      Rprintf("< %f %f %f %f\n",numrec[i],rtprob[i],u,dbinom(numrec[i],u,rtprob[i],give_log0));
@@ -593,9 +597,9 @@ void MHcmpmem (int *d, int *n, int *K,
         llikstar += log(pd[srd[i]-1]);
 //  Rprintf("llikstar: %i %f %f %f %f %f %f %f\n",i, llikstar,lmemmustar,memnustar,beta0star,beta1star,temp,rtprob);
        }
-//    }else{
-//     llikstar = -100000.0; 
-//    }
+      }else{
+       llikstar = -100000.0; 
+      }
     }
     if(!isfinite(llikstar)) llikstar = -100000.0; 
 

@@ -36,7 +36,6 @@ void gcmp2 (int *pop12,
   double mui, sigmai, lmui, nui, dsamp, sigma2i;
   double ddfmu, ddfsigma, dmu, dsigma, dmuproposal, dnuproposal;
   int tU1, tU2, sizei, imaxN, imaxm, give_log0=0, give_log1=1;
-  int maxpop;
   double r1, r2, gammart, pis, Nd;
   double temp;
   double errval=0.0000000001, lzcmp;
@@ -82,21 +81,18 @@ void gcmp2 (int *pop12,
     d1[i]=0;
     d2[i]=0;
   }
-  maxpop=0;
   itemp=0;
   for (i=0; i<(ni1+ni0); i++){
     if((pop12[i]>0) && (pop12[i] <= Ki)){ d1[i]=pop12[i];}
     if(pop12[i]==0){ d1[i]=1;}
     if(pop12[i]>Ki){ d1[i]=Ki;}
     itemp+=d1[i];
-    if(pop12[i]>maxpop){maxpop=pop12[i];}
   }
   for (i=0; i<ni2; i++){
     if((pop21[i]>0) && (pop21[i] <= Ki)){ d2[i]=pop21[i];}
     if(pop21[i]==0){ d2[i]=1;}
     if(pop21[i]>Ki){ d2[i]=Ki;}
     itemp-=d2[i];
-    if(pop21[i]>maxpop){maxpop=pop21[i];}
   }
   // b is the cumulative version of d, which is uobs
   // so b1 is cumulative unit sizes for first list

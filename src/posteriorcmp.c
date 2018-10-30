@@ -32,7 +32,6 @@ void gcmp (int *pop,
   double sigma2i;
   double dmu, dsigma;
   int tU, sizei, imaxN, imaxm, give_log0=0, give_log1=1;
-  int maxpop;
   double r, gammart, pis, Nd;
   double temp;
   double errval=0.0000000001, lzcmp;
@@ -64,12 +63,10 @@ void gcmp (int *pop,
   double *lnlamsample = (double *) malloc(sizeof(double));
   double *nusample = (double *) malloc(sizeof(double));
 
-  maxpop=0;
   for (i=0; i<ni; i++){
     if((pop[i]>0) && (pop[i] <= Ki)){ d[i]=pop[i];}
     if(pop[i]==0){ d[i]=1;}
     if(pop[i]>Ki){ d[i]=Ki;}
-    if(pop[i]>maxpop){maxpop=pop[i];}
   }
   b[ni-1]=d[ni-1];
   for (i=(ni-2); i>=0; i--){
@@ -82,6 +79,7 @@ void gcmp (int *pop,
   }
   tU=0;
   for (i=ni; i<Ni; i++){
+    pop[i]=pop[(int)trunc(10*unif_rand()+ni-10)];
     tU+=pop[i];
   }
   /* Draw initial phis */

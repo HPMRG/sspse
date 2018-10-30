@@ -32,7 +32,6 @@ void lcmp (int *pop,
   double mui, sigmai, dsamp;
   double dkappa, ddf, dmu, dsigma, dmuproposal, dsigmaproposal;
   int tU, sizei, imaxN, imaxm, give_log0=0, give_log1=1;
-  int maxpop;
   double r, gammart, pis, Nd;
   double temp;
   double errval=0.000000001, lzcmp;
@@ -69,12 +68,10 @@ void lcmp (int *pop,
   double *musample = (double *) malloc(sizeof(double));
   double *sigmasample = (double *) malloc(sizeof(double));
 
-  maxpop=0;
   for (i=0; i<ni; i++){
     if((pop[i]>0) && (pop[i] <= Ki)){ d[i]=pop[i];}
     if(pop[i]==0){ d[i]=1;}
     if(pop[i]>Ki){ d[i]=Ki;}
-    if(pop[i]>maxpop){maxpop=pop[i];}
   }
   b[ni-1]=d[ni-1];
   for (i=(ni-2); i>=0; i--){

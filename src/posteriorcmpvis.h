@@ -50,10 +50,10 @@ void MHcmpmem (int *d, int *n, int *K,
 void MHcmptheta (int *Nk, int *K,
             double *mu, double *dfmu, 
             double *sigma,  double *dfsigma,
-            double *muproposal, 
-            double *sigmaproposal, 
+            double *lnlamproposal, 
+            double *nuproposal, 
             int *N, int *Npi, double *psample,
-            double *musample, double *sigmasample,
+            double *lnlamsample, double *nusample,
             int *samplesize, int *staken, int *burnintheta, int *interval,
             int *verbose
          );

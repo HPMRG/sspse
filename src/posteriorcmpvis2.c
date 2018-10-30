@@ -55,7 +55,6 @@ void gcmpvis2 (int *pop12, int *pop21,
   double dlmemmu, dmemnu;
   double beta0i, beta1i, lmemmui, memnui;
   int tU1, tU2, sizei, imaxN, imaxm, give_log0=0, give_log1=1;
-  int maxpop;
   double r1, r2, gammart, pis, Nd;
   double temp, temp2;
   double rtprob, lliki;
@@ -110,21 +109,18 @@ void gcmpvis2 (int *pop12, int *pop21,
     d1[i]=0;
     d2[i]=0;
   }
-  maxpop=0;
   itemp=0;
   for (i=0; i<(ni1+ni0); i++){
     if((pop12[i]>0) && (pop12[i] <= Ki)){ d1[i]=pop12[i];}
     if(pop12[i]==0){ d1[i]=1;}
     if(pop12[i]>Ki){ d1[i]=Ki;}
     itemp+=d1[i];
-    if(pop12[i]>maxpop){maxpop=pop12[i];}
   }
   for (i=0; i<ni2; i++){
     if((pop21[i]>0) && (pop21[i] <= Ki)){ d2[i]=pop21[i];}
     if(pop21[i]==0){ d2[i]=1;}
     if(pop21[i]>Ki){ d2[i]=Ki;}
     itemp-=d2[i];
-    if(pop21[i]>maxpop){maxpop=pop21[i];}
   }
   d2[ni2]=itemp;
   b1[ni1-1]=d1[ni1-1];
@@ -261,14 +257,15 @@ void gcmpvis2 (int *pop12, int *pop21,
       rtprob = exp(temp)/(1.0+exp(temp));
 //    Multiply by the PoissonLogNormal PMF for observation
       for (i=0; i<Ki; i++){
-       if((numrec[j] <= (i+1)) && ((maxc-1) <= (i+1))){
+//     if((numrec[j] <= (i+1)) && ((maxc-1) <= (i+1))){
+       if(numrec[j] <= (i+1)){
         lliki=0.0;
         if(((i+1) <= maxc)|(numrec[j]<maxc)){
           lliki += dbinom(numrec[j],(i+1),rtprob,give_log1);
         }else{
           lliki += log(1.0-pbinom(maxc-1.0,(i+1),rtprob,give_log0,give_log0));
         }
-    if(srd[j] < 0) Rprintf("srd: %d\n", srd[j]);
+//      if(srd[j] < 0) Rprintf("srd: %d\n", srd[j]);
         if(srd[j]>=0){
 //        Use CMP localized
 //        temp= lmemmui + lmemrci*rc[j] + log((double)(i+1));
@@ -339,7 +336,8 @@ void gcmpvis2 (int *pop12, int *pop21,
       rtprob = exp(temp)/(1.0+exp(temp));
 //    Multiply by the PoissonLogNormal PMF for observation
       for (i=0; i<Ki; i++){
-       if((numrec2[j] <= (i+1)) && ((maxc-1) <= (i+1))){
+//     if((numrec2[j] <= (i+1)) && ((maxc-1) <= (i+1))){
+       if(numrec2[j] <= (i+1)){
         lliki=0.0;
         if(((i+1) <= maxc)|(numrec2[j]<maxc)){
           lliki += dbinom(numrec2[j],(i+1),rtprob,give_log1);
@@ -421,7 +419,23 @@ void gcmpvis2 (int *pop12, int *pop21,
 
      /* End of overall loop started at "Draw new beta using MCMC" */
 
-//Rprintf("Finished d2 : isamp %d\n", isamp);
+    /* Draw phis */
+    tU1=0;
+    for (i=ni1; i<Ni; i++){
+      tU1+=d1[i];
+    }
+    tU2=0;
+    for (i=ni2; i<Ni; i++){
+      tU2+=d2[i];
+    }
+    r1=0.;
+    for (i=0; i<ni1; i++){
+      r1+=exp_rand()/(tU1+b1[i]);
+    }
+    r2=0.;
+    for (i=0; i<ni2; i++){
+      r2+=exp_rand()/(tU2+b2[i]);
+    }
 
     /* Draw new N */
 
@@ -454,23 +468,6 @@ void gcmpvis2 (int *pop12, int *pop21,
     if(Ni > imaxN) Ni = imaxN;
 //Rprintf("Finished Ni : isamp %d\n", isamp);
 
-    /* Draw phis */
-    tU1=0;
-    for (i=ni1; i<Ni; i++){
-      tU1+=d1[i];
-    }
-    tU2=0;
-    for (i=ni2; i<Ni; i++){
-      tU2+=d2[i];
-    }
-    r1=0.;
-    for (i=0; i<ni1; i++){
-      r1+=exp_rand()/(tU1+b1[i]);
-    }
-    r2=0.;
-    for (i=0; i<ni2; i++){
-      r2+=exp_rand()/(tU2+b2[i]);
-    }
 
     /* Draw unseen sizes */
     for (i=0; i<Ki; i++){
@@ -655,7 +652,8 @@ void MHcmpbeta2 (int *d1, int *d2, int *n1, int *n2, int *K,
   for (i=0; i<ni1; i++){
     temp = beta0i + beta1i*rectime[i];
     rtprob = exp(temp)/(1.0+exp(temp));
-    if((numrec[i] <= d1[i]) && ((maxc-1) <= d1[i])){
+//  if((numrec[i] <= d1[i]) && ((maxc-1) <= d1[i])){
+    if(numrec[i] <= d1[i]){
      if((d1[i] <= maxc)|(numrec[i]<maxc)){
       lliki += dbinom(numrec[i],d1[i],rtprob,give_log1);
      }else{
@@ -686,7 +684,8 @@ void MHcmpbeta2 (int *d1, int *d2, int *n1, int *n2, int *K,
   for (i=0; i<ni2; i++){
     temp = beta0i + beta1i*rectime2[i];
     rtprob = exp(temp)/(1.0+exp(temp));
-    if((numrec2[i] <= d2[i]) && ((maxc-1) <= d2[i])){
+//  if((numrec2[i] <= d2[i]) && ((maxc-1) <= d2[i])){
+    if(numrec2[i] <= d2[i]){
      if((d2[i] <= maxc)|(numrec2[i]<maxc)){
       lliki += dbinom(numrec2[i],d2[i],rtprob,give_log1);
      }else{
@@ -749,7 +748,8 @@ void MHcmpbeta2 (int *d1, int *d2, int *n1, int *n2, int *K,
     for (i=0; i<ni1; i++){
       temp = beta0star + beta1star*rectime[i];
       rtprob = exp(temp)/(1.0+exp(temp));
-      if((numrec[i] <= d1[i]) && ((maxc-1) <= d1[i])){
+//    if((numrec[i] <= d1[i]) && ((maxc-1) <= d1[i])){
+      if(numrec[i] <= d1[i]){
        if((d1[i] <= maxc)|(numrec[i]<maxc)){
         llikstar += dbinom(numrec[i],d1[i],rtprob,give_log1);
        }else{
@@ -782,7 +782,8 @@ void MHcmpbeta2 (int *d1, int *d2, int *n1, int *n2, int *K,
     for (i=0; i<ni2; i++){
       temp = beta0star + beta1star*rectime2[i];
       rtprob = exp(temp)/(1.0+exp(temp));
-      if((numrec2[i] <= d2[i]) && ((maxc-1) <= d2[i])){
+//    if((numrec2[i] <= d2[i]) && ((maxc-1) <= d2[i])){
+      if(numrec2[i] <= d2[i]){
        if((d2[i] <= maxc)|(numrec2[i]<maxc)){
         llikstar += dbinom(numrec2[i],d2[i],rtprob,give_log1);
        }else{
