@@ -20,8 +20,8 @@ priorsize<-function(s,
                   supplied=list(maxN=maxN),
                   verbose=TRUE){
 #
-  degreedistribution=match.arg(degreedistribution)
-  posfn <- switch(degreedistribution,
+  visibilitydistribution=match.arg(visibilitydistribution)
+  posfn <- switch(visibilitydistribution,
                   nbinom=posnbinom,
                   pln=pospln,
 		  cmp=poscmp,
@@ -43,8 +43,8 @@ priorsize<-function(s,
     mean.pd <- sum(ds*weights)/sum(weights)
     sd.pd <- sum(ds*ds*weights)/sum(weights)
     sd.pd <- sqrt(sd.pd - mean.pd^2)
-    if(sd.pd > sqrt(max.sd.prior.degree*mean.pd)){
-     sd.pd <- min(sqrt(max.sd.prior.degree*mean.pd), sd.pd)
+    if(sd.pd > sqrt(max.sd.prior.visibility*mean.pd)){
+     sd.pd <- min(sqrt(max.sd.prior.visibility*mean.pd), sd.pd)
     }
     xv <- ds
 #   xp <- weights*ds
@@ -55,7 +55,7 @@ priorsize<-function(s,
     K=(0:max(s))[which.max(cumsum(y)>0.95)]
   }
   cat(sprintf("The size cap is K = %d.\n",K))
-  if(is.null(mean.prior.degree)){
+  if(is.null(mean.prior.visibility)){
     degs <- s
     degs[degs>K] <- K
     degs[degs==0]<-1
@@ -64,34 +64,34 @@ priorsize<-function(s,
     degs <- sum(!isnas)*(degs)/sum(degs,na.rm=TRUE)
     weights <- (1/degs)
     weights[is.na(weights)] <- 0
-    mean.prior.degree <- sum(ds*weights)/sum(weights)
-    if(is.null(sd.prior.degree)){
-     sd.prior.degree <- sum(ds*ds*weights)/sum(weights)
-     sd.prior.degree <- sqrt(sd.prior.degree - mean.prior.degree^2)
+    mean.prior.visibility <- sum(ds*weights)/sum(weights)
+    if(is.null(sd.prior.visibility)){
+     sd.prior.visibility <- sum(ds*ds*weights)/sum(weights)
+     sd.prior.visibility <- sqrt(sd.prior.visibility - mean.prior.visibility^2)
     }
     xv <- ds
 #   xp <- weights*ds
     xp <- weights
     xp <- length(xp)*xp/sum(xp)
     fit <- cmpmle(xv,xp,cutoff=1,cutabove=K-1,
-            guess=c(mean.prior.degree,sd.prior.degree))
-    fit <- cmp.mu(fit,max.mu=5*mean.prior.degree)
-    mean.prior.degree = fit[1]
-    sd.prior.degree = fit[2]
+            guess=c(mean.prior.visibility,sd.prior.visibility))
+    fit <- cmp.to.mu(fit,max.mu=5*mean.prior.visibility)
+    mean.prior.visibility = fit[1]
+    sd.prior.visibility = fit[2]
   }
   if(verbose){
-    cat(sprintf("The mean of the prior distribution for degree is %f.\n",mean.prior.degree))
-    cat(sprintf("The s.d. of the prior distribution for degree is %f.\n",sd.prior.degree))
+    cat(sprintf("The mean of the prior distribution for visibility is %f.\n",mean.prior.visibility))
+    cat(sprintf("The s.d. of the prior distribution for visibility is %f.\n",sd.prior.visibility))
   }
-  if(sd.prior.degree > sqrt(max.sd.prior.degree*mean.prior.degree)){
-    sd.prior.degree <- min(sqrt(max.sd.prior.degree*mean.prior.degree), sd.prior.degree)
-    cat(sprintf("The suggested s.d. of the prior distribution for degree is too large and has been reduced to the more reasonable %f.\n",sd.prior.degree))
+  if(sd.prior.visibility > sqrt(max.sd.prior.visibility*mean.prior.visibility)){
+    sd.prior.visibility <- min(sqrt(max.sd.prior.visibility*mean.prior.visibility), sd.prior.visibility)
+    cat(sprintf("The suggested s.d. of the prior distribution for visibility is too large and has been reduced to the more reasonable %f.\n",sd.prior.visibility))
   }
   ### are we running the job in parallel (parallel > 1), if not just 
-  #   call the degree specific function
+  #   call the visibility specific function
     if(!is.null(seed))  set.seed(as.integer(seed))
     #
-    # Cap the maximum degree to K
+    # Cap the maximum visibility to K
     #
     s[s>K] <- K
     if(is.null(nk)){nk=tabulate(s,nbins=K)}
@@ -99,7 +99,7 @@ priorsize<-function(s,
     # Transform observed mean parametrization to log-normal
     # parametrization
     #
-    out <- cmp.natural(mu=mean.prior.degree, sigma=sd.prior.degree)
+    out <- cmp.to.natural(mu=mean.prior.visibility, sigma=sd.prior.visibility)
     mu <- log(out$lambda)
     sigma <- out$nu
     #
@@ -129,9 +129,9 @@ priorsize<-function(s,
    for(m in 1:M){
     N <- sample(prior$x,size=1,prob=prior$lprior)
     if(N > n){
-     sigma <- sd.prior.degree*sqrt(1/(stats::rchisq(n=1, df = df.sd.prior)))
-     mu <- stats::rnorm(n=1,mean=mean.prior.degree, sd=sigma / df.mean.prior)
-     pcmp <- cmp.natural(mu=mu,sigma=sigma)
+     sigma <- sd.prior.visibility*sqrt(1/(stats::rchisq(n=1, df = df.sd.prior.visibility)))
+     mu <- stats::rnorm(n=1,mean=mean.prior.visibility, sd=sigma / df.mean.prior.visibility)
+     pcmp <- cmp.to.natural(mu=mu,sigma=sigma)
      pcmp <- .C("rcmp",
                 x=integer(N-n),
                 lambda=as.double(pcmp$lambda),

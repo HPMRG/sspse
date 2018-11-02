@@ -721,7 +721,7 @@ posteriorsize<-function(s,
     txv <- tapply(xv,xv,stats::median)
     fit <- cmpmle(txv,txp,cutoff=1,cutabove=K-1,
             guess=c(mean.prior.visibility,sd.prior.visibility))
-    fit <- cmp.mu(fit,max.mu=5*mean.prior.visibility,force=TRUE)
+    fit <- cmp.to.mu(fit,max.mu=5*mean.prior.visibility,force=TRUE)
     if(verbose){
       cat(sprintf("The preliminary empirical value of the mean of the prior distribution for visibility is %f.\n",mean.prior.visibility))
       cat(sprintf("The preliminary empirical value of the s.d. of the prior distribution for visibility is %f.\n",sd.prior.visibility))

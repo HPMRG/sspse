@@ -15,6 +15,7 @@ void gcmpvis (int *pop,
             int *samplesize, int *burnin, int *interval,
             double *mu, double *dfmu, 
             double *sigma, double *dfsigma,
+	    double *lnlam, double *nu,
             double *beta0muprior, double *beta0sigmaprior, 
             double *beta1muprior, double *beta1sigmaprior, 
             double *lmemmu, double *memdfmu,
@@ -124,8 +125,8 @@ void gcmpvis (int *pop,
   beta1sample[0] = dbeta1;
   lmemmusample[0] = dlmemmu;
   memnusample[0] = dmemnu;
-  lnlamsample[0] = dmu;
-  nusample[0] = dsigma;
+  lnlamsample[0] = (*lnlam);
+  nusample[0] = (*nu);
 
   isamp = 0;
   step = -iburnin;

@@ -4,7 +4,7 @@ cmpmle <-function(xv,xp,cutoff=1,cutabove=1000,guess=c(7,3)){
  xp <- xp[xv <= cutabove]
  xv <- xv[xv <= cutabove]
  xp <- length(xv)*xp/sum(xp)
- guess <- cmp.natural(mu=guess[1],sigma=guess[2])
+ guess <- cmp.to.natural(mu=guess[1],sigma=guess[2])
  guess <- c(log(guess$lambda), log(guess$nu))
   aaa <- stats::optim(par=guess,fn=allcmp,
    method="BFGS",

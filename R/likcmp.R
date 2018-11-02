@@ -1,7 +1,7 @@
 likcmp<-function(s,maxN=NULL,
                   K=2*max(s), nk=tabulate(s,nbins=K), n=length(s),
                   mean.prior.degree=7, sd.prior.degree=3,
-                  df.mean.prior=1, df.sd.prior=5,
+                  df.mean.prior.degree=1, df.sd.prior.degree=5,
                   muproposal=0.1, 
                   sigmaproposal=0.15, 
                   Np=0,
@@ -29,7 +29,7 @@ likcmp<-function(s,maxN=NULL,
     # Transform observed mean parametrization to log-normal
     # parametrization
     #
-    out <- cmp.natural(mu=mean.prior.degree, sigma=sd.prior.degree)
+    out <- cmp.to.natural(mu=mean.prior.degree, sigma=sd.prior.degree)
     mu <- log(out$lambda)
     sigma <- out$nu
     #
@@ -58,7 +58,7 @@ likcmp<-function(s,maxN=NULL,
               samplesize=as.integer(samplesize),
               burnin=as.integer(burnin),
               interval=as.integer(interval),
-              mu=as.double(mu), df.mean.prior=as.double(df.mean.prior),
+              mu=as.double(mu), df.mean.prior.degree=as.double(df.mean.prior.degree),
               sigma=as.double(sigma), df.sd.prior=as.double(df.sd.prior),
               Np=as.integer(Np),
               muproposal=as.double(muproposal),
@@ -89,7 +89,7 @@ likcmp<-function(s,maxN=NULL,
     Cret$sample <- cbind(Cret$sample,Cret$sample[,c("mu","sigma")])
     colnames(Cret$sample)[ncol(Cret$sample)-(1:0)] <- c("lambda","nu")
     # Transform to mean value parametrization 
-    Cret$sample[,c("mu","sigma")] <- t(apply(Cret$sample[,c("mu","sigma")],1,cmp.mu,max.mu=5*mean.prior.degree))
+    Cret$sample[,c("mu","sigma")] <- t(apply(Cret$sample[,c("mu","sigma")],1,cmp.to.mu,max.mu=5*mean.prior.degree))
     #
 #   Cret$Nk<-Cret$nk/sum(Cret$nk)
     Cret$predictive.degree.count<-Cret$nk / samplesize

@@ -15,6 +15,7 @@ void gcmp (int *pop,
             int *samplesize, int *burnin, int *interval,
             double *mu, double *dfmu, 
             double *sigma, double *dfsigma,
+            double *lnlam, double *nu, 
             int *Npi,
             double *lnlamproposal, 
             double *nuproposal, 
@@ -91,8 +92,8 @@ void gcmp (int *pop,
   for (i=0; i<Np; i++){
      psample[i] = 0.01;
   }
-  lnlamsample[0] = dmu;
-  nusample[0] = dsigma;
+  lnlamsample[0] = (*lnlam);
+  nusample[0] = (*nu);
 
   isamp = 0;
   step = -iburnin;
@@ -331,6 +332,9 @@ void MHcmptheta (int *Nk, int *K,
     odegi[i] = log(pdegi[i]/pis);
   }
   lnlami = lnlamsample[0];
+  if(rdfmu <= 0.0){
+    lnlamstar = lnlami;
+  }
   nui = nusample[0];
 // if(nui > 4.0 || lnlami > 4.5) Rprintf("%f %f\n", lnlami,nui);
 // Rprintf("%f %f\n", lnlami,nui);
@@ -377,8 +381,10 @@ void MHcmptheta (int *Nk, int *K,
 //Rprintf("mu %f sigma %f\n", *mu, (*sigma));
 //Rprintf("mui %f sigmai %f\n", mui, sigmai);
 
-  pithetai = dnorm(mui, dmu, sigmai/rdfmu, give_log1);
-  pithetai = pithetai+dsclinvchisq(sigma2i, ddfsigma, dsigma2);
+  pithetai = dsclinvchisq(sigma2i, ddfsigma, dsigma2);
+  if(rdfmu > 0.0){
+   pithetai = pithetai + dnorm(mui, dmu, sigmai/rdfmu, give_log1);
+  }
 
   // Now do the MCMC updates (starting with the burnin updates)
   while (isamp < isamplesize) {
@@ -397,7 +403,9 @@ void MHcmptheta (int *Nk, int *K,
       pdegstar[i]/=pis;
     }
     /* Now the degree distribution (log) mean and s.d. parameters */
-    lnlamstar = rnorm(lnlami, dlnlamproposal);
+    if(rdfmu > 0.0){
+     lnlamstar = rnorm(lnlami, dlnlamproposal);
+    }
     nustar = nui*exp(rnorm(0., dnuproposal));
     /* Check for magnitude */
 
@@ -450,8 +458,10 @@ void MHcmptheta (int *Nk, int *K,
     /* Calculate pieces of the posterior. */
     qnustar = dnorm(log(nustar/nui)/dnuproposal,0.,1.,give_log1)
                   -log(dnuproposal*nustar);
-    pithetastar = dnorm(mustar, dmu, sigmastar/rdfmu, give_log1);
-    pithetastar = pithetastar+dsclinvchisq(sigma2star, ddfsigma, dsigma2);
+    pithetastar = dsclinvchisq(sigma2star, ddfsigma, dsigma2);
+    if(rdfmu > 0.0){
+     pithetastar = pithetastar + dnorm(mustar, dmu, sigmastar/rdfmu, give_log1);
+    }
     qnui = dnorm(log(nui/nustar)/dnuproposal,0.,1.,give_log1)
                -log(dnuproposal*nui);
 
@@ -483,7 +493,7 @@ void MHcmptheta (int *Nk, int *K,
         odegi[i] = odegstar[i];
         pdegi[i] = pdegstar[i];
       }
-      lnlami    = lnlamstar;
+      lnlami = lnlamstar;
       nui = nustar;
       qnui = qnustar;
       pithetai = pithetastar;

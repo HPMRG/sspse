@@ -41,16 +41,13 @@ poscmp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
     s[s>K] <- K
     if(is.null(nk)){nk=tabulate(s,nbins=K)}
     if(!is.null(s2)) s2[s2>K] <- K
-if(F){
     #
     # Transform observed mean parametrization to log-normal
     # parametrization
     #
-    out <- cmp.natural(mu=mean.prior.visibility, sigma=sd.prior.visibility)
-    mu <- log(out$lambda)
+    out <- cmp.to.natural(mu=mean.prior.visibility, sigma=sd.prior.visibility)
+    lnlam <- log(out$lambda)
     nu <- out$nu
-}
-#   nu <- max(0.00001, nu)
     #
     if(visibility){
       dimsample <- 5+Np+4
@@ -97,6 +94,7 @@ if(F){
               interval=as.integer(interval),
               mu=as.double(mean.prior.visibility), df.mean.prior.visibility=as.double(df.mean.prior.visibility),
               sigma=as.double(sd.prior.visibility), df.sd.prior.visibility=as.double(df.sd.prior.visibility),
+              lnlam=as.double(lnlam), nu=as.double(nu),
               beta0.mean.prior=as.double(beta0.mean.prior), beta0.sd.prior=as.double(beta0.sd.prior),
               beta1.mean.prior=as.double(beta1.mean.prior), beta1.sd.prior=as.double(beta1.sd.prior),
               mem.optimism.prior=as.double(log(mem.optimism.prior)), df.mem.optimism.prior=as.double(df.mem.optimism.prior),
@@ -138,6 +136,7 @@ if(F){
               interval=as.integer(interval),
               mu=as.double(mean.prior.visibility), df.mean.prior.visibility=as.double(df.mean.prior.visibility),
               sigma=as.double(sd.prior.visibility), df.sd.prior.visibility=as.double(df.sd.prior.visibility),
+              lnlam=as.double(lnlam), nu=as.double(nu),
               Np=as.integer(Np),
               muproposal=as.double(muproposal),
               nuproposal=as.double(nuproposal),
@@ -161,6 +160,7 @@ if(F){
               interval=as.integer(interval),
               mu=as.double(mean.prior.visibility), df.mean.prior.visibility=as.double(df.mean.prior.visibility),
               sigma=as.double(sd.prior.visibility), df.sd.prior.visibility=as.double(df.sd.prior.visibility),
+              lnlam=as.double(lnlam), nu=as.double(nu),
               beta0.mean.prior=as.double(beta0.mean.prior), beta0.sd.prior=as.double(beta0.sd.prior),
               beta1.mean.prior=as.double(beta1.mean.prior), beta1.sd.prior=as.double(beta1.sd.prior),
               mem.optimism.prior=as.double(log(mem.optimism.prior)), df.mem.optimism.prior=as.double(df.mem.optimism.prior),
@@ -194,6 +194,7 @@ if(F){
               interval=as.integer(interval),
               mu=as.double(mean.prior.visibility), df.mean.prior.visibility=as.double(df.mean.prior.visibility),
               sigma=as.double(sd.prior.visibility), df.sd.prior.visibility=as.double(df.sd.prior.visibility),
+              lnlam=as.double(lnlam), nu=as.double(nu),
               Np=as.integer(Np),
               muproposal=as.double(muproposal),
               nuproposal=as.double(nuproposal),
@@ -230,7 +231,7 @@ if(F){
      #
      a <- Cret$sample[,c("mem.optimism","mem.scale")]
      a[,1] <- a[,1]*mean(Cret$vsample)
-     a <- t(apply(a,1,cmp.mu,K=K,force=TRUE,max.mu=K))
+     a <- t(apply(a,1,cmp.to.mu,K=K,force=TRUE,max.mu=K))
      a[,1] <- Cret$sample[,"mem.optimism"]
      nas <- apply(a,1,function(x){any(is.na(x))})
      if(!all(nas)){
@@ -258,12 +259,12 @@ if(F){
     Cret$sample <- cbind(Cret$sample,Cret$sample[,c("mu","sigma")])
     colnames(Cret$sample)[ncol(Cret$sample)-(1:0)] <- c("lambda","nu")
     # Transform to mean value parametrization 
-    a <- t(apply(Cret$sample[,c("mu","sigma")],1,cmp.mu, max.mu=max.mu))
+    a <- t(apply(Cret$sample[,c("mu","sigma")],1,cmp.to.mu, max.mu=max.mu))
     nas <- apply(a,1,function(x){any(is.na(x))})
     if(!all(nas)){
      inas <- sample(seq_along(nas)[!nas],size=sum(nas),replace=TRUE)
      a[nas,] <- a[inas,]
-#    Cret$sample[,c("mu","sigma")] <- t(apply(Cret$sample[,c("mu","sigma")],1,cmp.mu,max.mu=5*mean.prior.visibility)))
+#    Cret$sample[,c("mu","sigma")] <- t(apply(Cret$sample[,c("mu","sigma")],1,cmp.to.mu,max.mu=5*mean.prior.visibility)))
      Cret$sample[,c("mu","sigma")] <- a
     }else{
       warning(paste("All the lambda and nu parameters are extreme. The mean and sigma are on the natural scale."), call. = FALSE)

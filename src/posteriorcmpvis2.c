@@ -18,6 +18,7 @@ void gcmpvis2 (int *pop12, int *pop21,
             int *samplesize, int *burnin, int *interval,
             double *mu, double *dfmu, 
             double *sigma, double *dfsigma,
+	    double *lnlam, double *nu,
             double *beta0muprior, double *beta0sigmaprior, 
             double *beta1muprior, double *beta1sigmaprior, 
             double *lmemmu, double *memdfmu,
@@ -98,7 +99,7 @@ void gcmpvis2 (int *pop12, int *pop21,
   double *lpm = (double *) malloc(sizeof(double) * imaxm);
   double *pdegi = (double *) malloc(sizeof(double) * (Np+1));
   double *psample = (double *) malloc(sizeof(double) * (Np+1));
-  double *musample = (double *) malloc(sizeof(double));
+  double *lnlamsample = (double *) malloc(sizeof(double));
   double *nusample = (double *) malloc(sizeof(double));
   double *beta0sample = (double *) malloc(sizeof(double));
   double *beta1sample = (double *) malloc(sizeof(double));
@@ -165,8 +166,8 @@ void gcmpvis2 (int *pop12, int *pop21,
   beta1sample[0] = dbeta1;
   lmemmusample[0] = dlmemmu;
   memnusample[0] = dmemnu;
-  musample[0] = dmu;
-  nusample[0] = dsigma;
+  lnlamsample[0] = (*lnlam);
+  nusample[0] = (*nu);
 
   isamp = 0;
   step = -iburnin;
@@ -177,13 +178,13 @@ void gcmpvis2 (int *pop12, int *pop21,
     if (step == -iburnin || step==(10*(step/10))) { 
      MHcmptheta(Nk,K,mu,dfmu,sigma,dfsigma,muproposal,nuproposal,
        &Ni, &Np, psample,
-       musample, nusample, &getone, &staken, burnintheta, &intervalone, 
+       lnlamsample, nusample, &getone, &staken, burnintheta, &intervalone, 
        &verboseMHcmp);
 
      for (i=0; i<Np; i++){
       pdegi[i] = psample[i];
      }
-     lnlami=musample[0];
+     lnlami=lnlamsample[0];
      nui=nusample[0];
 //if(nui > 4.0 || lnlami > 4.5) Rprintf("lnlami %f nui %f dfmu %f\n", lnlami, nui, (*dfmu));
     }
@@ -566,7 +567,7 @@ void gcmpvis2 (int *pop12, int *pop21,
   free(Nk);
   free(Nkpos);
   free(lpm);
-  free(musample);
+  free(lnlamsample);
   free(nusample);
   free(beta0sample);
   free(beta1sample);
