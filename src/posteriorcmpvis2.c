@@ -227,9 +227,9 @@ void gcmpvis2 (int *pop12, int *pop21,
     sigma2i=sigma2i-mui*mui;
     sigmai = sqrt(sigma2i);
 
-    if (step == -iburnin || step==(10*(step/10))) { 
-      Rprintf("mean unit size = %f s.d. = %f\n", mui, sigmai);
-    }
+//  if (step == -iburnin || step==(10*(step/10))) { 
+//    Rprintf("mean unit size = %f s.d. = %f\n", mui, sigmai);
+//  }
 //  Rprintf("burninbeta: %d\n", (*burninbeta));
     /* Draw new beta using MCMC */
     if (step == -iburnin || step==(10*(step/10))) { 
@@ -245,7 +245,7 @@ void gcmpvis2 (int *pop12, int *pop21,
      lmemmui=lmemmusample[0];
      memnui=memnusample[0];
 //Rprintf("Finished MHcmpbeta2 : isamp %d\n", isamp);
-      Rprintf("mean lmemmui = %f\n", temp2);
+//    Rprintf("mean lmemmui = %f\n", temp2);
     }
 
     /* Draw true degrees (sizes) of the first RDS sample based on the reported degrees*/
@@ -539,7 +539,7 @@ void gcmpvis2 (int *pop12, int *pop21,
       if (*verbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d samples...\n", isamp);
 //    if (*verbose) Rprintf("Taken %d samples...\n", isamp);
  Rprintf("Taken %d samples...\n", isamp);
- Rprintf("d1[ni1-1] %d d2[ni2-1] %d d1[ni1+10] %d tU1 %d tU2 %d\n", d1[ni1-1],d2[ni2-1],d1[ni1+10],tU1,tU2);
+// Rprintf("d1[ni1-1] %d d2[ni2-1] %d d1[ni1+10] %d tU1 %d tU2 %d\n", d1[ni1-1],d2[ni2-1],d1[ni1+10],tU1,tU2);
     }
     step++;
   }
