@@ -35,7 +35,7 @@ void gcmp2 (int *pop12,
   int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
   int ni1, ni2, ni0, itemp;
   double mui, sigmai, lmui, nui, dsamp, sigma2i;
-  double ddfmu, ddfsigma, dmu, dsigma, dmuproposal, dnuproposal;
+  double ddfmu, ddfsigma, dnuproposal;
   int tU1, tU2, sizei, imaxN, imaxm, give_log0=0, give_log1=1;
   double r1, r2, gammart, pis, Nd;
   double temp;
@@ -57,10 +57,7 @@ void gcmp2 (int *pop12,
   Np=(*Npi);
   ddfmu=(*dfmu);
   ddfsigma=(*dfsigma);
-  dsigma=(*sigma);
-  dmu=(*mu);
   dnuproposal=(*nuproposal);
-  dmuproposal=(*muproposal);
 
   dimsample=5+Np;
 
@@ -137,8 +134,8 @@ void gcmp2 (int *pop12,
   for (i=0; i<Np; i++){
      psample[i] = 0.01;
   }
-  musample[0] = dmu;
-  nusample[0] = dsigma;
+  musample[0] = (*lnlam);
+  nusample[0] = (*nu);
 
   isamp = 0;
   step = -iburnin;

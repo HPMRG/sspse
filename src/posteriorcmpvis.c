@@ -44,7 +44,6 @@ void gcmpvis (int *pop,
   int j, k;
   double mui, sigmai, lnlami, nui, dsamp;
   double sigma2i;
-  double dmu, dsigma;
   double dbeta0, dbeta1;
   double dlmemmu, dmemnu;
   double beta0i, beta1i, lmemmui, memnui;
@@ -66,12 +65,10 @@ void gcmpvis (int *pop,
   iinterval=(*interval);
   iburnin=(*burnin);
   Np=(*Npi);
-  dsigma=(*sigma);
   dbeta0=(*beta0muprior);
   dbeta1=(*beta1muprior);
   dlmemmu=(*lmemmu);
   dmemnu=(*memnu);
-  dmu=(*mu);
   maxc=(*maxcoupons);
   
   dimsample=5+Np+4;

@@ -1,7 +1,7 @@
 likcmp<-function(s,maxN=NULL,
                   K=2*max(s), nk=tabulate(s,nbins=K), n=length(s),
-                  mean.prior.degree=7, sd.prior.degree=3,
-                  df.mean.prior.degree=1, df.sd.prior.degree=5,
+                  mean.prior.visibility=7, sd.prior.visibility=3,
+                  df.mean.prior.visibility=1, df.sd.prior.visibility=5,
                   muproposal=0.1, 
                   sigmaproposal=0.15, 
                   Np=0,
@@ -29,7 +29,7 @@ likcmp<-function(s,maxN=NULL,
     # Transform observed mean parametrization to log-normal
     # parametrization
     #
-    out <- cmp.to.natural(mu=mean.prior.degree, sigma=sd.prior.degree)
+    out <- cmp.to.natural(mu=mean.prior.visibility, sigma=sd.prior.visibility)
     mu <- log(out$lambda)
     sigma <- out$nu
     #
@@ -58,8 +58,8 @@ likcmp<-function(s,maxN=NULL,
               samplesize=as.integer(samplesize),
               burnin=as.integer(burnin),
               interval=as.integer(interval),
-              mu=as.double(mu), df.mean.prior.degree=as.double(df.mean.prior.degree),
-              sigma=as.double(sigma), df.sd.prior=as.double(df.sd.prior),
+              mu=as.double(mu), df.mean.prior.visibility=as.double(df.mean.prior.visibility),
+              sigma=as.double(sigma), df.sd.prior.visibility=as.double(df.sd.prior.visibility),
               Np=as.integer(Np),
               muproposal=as.double(muproposal),
               sigmaproposal=as.double(sigmaproposal),
@@ -89,12 +89,12 @@ likcmp<-function(s,maxN=NULL,
     Cret$sample <- cbind(Cret$sample,Cret$sample[,c("mu","sigma")])
     colnames(Cret$sample)[ncol(Cret$sample)-(1:0)] <- c("lambda","nu")
     # Transform to mean value parametrization 
-    Cret$sample[,c("mu","sigma")] <- t(apply(Cret$sample[,c("mu","sigma")],1,cmp.to.mu,max.mu=5*mean.prior.degree))
+    Cret$sample[,c("mu","sigma")] <- t(apply(Cret$sample[,c("mu","sigma")],1,cmp.to.mu,max.mu=5*mean.prior.visibility))
     #
 #   Cret$Nk<-Cret$nk/sum(Cret$nk)
-    Cret$predictive.degree.count<-Cret$nk / samplesize
+    Cret$predictive.visibility.count<-Cret$nk / samplesize
     Cret$nk<-NULL
-    Cret$predictive.degree<-Cret$ppos
+    Cret$predictive.visibility<-Cret$ppos
     Cret$ppos<-NULL
     endrun <- burnin+interval*(samplesize-1)
     attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
@@ -103,7 +103,7 @@ likcmp<-function(s,maxN=NULL,
     Cret$MAP <- apply(Cret$sample,2,mode.density)
     Cret$MAP["N"] <- mode.density(Cret$sample[,"N"],lbound=n,ubound=prior$maxN)
 #
-#   Cret$MSE <- c(((prior$x-mean.prior.degree)^2)*prior$lprior/sum(prior$lprior),mean((Cret$sample[,"N"]-mean.prior.degree)^2))
+#   Cret$MSE <- c(((prior$x-mean.prior.visibility)^2)*prior$lprior/sum(prior$lprior),mean((Cret$sample[,"N"]-mean.prior.visibility)^2))
     Cret$maxN <- prior$maxN
     Cret$quartiles.prior.size <- prior$quartiles.prior.size
     Cret$mode.prior.size <- prior$mode.prior.size

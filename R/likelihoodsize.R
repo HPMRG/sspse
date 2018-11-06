@@ -1,6 +1,6 @@
 likelihoodsize<-function(s,
-                  mean.prior.degree=7, sd.prior.degree=3,
-                  df.mean.prior=1,df.sd.prior=5,
+                  mean.prior.visibility=7, sd.prior.visibility=3,
+                  df.mean.prior.visibility=1,df.sd.prior.visibility=5,
                   Np=0,
                   samplesize=1000,burnin=100,interval=1,burnintheta=500,
 		  priorsizedistribution=c("flat","beta","nbinom","pln"),
@@ -11,7 +11,7 @@ likelihoodsize<-function(s,
 		  quartiles.prior.size=NULL,
 		  effective.prior.df=1,
 		  alpha=NULL,
-		  degreedistribution=c("cmp","nbinom","pln"),
+		  visibilitydistribution=c("cmp","nbinom","pln"),
                   maxN=NULL,
                   K=round(stats::quantile(s,0.80)), n=length(s),
                   nk=tabulate(s,nbins=K),
@@ -20,8 +20,8 @@ likelihoodsize<-function(s,
                   parallel=1, seed=NULL, dispersion=0,
                   verbose=TRUE){
 #
-  degreedistribution=match.arg(degreedistribution)
-  posfn <- switch(degreedistribution,
+  visibilitydistribution=match.arg(visibilitydistribution)
+  posfn <- switch(visibilitydistribution,
                   nbinom=posnbinom,
                   pln=pospln,
 		  cmp=likcmp,
@@ -31,11 +31,11 @@ likelihoodsize<-function(s,
     stop("You need to specify 'mean.prior.size', and possibly 'sd.prior.size' if you use the 'nbinom' prior.") 
   }
   ### are we running the job in parallel (parallel > 1), if not just 
-  #   call the degree specific function
+  #   call the visibility specific function
   if(parallel==1){
       Cret <- posfn(s=s,K=K,nk=nk,n=n,maxN=maxN,
-                    mean.prior.degree=mean.prior.degree,df.mean.prior=df.mean.prior,
-                    sd.prior.degree=sd.prior.degree,df.sd.prior=df.sd.prior,
+                    mean.prior.visibility=mean.prior.visibility,df.mean.prior.visibility=df.mean.prior.visibility,
+                    sd.prior.visibility=sd.prior.visibility,df.sd.prior.visibility=df.sd.prior.visibility,
                     muproposal=muproposal, sigmaproposal=sigmaproposal, 
 		    Np=Np,
                     samplesize=samplesize,burnin=burnin,interval=interval,
@@ -61,8 +61,8 @@ likelihoodsize<-function(s,
     ### with it's arguments
     outlist <- parallel::clusterCall(cl, posfn,
       s=s,K=K,nk=nk,n=n,maxN=maxN,
-      mean.prior.degree=mean.prior.degree,df.mean.prior=df.mean.prior,
-      sd.prior.degree=sd.prior.degree,df.sd.prior=df.sd.prior,
+      mean.prior.visibility=mean.prior.visibility,df.mean.prior.visibility=df.mean.prior.visibility,
+      sd.prior.visibility=sd.prior.visibility,df.sd.prior.visibility=df.sd.prior.visibility,
       muproposal=muproposal, sigmaproposal=sigmaproposal, 
       Np=Np,
       samplesize=samplesize.parallel,burnin=burnin,interval=interval,
@@ -87,11 +87,11 @@ likelihoodsize<-function(s,
     for(i in (2 : Nparallel)){
      z <- outlist[[i]]
      Cret$sample <- rbind(Cret$sample,z$sample)
-     Cret$predictive.degree.count<-Cret$predictive.degree.count+z$predictive.degree.count
-     Cret$predictive.degree<-Cret$predictive.degree+z$predictive.degree
+     Cret$predictive.visibility.count<-Cret$predictive.visibility.count+z$predictive.visibility.count
+     Cret$predictive.visibility<-Cret$predictive.visibility+z$predictive.visibility
     }
-    Cret$predictive.degree.count<-Cret$predictive.degree.count/Nparallel
-    Cret$predictive.degree<-Cret$predictive.degree/Nparallel
+    Cret$predictive.visibility.count<-Cret$predictive.visibility.count/Nparallel
+    Cret$predictive.visibility<-Cret$predictive.visibility/Nparallel
     #
     degnames <- NULL
     if(Np>0){degnames <- c(degnames,paste("pdeg",1:Np,sep=""))}
@@ -99,7 +99,7 @@ likelihoodsize<-function(s,
     if(length(degnames)>0){
      colnamessample <- c(colnamessample, degnames)
     }
-    if(degreedistribution=="cmp"){
+    if(visibilitydistribution=="cmp"){
      colnamessample <- c(colnamessample, c("lambda","nu"))
     }
     colnames(Cret$sample) <- colnamessample
@@ -109,7 +109,7 @@ likelihoodsize<-function(s,
     attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
     attr(Cret$sample, "class") <- "mcmc"
     
-#   ### Remove the padding from the last draws from the populations of degrees
+#   ### Remove the padding from the last draws from the populations of visibilitys
 #   Nlastpos <- Cret$sample[nrow(Cret$sample),"N"]
 #   Cret$pop<-Cret$pop[1:Nlastpop]
 
@@ -129,10 +129,10 @@ likelihoodsize<-function(s,
 	      stats::quantile(Cret$sample[,"N"],c(0.025,0.975)))
   names(Cret$N) <- c("MAP","Mean AP","Median AP","P025","P975")
   #
-  if(Cret$predictive.degree[length(Cret$predictive.degree)] > 0.01){
-   warning("There is a non-trivial proportion of the posterior mass on very high degrees. This may indicate convergence problems in the MCMC.")
+  if(Cret$predictive.visibility[length(Cret$predictive.visibility)] > 0.01){
+   warning("There is a non-trivial proportion of the posterior mass on very high visibilitys. This may indicate convergence problems in the MCMC.")
   }
-  Cret$degreedistribution <- degreedistribution
+  Cret$visibilitydistribution <- visibilitydistribution
   Cret$priorsizedistribution <- priorsizedistribution
 # Cret$mean.prior.size <- mean.prior.size
   ### return result
