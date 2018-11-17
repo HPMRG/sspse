@@ -5,9 +5,9 @@
 \title{Plot Summary and Diagnostics for Population Size Estimation Model Fits}
 \usage{
 \method{plot}{sspse}(x, xlim = NULL, support = 1000, HPD.level = 0.9,
-  N = NULL, ylim = NULL, mcmc = FALSE, type = "both",
+  N = NULL, ylim = NULL, mcmc = FALSE, type = "all",
   main = "Posterior for population size", smooth = 4,
-  include.tree = TRUE, ...)
+  include.tree = TRUE, cex.main = 1, ...)
 }
 \arguments{
 \item{x}{an object of class \code{"plot.sspse"}, usually, a result of a call
@@ -34,13 +34,18 @@ for the MCMC sampled statistics produced from the fit.}
 
 \item{type}{character; This controls the types of plots produced.  If
 \code{"N"}, a density plot of the posterior for population size is produced.
-and the prior for population size is overlaid. If \code{"others"}, a 
-density plot of the prior for population size, a
-density plot of the posterior for mean network size in the population, the
-posterior for standard deviation of the network size, and a density plot of
-the posterior mean network size distribution with sample histogram overlaid
-is produced.  If \code{"both"}, then all plots for \code{"N"} and
-\code{"others"} are produced.}
+and the prior for population size is overlaid. If \code{"summary"}, a 
+density plot of the posterior for mean visibility in the population and
+a plot of the posterior for standard deviation of the visibility in the population.
+If \code{"visibility"}, a density plot of
+the visibility distribution (its posterior mean) and the same plot with the 
+with visibilities of those in the sample overlaid.
+If \code{"degree"}, a scatter plot of the visibilities verses the reported network sizes for 
+those in the sample.
+If \code{"prior"}, a density plot of the prior for population size is produced.
+If \code{"all"}, then all plots for \code{"N"}, \code{"summary"}, \code{"visibility"} and
+\code{"degree"} are produced.
+In all cases the visibilities are estimated (by their posterior means).}
 
 \item{main}{an overall title for the posterior plot.}
 
@@ -48,8 +53,10 @@ is produced.  If \code{"both"}, then all plots for \code{"N"} and
 
 \item{include.tree}{logical; If \code{TRUE}, 
 augment the reported network size by the number of recruits and one for the recruiter (if any).
-This reflects a more accurate value for the visibility, but is not the self-reported degree.
-In particular, it typically produces a positive visibility (compared to a possibility zero self-reported degree).}
+This reflects a more accurate value for the visibility, but is not the reported degree.
+In particular, it typically produces a positive visibility (compared to a possibility zero reported degree).}
+
+\item{cex.main}{an overall title for the posterior plot.}
 
 \item{\dots}{further arguments passed to or from other methods.}
 }

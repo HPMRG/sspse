@@ -23,7 +23,7 @@ posteriorsize(s, s2 = NULL, previous = NULL,
   nuproposal = 0.15, beta0proposal = 0.2, beta1proposal = 0.001,
   memmuproposal = 0.1, memscaleproposal = 0.15, burnintheta = 500,
   burninbeta = 50, parallel = 1, parallel.type = "PSOCK",
-  seed = NULL, maxbeta = 120, supplied = list(maxN = maxN),
+  seed = NULL, maxbeta = 90, supplied = list(maxN = maxN),
   max.coupons = NULL, recruit.time = NULL, recruit.time2 = NULL,
   include.tree = TRUE, unit.scale = FALSE, optimism = TRUE,
   reflect.time = TRUE, verbose = TRUE)

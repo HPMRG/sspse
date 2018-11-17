@@ -18,9 +18,9 @@ read the rest of the manual.
 When publishing results obtained using this package the original authors are
 to be cited as:
 
-Gile, Krista J. and Handcock, Mark S. (2014) \pkg{sspse}: Estimating Hidden 
+Gile, Krista J. and Handcock, Mark S. (2018) \pkg{sspse}: Estimating Hidden 
 Population Size using Respondent Driven Sampling Data
-R package, Los Angeles, CA.  Version 0.5, \url{http://hpmrg.org}.
+R package, Los Angeles, CA.  Version 0.8, \url{http://hpmrg.org}.
 
 All programs derived from this package must cite it. For complete citation
 information, use\cr \code{citation(package="sspse")}.
@@ -44,9 +44,9 @@ Gile, Krista J. and Handcock, Mark S. (2010) \emph{Respondent-Driven
 Sampling: An Assessment of Current Methodology}, Sociological Methodology
 40, 285-327.
 
-Gile, Krista J. and Handcock, Mark S. (2014) \pkg{sspse}: Estimating Hidden 
+Gile, Krista J. and Handcock, Mark S. (2018) \pkg{sspse}: Estimating Hidden 
 Population Size using Respondent Driven Sampling Data
-R package, Los Angeles, CA.  Version 0.5, \url{http://hpmrg.org}.
+R package, Los Angeles, CA.  Version 0.8, \url{http://hpmrg.org}.
 
 Handcock MS (2003).  \pkg{degreenet}: Models for Skewed Count Distributions
 Relevant to Networks.  Statnet Project, Seattle, WA.  Version 1.2,

@@ -421,7 +421,7 @@ posteriorsize<-function(s,
                   burnintheta=500,
                   burninbeta=50,
                   parallel=1, parallel.type="PSOCK", seed=NULL, 
-                  maxbeta=120, 
+                  maxbeta=90, 
                   supplied=list(maxN=maxN),
                   max.coupons=NULL,
                   recruit.time=NULL,recruit.time2=NULL,
@@ -446,6 +446,7 @@ posteriorsize<-function(s,
    if(is.null(K)) K=max(c(s,s2),na.rm=TRUE)
    if(is.null(n)) n=length(s)
   }else{
+  # an rds.data.frame is passed
   rds.data <- s
   n <- nrow(rds.data)
   if(is.null(attr(rds.data,"network.size.variable")))
