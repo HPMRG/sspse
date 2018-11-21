@@ -668,6 +668,30 @@ posteriorsize<-function(s,
     s.prior <- c(s.prior,s2[!rc])
   }
   priorsizedistribution=match.arg(priorsizedistribution)
+  # Extract the population size from the network if it is not set.
+  if(is.null(mode.prior.sample.proportion)
+   & is.null(median.prior.sample.proportion)
+   & is.null(median.prior.size)
+   & is.null(mean.prior.size)
+   & is.null(mode.prior.size)
+   & methods::is(s,"rds.data.frame")
+     ){
+   median.prior.size <- attr(rds.data, "population.size.mid")
+   if(methods::is(rds.data2,"rds.data.frame")){
+     if(is.null(median.prior.size)){
+      median.prior.size <- attr(rds.data2, "population.size.mid")
+     }else{
+      median.prior.size2 <- attr(rds.data2, "population.size.mid")
+      if(!is.null(median.prior.size2)){
+       median.prior.size <- 0.5*(median.prior.size+median.prior.size2)
+      }
+     }
+   }
+    if(!is.null(median.prior.size)){
+     warning(paste("The median of the prior distribution of the population size is set to", 
+		   median.prior.size), call. = FALSE)
+    }
+  }
   if(priorsizedistribution=="nbinom" && missing(mean.prior.size)){
     stop("You need to specify 'mean.prior.size', and possibly 'sd.prior.size' if you use the 'nbinom' prior.") 
   }
