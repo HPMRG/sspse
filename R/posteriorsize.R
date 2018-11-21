@@ -444,6 +444,7 @@ posteriorsize<-function(s,
   remvalues <- TRUE
   if(!methods::is(s,"rds.data.frame")){
    # a sequence is passed
+   rds.data <- NULL
    visibility <- FALSE
    if(is.null(K.fixed)) K=max(s,na.rm=TRUE)
    if(is.null(n)) n=length(s)
@@ -675,11 +676,10 @@ posteriorsize<-function(s,
   priorsizedistribution=match.arg(priorsizedistribution)
   # Extract the population size from the network if it is not set.
   if(is.null(mode.prior.sample.proportion)
-   & is.null(median.prior.sample.proportion)
    & is.null(median.prior.size)
    & is.null(mean.prior.size)
    & is.null(mode.prior.size)
-   & methods::is(s,"rds.data.frame")
+   & methods::is(rds.data,"rds.data.frame")
      ){
    median.prior.size <- attr(rds.data, "population.size.mid")
    if(methods::is(rds.data2,"rds.data.frame")){
