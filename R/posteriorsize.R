@@ -409,7 +409,7 @@ posteriorsize<-function(s,
                   mem.optimism.prior=1, df.mem.optimism.prior=5, 
                   mem.scale.prior=2, df.mem.scale.prior=20, 
                   visibility=TRUE,
-		  type.impute = c("mode","distribution","median","mean"),
+                  type.impute = c("mode","distribution","median","mean"),
                   Np=0,
                   nk=NULL,
                   n=NULL,
@@ -425,7 +425,7 @@ posteriorsize<-function(s,
                   supplied=list(maxN=maxN),
                   max.coupons=NULL,
                   recruit.time=NULL,recruit.time2=NULL,
-		  include.tree=TRUE, unit.scale=FALSE, 
+                  include.tree=TRUE, unit.scale=FALSE, 
                   optimism = TRUE,
                   reflect.time=TRUE,
                   verbose=TRUE){
@@ -436,14 +436,16 @@ posteriorsize<-function(s,
                   pln=pospln,
                   cmp=poscmp,
                   poscmp)
+  K.fixed <- K
   # If the passed "s" is an rds.rata.frame, extract out the components
   rc <- NULL
   nr <- 1
   recruit.times <- 1
   remvalues <- TRUE
   if(!methods::is(s,"rds.data.frame")){
+   # a sequence is passed
    visibility <- FALSE
-   if(is.null(K)) K=max(c(s,s2),na.rm=TRUE)
+   if(is.null(K.fixed)) K=max(s,na.rm=TRUE)
    if(is.null(n)) n=length(s)
   }else{
   # an rds.data.frame is passed
@@ -519,7 +521,7 @@ posteriorsize<-function(s,
                   "network sizes were missing. These will be imputed from the marginal distribution"), call. = FALSE)
   }
   
-  if(is.null(K)){
+  if(is.null(K.fixed)){
     if(length(network.size[!remvalues])>0){
       K <- round(stats::quantile(network.size[!remvalues],0.95))
     }
@@ -547,95 +549,98 @@ posteriorsize<-function(s,
   rds.data2 <- NULL
   if(!is.null(s2)){
   if(!methods::is(s2,"rds.data.frame")){
+   # a sequence is passed
    visibility <- FALSE
-   if(is.null(K)) K=max(c(s,s2),na.rm=TRUE)
+   if(is.null(K.fixed)) K=max(c(s,s2),na.rm=TRUE)
    if(is.null(n2)) n2=length(s2)
   }else{
-  rds.data2 <- s2
-  n2 <- nrow(rds.data2)
-  if(is.null(attr(rds.data2,"network.size.variable")))
-    stop("The second rds.data must have a network.size attribute.")
-  nr2 <- RDS::get.number.of.recruits(rds.data2)
-  nw2 <- RDS::get.wave(rds.data2)
-  ns2 <- RDS::get.seed.id(rds.data2)
-  is.seed2 <- (RDS::get.rid(rds.data2)=="seed")
-  
-  max.coupons2 <- attr(rds.data2,"max.coupons")
-  if(is.null(max.coupons2)){
-    max.coupons2 <- max(nr2,na.rm=TRUE)
-  }
-  if(length(recruit.time2)==1){
-    if(is.character(recruit.time2)){
-      if(recruit.time2=="wave"){
-        recruit.times2 <- nw2
-      }else{
-       recruit.times2 <- rds.data2[[recruit.time2]]
-       if(methods::is(recruit.times2,"POSIXt") | methods::is(recruit.times2,"Date")){
-        recruit.times2 <- as.numeric(recruit.times2) / (24*60*60)
+   # an rds.data.frame is passed
+   rds.data2 <- s2
+   n2 <- nrow(rds.data2)
+   if(is.null(attr(rds.data2,"network.size.variable"))){
+     stop("The second rds.data must have a network.size attribute.")
+   }
+   nr2 <- RDS::get.number.of.recruits(rds.data2)
+   nw2 <- RDS::get.wave(rds.data2)
+   ns2 <- RDS::get.seed.id(rds.data2)
+   is.seed2 <- (RDS::get.rid(rds.data2)=="seed")
+   
+   max.coupons2 <- attr(rds.data2,"max.coupons")
+   if(is.null(max.coupons2)){
+     max.coupons2 <- max(nr2,na.rm=TRUE)
+   }
+   if(length(recruit.time2)==1){
+     if(is.character(recruit.time2)){
+       if(recruit.time2=="wave"){
+         recruit.times2 <- nw2
        }else{
-        recruit.times2 <- as.numeric(recruit.times2)
+        recruit.times2 <- rds.data2[[recruit.time2]]
+        if(methods::is(recruit.times2,"POSIXt") | methods::is(recruit.times2,"Date")){
+         recruit.times2 <- as.numeric(recruit.times2) / (24*60*60)
+        }else{
+         recruit.times2 <- as.numeric(recruit.times2)
+        }
        }
-      }
-      recruit.time2 <- TRUE
-    }else{
-      if(is.na(recruit.time2)){
-        recruit.times2 <- rep(0,n2)
-        recruit.time2 <- FALSE
-      }else{
-        stop("The recruitment time should be a variable in the second RDS data, or 'wave' to indicate the wave number or NA/NULL to indicate that the recruitment time is not available and/or used.")
-      }
-    }
-  }else{
-    if(length(recruit.time2)==0 & is.null(recruit.time2)){
-      recruit.time2 <- 1:n2
-    }else{
-      if(length(recruit.time2)!=n2 | (!is.numeric(recruit.time2) & !methods::is(recruit.time2,"POSIXt") & !methods::is(recruit.time2,"Date"))){
-        stop("The recruitment time should be a variable in the second RDS data, or 'wave' to indicate the wave number or NA/NULL to indicate that the recruitment time is not available and/or used.")
-      }
-    }
-    if(length(recruit.time2)==n & (methods::is(recruit.time2,"POSIXt") | methods::is(recruit.time2,"Date"))){
-      recruit.times2 <- as.numeric(recruit.time2) / (24*60*60)
-    }else{
-      recruit.times2 <- recruit.time2
-    }
-    recruit.time2 <- TRUE
+       recruit.time2 <- TRUE
+     }else{
+       if(is.na(recruit.time2)){
+         recruit.times2 <- rep(0,n2)
+         recruit.time2 <- FALSE
+       }else{
+         stop("The recruitment time should be a variable in the second RDS data, or 'wave' to indicate the wave number or NA/NULL to indicate that the recruitment time is not available and/or used.")
+       }
+     }
+   }else{
+     if(length(recruit.time2)==0 & is.null(recruit.time2)){
+       recruit.time2 <- 1:n2
+     }else{
+       if(length(recruit.time2)!=n2 | (!is.numeric(recruit.time2) & !methods::is(recruit.time2,"POSIXt") & !methods::is(recruit.time2,"Date"))){
+         stop("The recruitment time should be a variable in the second RDS data, or 'wave' to indicate the wave number or NA/NULL to indicate that the recruitment time is not available and/or used.")
+       }
+     }
+     if(length(recruit.time2)==n & (methods::is(recruit.time2,"POSIXt") | methods::is(recruit.time2,"Date"))){
+       recruit.times2 <- as.numeric(recruit.time2) / (24*60*60)
+     }else{
+       recruit.times2 <- recruit.time2
+     }
+     recruit.time2 <- TRUE
+   }
+   if(any(is.na(recruit.times2))){
+     med.index <- cbind(c(2,1:(n2-1)),c(3,3:n2,n2))
+     moving.median=function(i){stats::median(recruit.times2[med.index[i,]],na.rm=TRUE)}
+     while(any(is.na(recruit.times2))){
+       for(i in which(is.na(recruit.times2))){recruit.times2[i] <- moving.median(i)}
+     }
+   }
+ # gap <- diff(sort(recruit.times))
+ # gap <- min(gap[gap > 0])
+ # recruit.times <- recruit.times + 0.01*(1:n)*gap/(n+1)
+   recruit.times2 <- recruit.times2 - min(recruit.times2)
+   if(reflect.time){
+     recruit.times2 <- max(recruit.times2)-recruit.times2
+   }
+   network.size2 <- as.numeric(rds.data2[[attr(rds.data2,"network.size.variable")]])
+   remvalues2 <- is.na(network.size2)
+   if(any(remvalues2)){
+     warning(paste(sum(remvalues2),"of",nrow(rds.data2),
+                   "network sizes were missing in the second RDS data set. These will be imputed from the marginal distribution"), call. = FALSE)
+   }
+   
+  if(is.null(K.fixed) & length(network.size2[!remvalues2])>0){
+    K <- max(K, round(stats::quantile(network.size2[!remvalues2],0.95)))
   }
-  if(any(is.na(recruit.times2))){
-    med.index <- cbind(c(2,1:(n2-1)),c(3,3:n2,n2))
-    moving.median=function(i){stats::median(recruit.times2[med.index[i,]],na.rm=TRUE)}
-    while(any(is.na(recruit.times2))){
-      for(i in which(is.na(recruit.times2))){recruit.times2[i] <- moving.median(i)}
-    }
-  }
-# gap <- diff(sort(recruit.times))
-# gap <- min(gap[gap > 0])
-# recruit.times <- recruit.times + 0.01*(1:n)*gap/(n+1)
-  recruit.times2 <- recruit.times2 - min(recruit.times2)
-  if(reflect.time){
-    recruit.times2 <- max(recruit.times2)-recruit.times2
-  }
-  network.size2 <- as.numeric(rds.data2[[attr(rds.data2,"network.size.variable")]])
-  remvalues2 <- is.na(network.size2)
-  if(any(remvalues2)){
-    warning(paste(sum(remvalues2),"of",nrow(rds.data2),
-                  "network sizes were missing in the second RDS data set. These will be imputed from the marginal distribution"), call. = FALSE)
-  }
-  
- if(length(network.size2[!remvalues2])>0){
-   K <- max(K, round(stats::quantile(network.size2[!remvalues2],0.95)))
- }
-  
-  #Augment the reported network size by the number of recruits and the recruiter (if any).
-  if(include.tree){
-    nsize2 <- pmax(network.size2,nr2+!is.seed2)
-  }else{
-    nsize2 <- network.size2
-  }
-  
-  gmean <- HT.estimate(RDS::vh.weights(nsize2[!is.na(nsize2)]),nsize2[!is.na(nsize2)])
-  if(is.na(gmean)) gmean <- 38
-  
-  s2 <- nsize2
+   
+   #Augment the reported network size by the number of recruits and the recruiter (if any).
+   if(include.tree){
+     nsize2 <- pmax(network.size2,nr2+!is.seed2)
+   }else{
+     nsize2 <- network.size2
+   }
+   
+   gmean <- HT.estimate(RDS::vh.weights(nsize2[!is.na(nsize2)]),nsize2[!is.na(nsize2)])
+   if(is.na(gmean)) gmean <- 38
+   
+   s2 <- nsize2
   }}
   # End of measurement model information extraction for the second survey
   # End of measurement model information extraction
@@ -689,13 +694,13 @@ posteriorsize<-function(s,
    }
     if(!is.null(median.prior.size)){
      warning(paste("The median of the prior distribution of the population size is set to", 
-		   median.prior.size), call. = FALSE)
+                    median.prior.size), call. = FALSE)
     }
   }
   if(priorsizedistribution=="nbinom" && missing(mean.prior.size)){
     stop("You need to specify 'mean.prior.size', and possibly 'sd.prior.size' if you use the 'nbinom' prior.") 
   }
-  if(is.null(K)){
+  if(is.null(K.fixed)){
     K=round(stats::quantile(s.prior,0.90))+1
     degs <- s.prior
     degs[degs>K] <- K
@@ -722,6 +727,7 @@ posteriorsize<-function(s,
     K=(0:max(s.prior))[which.max(cumsum(y)>0.99)]
 #   K=round(stats::quantile(s,0.99))
   }
+  if(!is.null(K.fixed)){K <- K.fixed}
   cat(sprintf("The cap on influence of the personal network size is K = %d.\n",K))
   if(is.null(mean.prior.visibility)){
     degs <- s.prior
