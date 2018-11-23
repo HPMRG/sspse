@@ -93,7 +93,8 @@ impute.visibility <-function(rds.data,max.coupons=NULL,
                   verbose=TRUE)
 
   if(verbose){
-    print(summary(fit))
+#   print(summary(fit))
+    print(prettyNum(apply(fit$sample,2,median)[-1],digits=2))
   }
   
   return(round(fit$visibilities))

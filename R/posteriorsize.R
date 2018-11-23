@@ -924,7 +924,8 @@ posteriorsize<-function(s,
     stop(paste('You must specify a valid type.impute. The valid types are "distribution","mode","median", and "mean"'), call.=FALSE)
   }
   if(visibility){
-    Cret$visibilities <- switch(type.impute, 
+    visibilities <- rep(0,length=nrow(rds.data))
+    visibilities[!remvalues] <- switch(type.impute, 
                `distribution` = {
                  Cret$pop[1:Cret$n1]
                },
@@ -939,6 +940,43 @@ posteriorsize<-function(s,
                }
     )
   }
+  # impute the missing values
+  if(sum(remvalues) > 0){
+   for(i in seq_along(recruit.times[remvalues])){
+    mf <- (recruit.times[remvalues])[i] == recruit.times[!remvalues] & (nr[remvalues])[i] == nr[!remvalues]
+    if(length(mf) > 0){
+     mf <- matrix(Cret$vsample[,mf],ncol=1)
+    }else{
+     mf <- (recruit.times[remvalues])[i] == recruit.times[!remvalues]
+     if(length(mf) > 0){
+      mf <- matrix(Cret$vsample[,mf],ncol=1)
+     }else{
+      mf <- (nr[remvalues])[i] == nr[!remvalues]
+      if(length(mf) > 0){
+       mf <- matrix(Cret$vsample[,mf],ncol=1)
+      }else{
+       mf <- matrix(Cret$vsample,ncol=1)
+      }
+     }
+    }
+    visibilities[which(remvalues)[i]] <- switch(type.impute, 
+               `distribution` = {
+                 mf[sample_int(1,size=length(mf))]
+               },
+               `mode` = {
+                 apply(mf,2,function(x){a <- tabulate(x);mean(which(a==max(a,na.rm=TRUE)))})
+               },
+               `median` = {
+                 apply(mf,2,stats::median)
+               },
+               `mean` = {
+                 apply(mf,2,mean)
+               }
+    )
+   }
+  }
+  Cret$visibilities <- visibilities
+
 # Cret$mean.prior.size <- mean.prior.size
   Cret$data <- rds.data
   Cret$data2 <- rds.data2
