@@ -627,9 +627,9 @@ posteriorsize<-function(s,
                    "network sizes were missing in the second RDS data set. These will be imputed from the marginal distribution"), call. = FALSE)
    }
    
-  if(is.null(K.fixed) & length(network.size2[!remvalues2])>0){
-    K <- max(K, round(stats::quantile(network.size2[!remvalues2],0.95)))
-  }
+   if(is.null(K.fixed) & length(network.size2[!remvalues2])>0){
+     K <- max(K, round(stats::quantile(network.size2[!remvalues2],0.95)))
+   }
    
    #Augment the reported network size by the number of recruits and the recruiter (if any).
    if(include.tree){
@@ -700,7 +700,8 @@ posteriorsize<-function(s,
   if(priorsizedistribution=="nbinom" && missing(mean.prior.size)){
     stop("You need to specify 'mean.prior.size', and possibly 'sd.prior.size' if you use the 'nbinom' prior.") 
   }
-  if(is.null(K.fixed)){
+  if(is.null(K.fixed) & visibility){
+    cat(sprintf("Initial cap on influence of the visibility is K = %d.\n",K))
     K=round(stats::quantile(s.prior,0.90))+1
     degs <- s.prior
     degs[degs>K] <- K
@@ -938,44 +939,44 @@ posteriorsize<-function(s,
                `mean` = {
                  apply(Cret$vsample,2,mean)
                }
-    )
-  }
-  # impute the missing values
-  if(sum(remvalues) > 0){
-   for(i in seq_along(recruit.times[remvalues])){
-    mf <- (recruit.times[remvalues])[i] == recruit.times[!remvalues] & (nr[remvalues])[i] == nr[!remvalues]
-    if(length(mf) > 0){
-     mf <- matrix(Cret$vsample[,mf],ncol=1)
-    }else{
-     mf <- (recruit.times[remvalues])[i] == recruit.times[!remvalues]
-     if(length(mf) > 0){
-      mf <- matrix(Cret$vsample[,mf],ncol=1)
-     }else{
-      mf <- (nr[remvalues])[i] == nr[!remvalues]
+              )
+    # impute the missing values
+    if(sum(remvalues) > 0){
+     for(i in seq_along(recruit.times[remvalues])){
+      mf <- (recruit.times[remvalues])[i] == recruit.times[!remvalues] & (nr[remvalues])[i] == nr[!remvalues]
       if(length(mf) > 0){
        mf <- matrix(Cret$vsample[,mf],ncol=1)
       }else{
-       mf <- matrix(Cret$vsample,ncol=1)
+       mf <- (recruit.times[remvalues])[i] == recruit.times[!remvalues]
+       if(length(mf) > 0){
+        mf <- matrix(Cret$vsample[,mf],ncol=1)
+       }else{
+        mf <- (nr[remvalues])[i] == nr[!remvalues]
+        if(length(mf) > 0){
+         mf <- matrix(Cret$vsample[,mf],ncol=1)
+        }else{
+         mf <- matrix(Cret$vsample,ncol=1)
+        }
+       }
       }
-     }
+      visibilities[which(remvalues)[i]] <- switch(type.impute, 
+                   `distribution` = {
+                     mf[sample_int(1,size=length(mf))]
+                   },
+                   `mode` = {
+                     apply(mf,2,function(x){a <- tabulate(x);mean(which(a==max(a,na.rm=TRUE)))})
+                   },
+                   `median` = {
+                     apply(mf,2,stats::median)
+                   },
+                   `mean` = {
+                     apply(mf,2,mean)
+                   }
+                 )
+      }
     }
-    visibilities[which(remvalues)[i]] <- switch(type.impute, 
-               `distribution` = {
-                 mf[sample_int(1,size=length(mf))]
-               },
-               `mode` = {
-                 apply(mf,2,function(x){a <- tabulate(x);mean(which(a==max(a,na.rm=TRUE)))})
-               },
-               `median` = {
-                 apply(mf,2,stats::median)
-               },
-               `mean` = {
-                 apply(mf,2,mean)
-               }
-    )
-   }
+    Cret$visibilities <- visibilities
   }
-  Cret$visibilities <- visibilities
 
 # Cret$mean.prior.size <- mean.prior.size
   Cret$data <- rds.data

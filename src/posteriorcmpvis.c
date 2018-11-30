@@ -9,31 +9,31 @@
 #include <math.h>
 
 void gcmpvis (int *pop,
-            int *nk, 
-            int *K, 
-            int *n, 
+            int *nk,
+            int *K,
+            int *n,
             int *samplesize, int *burnin, int *interval,
-            double *mu, double *dfmu, 
+            double *mu, double *dfmu,
             double *sigma, double *dfsigma,
-	    double *lnlam, double *nu,
-            double *beta0muprior, double *beta0sigmaprior, 
-            double *beta1muprior, double *beta1sigmaprior, 
+            double *lnlam, double *nu,
+            double *beta0muprior, double *beta0sigmaprior,
+            double *beta1muprior, double *beta1sigmaprior,
             double *lmemmu, double *memdfmu,
             double *memnu, double *memdfnu,
             int *Npi,
-            int *srd, 
-            int *numrec, 
+            int *srd,
+            int *numrec,
             double *rectime,
             int *maxcoupons,
-            double *lnlamproposal, 
-            double *nuproposal, 
-            double *beta0proposal, double *beta1proposal, 
+            double *lnlamproposal,
+            double *nuproposal,
+            double *beta0proposal, double *beta1proposal,
             double *lmemmuproposal, double *memnuproposal,
-            int *N, int *maxN, 
-            double *sample, 
-            int *vsample, 
-            double *ppos, 
-            double *lpriorm, 
+            int *N, int *maxN,
+            double *sample,
+            int *vsample,
+            double *ppos,
+            double *lpriorm,
             int *burnintheta,
             int *burninbeta,
             int *verbose
@@ -260,7 +260,7 @@ void gcmpvis (int *pop,
 //if(j==6) Rprintf("\n");
 //if(j==6)Rprintf("beta0i %f beta1i %f lmemmui %f memnui %f rtprob %f pd[Ki-1] %f\n", beta0i,beta1i,lmemmui,memnui,rtprob,pd[Ki-1]);
       if(pd[Ki-1]<0.00000000001){
-       Rprintf("fixed bad pd[Ki-1] %f\n", pd[Ki-1]);
+//     Rprintf("fixed bad pd[Ki-1] %f\n", pd[Ki-1]);
        for (i=0; i<Ki; i++){
         pd[i]=pi[i];
        }
@@ -279,7 +279,7 @@ void gcmpvis (int *pop,
       nk[sizei-1]=nk[sizei-1]+1;
       d[j]=sizei;
 
-      if(d[j] < numrec[j]) Rprintf("Warning: j %d d[j] %d numrec[j] %d maxc %d: %f %f %f %f\n",j,d[j],numrec[j],maxc,pd[0],pd[1],pd[2],pd[3]);
+//    if(d[j] < numrec[j]) Rprintf("Warning: j %d d[j] %d numrec[j] %d maxc %d: %f %f %f %f\n",j,d[j],numrec[j],maxc,pd[0],pd[1],pd[2],pd[3]);
 //Rprintf("j %d dis %d sizei %d pd[Ki-1] %f\n", j, ddis, sizei, pd[Ki-1]);
      } 
      // Rebuild b
@@ -374,7 +374,7 @@ void gcmpvis (int *pop,
       Nd=(double)Ni;
       sample[isamp*dimsample  ]=Nd;
 //if(nui > 4.0 || lnlami > 4.5) Rprintf("sample: %f %f\n", lnlami,nui);
-// Rprintf("sample: %f %f\n", lnlami,nui);
+// Rprintf("sample: step %d %f %f %d %d %d\n", step, lnlami,nui,Np,isamp*dimsample+8,isamp*ni+ni-1);
       sample[isamp*dimsample+1]=mui;
       sample[isamp*dimsample+2]=sigmai;
       sample[isamp*dimsample+3]=(double)(Nk[0]);
@@ -411,6 +411,7 @@ void gcmpvis (int *pop,
   for (i=0; i<ni; i++){
      pop[i]=d[i];
   }
+ // Rprintf("ni %d Ki %d\n", ni, Ki);
   PutRNGstate();  /* Disable RNG before returning */
   free(pi);
   free(pd);

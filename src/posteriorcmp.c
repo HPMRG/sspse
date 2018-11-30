@@ -9,20 +9,20 @@
 #include <math.h>
 
 void gcmp (int *pop,
-            int *nk, 
-            int *K, 
-            int *n, 
+            int *nk,
+            int *K,
+            int *n,
             int *samplesize, int *burnin, int *interval,
-            double *mu, double *dfmu, 
+            double *mu, double *dfmu,
             double *sigma, double *dfsigma,
-            double *lnlam, double *nu, 
+            double *lnlam, double *nu,
             int *Npi,
-            double *lnlamproposal, 
-            double *nuproposal, 
-            int *N, int *maxN, 
-            double *sample, 
-            double *ppos, 
-            double *lpriorm, 
+            double *lnlamproposal,
+            double *nuproposal,
+            int *N, int *maxN,
+            double *sample,
+            double *ppos,
+            double *lpriorm,
             int *burnintheta,
             int *verbose
                          ) {
@@ -31,7 +31,6 @@ void gcmp (int *pop,
   int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
   double mui, sigmai, lnlami, nui, dsamp;
   double sigma2i;
-  double dmu, dsigma;
   int tU, sizei, imaxN, imaxm, give_log0=0, give_log1=1;
   double r, gammart, pis, Nd;
   double temp;
@@ -48,8 +47,6 @@ void gcmp (int *pop,
   iinterval=(*interval);
   iburnin=(*burnin);
   Np=(*Npi);
-  dsigma=(*sigma);
-  dmu=(*mu);
 
   dimsample=5+Np;
 
@@ -80,8 +77,8 @@ void gcmp (int *pop,
   }
   tU=0;
   for (i=ni; i<Ni; i++){
-    pop[i]=pop[(int)trunc(10*unif_rand()+ni-10)];
-    tU+=pop[i];
+    pop[i]=d[(int)trunc(10*unif_rand()+ni-10)];
+    tU+=d[i];
   }
   /* Draw initial phis */
   r=0.;
@@ -107,12 +104,12 @@ void gcmp (int *pop,
        lnlamsample, nusample, &getone, &staken, burnintheta, &intervalone, 
        &verboseMHcmp);
 
+     lnlami=lnlamsample[0];
+     nui=nusample[0];
+
      for (i=0; i<Np; i++){
       pdegi[i] = psample[i];
      }
-     lnlami=lnlamsample[0];
-     nui=nusample[0];
-//if(nui > 4.0 || lnlami > 4.5) Rprintf("lnlami %f nui %f dfmu %f\n", lnlami, nui, (*dfmu));
     }
 
     /* Compute the unit distribution (given the new theta = (lnlam, nu)) */

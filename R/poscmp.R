@@ -38,9 +38,11 @@ poscmp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
     #
     # Cap the maximum visibility to K
     #
-    s[s>K] <- K
-    if(is.null(nk)){nk=tabulate(s,nbins=K)}
-    if(!is.null(s2)) s2[s2>K] <- K
+    # s[s>K] <- K
+    if(is.null(nk)){nk=tabulate(s);nk <- c(nk[1:(K-1)],sum(nk[K:length(nk)]))}
+#print((nk))
+#print(sum(nk))
+    #if(!is.null(s2)) s2[s2>K] <- K
     #
     # Transform observed mean parametrization to log-normal
     # parametrization
@@ -81,6 +83,7 @@ poscmp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
                   verbose=verbose)
     if(!is.null(s2)){
      if(visibility){
+      cat(sprintf("Using Capture-recapture measurement error model with K = %d.\n",K))
       Cret <- .C("gcmpvis2",
               pop12=as.integer(c(s, s2[!rc], rep(0,prior$maxN-length(s)-length(s2[!rc])))),
               pop21=as.integer(c(s2,sum(s)-sum(s2[rc]), rep(0,prior$maxN-length(s2)-1))),
@@ -123,6 +126,7 @@ poscmp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
               burninbeta=as.integer(burninbeta),
               verbose=as.integer(verbose), PACKAGE="sspse")
      }else{
+      cat(sprintf("Using Capture-recapture non-measurement error model with K = %d.\n",K))
       Cret <- .C("gcmp2",
               pop12=as.integer(c(s, s2[!rc], rep(0,prior$maxN-length(s)-length(s2[!rc])))),
               pop21=as.integer(c(s2,sum(s)-sum(s2[rc]), rep(0,prior$maxN-length(s2)-1))),
@@ -150,6 +154,7 @@ poscmp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
      }
     }else{
      if(visibility){
+      cat(sprintf("Using measurement error model with K = %d.\n",K))
       Cret <- .C("gcmpvis",
               pop=as.integer(c(s,rep(0,prior$maxN-n1))),
               nk=as.integer(nk),
@@ -184,6 +189,7 @@ poscmp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
               burninbeta=as.integer(burninbeta),
               verbose=as.integer(verbose), PACKAGE="sspse")
      }else{
+      cat(sprintf("Using non-measurement error model with K = %d.\n",K))
       Cret <- .C("gcmp",
               pop=as.integer(c(s,rep(0,prior$maxN-n1))),
               nk=as.integer(nk),
