@@ -448,7 +448,8 @@ dsizeprior<-function(n,
       quartiles.prior.size[1] <-   (maxN+n)/4
       quartiles.prior.size[2] <- 3*(maxN+n)/4
      }
-    if(is.null(N)){N <- mean(x)}
+#   if(is.null(N)){N <- mean(x)}
+    N <- round(min(maxN/2,median.prior.size))
     if(verbose){cat(paste("The maximum prior population size is",maxN,"\n"))}
     out <- list(x=x,lprior=lpriorm,N=N,maxN=maxN,
          median.prior.size=median.prior.size,
