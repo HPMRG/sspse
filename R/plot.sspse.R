@@ -109,6 +109,10 @@ plot.sspse <- function(x,
   for(arg in names(p.args)){ control[arg]<-list(get(arg)) }
 
 out <- x$sample
+# Remove NaN and NA by replacing with the minimum value
+out <- apply(out,2,function(x){x[is.na(x)] <- min(x,na.rm=TRUE);x})
+attr(out,"mcpar") <- attr(x$sample,"mcpar")
+attr(out,"class") <- attr(x$sample,"class")
 # sabline <- function(v,...){graphics::segments(x0=v,...,y0=control$ylim[1],y1=control$ylim[2])}
 sabline <- function(v,...){graphics::segments(x0=v,...,y0=graphics::par("usr")[3],y1=graphics::par("usr")[4])}
 if(!is.null(out) & control$mcmc){
@@ -254,7 +258,8 @@ if(control$type %in% c("visibility","degree","all")){
   
    if(control$type %in% c("degree","all")){
     if(methods::is(x$data,"rds.data.frame") & !is.null(x$visibilities)){
-     nplot <- min(nrow(x$vsample),200)
+#    nplot <- min(nrow(x$vsample),200)
+     nplot <- ceiling(max(2000 / length(network.size), 1))
      dat <- data.frame(x=rep(network.size,rep(nplot,length(network.size))), y=as.vector(x$vsample[1:nplot,1:length(network.size)]))
      gfit <- scam::scam(y ~ s(x, bs="mpi"), family=poisson(link=log), data=dat)
      pfit <- predict(gfit, newdata=list(x=1:max(network.size,na.rm=TRUE)), type="response", se.fit=FALSE)
