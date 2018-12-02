@@ -108,7 +108,7 @@
 #' (returned in the component \code{visibilities}. The imputes are based on the posterior 
 #' draws of the visibilities. 
 #' It can be of type \code{distribution}, \code{mode},\code{median}, or \code{mean} 
-#' with \code{mode} the default, being the posterior mode of the visibility for that person.
+#' with \code{median} the default, being the posterior median of the visibility for that person.
 #' @param Np integer; The overall visibility distribution is a mixture of the
 #' \code{Np} rates for \code{1:Np} and a parametric visibility distribution model
 #' truncated below \code{Np}. Thus the model fits the proportions of the
@@ -391,7 +391,7 @@ posteriorsize<-function(s,
                   interval=10,
                   burnin=5000,
                   maxN=NULL,
-                  K=NULL,
+                  K=FALSE,
                   samplesize=1000,
                   quartiles.prior.size=NULL,
                   mean.prior.size=NULL,
@@ -409,7 +409,7 @@ posteriorsize<-function(s,
                   mem.optimism.prior=1, df.mem.optimism.prior=5, 
                   mem.scale.prior=2, df.mem.scale.prior=20, 
                   visibility=TRUE,
-                  type.impute = c("mode","distribution","median","mean"),
+                  type.impute = c("median","distribution","mode","mean"),
                   Np=0,
                   nk=NULL,
                   n=NULL,
@@ -522,9 +522,17 @@ posteriorsize<-function(s,
                   "network sizes were missing. These will be imputed from the marginal distribution"), call. = FALSE)
   }
   
+  if(!is.null(K) & is.logical(K) & (K==FALSE)){
+   if(visibility){
+    K.fixed <- max(network.size[!remvalues])
+   }else{
+    K.fixed <- NULL
+   }
+  }
   if(is.null(K.fixed)){
     if(length(network.size[!remvalues])>0){
-      K <- round(stats::quantile(network.size[!remvalues],0.95))
+#     K <- round(stats::quantile(network.size[!remvalues],0.95))
+      K <- round(stats::quantile(network.size[!remvalues],0.99))
     }
   }
   
@@ -627,6 +635,13 @@ posteriorsize<-function(s,
                    "network sizes were missing in the second RDS data set. These will be imputed from the marginal distribution"), call. = FALSE)
    }
    
+   if(!is.null(K) & is.logical(K) & (K==FALSE)){
+    if(visibility){
+     K.fixed <- max(network.size2[!remvalues2])
+    }else{
+     K.fixed <- NULL
+    }
+   }
    if(is.null(K.fixed) & length(network.size2[!remvalues2])>0){
      K <- max(K, round(stats::quantile(network.size2[!remvalues2],0.95)))
    }
@@ -918,9 +933,9 @@ posteriorsize<-function(s,
   Cret$visibilitydistribution <- visibilitydistribution
   Cret$priorsizedistribution <- priorsizedistribution
   #
-  if(missing(type.impute)){type.impute <- "mode"}
+  if(missing(type.impute)){type.impute <- "median"}
   type.impute <- match.arg(type.impute,
-                           c("mode","distribution","median","mean"))
+                           c("median","distribution","mode","mean"))
   if(is.na(type.impute)) { # User typed an unrecognizable name
     stop(paste('You must specify a valid type.impute. The valid types are "distribution","mode","median", and "mean"'), call.=FALSE)
   }

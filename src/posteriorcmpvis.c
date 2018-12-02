@@ -92,8 +92,8 @@ void gcmpvis (int *pop,
 
   for (i=0; i<ni; i++){
     if((pop[i]>0) && (pop[i] <= Ki)){ d[i]=pop[i];}
-    if(pop[i]==0){ d[i]=1;}
-    if(pop[i]>Ki){ d[i]=Ki;}
+    if( pop[i]==0){ d[i]=1;}
+    if( pop[i]>Ki){ d[i]=Ki;}
   }
   b[ni-1]=d[ni-1];
   for (i=(ni-2); i>=0; i--){
