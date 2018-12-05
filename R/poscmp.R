@@ -39,7 +39,12 @@ poscmp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
     # Cap the maximum visibility to K
     #
     # s[s>K] <- K
-    if(is.null(nk)){nk=tabulate(s);nk <- c(nk[1:(K-1)],sum(nk[K:length(nk)]))}
+    if(is.null(nk)){
+      nk=tabulate(s,nbins=max(K,s))
+      if(length(nk) > K){
+       nk <- c(nk[1:(K-1)],sum(nk[K:length(nk)]))
+      }
+    }
 #print((nk))
 #print(sum(nk))
     #if(!is.null(s2)) s2[s2>K] <- K
