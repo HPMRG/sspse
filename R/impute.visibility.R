@@ -38,8 +38,9 @@
 #' under-dispersed and values over one mean over-dispersed). The default is \code{cmp}.
 #' @param reflect.time logical; If \code{FALSE} then the \code{recruit.time} is the time before the 
 #' end of the study (instead of the time since the survey started or chronological time).
-#' @param K integer; The maximum degree. All self-reported degrees above this are recorded as being at least K.
-#' By default it is the 95th percentile of the self-reported network sizes.
+#' @param K count; the maximum visibility for an individual. This is usually
+#' calculated as \code{round(stats::quantile(s,0.80))}. It applies to network sizes and (latent) visibilities.
+#' If logical and FALSE then the K is unbounded but set to compute the visibilities.
 #' @param parallel count; the number of parallel processes to run for the
 #' Monte-Carlo sample.  This uses MPI or PSOCK. The default is 1, that is not to
 #' use parallel processing.
@@ -70,7 +71,7 @@ impute.visibility <-function(rds.data,max.coupons=NULL,
                              type.impute = c("median","distribution","mode","mean"),
                              recruit.time=NULL,include.tree=FALSE, unit.scale=NULL, 
                              reflect.time=TRUE,
-                             K=NULL,
+                             K=FALSE,
                              parallel=1, parallel.type="PSOCK",
                              interval=10,
                              burnin=5000,

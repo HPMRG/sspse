@@ -29,7 +29,8 @@
 #' @param maxN integer; maximum possible population size. By default this is
 #' determined from an upper quantile of the prior distribution.
 #' @param K count; the maximum visibility for an individual. This is usually
-#' calculated as \code{round(stats::quantile(s,0.80))}. Applies to network sizes and (latent) visibilities.
+#' calculated as \code{round(stats::quantile(s,0.80))}. It applies to network sizes and (latent) visibilities.
+#' If logical and FALSE then the K is unbounded but set to compute the visibilities.
 #' @param samplesize count; the number of Monte-Carlo samples to draw to
 #' compute the posterior. This is the number returned by the
 #' Metropolis-Hastings algorithm.The default is 1000.
