@@ -6,7 +6,7 @@
 \usage{
 posteriorsize(s, s2 = NULL, previous = NULL,
   median.prior.size = NULL, interval = 10, burnin = 5000,
-  maxN = NULL, K = NULL, samplesize = 1000,
+  maxN = NULL, K = FALSE, samplesize = 1000,
   quartiles.prior.size = NULL, mean.prior.size = NULL,
   mode.prior.size = NULL, priorsizedistribution = c("beta", "flat",
   "nbinom", "pln", "supplied"), effective.prior.df = 1,
@@ -18,7 +18,7 @@ posteriorsize(s, s2 = NULL, previous = NULL,
   beta1.mean.prior = 0, beta0.sd.prior = 10, beta1.sd.prior = 10,
   mem.optimism.prior = 1, df.mem.optimism.prior = 5,
   mem.scale.prior = 2, df.mem.scale.prior = 20, visibility = TRUE,
-  type.impute = c("mode", "distribution", "median", "mean"), Np = 0,
+  type.impute = c("median", "distribution", "mode", "mean"), Np = 0,
   nk = NULL, n = NULL, n2 = NULL, muproposal = 0.1,
   nuproposal = 0.15, beta0proposal = 0.2, beta1proposal = 0.001,
   memmuproposal = 0.1, memscaleproposal = 0.15, burnintheta = 500,
@@ -58,7 +58,8 @@ done. It typically is set to a fairly large number.}
 determined from an upper quantile of the prior distribution.}
 
 \item{K}{count; the maximum visibility for an individual. This is usually
-calculated as \code{round(stats::quantile(s,0.80))}. Applies to network sizes and (latent) visibilities.}
+calculated as \code{round(stats::quantile(s,0.80))}. It applies to network sizes and (latent) visibilities.
+If logical and FALSE then the K is unbounded but set to compute the visibilities.}
 
 \item{samplesize}{count; the number of Monte-Carlo samples to draw to
 compute the posterior. This is the number returned by the
@@ -162,7 +163,7 @@ need to be passed to provide the RDS information needed for the measurement erro
 (returned in the component \code{visibilities}. The imputes are based on the posterior 
 draws of the visibilities. 
 It can be of type \code{distribution}, \code{mode},\code{median}, or \code{mean} 
-with \code{mode} the default, being the posterior mode of the visibility for that person.}
+with \code{median} the default, being the posterior median of the visibility for that person.}
 
 \item{Np}{integer; The overall visibility distribution is a mixture of the
 \code{Np} rates for \code{1:Np} and a parametric visibility distribution model
