@@ -103,24 +103,24 @@ void gcmpvis2 (int *pop12, int *pop21,
   double *lmemmusample = (double *) malloc(sizeof(double));
   double *memnusample = (double *) malloc(sizeof(double));
 
+  for (i=0; i<Ki; i++){
+    nk[i]=0;
+  }
   for (i=0; i<imaxN; i++){
     d1[i]=0;
     d2[i]=0;
   }
-  itemp=0;
-  for (i=0; i<(ni1+ni0); i++){
+  for (i=0; i<ni; i++){
     if((pop12[i]>0) && (pop12[i] <= Ki)){ d1[i]=pop12[i];}
     if(pop12[i]==0){ d1[i]=1;}
     if(pop12[i]>Ki){ d1[i]=Ki;}
-    itemp+=d1[i];
+    nk[d1[i]-1]=nk[d1[i]-1]+1;
   }
-  for (i=0; i<ni2; i++){
+  for (i=0; i<(ni2+1); i++){
     if((pop21[i]>0) && (pop21[i] <= Ki)){ d2[i]=pop21[i];}
     if(pop21[i]==0){ d2[i]=1;}
     if(pop21[i]>Ki){ d2[i]=Ki;}
-    itemp-=d2[i];
   }
-  d2[ni2]=itemp;
   b1[ni1-1]=d1[ni1-1];
   for (i=(ni1-2); i>=0; i--){
     b1[i]=b1[i+1]+d1[i];
@@ -389,20 +389,20 @@ void gcmpvis2 (int *pop12, int *pop21,
       for (sizei=1; sizei<=Ki; sizei++){
         if(temp <= pd[sizei-1]) break;
       }
-//    nk2[sizei-1]=nk2[sizei-1]+1;
       d2[j]=sizei;
       if(rc[j]==0){
+        nk[sizei-1]=nk[sizei-1]+1;
         d1[ni1 + itemp]=sizei;
         itemp++;
       }
 //Rprintf("j %d dis %d sizei %d pd[Ki-1] %f\n", j, ddis, sizei, pd[Ki-1]);
      } 
      itemp=0;
-     for (i=0; i<(ni1+ni0); i++){
+     for (i=0; i<ni1; i++){
        itemp+=d1[i];
      }
      for (i=0; i<ni2; i++){
-       itemp-=d2[i];
+       if(rc[i]!=0) itemp-=d2[i];
      }
      d2[ni2]=itemp;
      // Rebuild b2

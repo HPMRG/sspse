@@ -1,5 +1,5 @@
 poscmp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
-                  K=2*max(c(s,s2)), nk=NULL, n=length(s), n2=length(s2),
+                  K=2*max(c(s,s2)), n=length(s), n2=length(s2),
                   mean.prior.visibility=7, sd.prior.visibility=3,
                   df.mean.prior.visibility=1, df.sd.prior.visibility=5,
                   beta0.mean.prior=-3, beta1.mean.prior=0,
@@ -39,15 +39,6 @@ poscmp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
     # Cap the maximum visibility to K
     #
     # s[s>K] <- K
-    if(is.null(nk)){
-      nk=tabulate(s,nbins=max(K,s))
-      if(length(nk) > K){
-       nk <- c(nk[1:(K-1)],sum(nk[K:length(nk)]))
-      }
-    }
-#print((nk))
-#print(sum(nk))
-    #if(!is.null(s2)) s2[s2>K] <- K
     #
     # Transform observed mean parametrization to log-normal
     # parametrization
@@ -89,6 +80,7 @@ poscmp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
     if(!is.null(s2)){
      if(visibility){
       cat(sprintf("Using Capture-recapture measurement error model with K = %d.\n",K))
+      nk=tabulate(c(s,s2[!rc]),nbins=K)
       Cret <- .C("gcmpvis2",
               pop12=as.integer(c(s, s2[!rc], rep(0,prior$maxN-length(s)-length(s2[!rc])))),
               pop21=as.integer(c(s2,sum(s)-sum(s2[rc]), rep(0,prior$maxN-length(s2)-1))),
@@ -132,6 +124,11 @@ poscmp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
               verbose=as.integer(verbose), PACKAGE="sspse")
      }else{
       cat(sprintf("Using Capture-recapture non-measurement error model with K = %d.\n",K))
+       s[ s>K] <- K
+      s2[s2>K] <- K
+       s[ s<1] <- 1
+      s2[s2<1] <- 1
+      nk=tabulate(c(s,s2[!rc]),nbins=K)
       Cret <- .C("gcmp2",
               pop12=as.integer(c(s, s2[!rc], rep(0,prior$maxN-length(s)-length(s2[!rc])))),
               pop21=as.integer(c(s2,sum(s)-sum(s2[rc]), rep(0,prior$maxN-length(s2)-1))),
@@ -160,6 +157,7 @@ poscmp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
     }else{
      if(visibility){
       cat(sprintf("Using measurement error model with K = %d.\n",K))
+      nk=tabulate(s,nbins=K)
       Cret <- .C("gcmpvis",
               pop=as.integer(c(s,rep(0,prior$maxN-n1))),
               nk=as.integer(nk),
@@ -195,6 +193,9 @@ poscmp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
               verbose=as.integer(verbose), PACKAGE="sspse")
      }else{
       cat(sprintf("Using non-measurement error model with K = %d.\n",K))
+      s[s>K] <- K
+      s[s<1] <- 1
+      nk=tabulate(s,nbins=K)
       Cret <- .C("gcmp",
               pop=as.integer(c(s,rep(0,prior$maxN-n1))),
               nk=as.integer(nk),

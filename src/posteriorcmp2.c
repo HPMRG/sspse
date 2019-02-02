@@ -33,8 +33,8 @@ void gcmp2 (int *pop12,
   int dimsample, Np;
   int step, staken, getone=1, intervalone=1, verboseMHcmp = 0;
   int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
-  int ni1, ni2, ni0, itemp;
-  double mui, sigmai, lmui, nui, dsamp, sigma2i;
+  int ni1, ni2, ni0;
+  double mui, sigmai, lnlami, nui, dsamp, sigma2i;
   double ddfmu, ddfsigma, dnuproposal;
   int tU1, tU2, sizei, imaxN, imaxm, give_log0=0, give_log1=1;
   double r1, r2, gammart, pis, Nd;
@@ -62,7 +62,6 @@ void gcmp2 (int *pop12,
   dimsample=5+Np;
 
   double *pi = (double *) malloc(sizeof(double) * Ki);
-  double *pd = (double *) malloc(sizeof(double) * Ki);
   int *d1 = (int *) malloc(sizeof(int) * imaxN);
   int *d2 = (int *) malloc(sizeof(int) * imaxN);
   int *b1 = (int *) malloc(sizeof(int) * ni1);
@@ -72,30 +71,22 @@ void gcmp2 (int *pop12,
   double *lpm = (double *) malloc(sizeof(double) * imaxm);
   double *pdegi = (double *) malloc(sizeof(double) * (Np+1));
   double *psample = (double *) malloc(sizeof(double) * (Np+1));
-  double *musample = (double *) malloc(sizeof(double));
+  double *lnlamsample = (double *) malloc(sizeof(double));
   double *nusample = (double *) malloc(sizeof(double));
 
   for (i=0; i<imaxN; i++){
     d1[i]=0;
     d2[i]=0;
   }
-  itemp=0;
-  for (i=0; i<(ni1+ni0); i++){
-    if((pop12[i]>0) && (pop12[i] <= Ki)){ d1[i]=pop12[i];}
-    if(pop12[i]==0){ d1[i]=1;}
-    if(pop12[i]>Ki){ d1[i]=Ki;}
-    itemp+=d1[i];
+  for (i=0; i<ni; i++){
+    d1[i]=pop12[i];
   }
-  for (i=0; i<ni2; i++){
-    if((pop21[i]>0) && (pop21[i] <= Ki)){ d2[i]=pop21[i];}
-    if(pop21[i]==0){ d2[i]=1;}
-    if(pop21[i]>Ki){ d2[i]=Ki;}
-    itemp-=d2[i];
+  for (i=0; i<(ni2+1); i++){
+    d2[i]=pop21[i];
   }
   // b is the cumulative version of d, which is uobs
   // so b1 is cumulative unit sizes for first list
   // b2 is cumulative unit sizes for second list
-  d2[ni2]=itemp;
   b1[ni1-1]=d1[ni1-1];
   for (i=(ni1-2); i>=0; i--){
     b1[i]=b1[i+1]+d1[i];
@@ -134,7 +125,7 @@ void gcmp2 (int *pop12,
   for (i=0; i<Np; i++){
      psample[i] = 0.01;
   }
-  musample[0] = (*lnlam);
+  lnlamsample[0] = (*lnlam);
   nusample[0] = (*nu);
 
   isamp = 0;
@@ -145,27 +136,27 @@ void gcmp2 (int *pop12,
     if (step == -iburnin || step==(10*(step/10))) { 
      MHcmptheta(Nk,K,mu,dfmu,sigma,dfsigma,muproposal,nuproposal,
            &Ni, &Np, psample,
-	   musample, nusample, &getone, &staken, burnintheta, &intervalone, 
+	   lnlamsample, nusample, &getone, &staken, burnintheta, &intervalone, 
 	   &verboseMHcmp);
     }
 
     for (i=0; i<Np; i++){
       pdegi[i] = psample[i];
     }
-    lmui=musample[0];
+    lnlami=lnlamsample[0];
     nui=nusample[0];
-//  if(nui > 4.0 || lmui > 4.5) Rprintf("lmui %f nui %f dfmu %f\n", lmui, nui, dfmu);
+//  if(nui > 4.0 || lnlami > 4.5) Rprintf("lnlami %f nui %f dfmu %f\n", lnlami, nui, dfmu);
 
     /* Draw new N */
 
     /* First find the degree distribution */
     pis=0.;
-    lzcmp = zcmp(exp(lmui), nui, errval, Ki, give_log1);
+    lzcmp = zcmp(exp(lnlami), nui, errval, Ki, give_log1);
     if(lzcmp < -100000.0){continue;}
-    pi[Np]=cmp(Np+1,lmui,nui,lzcmp,give_log0);
-//Rprintf("lmui %f nui %f lzcmp %f pi %f\n", lmui, nui, lzcmp, pi[Np]);
+    pi[Np]=cmp(Np+1,lnlami,nui,lzcmp,give_log0);
+//Rprintf("lnlami %f nui %f lzcmp %f pi %f\n", lnlami, nui, lzcmp, pi[Np]);
     for (i=Np+1; i<Ki; i++){
-      pi[i]=pi[i-1]*exp(lmui-nui*log((double)(i+1)));
+      pi[i]=pi[i-1]*exp(lnlami-nui*log((double)(i+1)));
     }
 //  Rprintf("isamp %d pis %f\n", isamp, pis);
     pis=1.-exp(-lzcmp);
@@ -316,7 +307,6 @@ void gcmp2 (int *pop12,
   }
   PutRNGstate();  /* Disable RNG before returning */
   free(pi);
-  free(pd);
   free(d1);
   free(d2);
   free(psample);
@@ -326,6 +316,6 @@ void gcmp2 (int *pop12,
   free(Nk);
   free(Nkpos);
   free(lpm);
-  free(musample);
+  free(lnlamsample);
   free(nusample);
 }

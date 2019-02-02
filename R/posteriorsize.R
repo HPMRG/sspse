@@ -117,9 +117,6 @@
 #' should adjust for an lack-of-fit of the parametric visibility distribution model
 #' at lower visibilities, although it also changes the model away from the
 #' parametric visibility distribution model.
-#' @param nk vector; the vector of counts for the number of people in the
-#' sample with degree k. This is usually computed from \eqn{s} automatically as
-#' \code{tabulate(s,nbins=K)} and not usually specified by the user.
 #' @param n integer; the number of people in the sample. This is usually computed from
 #' \eqn{s} automatically and not usually specified by the user.
 #' @param n2 integer; If \eqn{s2} is specified, this is the number of people in the second sample. 
@@ -412,7 +409,6 @@ posteriorsize<-function(s,
                   visibility=TRUE,
                   type.impute = c("median","distribution","mode","mean"),
                   Np=0,
-                  nk=NULL,
                   n=NULL,
                   n2=NULL,
                   muproposal=0.1, 
@@ -790,7 +786,7 @@ posteriorsize<-function(s,
   ### are we running the job in parallel (parallel > 1), if not just 
   #   call the visibility specific function
   if(parallel==1){
-      Cret <- posfn(s=s,s2=s2,rc=rc,K=K,nk=nk,maxN=maxN,
+      Cret <- posfn(s=s,s2=s2,rc=rc,K=K,maxN=maxN,
                     mean.prior.visibility=mean.prior.visibility,df.mean.prior.visibility=df.mean.prior.visibility,
                     sd.prior.visibility=sd.prior.visibility,df.sd.prior.visibility=df.sd.prior.visibility,
                     beta0.mean.prior=beta0.mean.prior, beta1.mean.prior=beta1.mean.prior,
@@ -829,7 +825,7 @@ posteriorsize<-function(s,
     ### cluster call, send following to each of the virtual machines, posnbinom function
     ### with it's arguments
     outlist <- parallel::clusterCall(cl, posfn,
-      s=s,s2=s2,rc=rc,K=K,nk=nk,maxN=maxN,
+      s=s,s2=s2,rc=rc,K=K,maxN=maxN,
       mean.prior.visibility=mean.prior.visibility,df.mean.prior.visibility=df.mean.prior.visibility,
       sd.prior.visibility=sd.prior.visibility,df.sd.prior.visibility=df.sd.prior.visibility,
       beta0.mean.prior=beta0.mean.prior, beta1.mean.prior=beta1.mean.prior,

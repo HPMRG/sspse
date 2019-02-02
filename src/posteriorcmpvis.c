@@ -84,16 +84,20 @@ void gcmpvis (int *pop,
   double *pdegi = (double *) malloc(sizeof(double) * (Np+1));
   double *psample = (double *) malloc(sizeof(double) * (Np+1));
   double *lnlamsample = (double *) malloc(sizeof(double));
+  double *nusample = (double *) malloc(sizeof(double));
   double *beta0sample = (double *) malloc(sizeof(double));
   double *beta1sample = (double *) malloc(sizeof(double));
-  double *nusample = (double *) malloc(sizeof(double));
   double *lmemmusample = (double *) malloc(sizeof(double));
   double *memnusample = (double *) malloc(sizeof(double));
 
+  for (i=0; i<Ki; i++){
+    nk[i]=0;
+  }
   for (i=0; i<ni; i++){
     if((pop[i]>0) && (pop[i] <= Ki)){ d[i]=pop[i];}
     if( pop[i]==0){ d[i]=1;}
     if( pop[i]>Ki){ d[i]=Ki;}
+    nk[d[i]-1]=nk[d[i]-1]+1;
   }
   b[ni-1]=d[ni-1];
   for (i=(ni-2); i>=0; i--){
