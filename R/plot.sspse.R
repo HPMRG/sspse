@@ -108,6 +108,8 @@ plot.sspse <- function(x,
   for(arg in names.formal.args){ control[arg]<-list(get(arg)) }
   for(arg in names(p.args)){ control[arg]<-list(get(arg)) }
 
+  if(control$mcmc){control$type <- "mcmc"}
+
 out <- x$sample
 # Remove NaN and NA by replacing with the minimum value
 out <- apply(out,2,function(x){x[is.na(x)] <- min(x,na.rm=TRUE);x})
@@ -115,7 +117,7 @@ attr(out,"mcpar") <- attr(x$sample,"mcpar")
 attr(out,"class") <- attr(x$sample,"class")
 # sabline <- function(v,...){graphics::segments(x0=v,...,y0=control$ylim[1],y1=control$ylim[2])}
 sabline <- function(v,...){graphics::segments(x0=v,...,y0=graphics::par("usr")[3],y1=graphics::par("usr")[4])}
-if(!is.null(out) & control$mcmc){
+if(!is.null(out) & control$type == "mcmc"){
   mcmc.len <- min(1000, nrow(out))
   a=round(seq.int(from=1,to=nrow(out),length.out=mcmc.len))
   mcp <- attr(out,"mcpar")
