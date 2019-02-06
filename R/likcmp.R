@@ -89,7 +89,7 @@ likcmp<-function(s,maxN=NULL,
     Cret$sample <- cbind(Cret$sample,Cret$sample[,c("mu","sigma")])
     colnames(Cret$sample)[ncol(Cret$sample)-(1:0)] <- c("lambda","nu")
     # Transform to mean value parametrization 
-    Cret$sample[,c("mu","sigma")] <- t(apply(Cret$sample[,c("mu","sigma")],1,cmp.to.mu,max.mu=5*mean.prior.visibility))
+    Cret$sample[,c("mu","sigma")] <- t(apply(Cret$sample[,c("mu","sigma")],1,cmp.to.mu.sd,max.mu=5*mean.prior.visibility))
     #
 #   Cret$Nk<-Cret$nk/sum(Cret$nk)
     Cret$predictive.visibility.count<-Cret$nk / samplesize

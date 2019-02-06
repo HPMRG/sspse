@@ -75,7 +75,7 @@ priorsize<-function(s,
     xp <- length(xp)*xp/sum(xp)
     fit <- cmpmle(xv,xp,cutoff=1,cutabove=K-1,
             guess=c(mean.prior.visibility,sd.prior.visibility))
-    fit <- cmp.to.mu(fit,max.mu=5*mean.prior.visibility)
+    fit <- cmp.to.mu.sd(fit,max.mu=5*mean.prior.visibility)
     mean.prior.visibility = fit[1]
     sd.prior.visibility = fit[2]
   }

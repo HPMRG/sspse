@@ -20,7 +20,7 @@ cmp.to.natural <- function (mu,sigma,K=max(ceiling(mu+10*sigma),10),guess=NULL)
     fit = c(lambda = lambda, nu = nu, result)
     return(fit)
 }
-cmp.to.mu <- function (p,K=1000,cutoff=1,max.mu=5,force=FALSE) 
+cmp.to.mu.sd <- function (p,K=1000,cutoff=1,max.mu=5,force=FALSE) 
 {
 # converts natural to mean
 # p[1] = lambda
