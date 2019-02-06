@@ -405,7 +405,7 @@ posteriorsize<-function(s,
                   beta0.mean.prior=-3, beta1.mean.prior=0,
                   beta0.sd.prior=10, beta1.sd.prior=10,
                   mem.optimism.prior=1, df.mem.optimism.prior=5, 
-                  mem.scale.prior=2, df.mem.scale.prior=20, 
+                  mem.scale.prior=0.5, df.mem.scale.prior=20, 
                   visibility=TRUE,
                   type.impute = c("median","distribution","mode","mean"),
                   Np=0,
@@ -765,7 +765,7 @@ posteriorsize<-function(s,
     txv <- tapply(xv,xv,stats::median)
     fit <- cmpmle(txv,txp,cutoff=1,cutabove=K-1,
             guess=c(mean.prior.visibility,sd.prior.visibility))
-    fit <- cmp.to.mu(fit,max.mu=5*mean.prior.visibility,force=TRUE)
+    fit <- cmp.to.mu.sd(fit,max.mu=5*mean.prior.visibility,force=TRUE)
     if(verbose){
       cat(sprintf("The preliminary empirical value of the mean of the prior distribution for visibility is %f.\n",mean.prior.visibility))
       cat(sprintf("The preliminary empirical value of the s.d. of the prior distribution for visibility is %f.\n",sd.prior.visibility))
@@ -973,7 +973,7 @@ posteriorsize<-function(s,
       }
       visibilities[which(remvalues)[i]] <- switch(type.impute, 
                    `distribution` = {
-                     mf[sample_int(1,size=length(mf))]
+                     mf[sample.int(n=1,size=length(mf))]
                    },
                    `mode` = {
                      apply(mf,2,function(x){a <- tabulate(x);mean(which(a==max(a,na.rm=TRUE)))})

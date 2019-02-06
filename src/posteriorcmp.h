@@ -19,7 +19,6 @@
 #define rsclinvchisq(df,scale) ((scale)*(df)/(rchisq(df)))
 
 void gcmp (int *pop,
-            int *nk, 
             int *K, 
             int *n, 
             int *samplesize, int *burnin, int *interval,

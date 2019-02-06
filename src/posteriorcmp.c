@@ -9,7 +9,6 @@
 #include <math.h>
 
 void gcmp (int *pop,
-            int *nk,
             int *K,
             int *n,
             int *samplesize, int *burnin, int *interval,
@@ -53,6 +52,7 @@ void gcmp (int *pop,
   double *pi = (double *) malloc(sizeof(double) * Ki);
   int *d = (int *) malloc(sizeof(int) * ni);
   int *b = (int *) malloc(sizeof(int) * ni);
+  int *nk = (int *) malloc(sizeof(int) * Ki);
   int *Nk = (int *) malloc(sizeof(int) * Ki);
   int *Nkpos = (int *) malloc(sizeof(int) * Ki);
   double *lpm = (double *) malloc(sizeof(double) * imaxm);
@@ -61,10 +61,14 @@ void gcmp (int *pop,
   double *lnlamsample = (double *) malloc(sizeof(double));
   double *nusample = (double *) malloc(sizeof(double));
 
+  for (i=0; i<Ki; i++){
+    nk[i]=0;
+  }
   for (i=0; i<ni; i++){
     if((pop[i]>0) && (pop[i] <= Ki)){ d[i]=pop[i];}
     if(pop[i]==0){ d[i]=1;}
     if(pop[i]>Ki){ d[i]=Ki;}
+    nk[d[i]-1]=nk[d[i]-1]+1;
   }
   b[ni-1]=d[ni-1];
   for (i=(ni-2); i>=0; i--){
@@ -264,6 +268,7 @@ void gcmp (int *pop,
   free(pdegi);
   free(b);
   free(Nk);
+  free(nk);
   free(Nkpos);
   free(lpm);
   free(lnlamsample);

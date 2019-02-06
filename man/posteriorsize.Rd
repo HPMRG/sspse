@@ -19,14 +19,14 @@ posteriorsize(s, s2 = NULL, previous = NULL,
   mem.optimism.prior = 1, df.mem.optimism.prior = 5,
   mem.scale.prior = 2, df.mem.scale.prior = 20, visibility = TRUE,
   type.impute = c("median", "distribution", "mode", "mean"), Np = 0,
-  nk = NULL, n = NULL, n2 = NULL, muproposal = 0.1,
-  nuproposal = 0.15, beta0proposal = 0.2, beta1proposal = 0.001,
-  memmuproposal = 0.1, memscaleproposal = 0.15, burnintheta = 500,
-  burninbeta = 50, parallel = 1, parallel.type = "PSOCK",
-  seed = NULL, maxbeta = 90, supplied = list(maxN = maxN),
-  max.coupons = NULL, recruit.time = NULL, recruit.time2 = NULL,
-  include.tree = TRUE, unit.scale = FALSE, optimism = TRUE,
-  reflect.time = TRUE, verbose = TRUE)
+  n = NULL, n2 = NULL, muproposal = 0.1, nuproposal = 0.15,
+  beta0proposal = 0.2, beta1proposal = 0.001, memmuproposal = 0.1,
+  memscaleproposal = 0.15, burnintheta = 500, burninbeta = 50,
+  parallel = 1, parallel.type = "PSOCK", seed = NULL, maxbeta = 90,
+  supplied = list(maxN = maxN), max.coupons = NULL,
+  recruit.time = NULL, recruit.time2 = NULL, include.tree = TRUE,
+  unit.scale = FALSE, optimism = TRUE, reflect.time = TRUE,
+  verbose = TRUE)
 }
 \arguments{
 \item{s}{either a vector of integers or an \code{rds.data.frame} providing network 
@@ -172,10 +172,6 @@ population with visibility \code{1:Np} each with a separate parameter. This
 should adjust for an lack-of-fit of the parametric visibility distribution model
 at lower visibilities, although it also changes the model away from the
 parametric visibility distribution model.}
-
-\item{nk}{vector; the vector of counts for the number of people in the
-sample with degree k. This is usually computed from \eqn{s} automatically as
-\code{tabulate(s,nbins=K)} and not usually specified by the user.}
 
 \item{n}{integer; the number of people in the sample. This is usually computed from
 \eqn{s} automatically and not usually specified by the user.}

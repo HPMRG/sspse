@@ -598,13 +598,13 @@ void MHcmpbeta2 (int *d1, int *d2, int *n1, int *n2, int *K,
   double beta0star, beta1star, beta0i, beta1i;
   double qi, qstar, lliki, llikstar;
   double lmemmustar, memnustar, lmemmui, memnui;
-  double memnu2i, memnu2star;
+  double rmemnui, rmemnustar;
   double pibeta0star, pibeta0i;
   double pibeta1star, pibeta1i;
   double pimemstar, pimemi;
   double dbeta0, dbeta0s, dbeta1, dbeta1s;
   double dlmemmu, dmemdfmu, dmemdfnu, rmemdfmu;
-  double dmemnu, dmemnu2;
+  double dmemnu, dmemnur;
   double dbeta0proposal, dbeta1proposal;
   double dlmemmuproposal, dmemnuproposal;
   double pis, errval=0.0000000001, lzcmp;
@@ -625,7 +625,7 @@ void MHcmpbeta2 (int *d1, int *d2, int *n1, int *n2, int *K,
   dbeta1s=(*beta1s);
   dlmemmu=(*lmemmu);
   dmemnu=(*memnu);
-  dmemnu2=dmemnu*dmemnu;
+  dmemnur=sqrt(dmemnu);
   dmemdfmu=(*memdfmu);
   rmemdfmu=sqrt(dmemdfmu);
   dmemdfnu=(*memdfnu);
@@ -720,9 +720,9 @@ void MHcmpbeta2 (int *d1, int *d2, int *n1, int *n2, int *K,
   // Compute initial prior
   pibeta0i = dnorm(beta0i, dbeta0, dbeta0s, give_log1);
   pibeta1i = dnorm(beta1i, dbeta1, dbeta1s, give_log1);
-  memnu2i  = memnui*memnui;
-  pimemi = dnorm(lmemmui, dlmemmu, memnui/rmemdfmu, give_log1);
-  pimemi = pimemi+dsclinvchisq(memnu2i, dmemdfnu, dmemnu2);
+  rmemnui  = sqrt(memnui);
+  pimemi = dnorm(lmemmui, dlmemmu, rmemnui/rmemdfmu, give_log1);
+  pimemi = pimemi+dsclinvchisq(memnui, dmemdfnu, dmemnu);
 
   qi = dnorm(log(memnui/memnui)/dmemnuproposal,0.,1.,give_log1)
        -log(dmemnuproposal*memnui);
@@ -735,8 +735,8 @@ void MHcmpbeta2 (int *d1, int *d2, int *n1, int *n2, int *K,
     /* Propose new memnu and lmemmu */
     lmemmustar = rnorm(lmemmui, dlmemmuproposal);
 //  memnustar = rnorm(memnui, dmemnuproposal);
-    memnu2star = memnu2i*exp(rnorm(0., dmemnuproposal));
-    memnustar = sqrt(memnu2star);
+    memnustar = memnui*exp(rnorm(0., dmemnuproposal));
+    rmemnustar = sqrt(memnustar);
 
 // for (i=0; i<ni1; i++){
 //    Rprintf("%f %i %f\n",numrec[i],d1[i],rectime[i]);
@@ -814,9 +814,9 @@ void MHcmpbeta2 (int *d1, int *d2, int *n1, int *n2, int *K,
     /* Calculate pieces of the prior. */
     pibeta0star = dnorm(beta0star, dbeta0, dbeta0s, give_log1);
     pibeta1star = dnorm(beta1star, dbeta1, dbeta1s, give_log1);
-    memnu2star  = memnustar*memnustar;
-    pimemstar = dnorm(lmemmustar, dlmemmu, memnustar/rmemdfmu, give_log1);
-    pimemstar = pimemstar+dsclinvchisq(memnu2star, dmemdfnu, dmemnu2);
+    rmemnustar  = sqrt(memnustar);
+    pimemstar = dnorm(lmemmustar, dlmemmu, rmemnustar/rmemdfmu, give_log1);
+    pimemstar = pimemstar+dsclinvchisq(memnustar, dmemdfnu, dmemnu);
 
     qstar = dnorm(log(memnustar/memnui)/dmemnuproposal,0.,1.,give_log1)
                   -log(dmemnuproposal*memnustar);

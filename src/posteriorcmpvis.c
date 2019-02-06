@@ -9,7 +9,6 @@
 #include <math.h>
 
 void gcmpvis (int *pop,
-            int *nk,
             int *K,
             int *n,
             int *samplesize, int *burnin, int *interval,
@@ -79,6 +78,7 @@ void gcmpvis (int *pop,
   int *d = (int *) malloc(sizeof(int) * imaxN);
   int *b = (int *) malloc(sizeof(int) * ni);
   int *Nk = (int *) malloc(sizeof(int) * Ki);
+  int *nk = (int *) malloc(sizeof(int) * Ki);
   int *Nkpos = (int *) malloc(sizeof(int) * Ki);
   double *lpm = (double *) malloc(sizeof(double) * imaxm);
   double *pdegi = (double *) malloc(sizeof(double) * (Np+1));
@@ -203,9 +203,9 @@ void gcmpvis (int *pop,
 //   beta0i= -3.063687833  ;
 //   beta1i=  0.001548059 ;
 //   lmemmui= 1.380479339 ;
-//   memnui= 0.913915196 ;
+//   rmemnui= 0.913915196 ;
 //  }
-//  Rprintf("step %d lmemmui: %f memnui %f beta0i %f beta1i %f\n",step,lmemmui,memnui,beta0i,beta1i);
+//  Rprintf("step %d lmemmui: %f rmemnui %f beta0i %f beta1i %f\n",step,lmemmui,rmemnui,beta0i,beta1i);
 
     /* Draw true degrees (sizes) based on the reported degrees*/
     // First reset counts
@@ -262,7 +262,7 @@ void gcmpvis (int *pop,
        pd[i]=pd[i-1]+pd[i];
       }
 //if(j==6) Rprintf("\n");
-//if(j==6)Rprintf("beta0i %f beta1i %f lmemmui %f memnui %f rtprob %f pd[Ki-1] %f\n", beta0i,beta1i,lmemmui,memnui,rtprob,pd[Ki-1]);
+//if(j==6)Rprintf("beta0i %f beta1i %f lmemmui %f rmemnui %f rtprob %f pd[Ki-1] %f\n", beta0i,beta1i,lmemmui,rmemnui,rtprob,pd[Ki-1]);
       if(pd[Ki-1]<0.00000000001){
 //     Rprintf("fixed bad pd[Ki-1] %f\n", pd[Ki-1]);
        for (i=0; i<Ki; i++){
@@ -422,6 +422,7 @@ void gcmpvis (int *pop,
   free(pd2);
   free(d);
   free(b);
+  free(nk);
   free(Nk);
   free(Nkpos);
   free(lpm);
@@ -458,13 +459,13 @@ void MHcmpmem (int *d, int *n, int *K,
   double beta0star, beta1star, beta0i, beta1i;
   double qi, qstar, lliki, llikstar;
   double lmemmustar, memnustar, lmemmui, memnui;
-  double memnu2i, memnu2star;
+  double rmemnui, rmemnustar;
   double pibeta0star, pibeta0i;
   double pibeta1star=0.0, pibeta1i=0.0;
   double pimemstar, pimemi;
   double dbeta0, dbeta0sd, dbeta1, dbeta1sd;
   double dlmemmu, dmemdfmu, dmemdfnu, rmemdfmu;
-  double dmemnu, dmemnu2;
+  double dmemnu, dmemnur;
   double dbeta0proposal, dbeta1proposal;
   double dlmemmuproposal, dmemnuproposal;
   double pis, errval=0.0000000001, lzcmp;
@@ -483,7 +484,7 @@ void MHcmpmem (int *d, int *n, int *K,
   dbeta1sd=(*beta1sd);
   dlmemmu=(*lmemmu);
   dmemnu=(*memnu);
-  dmemnu2=dmemnu*dmemnu;
+  dmemnur=sqrt(dmemnu);
   dmemdfmu=(*memdfmu);
   rmemdfmu=sqrt(dmemdfmu);
   dmemdfnu=(*memdfnu);
@@ -501,7 +502,7 @@ void MHcmpmem (int *d, int *n, int *K,
   beta1i = beta1sample[0];
   lmemmui = lmemmusample[0];
   memnui = memnusample[0];
-  memnu2i = memnui*memnui;
+  rmemnui = sqrt(memnui);
 
   // Compute initial current lik
   lliki = 0.0;
@@ -543,8 +544,8 @@ void MHcmpmem (int *d, int *n, int *K,
   // Compute initial prior
   pibeta0i = dnorm(beta0i, dbeta0, dbeta0sd, give_log1);
   if(dbeta1sd > 0.0) pibeta1i = dnorm(beta1i, dbeta1, dbeta1sd, give_log1);
-  pimemi = dnorm(lmemmui, dlmemmu, memnui/rmemdfmu, give_log1);
-  pimemi = pimemi+dsclinvchisq(memnu2i, dmemdfnu, dmemnu2);
+  pimemi = dnorm(lmemmui, dlmemmu, rmemnui/rmemdfmu, give_log1);
+  pimemi = pimemi+dsclinvchisq(memnui, dmemdfnu, dmemnu);
 
 //Rprintf("dmemdfmu %f dmemdfnu %f ddfmu %f ddfsigma %f\n", memdfmu, memdfnu, dfmu, dfsigma);
 //Rprintf("dmemdfmu %f dmemdfnu %f rmemdfmu %f\n", dmemdfmu, dmemdfnu, rmemdfmu);
@@ -560,9 +561,9 @@ void MHcmpmem (int *d, int *n, int *K,
     }
     /* Propose new memnu and lmemmu */
     lmemmustar = rnorm(lmemmui, dlmemmuproposal);
-//  memnustar = rnorm(memnui, dmemnuproposal);
-    memnu2star = memnu2i*exp(rnorm(0., dmemnuproposal));
-    memnustar = sqrt(memnu2star);
+//  rmemnustar = rnorm(memnui, dmemnuproposal);
+    memnustar = memnui*exp(rnorm(0., dmemnuproposal));
+    rmemnustar = sqrt(memnustar);
 
 // for (i=0; i<ni; i++){
 //    Rprintf("%f %i %f\n",numrec[i],d[i],rectime[i]);
@@ -616,8 +617,8 @@ void MHcmpmem (int *d, int *n, int *K,
     /* Calculate pieces of the prior. */
     pibeta0star = dnorm(beta0star, dbeta0, dbeta0sd, give_log1);
     if(dbeta1sd > 0.0) pibeta1star = dnorm(beta1star, dbeta1, dbeta1sd, give_log1);
-    pimemstar = dnorm(lmemmustar, dlmemmu, memnustar/rmemdfmu, give_log1);
-    pimemstar = pimemstar+dsclinvchisq(memnu2star, dmemdfnu, dmemnu2);
+    pimemstar = dnorm(lmemmustar, dlmemmu, rmemnustar/rmemdfmu, give_log1);
+    pimemstar = pimemstar+dsclinvchisq(memnustar, dmemdfnu, dmemnu);
 
     qi = dnorm(log(memnui/memnustar)/dmemnuproposal,0.,1.,give_log1)
          -log(dmemnuproposal*memnui);
@@ -654,7 +655,7 @@ void MHcmpmem (int *d, int *n, int *K,
       beta1i = beta1star;
       lmemmui = lmemmustar;
       memnui = memnustar;
-      memnu2i = memnu2star;
+      rmemnui = rmemnustar;
       lliki = llikstar;
       qi = qstar;
       pibeta0i = pibeta0star;

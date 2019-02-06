@@ -2,7 +2,6 @@
 #define POSTERIORCMPVIS_H
 
 void gcmpvis (int *pop,
-            int *nk, 
             int *K, 
             int *n, 
             int *samplesize, int *burnin, int *interval,

@@ -160,7 +160,6 @@ poscmp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
       nk=tabulate(s,nbins=K)
       Cret <- .C("gcmpvis",
               pop=as.integer(c(s,rep(0,prior$maxN-n1))),
-              nk=as.integer(nk),
               K=as.integer(K),
               n=as.integer(n1),
               samplesize=as.integer(samplesize),
@@ -198,7 +197,6 @@ poscmp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
       nk=tabulate(s,nbins=K)
       Cret <- .C("gcmp",
               pop=as.integer(c(s,rep(0,prior$maxN-n1))),
-              nk=as.integer(nk),
               K=as.integer(K),
               n=as.integer(n1),
               samplesize=as.integer(samplesize),
@@ -238,18 +236,21 @@ poscmp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
      }
      Cret$sample[,"mem.optimism"] <- exp(Cret$sample[,"mem.optimism"])
      #
-     # Transform observed mean parametrization to log-normal
-     # parametrization
+     # Transform natural CMP parametrization to mean
+     # parametrization (for the mean visibility value)
      #
      a <- Cret$sample[,c("mem.optimism","mem.scale")]
      a[,1] <- a[,1]*mean(Cret$vsample)
-     a <- t(apply(a,1,cmp.to.mu,K=K,force=TRUE,max.mu=K))
+     a <- t(apply(a,1,cmp.to.mu.sd,K=K,force=TRUE,max.mu=K))
      a[,1] <- Cret$sample[,"mem.optimism"]
+     colnames(a) <- c("mem.optimism","mem.optimism.sigma")
      nas <- apply(a,1,function(x){any(is.na(x))})
      if(!all(nas)){
       inas <- sample(seq_along(nas)[!nas],size=sum(nas),replace=TRUE)
       a[nas,] <- a[inas,]
-      Cret$sample[,c("mem.optimism","mem.scale")] <- a
+#     Cret$sample[,c("mem.optimism","mem.scale")] <- a
+      Cret$sample <- cbind(Cret$sample,a[,2])
+      colnames(Cret$sample)[ncol(Cret$sample)] <- "mem.optimism.sigma"
      }
     }else{
      colnamessample <- c("N","mu","sigma","visibility1","totalsize")
@@ -271,12 +272,12 @@ poscmp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
     Cret$sample <- cbind(Cret$sample,Cret$sample[,c("mu","sigma")])
     colnames(Cret$sample)[ncol(Cret$sample)-(1:0)] <- c("lambda","nu")
     # Transform to mean value parametrization 
-    a <- t(apply(Cret$sample[,c("mu","sigma")],1,cmp.to.mu, max.mu=max.mu))
+    a <- t(apply(Cret$sample[,c("mu","sigma")],1,cmp.to.mu.sd, max.mu=max.mu))
     nas <- apply(a,1,function(x){any(is.na(x))})
     if(!all(nas)){
      inas <- sample(seq_along(nas)[!nas],size=sum(nas),replace=TRUE)
      a[nas,] <- a[inas,]
-#    Cret$sample[,c("mu","sigma")] <- t(apply(Cret$sample[,c("mu","sigma")],1,cmp.to.mu,max.mu=5*mean.prior.visibility)))
+#    Cret$sample[,c("mu","sigma")] <- t(apply(Cret$sample[,c("mu","sigma")],1,cmp.to.mu.sd,max.mu=5*mean.prior.visibility)))
      Cret$sample[,c("mu","sigma")] <- a
     }else{
       warning(paste("All the lambda and nu parameters are extreme. The mean and sigma are on the natural scale."), call. = FALSE)
