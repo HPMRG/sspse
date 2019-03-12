@@ -189,7 +189,7 @@
 #' the MLE of it). The model is fit with the parameter fixed at this passed value.
 #' @param optimism logical; If \code{TRUE} then add a term to the model allowing
 #' the (proportional) inflation of the self-reported degrees relative to the unit sizes.
-#' @param reflect.time logical; If \code{FALSE} then the \code{recruit.time} is the time before the 
+#' @param reflect.time logical; If \code{TRUE} then the \code{recruit.time} is the time before the 
 #' end of the study (instead of the time since the survey started or chronological time).
 #' @param verbose logical; if this is \code{TRUE}, the program will print out
 #' additional information, including goodness of fit statistics.
@@ -424,7 +424,7 @@ posteriorsize<-function(s,
                   recruit.time=NULL,recruit.time2=NULL,
                   include.tree=TRUE, unit.scale=FALSE, 
                   optimism = TRUE,
-                  reflect.time=TRUE,
+                  reflect.time=FALSE,
                   verbose=TRUE){
 #
   visibilitydistribution=match.arg(visibilitydistribution)
@@ -543,7 +543,9 @@ posteriorsize<-function(s,
   gmean <- HT.estimate(RDS::vh.weights(nsize[!is.na(nsize)]),nsize[!is.na(nsize)])
   if(is.na(gmean)) gmean <- 38
   
-  s <- nsize
+  s <- nsize[order(recruit.times)]
+  recruit.times <- recruit.times[order(recruit.times)]
+  nr <- nr[order(recruit.times)]
   }
   # End of measurement model information extraction for the first RDS
 
@@ -653,7 +655,9 @@ posteriorsize<-function(s,
    gmean <- HT.estimate(RDS::vh.weights(nsize2[!is.na(nsize2)]),nsize2[!is.na(nsize2)])
    if(is.na(gmean)) gmean <- 38
    
-   s2 <- nsize2
+   s2 <- nsize2[order(recruit.times2)]
+   recruit.times2 <- recruit.times2[order(recruit.times2)]
+   nr2 <- nr2[order(recruit.times2)]
   }}
   # End of measurement model information extraction for the second survey
   # End of measurement model information extraction
@@ -671,6 +675,7 @@ posteriorsize<-function(s,
       stop("The argument 'previous' must have a variable in the second RDS data set indicating if the corresponding unit was sampled in the first RDS.")
     }
     rc <- rds.data2[[previous]]
+    rc <- rc[order(recruit.times2)]
     if(!is.logical(rc) | length(s2)!=length(rc)){
       stop("The argument 'previous' must have a variable in the second RDS data set that is a logical vector of the same length as s2, indicating if the corresponding unit was sampled in the first RDS.")
     }
