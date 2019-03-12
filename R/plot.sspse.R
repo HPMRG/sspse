@@ -261,8 +261,9 @@ if(control$type %in% c("visibility","degree","all")){
    if(control$type %in% c("degree","all")){
     if(methods::is(x$data,"rds.data.frame") & !is.null(x$visibilities)){
 #    nplot <- min(nrow(x$vsample),200)
-     nplot <- ceiling(max(2000 / length(network.size), 1))
-     dat <- data.frame(x=rep(network.size,rep(nplot,length(network.size))), y=as.vector(x$vsample[1:nplot,1:length(network.size)]))
+     nplot <- ceiling(max(2000 / sum(!is.na(network.size)), 1))
+     dat <- data.frame(x=rep(network.size[!is.na(network.size)],rep(nplot,sum(!is.na(network.size)))),
+                       y=as.vector(x$vsample[1:nplot,1:sum(!is.na(network.size))]))
      gfit <- scam::scam(y ~ s(x, bs="mpi"), family=poisson(link=log), data=dat)
      pfit <- predict(gfit, newdata=list(x=1:max(network.size,na.rm=TRUE)), type="response", se.fit=FALSE)
      graphics::plot(y=x$visibilities, x=network.size,ylab="estimated visibilities",
