@@ -247,6 +247,7 @@ if(control$type %in% c("visibility","degree","all")){
    }else{
      network.size <- as.numeric(x$data)
    }
+   network.size <- network.size[order(x$rectime)]
    remvalues <- is.na(network.size)
    Kmax <- max(seq_along(x$predictive.visibility))
    bbb <- tabulate(network.size[!remvalues],nbins=Kmax) #, nbins=max(x$data))
