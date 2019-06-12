@@ -1,7 +1,7 @@
-#ifndef POSTERIORCMPVIS_H
-#define POSTERIORCMPVIS_H
+#ifndef POSTERIORCMPWPVIS_H
+#define POSTERIORCMPWPVIS_H
 
-void gcmpvis (int *pop,
+void gcmpwpvis (int *pop,
             int *K, 
             int *n, 
             int *samplesize, int *burnin, int *interval,
@@ -32,7 +32,7 @@ void gcmpvis (int *pop,
             int *verbose
          );
 
-void MHcmpmem (int *d, int *n, int *K,
+void MHwpmem (int *d, int *n, int *K,
             double *beta0, double *beta0sd, double *beta1, double *beta1sd, 
             double *lmemmu, double *memdfmu,
             double *memnu, double *memdfnu,
@@ -59,4 +59,4 @@ void MHcmptheta (int *Nk, int *K,
             int *verbose
          );
 
-#endif /* POSTERIORCMPVIS_H */
+#endif /* POSTERIORCMPWPVIS_H */

@@ -2,13 +2,13 @@
 /* Computation of the log-likelihood and marginal posterior of size*/
 /*******************************************************************/
 
-#include "posteriorcmpvis.h"
+#include "posteriorcmpwpvis.h"
 #include "cmp.h"
 #include <R.h>
 #include <Rmath.h>
 #include <math.h>
 
-void gcmpvis (int *pop,
+void gcmpwpvis (int *pop,
             int *K,
             int *n,
             int *samplesize, int *burnin, int *interval,
@@ -48,6 +48,7 @@ void gcmpvis (int *pop,
   double dbeta0, dbeta1;
   double dlmemmu, dmemnu;
   double beta0i, beta1i, lmemmui, memnui;
+  double memmui;
   int tU, sizei, imaxN, imaxm, give_log0=0, give_log1=1;
   double r, gammart, pis, Nd;
   double temp, uprob;
@@ -166,7 +167,6 @@ void gcmpvis (int *pop,
       pi[i]=pi[i-1]*exp(lnlami-nui*log((double)(i+1)));
       pis+=pi[i];
     }
-//  pis=1.-exp(-lzcmp);
     for (i=0; i<Ki; i++){
       pi[i]/=pis;
     }
@@ -200,7 +200,7 @@ void gcmpvis (int *pop,
     /* Draw new beta using MCMC */
     if (step == -iburnin || step==(20*(step/20))) { 
 //  if (step == -iburnin) { 
-     MHcmpmem(u,n,K,beta0muprior,beta0sigmaprior,beta1muprior,beta1sigmaprior,
+     MHwpmem(u,n,K,beta0muprior,beta0sigmaprior,beta1muprior,beta1sigmaprior,
        lmemmu,memdfmu,memnu,memdfnu,srd,numrec,rectime,maxcoupons,
        beta0proposal,beta1proposal,
        lmemmuproposal,memnuproposal,
@@ -241,21 +241,22 @@ void gcmpvis (int *pop,
           lliki += log(1.0-pbinom(maxc-1.0,(i+1),rtprob,give_log0,give_log0));
         }
         if(srd[j]>=0){
-//        Use CMP localized
-          temp=lmemmui + log((double)(i+1));
-          pis=0.;
-          lzcmp = zcmp(exp(temp), memnui, errval, Ki, give_log1);
-          if(lzcmp < -100000.0){Rprintf("badlzcmp ");continue;}
-          pd2[0]=cmp(1,temp,memnui,lzcmp,give_log0);
-          pis+=pd2[0];
+//        lliki += log(poilog(srd[j],log((double)(i+1))-lmemmui,memnui));
+//        Use WP for localized
+          memmui = exp(lmemmui)*(i+1.);
+          pd2[0]= exp(-fabs(memmui-1.)/sqrt(memnui));
+          pis=pd2[0];
           for (k=1; k<Ki; k++){
-            pd2[k]=pd2[k-1]*exp(temp-memnui*log((double)(k+1)));
-            pis+=pd2[k];
+            pd2[k]= pd2[k-1]*memmui*exp((fabs(k-memmui)-fabs(k+1-memmui))/sqrt(memnui))/((double)(k+1));
+	    pis+=pd2[k];
           }
-//        pis=1.-exp(-lzcmp);
           for (k=0; k<Ki; k++){
             pd2[k]/=pis;
+// Rprintf("srd[j] %d memmui %f k %d pd2[k]: %f\n",srd[j],memmui,k+1,pd2[k]);
           }
+//if(j==6) Rprintf("\n");
+//if(j==6) Rprintf("pd2[srd]: %f\n",pd2[srd[j]-1]);
+//Rprintf(" memnui %f pd2[srd[j]]: %f\n",memnui,pd2[srd[j]-1]);
           if(srd[j] <= Ki){
             lliki += log(pd2[srd[j]-1]);
 //        }else{
@@ -290,6 +291,7 @@ void gcmpvis (int *pop,
     }
     for (i=0; i<Ki; i++){
       pd[i]/=pis;
+//if(isamp > 500){Rprintf("u[j] %d i %d pd[i]: %f\n",u[j],i+1,pd[i]);}
     }
 //Rprintf("j %d d[j] %d pd: %f %f %f %f\n",j, d[j], pd[d[j]-2], pd[d[j]-1], pd[d[j]], pd[d[j]+1]);
       for (i=1; i<Ki; i++){
@@ -319,6 +321,7 @@ void gcmpvis (int *pop,
         sizei=umax;
       }
 // Next line to force unit sizes to degrees
+// Rprintf("j %d u[j] %d sim u %d\n", j, u[j], sizei);
 // sizei=u[j];
 
       nk[sizei-1]=nk[sizei-1]+1;
@@ -443,18 +446,15 @@ void gcmpvis (int *pop,
         vsample[isamp*ni+i]=u[i];
         if((srd[i]>0) && (srd[i] <= Ki)){ posd[srd[i]-1]+=(1./Nd); }
       }
+//    Record the predicted degrees (not unit sizes)
       for (i=ni; i<Ni; i++){
-        temp=lmemmui + log((double)(u[i])+1.);
-        pis=0.;
-        lzcmp = zcmp(exp(temp), memnui, errval, Ki, give_log1);
-        if(lzcmp < -100000.0){Rprintf("badlzcmp ");continue;}
-        pd[0]=cmp(1,temp,memnui,lzcmp,give_log0);
-        pis+=pd[0];
+        memmui = exp(lmemmui)*u[i];
+        pd[0]= exp(-fabs(memmui-1.)/sqrt(memnui));
+        pis=pd[0];
         for (k=1; k<Ki; k++){
-          pd[k]=pd[k-1]*exp(temp-memnui*log((double)(k+1)));
+          pd[k]= pd[k-1]*memmui*exp((fabs(k-memmui)-fabs(k+1.-memmui))/sqrt(memnui))/((double)(k+1));
           pis+=pd[k];
         }
-//      pis=1.-exp(-lzcmp);
         for (k=0; k<Ki; k++){
           pd[k]/=pis;
           posd[k]+=(pd[k]/Nd);
@@ -496,7 +496,7 @@ void gcmpvis (int *pop,
   free(memnusample);
 }
 
-void MHcmpmem (int *u, int *n, int *K,
+void MHwpmem (int *u, int *n, int *K,
             double *beta0, double *beta0sd, double *beta1, double *beta1sd, 
             double *lmemmu, double *memdfmu,
             double *memnu, double *memdfnu,
@@ -519,6 +519,7 @@ void MHcmpmem (int *u, int *n, int *K,
   double beta0star, beta1star, beta0i, beta1i;
   double qi, qstar, lliki, llikstar;
   double lmemmustar, memnustar, lmemmui, memnui;
+  double memmui, memmustar;
   double rmemnui, rmemnustar;
   double pibeta0star, pibeta0i;
   double pibeta1star=0.0, pibeta1i=0.0;
@@ -528,7 +529,7 @@ void MHcmpmem (int *u, int *n, int *K,
   double dmemnu, dmemnur;
   double dbeta0proposal, dbeta1proposal;
   double dlmemmuproposal, dmemnuproposal;
-  double pis, errval=0.0000000001, lzcmp;
+  double pis;
 
   Ki=(*K);
   double *pd = (double *) malloc(sizeof(double) * Ki);
@@ -578,20 +579,17 @@ void MHcmpmem (int *u, int *n, int *K,
      }
      if(srd[i]>=0){
 //    lliki += log(poilog(srd[i],log((double)(u[i]))-lmemmui,memnui));
-//    Use CMP localized
-      temp=lmemmui+log((double)(u[i]));
-      pis=0.;
-      lzcmp = zcmp(exp(temp), memnui, errval, Ki, give_log1);
-      if(lzcmp < -100000.0){Rprintf("badlzcmp ");continue;}
-      pd[0]=cmp(1,temp,memnui,lzcmp,give_log0);
-      pis+=pd[0];
+//    Use WP for localized
+      memmui = exp(lmemmui)*u[i];
+      pd[0]= memmui*exp(-fabs(memmui-1.)/sqrt(memnui));
+      pis=pd[0];
       for (k=1; k<Ki; k++){
-        pd[k]=pd[k-1]*exp(temp-memnui*log((double)(k+1)));
+        pd[k]= pd[k-1]*memmui*exp((fabs(k-memmui)-fabs(k+1-memmui))/sqrt(memnui))/((double)(k+1));
         pis+=pd[k];
       }
-//    pis=1.-exp(-lzcmp);
       for (k=0; k<Ki; k++){
         pd[k]/=pis;
+//Rprintf("memmui %f k %d pd[k]: %f\n",memmui,k+1,pd[k]);
       }
       if(srd[i] <= Ki){
         lliki += log(pd[srd[i]-1]);
@@ -634,7 +632,8 @@ void MHcmpmem (int *u, int *n, int *K,
     }
     /* Propose new memnu and lmemmu */
     lmemmustar = rnorm(lmemmui, dlmemmuproposal);
-//  lmemmustar = lmemmui;
+    // VIP Remember this next line hold the optimism fixed at 1!!! VIP
+    lmemmustar = lmemmui;
 //  lmemmustar = 0.0;
 //  rmemnustar = rnorm(memnui, dmemnuproposal);
     memnustar = memnui*exp(rnorm(0., dmemnuproposal));
@@ -660,20 +659,17 @@ void MHcmpmem (int *u, int *n, int *K,
        }
        if(srd[i]>=0){
 //      llikstar += log(poilog(srd[i],log(u[i])-lmemmustar,exp(memnustar)));
-//      Use GP localized
+//      Use WP localized
 //      llans <- -x*lambda - theta + (x-1) * log(theta + x*lambda) +
 //                 log(theta) - lgamma(x+1)
-        temp=lmemmustar+log((double)(u[i]));
-        pis=0.;
-        lzcmp = zcmp(exp(temp), memnustar, errval, Ki, give_log1);
-        if(lzcmp < -100000.0){Rprintf("badlzcmp ");continue;}
-        pd[0]=cmp(1,temp,memnustar,lzcmp,give_log0);
-        pis+=pd[0];
+        memmustar = exp(lmemmustar)*u[i];
+//      pd[0]= memmustar*exp(-fabs(memmustar-1.)/sqrt(memnustar));
+        pd[0]= exp(-fabs(memmustar-1.)/sqrt(memnustar));
+        pis=pd[0];
         for (k=1; k<Ki; k++){
-          pd[k]=pd[k-1]*exp(temp-memnustar*log((double)(k+1)));
+          pd[k]= pd[k-1]*memmustar*exp((fabs(k-memmustar)-fabs(k+1.-memmustar))/sqrt(memnustar))/((double)(k+1));
           pis+=pd[k];
         }
-//      pis=1.-exp(-lzcmp);
         for (k=0; k<Ki; k++){
           pd[k]/=pis;
         }
@@ -731,7 +727,7 @@ void MHcmpmem (int *u, int *n, int *K,
 //  cutoff = ip + lliki-llikstar;
     cutoff = ip + llikstar - lliki + qi - qstar;
       
-//  Rprintf("Proposed: cutoff=%f ip=%f llikstar=%f lliki= %f qi=%f qstar=%f\n", cutoff, ip, llikstar, lliki, qi, qstar);
+//Rprintf("Proposed: cutoff=%f ip=%f llikstar=%f lliki= %f qi=%f qstar=%f\n", cutoff, ip, llikstar, lliki, qi, qstar);
 //  Rprintf("Proposed: beta0i=%f beta0star=%f beta1s=%f beta1star=%f\n", beta0i,beta0star,beta1i,beta1star);
 
 //  if (*verbose)
@@ -739,7 +735,7 @@ void MHcmpmem (int *u, int *n, int *K,
 
     /* if we accept the proposed network */
     if (cutoff >= 0.0 || log(unif_rand()) < cutoff) { 
-//  Rprintf("Accepted: cutoff=%f ip=%f llikstar=%f lliki=%f qi=%f qstar=%f\n",cutoff, ip,llikstar, lliki, qi, qstar);
+//Rprintf("Accepted: cutoff=%f ip=%f llikstar=%f lliki=%f qi=%f qstar=%f\n",cutoff, ip,llikstar, lliki, qi, qstar);
       /* Make proposed changes */
       beta0i = beta0star;
       beta1i = beta1star;

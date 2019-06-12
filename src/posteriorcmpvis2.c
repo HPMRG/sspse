@@ -50,13 +50,14 @@ void gcmpvis2 (int *pop12, int *pop21,
   int ni0, ni1, ni2, itemp;
   int step, staken, getone=1, intervalone=1, verboseMHcmp = 0;
   int i, j, k, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
+  int umax;
   double mui, sigmai, dsamp, nui, lnlami, sigma2i;
   double dbeta0, dbeta1;
   double dlmemmu, dmemnu;
   double beta0i, beta1i, lmemmui, memnui;
   int tU1, tU2, sizei, imaxN, imaxm, give_log0=0, give_log1=1;
   double r1, r2, gammart, pis, Nd;
-  double temp, temp2;
+  double temp, temp2, uprob1, uprob2;
   double rtprob, lliki;
   int maxc;
   double errval=0.0000000001, lzcmp;
@@ -110,17 +111,23 @@ void gcmpvis2 (int *pop12, int *pop21,
     d1[i]=0;
     d2[i]=0;
   }
+  uprob1=ni;
   for (i=0; i<ni; i++){
     if((pop12[i]>0) && (pop12[i] <= Ki)){ d1[i]=pop12[i];}
     if(pop12[i]==0){ d1[i]=1;}
-    if(pop12[i]>Ki){ d1[i]=Ki;}
+    if(pop12[i]>Ki){ d1[i]=Ki; uprob1--;}
     nk[d1[i]-1]=nk[d1[i]-1]+1;
   }
+  uprob1/=ni;
+  uprob1 = 0.5 + uprob1/2.0;
+  uprob2=ni2+1;
   for (i=0; i<(ni2+1); i++){
     if((pop21[i]>0) && (pop21[i] <= Ki)){ d2[i]=pop21[i];}
     if(pop21[i]==0){ d2[i]=1;}
-    if(pop21[i]>Ki){ d2[i]=Ki;}
+    if(pop21[i]>Ki){ d2[i]=Ki; uprob2--;}
   }
+  uprob2/=ni2+1;
+  uprob2 = 0.5 + uprob2/2.0;
   b1[ni1-1]=d1[ni1-1];
   for (i=(ni1-2); i>=0; i--){
     b1[i]=b1[i+1]+d1[i];
@@ -213,6 +220,11 @@ void gcmpvis2 (int *pop12, int *pop21,
     for (i=0; i<Np; i++){
       pi[i]=pdegi[i];
     }
+    temp=0.;
+    for (umax=1; umax<=Ki; umax++){
+      temp+=pi[umax-1];
+      if(temp > uprob1) break;
+    }
 
     // Now computes mean and s.d. from log-lambda and nu
     mui=0.0;
@@ -251,6 +263,7 @@ void gcmpvis2 (int *pop12, int *pop21,
      nk[i]=0;
     }
     for (j=0; j<ni1; j++){
+      if(srd[j] <= Ki){
       temp = beta0i + beta1i*rectime[j];
       rtprob = exp(temp)/(1.0+exp(temp));
 //    Multiply by the PoissonLogNormal PMF for observation
@@ -279,7 +292,9 @@ void gcmpvis2 (int *pop12, int *pop21,
           for (k=0; k<Ki; k++){
             pd2[k]/=pis;
           }
-          lliki += log(pd2[srd[j]-1]);
+	  if(srd[i] <= Ki){
+            lliki += log(pd2[srd[j]-1]);
+	  }
         }
         pd[i]=pi[i]*exp(lliki);
         pdm[i]=exp(lliki);
@@ -312,6 +327,11 @@ void gcmpvis2 (int *pop12, int *pop21,
       for (sizei=1; sizei<=Ki; sizei++){
         if(temp <= pd[sizei-1]) break;
       }
+      }else{
+      /* Deal with the outliers */
+        sizei=umax;
+      }
+
       nk[sizei-1]=nk[sizei-1]+1;
       d1[j]=sizei;
      } 
@@ -330,6 +350,7 @@ void gcmpvis2 (int *pop12, int *pop21,
 //  }
     itemp = 0;
     for (j=0; j<ni2; j++){
+      if(srd2[j] <= Ki){
       temp = beta0i + beta1i*rectime2[j];
       rtprob = exp(temp)/(1.0+exp(temp));
 //    Multiply by the PoissonLogNormal PMF for observation
@@ -356,7 +377,9 @@ void gcmpvis2 (int *pop12, int *pop21,
           for (k=0; k<Ki; k++){
             pd2[k]/=pis;
           }
-          lliki += log(pd2[srd2[j]-1]);
+	  if(srd2[i] <= Ki){
+            lliki += log(pd2[srd2[j]-1]);
+	  }
         }
         pd[i]=pi[i]*exp(lliki);
        }else{
@@ -389,6 +412,11 @@ void gcmpvis2 (int *pop12, int *pop21,
       for (sizei=1; sizei<=Ki; sizei++){
         if(temp <= pd[sizei-1]) break;
       }
+      }else{
+      /* Deal with the outliers */
+        sizei=umax;
+      }
+
       d2[j]=sizei;
       if(rc[j]==0){
         nk[sizei-1]=nk[sizei-1]+1;
@@ -673,7 +701,9 @@ void MHcmpbeta2 (int *d1, int *d2, int *n1, int *n2, int *K,
 //  Rprintf(" %f",pd[k]);
       }
 //  Rprintf("\n %d %f\n",i,lliki);
-      lliki += log(pd[srd[i]-1]);
+      if(srd[i] <= Ki){
+        lliki += log(pd[srd[i]-1]);
+      }
      }
     }else{
      lliki = -100000.0; 
@@ -703,7 +733,9 @@ void MHcmpbeta2 (int *d1, int *d2, int *n1, int *n2, int *K,
       for (k=0; k<Ki; k++){
         pd[k]/=pis;
       }
-      lliki += log(pd[srd2[i]-1]);
+      if(srd2[i] <= Ki){
+        lliki += log(pd[srd2[i]-1]);
+      }
      }
     }else{
      lliki = -100000.0; 
@@ -769,7 +801,9 @@ void MHcmpbeta2 (int *d1, int *d2, int *n1, int *n2, int *K,
 //  Rprintf(" %f",pd[k]);
         }
 //  Rprintf("\n %d srd %d pd %f llikstar %f temp %f\n",i,srd[i],pd[srd[i]-1],llikstar, temp);
-        llikstar += log(pd[srd[i]-1]);
+        if(srd[i] <= Ki){
+          llikstar += log(pd[srd[i]-1]);
+        }
 //  Rprintf("\n %d srd %d pd %f %f\n",i,srd[i],pd[srd[i]-1],llikstar);
 //  Rprintf("\n %d %f\n",i,llikstar);
        }
@@ -802,7 +836,9 @@ void MHcmpbeta2 (int *d1, int *d2, int *n1, int *n2, int *K,
           pd[k]/=pis;
 //  Rprintf(" %f",pd[k]);
         }
-        llikstar += log(pd[srd2[i]-1]);
+        if(srd2[i] <= Ki){
+          llikstar += log(pd[srd2[i]-1]);
+        }
 //  Rprintf("\n %d srd %d pd %f %f\n",i,srd2[i],pd[srd2[i]-1],llikstar);
        }
       }else{

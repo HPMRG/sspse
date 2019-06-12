@@ -71,5 +71,6 @@
 #' @import methods
 #' @import parallel
 #' @import scam
+#' @import KernSmooth
 #' @import RDS
 NULL

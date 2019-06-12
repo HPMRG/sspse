@@ -17,7 +17,7 @@ posteriorsize(s, s2 = NULL, previous = NULL,
   df.sd.prior.visibility = 3, beta0.mean.prior = -3,
   beta1.mean.prior = 0, beta0.sd.prior = 10, beta1.sd.prior = 10,
   mem.optimism.prior = 1, df.mem.optimism.prior = 5,
-  mem.scale.prior = 2, df.mem.scale.prior = 20, visibility = TRUE,
+  mem.scale.prior = 1, df.mem.scale.prior = 20, visibility = TRUE,
   type.impute = c("median", "distribution", "mode", "mean"), Np = 0,
   n = NULL, n2 = NULL, muproposal = 0.1, nuproposal = 0.15,
   beta0proposal = 0.2, beta1proposal = 0.001, memmuproposal = 0.1,
@@ -25,7 +25,7 @@ posteriorsize(s, s2 = NULL, previous = NULL,
   parallel = 1, parallel.type = "PSOCK", seed = NULL, maxbeta = 90,
   supplied = list(maxN = maxN), max.coupons = NULL,
   recruit.time = NULL, recruit.time2 = NULL, include.tree = TRUE,
-  unit.scale = FALSE, optimism = TRUE, reflect.time = TRUE,
+  unit.scale = FALSE, optimism = TRUE, reflect.time = FALSE,
   verbose = TRUE)
 }
 \arguments{
@@ -266,7 +266,7 @@ the MLE of it). The model is fit with the parameter fixed at this passed value.}
 \item{optimism}{logical; If \code{TRUE} then add a term to the model allowing
 the (proportional) inflation of the self-reported degrees relative to the unit sizes.}
 
-\item{reflect.time}{logical; If \code{FALSE} then the \code{recruit.time} is the time before the 
+\item{reflect.time}{logical; If \code{TRUE} then the \code{recruit.time} is the time before the 
 end of the study (instead of the time since the survey started or chronological time).}
 
 \item{verbose}{logical; if this is \code{TRUE}, the program will print out

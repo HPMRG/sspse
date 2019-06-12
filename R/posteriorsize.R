@@ -405,7 +405,7 @@ posteriorsize<-function(s,
                   beta0.mean.prior=-3, beta1.mean.prior=0,
                   beta0.sd.prior=10, beta1.sd.prior=10,
                   mem.optimism.prior=1, df.mem.optimism.prior=5, 
-                  mem.scale.prior=0.5, df.mem.scale.prior=20, 
+                  mem.scale.prior=1, df.mem.scale.prior=20,
                   visibility=TRUE,
                   type.impute = c("median","distribution","mode","mean"),
                   Np=0,
@@ -431,8 +431,8 @@ posteriorsize<-function(s,
   posfn <- switch(visibilitydistribution,
                   nbinom=posnbinom,
                   pln=pospln,
-                  cmp=poscmp,
-                  poscmp)
+                  cmp=poscmpwp,
+                  poscmpwp)
   K.fixed <- K
   # If the passed "s" is an rds.rata.frame, extract out the components
   rc <- NULL
@@ -880,9 +880,11 @@ posteriorsize<-function(s,
      }
      Cret$predictive.visibility.count<-Cret$predictive.visibility.count+z$predictive.visibility.count
      Cret$predictive.visibility<-Cret$predictive.visibility+z$predictive.visibility
+     Cret$predictive.degree<-Cret$predictive.degree+z$predictive.degree
     }
     Cret$predictive.visibility.count<-Cret$predictive.visibility.count/Nparallel
     Cret$predictive.visibility<-Cret$predictive.visibility/Nparallel
+    Cret$predictive.degree<-Cret$predictive.degree/Nparallel
     #
     degnames <- NULL
     if(Np>0){degnames <- c(degnames,paste("pdeg",1:Np,sep=""))}

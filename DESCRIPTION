@@ -1,14 +1,14 @@
 Package: sspse
 Type: Package
-Version: 0.86
-Date: 2019-03-02
+Version: 0.90
+Date: 2019-06-12
 Title: Estimating Hidden Population Size using Respondent Driven Sampling Data
 Authors@R: c(
     person("Mark S.", "Handcock", role=c("aut","cre","cph"), email="handcock@stat.ucla.edu"),
     person("Krista J.", "Gile", role=c("aut","cph"), email="gile@math.umass.edu"),
     person("Kim","Brian",role=c("ctb"),email="kimbrian@umd.edu"))
 Maintainer: Mark S. Handcock <handcock@stat.ucla.edu>
-Depends: methods, parallel, RDS
+Depends: methods, parallel, RDS, KernSmooth
 Suggests: testthat
 Description: Estimate the size of a networked population based on
     respondent-driven sampling data. The package is part of the "RDS Analyst"

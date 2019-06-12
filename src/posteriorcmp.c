@@ -121,12 +121,14 @@ void gcmp (int *pop,
     lzcmp = zcmp(exp(lnlami), nui, errval, Ki, give_log1);
     if(lzcmp < -100000.0){continue;}
     pi[Np]=cmp(Np+1,lnlami,nui,lzcmp,give_log0);
+    pis+=pi[Np];
 //Rprintf("lnlami %f nui %f lzcmp %f pi %f\n", lnlami, nui, lzcmp, pi[Np]);
     for (i=Np+1; i<Ki; i++){
       pi[i]=pi[i-1]*exp(lnlami-nui*log((double)(i+1)));
+      pis+=pi[i];
     }
 //  Rprintf("isamp %d pis %f\n", isamp, pis);
-    pis=1.-exp(-lzcmp);
+//  pis=1.-exp(-lzcmp);
     for (i=0; i<Ki; i++){
       pi[i]/=pis;
 //Rprintf("i %d pi %f pi0 %f\n", i, pi[i], pi0[i], pis, pis0);
@@ -345,10 +347,12 @@ void MHcmptheta (int *Nk, int *K,
   lzcmp = zcmp(exp(lnlami), nui, errval, 2*Ki, give_log1);
 //Rprintf("lnlami %f nui %f lzcmp %f\n", lnlami, nui, lzcmp);
   pi[Np]=cmp(Np+1,lnlami,nui,lzcmp,give_log0);
+  pis+=pi[Np];
   for (i=Np+1; i<Ki; i++){
     pi[i]=pi[i-1]*exp(lnlami-nui*log((double)(i+1)));
+    pis+=pi[i];
   }
-  pis=1.-exp(-lzcmp);
+//pis=1.-exp(-lzcmp);
   for (i=0; i<Ki; i++){
     pi[i]/=pis;
 //Rprintf("i %d pi %f pi0 %f\n", i, pi[i], pi0[i], pis, pis0);
@@ -416,11 +420,13 @@ void MHcmptheta (int *Nk, int *K,
 //if(nustar > 4.0 || lnlamstar > 4.5)  Rprintf("lnlamstar %f nustar %f lzcmp %f\n", lnlamstar, nustar, lzcmp);
 //    if(nustar > 4.0 || lnlamstar > 4.5){step++;continue;}
     pstar[Np]=cmp(Np+1,lnlamstar,nustar,lzcmp,give_log0);
+    pstars+=pstar[Np];
 //  Rprintf("lnlamstar %f nustar %f lzcmp %f pstar %f\n", lnlamstar, nustar, lzcmp,pstar[Np]);
     for (i=Np+1; i<Ki; i++){
       pstar[i]=pstar[i-1]*exp(lnlamstar-nustar*log((double)(i+1)));
+      pstars+=pstar[i];
     }
-    pstars=1.-exp(-lzcmp);
+//  pstars=1.-exp(-lzcmp);
     for (i=0; i<Ki; i++){
       pstar[i]/=pstars;
 //if(pstar[Np] < 0.00001){Rprintf("i %d pstar %f pi %f\n", i, pstar[i], pi[i]);}

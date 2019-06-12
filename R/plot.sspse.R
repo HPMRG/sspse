@@ -140,9 +140,15 @@ if(!is.null(out)){
   outN <- out[,"N"]
   ##a=locfit( ~ lp(outN, nn=0.35, h=0, maxk=500))
   xp <- seq(x$n,x$maxN, length=control$support)
-  posdensN=bgk_kde(data=outN,n=2^(ceiling(log(x$maxN-x$n)/log(2))),MIN=x$n,MAX=x$maxN, smooth=smooth)
-  maxposdensN <- max(posdensN[1,],na.rm=TRUE)
-  posdensN <- stats::spline(x=posdensN[1,],y=posdensN[2,],xout=xp)$y
+# posdensN=bgk_kde(data=outN,n=2^(ceiling(log(x$maxN-x$n)/log(2))),MIN=x$n,MAX=x$maxN, smooth=smooth)
+# maxposdensN <- max(posdensN[1,],na.rm=TRUE)
+# posdensN <- stats::spline(x=posdensN[1,],y=posdensN[2,],xout=xp)$y
+  posdensN=KernSmooth::bkde(x=log(outN), kernel = "normal", gridsize = length(xp), range.x=log(c(x$n,x$maxN)))
+# posdensN=density(x=log(outN),n=control$support,from=log(x$n),to=log(x$maxN))
+# xp=exp(posdensN$x)
+# posdensN=posdensN$y/xp
+  maxposdensN <- max(exp(posdensN$x),na.rm=TRUE)
+  posdensN <- stats::spline(x=exp(posdensN$x),y=posdensN$y/exp(posdensN$x),xout=xp)$y
   posdensN[xp > maxposdensN] <- 0
   #a=locfit::locfit( ~ lp(outN,nn=0.5))
   #posdensN <- predict(a, newdata=xp)
@@ -248,8 +254,10 @@ if(control$type %in% c("visibility","degree","all")){
      network.size <- as.numeric(x$data)
    }
    
-   if(!is.null(x$rectime)){network.size <- network.size[order(x$rectime)]}
    remvalues <- is.na(network.size)
+   if(!is.null(x$rectime)){
+     network.size[!remvalues] <- (network.size[!remvalues])[order(x$rectime)]
+   }
    Kmax <- max(seq_along(x$predictive.visibility))
    bbb <- tabulate(network.size[!remvalues],nbins=Kmax) #, nbins=max(x$data))
    bbb <- bbb/sum(bbb)
