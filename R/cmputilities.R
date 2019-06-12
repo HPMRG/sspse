@@ -61,7 +61,7 @@ dcmp <- function(x, lambda, nu, err=0.000000001, log=FALSE){
   # Perform argument checking
   if (lambda < 0 | nu < 0)
 	stop("Invalid arguments, only defined for lambda >= 0, nu >= 0");
-  if (any(x < 0 | (x != floor()x)))
+  if (any(x < 0 | (x != floor(x))))
 		return (0);
   out <- .C("dcmp",
             x=as.integer(x),
