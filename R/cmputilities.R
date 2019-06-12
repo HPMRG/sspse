@@ -39,7 +39,7 @@ ldcmp.natural <- function(v,x,cutoff=0){
 dcmp.natural <- function(v, x, cutoff=0, err=0.000000001, log=FALSE){
   # compute PMF from natural parameters
   # Perform argument checking
-  if (v[1] < 0 || v[2] < 0)
+  if (v[1] < 0 | v[2] < 0)
 	stop("Invalid arguments, only defined for mu >= 0, sd >= 0");
   y <- .C("dcmp",
             x=as.integer(x),
@@ -59,9 +59,9 @@ dcmp.natural <- function(v, x, cutoff=0, err=0.000000001, log=FALSE){
 dcmp <- function(x, lambda, nu, err=0.000000001, log=FALSE){
   # compute PMF from natural parameters (with different parsing arguments)
   # Perform argument checking
-  if (lambda < 0 || nu < 0)
+  if (lambda < 0 | nu < 0)
 	stop("Invalid arguments, only defined for lambda >= 0, nu >= 0");
-  if (any(x < 0 || x != floor(x)))
+  if (any(x < 0 | (x != floor()x)))
 		return (0);
   out <- .C("dcmp",
             x=as.integer(x),
