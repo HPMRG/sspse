@@ -182,10 +182,10 @@ void gcmpwpvis (int *pop,
       pi[i]=pdegi[i];
     }
     temp=0.;
-    for (umax=1; umax<=Ki; umax++){
-      temp+=pi[umax-1];
-      if(temp > uprob) break;
-    }
+//  for (umax=1; umax<=Ki; umax++){
+//    temp+=pi[umax-1];
+//    if(temp > uprob) break;
+//  }
 // Rprintf("uprob %f umax %d K %d\n", uprob, umax,uprob);
 
     // Now computes mean and s.d. from log-lambda and nu
