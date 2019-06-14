@@ -186,6 +186,7 @@ void gcmpwpvis (int *pop,
       temp+=pi[umax-1];
       if(temp > uprob) break;
     }
+// Rprintf("uprob %f umax %d K %d\n", uprob, umax,uprob);
 
     // Now computes mean and s.d. from log-lambda and nu
     mui=0.0;
@@ -225,6 +226,7 @@ void gcmpwpvis (int *pop,
     for (i=0; i<Ki; i++){
      nk[i]=0;
     }
+    umax = 0;
     for (j=0; j<ni; j++){
       if(srd[j] <= Ki){
       temp = beta0i + beta1i*rectime[j];
@@ -316,20 +318,27 @@ void gcmpwpvis (int *pop,
       for (sizei=1; sizei<=Ki; sizei++){
         if(temp <= pd[sizei-1]) break;
       }
-      }else{
-      /* Deal with the outliers */
-        sizei=umax;
+      nk[sizei-1]=nk[sizei-1]+1;
+      u[j]=sizei;
+
+      if(sizei > umax) umax = sizei;
       }
 // Next line to force unit sizes to degrees
 // Rprintf("j %d u[j] %d sim u %d\n", j, u[j], sizei);
 // sizei=u[j];
 
-      nk[sizei-1]=nk[sizei-1]+1;
-      u[j]=sizei;
-
 //    if(u[j] < numrec[j]) Rprintf("Warning: j %d u[j] %d numrec[j] %d maxc %d: %f %f %f %f\n",j,u[j],numrec[j],maxc,pd[0],pd[1],pd[2],pd[3]);
 //Rprintf("j %d dis %d sizei %d pd[Ki-1] %f\n", j, ddis, sizei, pd[Ki-1]);
      } 
+
+     /* Deal with the outliers */
+     for (j=0; j<ni; j++){
+      if(srd[j] > Ki){
+       nk[umax-1]=nk[umax-1]+1;
+       u[j]=umax;
+      }
+     }
+
      // Rebuild b
      b[ni-1]=u[ni-1];
      for (i=(ni-2); i>=0; i--){

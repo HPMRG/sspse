@@ -5,7 +5,7 @@ poscmpwp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
                   beta0.mean.prior=-3, beta1.mean.prior=0,
                   beta0.sd.prior=10, beta1.sd.prior=10,
                   mem.optimism.prior=1, df.mem.optimism.prior=5, 
-                  mem.scale.prior=1, df.mem.scale.prior=3, 
+                  mem.scale.prior=1, df.mem.scale.prior=20, 
                   muproposal=0.1, 
                   nuproposal=0.15, 
                   beta0proposal=0.1, beta1proposal=0.001,
@@ -80,7 +80,7 @@ poscmpwp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
      if(visibility){
       cat(sprintf("Using Capture-recapture measurement error model with K = %d.\n",K))
       nk=tabulate(c(s,s2[!rc]),nbins=K)
-      Cret <- .C("gcmpvis2",
+      Cret <- .C("gcmpwpvis2",
               pop12=as.integer(c(s, s2[!rc], rep(0,prior$maxN-length(s)-length(s2[!rc])))),
               pop21=as.integer(c(s2,sum(s)-sum(s2[rc]), rep(0,prior$maxN-length(s2)-1))),
               nk=as.integer(nk),

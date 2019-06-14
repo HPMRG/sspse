@@ -1,6 +1,6 @@
 Package: sspse
 Type: Package
-Version: 0.90
+Version: 0.9
 Date: 2019-06-12
 Title: Estimating Hidden Population Size using Respondent Driven Sampling Data
 Authors@R: c(
