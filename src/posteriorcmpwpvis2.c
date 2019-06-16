@@ -265,10 +265,10 @@ void gcmpwpvis2 (int *pop12, int *pop21,
     }
     umax=0;
     for (j=0; j<ni1; j++){
-      if(srd[j] <= Ki){
+      if(srd[j] <= (1.25*Ki)){
       temp = beta0i + beta1i*rectime[j];
       rtprob = exp(temp)/(1.0+exp(temp));
-//    Multiply by the PoissonLogNormal PMF for observation
+//    Multiply by the Conway-Maxwell-Poisson PMF for observation
       for (i=0; i<Ki; i++){
 //     if((numrec[j] <= (i+1)) && ((maxc-1) <= (i+1))){
        if(numrec[j] <= (i+1)){
@@ -294,7 +294,7 @@ void gcmpwpvis2 (int *pop12, int *pop21,
             lliki += log(pd2[srd[j]-1]);
 	  }
         }
-        pd[i]=pi[i]*exp(lliki);
+        pd[i]=pi[i]*exp(lliki)*(i+1.);
         pdm[i]=exp(lliki);
        }else{
         pd[i]=0.0;
@@ -328,14 +328,25 @@ void gcmpwpvis2 (int *pop12, int *pop21,
       nk[sizei-1]=nk[sizei-1]+1;
       d1[j]=sizei;
 
-      if(sizei > umax) umax = sizei;
+//    if(sizei > umax) umax = sizei;
      } 
      } 
      /* Deal with the outliers */
+     umax=nk[Ki-1];
+     sizei=Ki;
      for (j=0; j<ni1; j++){
-      if(srd[j] > Ki){
-        nk[umax-1]=nk[umax-1]+1;
-        d1[j]=umax;
+      if(srd[j] > 1.25*Ki){
+       if((umax==0) & (sizei > 1)){
+         sizei--;
+	 umax=nk[sizei-1];
+       }
+       d1[j]=sizei;
+       umax--;
+      }
+     }
+     for (j=0; j<ni1; j++){
+      if(srd[j] > 1.25*Ki){
+       nk[d1[j]-1]=nk[d1[j]-1]+1;
       }
      }
       
@@ -352,9 +363,8 @@ void gcmpwpvis2 (int *pop12, int *pop21,
 //  for (i=0; i<Ki; i++){
 //   nk2[i]=0;
 //  }
-    itemp = 0;
     for (j=0; j<ni2; j++){
-      if(srd2[j] <= Ki){
+      if(srd2[j] <= (1.25*Ki)){
       temp = beta0i + beta1i*rectime2[j];
       rtprob = exp(temp)/(1.0+exp(temp));
 //    Multiply by the PoissonLogNormal PMF for observation
@@ -385,7 +395,7 @@ void gcmpwpvis2 (int *pop12, int *pop21,
             lliki += log(pd2[srd2[j]-1]);
 	  }
         }
-        pd[i]=pi[i]*exp(lliki);
+        pd[i]=pi[i]*exp(lliki)*(i+1.);
        }else{
         pd[i]=0.0;
        }
@@ -420,15 +430,26 @@ void gcmpwpvis2 (int *pop12, int *pop21,
 
       d2[j]=sizei;
 
-      if(sizei > umax) umax = sizei;
+//    if(sizei > umax) umax = sizei;
 //Rprintf("j %d dis %d sizei %d pd[Ki-1] %f\n", j, ddis, sizei, pd[Ki-1]);
      } 
+
      /* Deal with the outliers */
+     umax=nk[Ki-1];
+     sizei=Ki;
+     for (j=0; j<ni2; j++){
+      if(srd2[j] > 1.25*Ki){
+       if((umax==0) & (sizei > 1)){
+         sizei--;
+	 umax=nk[sizei-1];
+       }
+       d2[j]=sizei;
+       umax--;
+      }
+     }
+
      itemp=0;
      for (j=0; j<ni2; j++){
-      if(srd2[j] > Ki){
-        d2[j]=umax;
-      }
       if(rc[j]==0){
         nk[d2[j]-1]=nk[d2[j]-1]+1;
         d1[ni1 + itemp]=d2[j];
@@ -636,7 +657,8 @@ void MHwpmem2 (int *d1, int *d2, int *n1, int *n2, int *K,
   double temp, rtprob;
   double beta0star, beta1star, beta0i, beta1i;
   double qi, qstar, lliki, llikstar;
-  double lmemmustar, memnustar, lmemmui, memmui, memnui;
+  double lmemmustar, lmemmui, memmui, memnui;
+  double memmustar, memnustar;
   double rmemnui, rmemnustar;
   double pibeta0star, pibeta0i;
   double pibeta1star, pibeta1i;
@@ -647,7 +669,6 @@ void MHwpmem2 (int *d1, int *d2, int *n1, int *n2, int *K,
   double dbeta0proposal, dbeta1proposal;
   double dlmemmuproposal, dmemnuproposal;
   double pis;
-  double errval=0.0000000001, lzcmp;
 
 //Rprintf("burninbeta: %d\n", (*burninbeta));
 
@@ -712,6 +733,7 @@ void MHwpmem2 (int *d1, int *d2, int *n1, int *n2, int *K,
       if(srd[i] <= Ki){
         lliki += log(pd[srd[i]-1]);
       }
+      lliki += log((double)(d1[i]));
      }
     }else{
      lliki = -100000.0; 
@@ -742,6 +764,7 @@ void MHwpmem2 (int *d1, int *d2, int *n1, int *n2, int *K,
       if(srd2[i] <= Ki){
         lliki += log(pd[srd2[i]-1]);
       }
+      lliki += log((double)(d2[i]));
      }
     }else{
      lliki = -100000.0; 
@@ -773,7 +796,7 @@ void MHwpmem2 (int *d1, int *d2, int *n1, int *n2, int *K,
     /* Propose new memnu and lmemmu */
     lmemmustar = rnorm(lmemmui, dlmemmuproposal);
     // VIP Remember this next line hold the optimism fixed at 1!!! VIP
-    lmemmustar = lmemmui;
+//  lmemmustar = lmemmui;
 
 //  memnustar = rnorm(memnui, dmemnuproposal);
     memnustar = memnui*exp(rnorm(0., dmemnuproposal));
@@ -795,16 +818,14 @@ void MHwpmem2 (int *d1, int *d2, int *n1, int *n2, int *K,
         llikstar += log(1.0-pbinom(maxc-1.0,d1[i],rtprob,give_log0,give_log0));
        }
        if(srd[i]>=0){
-//      Use CMP localized
-        temp= lmemmustar + log((double)(d1[i]));
-        pis=0.;
-        lzcmp = zcmp(exp(temp), memnustar, errval, Ki, give_log1);
-        if(lzcmp < -100000.0){Rprintf("badlzcmp ");continue;}
-        pd[0]=cmp(1,temp,memnustar,lzcmp,give_log0);
+//      Use WP localized
+        memmustar = exp(lmemmustar)*(d1[i]);
+        pd[0]= exp(-fabs(memmustar-1.)/sqrt(memnustar));
+        pis=pd[0];
         for (k=1; k<Ki; k++){
-          pd[k]=pd[k-1]*exp(temp-memnustar*log((double)(k+1)));
+          pd[k]=pd[k-1]*memmustar*exp((fabs(k-memmustar)-fabs(k+1-memmustar))/sqrt(memnustar))/((double)(k+1));
+          pis+=pd[k];
         }
-        pis=1.-exp(-lzcmp);
         for (k=0; k<Ki; k++){
           pd[k]/=pis;
 //  Rprintf(" %f",pd[k]);
@@ -813,6 +834,8 @@ void MHwpmem2 (int *d1, int *d2, int *n1, int *n2, int *K,
         if(srd[i] <= Ki){
           llikstar += log(pd[srd[i]-1]);
         }
+        llikstar += log((double)(d1[i]));
+
 //  Rprintf("\n %d srd %d pd %f %f\n",i,srd[i],pd[srd[i]-1],llikstar);
 //  Rprintf("\n %d %f\n",i,llikstar);
        }
@@ -831,16 +854,14 @@ void MHwpmem2 (int *d1, int *d2, int *n1, int *n2, int *K,
         llikstar += log(1.0-pbinom(maxc-1.0,d2[i],rtprob,give_log0,give_log0));
        }
        if(srd2[i]>=0){
-//      Use CMP localized
-        temp= lmemmustar + log((double)(d2[i]));
-        pis=0.;
-        lzcmp = zcmp(exp(temp), memnustar, errval, Ki, give_log1);
-        if(lzcmp < -100000.0){Rprintf("badlzcmp ");continue;}
-        pd[0]=cmp(1,temp,memnustar,lzcmp,give_log0);
+//      Use WP localized
+        memmustar = exp(lmemmustar)*(d2[i]);
+        pd[0]= exp(-fabs(memmustar-1.)/sqrt(memnustar));
+        pis=pd[0];
         for (k=1; k<Ki; k++){
-          pd[k]=pd[k-1]*exp(temp-memnustar*log((double)(k+1)));
+          pd[k]=pd[k-1]*memmustar*exp((fabs(k-memmustar)-fabs(k+1-memmustar))/sqrt(memnustar))/((double)(k+1));
+          pis+=pd[k];
         }
-        pis=1.-exp(-lzcmp);
         for (k=0; k<Ki; k++){
           pd[k]/=pis;
 //  Rprintf(" %f",pd[k]);
@@ -848,6 +869,7 @@ void MHwpmem2 (int *d1, int *d2, int *n1, int *n2, int *K,
         if(srd2[i] <= Ki){
           llikstar += log(pd[srd2[i]-1]);
         }
+        llikstar += log((double)(d2[i]));
 //  Rprintf("\n %d srd %d pd %f %f\n",i,srd2[i],pd[srd2[i]-1],llikstar);
        }
       }else{

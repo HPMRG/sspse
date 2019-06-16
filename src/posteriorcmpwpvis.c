@@ -181,7 +181,7 @@ void gcmpwpvis (int *pop,
     for (i=0; i<Np; i++){
       pi[i]=pdegi[i];
     }
-    temp=0.;
+//  temp=0.;
 //  for (umax=1; umax<=Ki; umax++){
 //    temp+=pi[umax-1];
 //    if(temp > uprob) break;
@@ -212,13 +212,6 @@ void gcmpwpvis (int *pop,
      beta1i=beta1sample[0];
      lmemmui=lmemmusample[0];
      memnui=memnusample[0];
-//   lmemmui=0.;
-//   memnui=log(6.0);
-//   beta0i= -3.063687833  ;
-//   beta1i=  0.001548059 ;
-//   lmemmui= 1.380479339 ;
-//   rmemnui= 0.913915196 ;
-//  }
 //  Rprintf("step %d lmemmui: %f rmemnui %f beta0i %f beta1i %f\n",step,lmemmui,rmemnui,beta0i,beta1i);
 
     /* Draw true unit sizes based on the reported degrees*/
@@ -228,10 +221,10 @@ void gcmpwpvis (int *pop,
     }
     umax = 0;
     for (j=0; j<ni; j++){
-      if(srd[j] <= Ki){
+     if(srd[j] <= (Ki*1.25)){
       temp = beta0i + beta1i*rectime[j];
       rtprob = exp(temp)/(1.0+exp(temp));
-//    Multiply by the PoissonLogNormal PMF for observation
+//    Multiply by the Conway=Maxwell-Poisson PMF for observation
       for (i=0; i<Ki; i++){
        // Next to exclude unit sizes inconsistent with the number of recruits
 //     if((numrec[j] <= (i+1)) & ((maxc-1) <= (i+1))){
@@ -243,7 +236,6 @@ void gcmpwpvis (int *pop,
           lliki += log(1.0-pbinom(maxc-1.0,(i+1),rtprob,give_log0,give_log0));
         }
         if(srd[j]>=0){
-//        lliki += log(poilog(srd[j],log((double)(i+1))-lmemmui,memnui));
 //        Use WP for localized
           memmui = exp(lmemmui)*(i+1.);
           pd2[0]= exp(-fabs(memmui-1.)/sqrt(memnui));
@@ -259,10 +251,12 @@ void gcmpwpvis (int *pop,
 //if(j==6) Rprintf("\n");
 //if(j==6) Rprintf("pd2[srd]: %f\n",pd2[srd[j]-1]);
 //Rprintf(" memnui %f pd2[srd[j]]: %f\n",memnui,pd2[srd[j]-1]);
+//        if(srd[j] <= (Ki*exp(lmemmui))){
           if(srd[j] <= Ki){
             lliki += log(pd2[srd[j]-1]);
-//        }else{
-/////       lliki += log(pd2[Ki-1]);
+          }else{
+            lliki += log(pd2[Ki-1]);
+          }
 //	    if(temp<1.0){
 //              lliki += log(1.-temp);
 //	    }else{
@@ -272,9 +266,10 @@ void gcmpwpvis (int *pop,
 // if((1.-temp) > 0.99){
 //        for (k=0; k<Ki; k++){ Rprintf("k %d pd2[k] %f\n",k,pd2[k]);}
 // }
-          }
+//        }
         }
-        pd[i]=pi[i]*exp(lliki);
+//      pd[i]=pi[i]*exp(lliki);
+        pd[i]=pi[i]*exp(lliki)*(i+1.);
        }else{
         pd[i]=0.0;
        }
@@ -321,8 +316,8 @@ void gcmpwpvis (int *pop,
       nk[sizei-1]=nk[sizei-1]+1;
       u[j]=sizei;
 
-      if(sizei > umax) umax = sizei;
-      }
+//    if(sizei > umax) umax = sizei;
+    }
 // Next line to force unit sizes to degrees
 // Rprintf("j %d u[j] %d sim u %d\n", j, u[j], sizei);
 // sizei=u[j];
@@ -330,12 +325,46 @@ void gcmpwpvis (int *pop,
 //    if(u[j] < numrec[j]) Rprintf("Warning: j %d u[j] %d numrec[j] %d maxc %d: %f %f %f %f\n",j,u[j],numrec[j],maxc,pd[0],pd[1],pd[2],pd[3]);
 //Rprintf("j %d dis %d sizei %d pd[Ki-1] %f\n", j, ddis, sizei, pd[Ki-1]);
      } 
+//   pis=0.;
+//   for (i=0; i<Ki; i++){
+//     pd[i]=(i+1)*(i+1)*nk[i];
+//     pis+=pd[i];
+//   }
+//   for (i=0; i<Ki; i++){
+//     pd[i]/=pis;
+//   }
+//   for (i=1; i<Ki; i++){
+//    pd[i]=pd[i-1]+pd[i];
+//   }
 
+//   /* Deal with the outliers */
+//   for (j=0; j<ni; j++){
+//    if(srd[j] > Ki){
+//     temp = pd[Ki-1] * unif_rand();
+//     for (sizei=1; sizei<=Ki; sizei++){
+//      if(temp <= pd[sizei-1]) break;
+//     }
+//     nk[sizei-1]=nk[sizei-1]+1;
+//     u[j]=sizei;
+//    }
+//   }
+//
      /* Deal with the outliers */
+     umax=nk[Ki-1];
+     sizei=Ki;
      for (j=0; j<ni; j++){
-      if(srd[j] > Ki){
-       nk[umax-1]=nk[umax-1]+1;
-       u[j]=umax;
+      if(srd[j] > 1.25*Ki){
+       if((umax==0) & (sizei > 1)){
+         sizei--;
+	 umax=nk[sizei-1];
+       }
+       u[j]=sizei;
+       umax--;
+      }
+     }
+     for (j=0; j<ni; j++){
+      if(srd[j] > 1.25*Ki){
+       nk[u[j]-1]=nk[u[j]-1]+1;
       }
      }
 
@@ -603,14 +632,15 @@ void MHwpmem (int *u, int *n, int *K,
       if(srd[i] <= Ki){
         lliki += log(pd[srd[i]-1]);
 //    }else{
-///     lliki += log(pd[Ki-1]);
+//      lliki += log(pd[Ki-1]);
+      }
+      lliki += log((double)(u[i]));
 //if(temp<1.0){
 //        lliki += log(1.-temp);
 //}else{
 //        lliki += -100.0;
 //}
 // Rprintf("lliki srd: %d llik %f p[50] %f p %f\n",srd[i],lliki,pd[49],(1.-temp));
-      }
      }
     }else{
      lliki = -100000.0; 
@@ -641,8 +671,9 @@ void MHwpmem (int *u, int *n, int *K,
     }
     /* Propose new memnu and lmemmu */
     lmemmustar = rnorm(lmemmui, dlmemmuproposal);
-    // VIP Remember this next line hold the optimism fixed at 1!!! VIP
-    lmemmustar = lmemmui;
+// VIP Remember this next line hold the optimism fixed at 1!!! VIP
+//  lmemmustar = lmemmui;
+
 //  lmemmustar = 0.0;
 //  rmemnustar = rnorm(memnui, dmemnuproposal);
     memnustar = memnui*exp(rnorm(0., dmemnuproposal));
@@ -685,6 +716,10 @@ void MHwpmem (int *u, int *n, int *K,
         if(srd[i] <= Ki){
           llikstar += log(pd[srd[i]-1]);
 //      }else{
+//        llikstar += log(pd[Ki-1]);
+        }
+        llikstar += log((double)(u[i]));
+//      }else{
 ////      llikstar += log(pd[Ki-1]);
 //if(temp<1.0){
 //         llikstar += log(1.-temp);
@@ -692,7 +727,6 @@ void MHwpmem (int *u, int *n, int *K,
 //         llikstar += -100.0;
 //}
 // Rprintf("llikstar srd: %d llik %f p[50] %f p %f\n",srd[i],lliki,pd[49],(1.-temp));
-        }
 //  Rprintf("llikstar: %i %f %f %f %f %f %f %f\n",i, llikstar,lmemmustar,memnustar,beta0star,beta1star,temp,rtprob);
        }
       }else{

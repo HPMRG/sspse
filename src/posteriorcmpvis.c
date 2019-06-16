@@ -211,13 +211,6 @@ void gcmpvis (int *pop,
      beta1i=beta1sample[0];
      lmemmui=lmemmusample[0];
      memnui=memnusample[0];
-//   lmemmui=0.;
-//   memnui=log(6.0);
-//   beta0i= -3.063687833  ;
-//   beta1i=  0.001548059 ;
-//   lmemmui= 1.380479339 ;
-//   rmemnui= 0.913915196 ;
-//  }
 //  Rprintf("step %d lmemmui: %f rmemnui %f beta0i %f beta1i %f\n",step,lmemmui,rmemnui,beta0i,beta1i);
 
     /* Draw true unit sizes based on the reported degrees*/
