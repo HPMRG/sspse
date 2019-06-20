@@ -66,6 +66,7 @@
 #' @importFrom utils packageDescription
 #' @importFrom graphics lines
 #' @importFrom stats median
+#' @importFrom stats quantile
 #' @importFrom stats poisson
 #' @importFrom stats predict
 #' @import methods
