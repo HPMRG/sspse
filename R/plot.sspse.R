@@ -280,6 +280,8 @@ if(control$type %in% c("visibility","degree","all")){
        xlab=data.title, ylim=range(c(x$visibilities,pfit),na.rm=TRUE),
        main="Estimated Visibilites for each respondent", cex.main=cex.main)
      lines(x=1:max(network.size,na.rm=TRUE),y=pfit)
+     qs <- apply(x$vsample,2,quantile,probs=c(0.25,0.75))
+     Hmisc::errbar(y=x$visibilities, x=network.size,yminus=qs[1,],yplus=qs[2,],add=TRUE)
     }
    }
   }

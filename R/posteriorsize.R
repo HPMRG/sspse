@@ -405,7 +405,7 @@ posteriorsize<-function(s,
                   beta0.mean.prior=-3, beta1.mean.prior=0,
                   beta0.sd.prior=10, beta1.sd.prior=10,
                   mem.optimism.prior=1, df.mem.optimism.prior=5, 
-                  mem.scale.prior=1, df.mem.scale.prior=20,
+                  mem.scale.prior=2, df.mem.scale.prior=10,
                   visibility=TRUE,
                   type.impute = c("median","distribution","mode","mean"),
                   Np=0,
@@ -521,7 +521,8 @@ posteriorsize<-function(s,
   
   if(!is.null(K) & is.logical(K) & (K==FALSE)){
    if(visibility){
-    K.fixed <- max(network.size[!remvalues])
+#   K.fixed <- max(network.size[!remvalues])
+    K.fixed <- round(stats::quantile(network.size[!remvalues],0.99))
    }else{
     K.fixed <- NULL
    }
@@ -636,7 +637,8 @@ posteriorsize<-function(s,
    
    if(!is.null(K) & is.logical(K) & (K==FALSE)){
     if(visibility){
-     K.fixed <- max(network.size2[!remvalues2])
+#    K.fixed <- max(network.size2[!remvalues2])
+     K.fixed <- max(K.fixed, round(stats::quantile(network.size2[!remvalues2],0.99)))
     }else{
      K.fixed <- NULL
     }

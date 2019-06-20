@@ -336,7 +336,7 @@ void gcmpwpvis2 (int *pop12, int *pop21,
      sizei=Ki;
      for (j=0; j<ni1; j++){
       if(srd[j] > 1.25*Ki){
-       if((umax==0) & (sizei > 1)){
+       while((umax==0) & (sizei > 1)){
          sizei--;
 	 umax=nk[sizei-1];
        }
@@ -378,16 +378,14 @@ void gcmpwpvis2 (int *pop12, int *pop21,
           lliki += log(1.0-pbinom(maxc-1.0,(i+1),rtprob,give_log0,give_log0));
         }
         if(srd2[j]>=0){
-//        Use CMP localized
-          temp= lmemmui + log((double)(i+1));
-          pis=0.;
-          lzcmp = zcmp(exp(temp), memnui, errval, Ki, give_log1);
-          if(lzcmp < -100000.0){Rprintf("badlzcmp ");continue;}
-          pd2[0]=cmp(1,temp,memnui,lzcmp,give_log0);
+//        Use WP for localized
+          memmui = exp(lmemmui)*(i+1.);
+          pd2[0]= exp(-fabs(memmui-1.)/sqrt(memnui));
+          pis=pd2[0];
           for (k=1; k<Ki; k++){
-            pd2[k]=pd2[k-1]*exp(temp-memnui*log((double)(k+1)));
+            pd2[k]=pd2[k-1]*memmui*exp((fabs(k-memmui)-fabs(k+1-memmui))/sqrt(memnui))/((double)(k+1));
+ 	    pis+=pd2[k];
           }
-          pis=1.-exp(-lzcmp);
           for (k=0; k<Ki; k++){
             pd2[k]/=pis;
           }
@@ -439,7 +437,7 @@ void gcmpwpvis2 (int *pop12, int *pop21,
      sizei=Ki;
      for (j=0; j<ni2; j++){
       if(srd2[j] > 1.25*Ki){
-       if((umax==0) & (sizei > 1)){
+       while((umax==0) & (sizei > 1)){
          sizei--;
 	 umax=nk[sizei-1];
        }
@@ -732,6 +730,8 @@ void MHwpmem2 (int *d1, int *d2, int *n1, int *n2, int *K,
       }
       if(srd[i] <= Ki){
         lliki += log(pd[srd[i]-1]);
+      }else{
+        lliki += log(pd[Ki-1]);
       }
       lliki += log((double)(d1[i]));
      }
@@ -763,6 +763,8 @@ void MHwpmem2 (int *d1, int *d2, int *n1, int *n2, int *K,
       }
       if(srd2[i] <= Ki){
         lliki += log(pd[srd2[i]-1]);
+      }else{
+        lliki += log(pd[Ki-1]);
       }
       lliki += log((double)(d2[i]));
      }
@@ -796,7 +798,7 @@ void MHwpmem2 (int *d1, int *d2, int *n1, int *n2, int *K,
     /* Propose new memnu and lmemmu */
     lmemmustar = rnorm(lmemmui, dlmemmuproposal);
     // VIP Remember this next line hold the optimism fixed at 1!!! VIP
-//  lmemmustar = lmemmui;
+    lmemmustar = lmemmui;
 
 //  memnustar = rnorm(memnui, dmemnuproposal);
     memnustar = memnui*exp(rnorm(0., dmemnuproposal));
@@ -833,6 +835,8 @@ void MHwpmem2 (int *d1, int *d2, int *n1, int *n2, int *K,
 //  Rprintf("\n %d srd %d pd %f llikstar %f temp %f\n",i,srd[i],pd[srd[i]-1],llikstar, temp);
         if(srd[i] <= Ki){
           llikstar += log(pd[srd[i]-1]);
+        }else{
+          llikstar += log(pd[Ki-1]);
         }
         llikstar += log((double)(d1[i]));
 
@@ -868,6 +872,8 @@ void MHwpmem2 (int *d1, int *d2, int *n1, int *n2, int *K,
         }
         if(srd2[i] <= Ki){
           llikstar += log(pd[srd2[i]-1]);
+        }else{
+          llikstar += log(pd[Ki-1]);
         }
         llikstar += log((double)(d2[i]));
 //  Rprintf("\n %d srd %d pd %f %f\n",i,srd2[i],pd[srd2[i]-1],llikstar);

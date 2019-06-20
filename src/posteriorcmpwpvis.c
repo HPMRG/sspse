@@ -354,7 +354,7 @@ void gcmpwpvis (int *pop,
      sizei=Ki;
      for (j=0; j<ni; j++){
       if(srd[j] > 1.25*Ki){
-       if((umax==0) & (sizei > 1)){
+       while((umax==0) & (sizei > 1)){
          sizei--;
 	 umax=nk[sizei-1];
        }
