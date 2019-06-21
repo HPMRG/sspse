@@ -522,15 +522,16 @@ posteriorsize<-function(s,
   if(!is.null(K) & is.logical(K) & (K==FALSE)){
    if(visibility){
 #   K.fixed <- max(network.size[!remvalues])
-    K.fixed <- round(stats::quantile(network.size[!remvalues],0.99))
+#   K.fixed <- round(stats::quantile(network.size[!remvalues],0.99))
+    K.fixed <- round(stats::quantile(network.size[!remvalues],0.95))
    }else{
     K.fixed <- NULL
    }
   }
   if(is.null(K.fixed)){
     if(length(network.size[!remvalues])>0){
-#     K <- round(stats::quantile(network.size[!remvalues],0.95))
-      K <- round(stats::quantile(network.size[!remvalues],0.99))
+      K <- round(stats::quantile(network.size[!remvalues],0.95))
+#     K <- round(stats::quantile(network.size[!remvalues],0.99))
     }
   }
   

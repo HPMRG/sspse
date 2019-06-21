@@ -65,6 +65,13 @@
 #' @useDynLib sspse, .registration = TRUE
 #' @importFrom utils packageDescription
 #' @importFrom graphics lines
+#' @importFrom graphics abline
+#' @importFrom graphics axis
+#' @importFrom graphics par
+#' @importFrom graphics plot
+#' @importFrom graphics points
+#' @importFrom graphics segments
+#' @importFrom graphics strwidth
 #' @importFrom stats median
 #' @importFrom stats quantile
 #' @importFrom stats poisson
