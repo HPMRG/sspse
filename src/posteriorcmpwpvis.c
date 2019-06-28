@@ -43,6 +43,7 @@ void gcmpwpvis (int *pop,
   int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
   int j, k;
   int umax;
+  double alpha=25., pnb, rnb;
   double mui, sigmai, lnlami, nui, dsamp;
   double sigma2i;
   double dbeta0, dbeta1;
@@ -74,6 +75,7 @@ void gcmpwpvis (int *pop,
   maxc=(*maxcoupons);
   
   dimsample=5+Np+4;
+  pnb=(alpha-1.)/alpha;
 
   double *pi = (double *) malloc(sizeof(double) * Ki);
   double *pd = (double *) malloc(sizeof(double) * Ki);
@@ -238,10 +240,12 @@ void gcmpwpvis (int *pop,
         if(srd[j]>=0){
 //        Use WP for localized
           memmui = exp(lmemmui)*(i+1.);
+	  rnb=memmui/(alpha-1.);
           pd2[0]= exp(-fabs(memmui-1.)/sqrt(memnui));
           pis=pd2[0];
           for (k=1; k<(2*Ki); k++){
-            pd2[k]= pd2[k-1]*memmui*exp((fabs(k-memmui)-fabs(k+1-memmui))/sqrt(memnui))/((double)(k+1));
+//          pd2[k]= pd2[k-1]*memmui*exp((fabs(k-memmui)-fabs(k+1-memmui))/sqrt(memnui))/((double)(k+1));
+            pd2[k]= pd2[k-1]*(k+rnb)*pnb*exp((fabs(k-memmui)-fabs(k+1-memmui))/sqrt(memnui))/((double)(k+1));
 	    pis+=pd2[k];
           }
           for (k=0; k<(2*Ki); k++){
@@ -491,10 +495,11 @@ void gcmpwpvis (int *pop,
 //    Record the predicted degrees (not unit sizes)
       for (i=ni; i<Ni; i++){
         memmui = exp(lmemmui)*u[i];
+	rnb=memmui/(alpha-1.);
         pd[0]= exp(-fabs(memmui-1.)/sqrt(memnui));
         pis=pd[0];
         for (k=1; k<Ki; k++){
-          pd[k]= pd[k-1]*memmui*exp((fabs(k-memmui)-fabs(k+1.-memmui))/sqrt(memnui))/((double)(k+1));
+          pd[k]= pd[k-1]*(k+rnb)*pnb*exp((fabs(k-memmui)-fabs(k+1-memmui))/sqrt(memnui))/((double)(k+1));
           pis+=pd[k];
         }
         for (k=0; k<Ki; k++){
@@ -572,9 +577,11 @@ void MHwpmem (int *u, int *n, int *K,
   double dbeta0proposal, dbeta1proposal;
   double dlmemmuproposal, dmemnuproposal;
   double pis, pis2;
+  double alpha=25., pnb, rnb;
 
   Ki=(*K);
   double *pd = (double *) malloc(sizeof(double) * (2*Ki));
+  pnb=(alpha-1.)/alpha;
 
 //GetRNGstate();  /* R function enabling uniform RNG */
 
@@ -622,10 +629,11 @@ void MHwpmem (int *u, int *n, int *K,
 //    lliki += log(poilog(srd[i],log((double)(u[i]))-lmemmui,memnui));
 //    Use WP for localized
       memmui = exp(lmemmui)*u[i];
+      rnb=memmui/(alpha-1.);
       pd[0]= memmui*exp(-fabs(memmui-1.)/sqrt(memnui));
       pis=pd[0];
       for (k=1; k<(2*Ki); k++){
-        pd[k]= pd[k-1]*memmui*exp((fabs(k-memmui)-fabs(k+1-memmui))/sqrt(memnui))/((double)(k+1));
+        pd[k]= pd[k-1]*(k+rnb)*pnb*exp((fabs(k-memmui)-fabs(k+1-memmui))/sqrt(memnui))/((double)(k+1));
         pis+=pd[k];
       }
       for (k=0; k<(2*Ki); k++){
@@ -711,11 +719,12 @@ void MHwpmem (int *u, int *n, int *K,
 //      llans <- -x*lambda - theta + (x-1) * log(theta + x*lambda) +
 //                 log(theta) - lgamma(x+1)
         memmustar = exp(lmemmustar)*u[i];
+	rnb=memmustar/(alpha-1.);
 //      pd[0]= memmustar*exp(-fabs(memmustar-1.)/sqrt(memnustar));
         pd[0]= exp(-fabs(memmustar-1.)/sqrt(memnustar));
         pis=pd[0];
         for (k=1; k<(2*Ki); k++){
-          pd[k]= pd[k-1]*memmustar*exp((fabs(k-memmustar)-fabs(k+1.-memmustar))/sqrt(memnustar))/((double)(k+1));
+          pd[k]= pd[k-1]*(k+rnb)*pnb*exp((fabs(k-memmustar)-fabs(k+1-memmustar))/sqrt(memnustar))/((double)(k+1));
           pis+=pd[k];
         }
         for (k=0; k<(2*Ki); k++){
