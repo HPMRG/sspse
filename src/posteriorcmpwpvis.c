@@ -240,21 +240,21 @@ void gcmpwpvis (int *pop,
         if(srd[j]>=0){
 //        Use WP for localized
           memmui = exp(lmemmui)*(i+1.);
-	  rnb=memmui/(alpha-1.);
+          rnb=memmui/(alpha-1.);
           pd2[0]= exp(-fabs(memmui-1.)/sqrt(memnui));
           pis=pd2[0];
           for (k=1; k<(2*Ki); k++){
 //          pd2[k]= pd2[k-1]*memmui*exp((fabs(k-memmui)-fabs(k+1-memmui))/sqrt(memnui))/((double)(k+1));
             pd2[k]= pd2[k-1]*(k+rnb)*pnb*exp((fabs(k-memmui)-fabs(k+1-memmui))/sqrt(memnui))/((double)(k+1));
-	    pis+=pd2[k];
+            pis+=pd2[k];
           }
           for (k=0; k<(2*Ki); k++){
             pd2[k]/=pis;
 // Rprintf("srd[j] %d memmui %f k %d pd2[k]: %f\n",srd[j],memmui,k+1,pd2[k]);
           }
-	  pis2=0.;
+          pis2=0.;
           for (k=Ki; k<(2*Ki); k++){
-	    pis2+=pd2[k];
+            pis2+=pd2[k];
           }
 //if(j==6) Rprintf("\n");
 //if(j==6) Rprintf("pd2[srd]: %f\n",pd2[srd[j]-1]);
@@ -266,11 +266,11 @@ void gcmpwpvis (int *pop,
 //          lliki += log(pd2[Ki-1]);
             lliki += log(pis2);
           }
-//	    if(temp<1.0){
+//            if(temp<1.0){
 //              lliki += log(1.-temp);
-//	    }else{
+//            }else{
 //              lliki += -100.0;
-//	    }
+//            }
 // Rprintf("lliki0 lmemmui %f memnui %f srd: %d llik %f p[50] %f p %f\n",lmemmui,memnui,srd[i],lliki,pd2[49],(1.-temp));
 // if((1.-temp) > 0.99){
 //        for (k=0; k<Ki; k++){ Rprintf("k %d pd2[k] %f\n",k,pd2[k]);}
@@ -364,7 +364,7 @@ void gcmpwpvis (int *pop,
       if(srd[j] > 2*Ki){
        while((umax==0) & (sizei > 1)){
          sizei--;
-	 umax=nk[sizei-1];
+         umax=nk[sizei-1];
        }
        u[j]=sizei;
        umax--;
@@ -495,7 +495,7 @@ void gcmpwpvis (int *pop,
 //    Record the predicted degrees (not unit sizes)
       for (i=ni; i<Ni; i++){
         memmui = exp(lmemmui)*u[i];
-	rnb=memmui/(alpha-1.);
+        rnb=memmui/(alpha-1.);
         pd[0]= exp(-fabs(memmui-1.)/sqrt(memnui));
         pis=pd[0];
         for (k=1; k<Ki; k++){
@@ -719,7 +719,7 @@ void MHwpmem (int *u, int *n, int *K,
 //      llans <- -x*lambda - theta + (x-1) * log(theta + x*lambda) +
 //                 log(theta) - lgamma(x+1)
         memmustar = exp(lmemmustar)*u[i];
-	rnb=memmustar/(alpha-1.);
+        rnb=memmustar/(alpha-1.);
 //      pd[0]= memmustar*exp(-fabs(memmustar-1.)/sqrt(memnustar));
         pd[0]= exp(-fabs(memmustar-1.)/sqrt(memnustar));
         pis=pd[0];

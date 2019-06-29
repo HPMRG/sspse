@@ -19,7 +19,7 @@ void gcmp2 (int *pop12,
             int *samplesize, int *burnin, int *interval,
             double *mu, double *dfmu, 
             double *sigma, double *dfsigma,
-	    double *lnlam, double *nu,
+            double *lnlam, double *nu,
             int *Npi,
             double *muproposal, 
             double *nuproposal, 
@@ -136,8 +136,8 @@ void gcmp2 (int *pop12,
     if (step == -iburnin || step==(10*(step/10))) { 
      MHcmptheta(Nk,K,mu,dfmu,sigma,dfsigma,muproposal,nuproposal,
            &Ni, &Np, psample,
-	   lnlamsample, nusample, &getone, &staken, burnintheta, &intervalone, 
-	   &verboseMHcmp);
+           lnlamsample, nusample, &getone, &staken, burnintheta, &intervalone, 
+           &verboseMHcmp);
     }
 
     for (i=0; i<Np; i++){
@@ -214,7 +214,7 @@ void gcmp2 (int *pop12,
     // Add back the sample size
     Ni += ni;
     if(Ni > imaxN) Ni = imaxN;
-		    
+                    
     /* Draw phis */
     // tU1 is the total unit sizes from first list
     tU1=0;
@@ -253,7 +253,7 @@ void gcmp2 (int *pop12,
         /* Now propose unseen size for unit i */
         /* In the next two lines a sizei is chosen */
         /* with parameters mui and nui */
-	temp = unif_rand();
+        temp = unif_rand();
 //      gammart = pi[Ki-1] * unif_rand();
         for (sizei=1; sizei<=Ki; sizei++){
           if(temp <= pi[sizei-1]) break;

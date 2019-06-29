@@ -18,7 +18,7 @@ void gcmpvis2 (int *pop12, int *pop21,
             int *samplesize, int *burnin, int *interval,
             double *mu, double *dfmu, 
             double *sigma, double *dfsigma,
-	    double *lnlam, double *nu,
+            double *lnlam, double *nu,
             double *beta0muprior, double *beta0sigmaprior, 
             double *beta1muprior, double *beta1sigmaprior, 
             double *lmemmu, double *memdfmu,
@@ -292,9 +292,9 @@ void gcmpvis2 (int *pop12, int *pop21,
           for (k=0; k<Ki; k++){
             pd2[k]/=pis;
           }
-	  if(srd[i] <= Ki){
+          if(srd[i] <= Ki){
             lliki += log(pd2[srd[j]-1]);
-	  }
+          }
         }
         pd[i]=pi[i]*exp(lliki);
         pdm[i]=exp(lliki);
@@ -377,9 +377,9 @@ void gcmpvis2 (int *pop12, int *pop21,
           for (k=0; k<Ki; k++){
             pd2[k]/=pis;
           }
-	  if(srd2[i] <= Ki){
+          if(srd2[i] <= Ki){
             lliki += log(pd2[srd2[j]-1]);
-	  }
+          }
         }
         pd[i]=pi[i]*exp(lliki);
        }else{

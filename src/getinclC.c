@@ -14,7 +14,7 @@ void getinclC (int *N,
             int *n, 
             int *samplesize,
             int *Nk
-		 ) {
+                 ) {
   int i, ni, Ni, Ki, isamp, isamplesize;
   // N = populaton size
   // pop = class order of ith member of the pop i=1,...,N
@@ -94,19 +94,19 @@ static void ProbSampleNoReplace(int n, double *p, int *perm, int nans, int *ans)
     /* Compute the sample */
     totalmass = 1;
     for (i = 0, n1 = n-1; i < nans; i++, n1--) {
-	rT = totalmass * unif_rand();
-	mass = 0;
-	for (j = 0; j < n1; j++) {
-	    mass += p[j];
-	    if (rT <= mass)
-		break;
-	}
-	ans[i] = perm[j];
-	totalmass -= p[j];
-	for(k = j; k < n1; k++) {
-	    p[k] = p[k + 1];
-	    perm[k] = perm[k + 1];
-	}
+        rT = totalmass * unif_rand();
+        mass = 0;
+        for (j = 0; j < n1; j++) {
+            mass += p[j];
+            if (rT <= mass)
+                break;
+        }
+        ans[i] = perm[j];
+        totalmass -= p[j];
+        for(k = j; k < n1; k++) {
+            p[k] = p[k + 1];
+            perm[k] = perm[k + 1];
+        }
 //Rprintf("i %d ans %d\n",i,ans[i]);
     }
 }

@@ -95,7 +95,7 @@
 
   void poilogmy_f2_vec(double *z, int n, void * p)
   {
-	 int i;
+     int i;
      struct poilogmy_f2_params * params = (struct poilogmy_f2_params *)p;
      int x       = (params->x);
      int y       = (params->y);

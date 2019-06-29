@@ -253,11 +253,11 @@ void gcmpvis (int *pop,
             lliki += log(pd2[srd[j]-1]);
 //        }else{
 /////       lliki += log(pd2[Ki-1]);
-//	    if(temp<1.0){
+//          if(temp<1.0){
 //              lliki += log(1.-temp);
-//	    }else{
+//          }else{
 //              lliki += -100.0;
-//	    }
+//          }
 // Rprintf("lliki0 lmemmui %f memnui %f srd: %d llik %f p[50] %f p %f\n",lmemmui,memnui,srd[i],lliki,pd2[49],(1.-temp));
 // if((1.-temp) > 0.99){
 //        for (k=0; k<Ki; k++){ Rprintf("k %d pd2[k] %f\n",k,pd2[k]);}

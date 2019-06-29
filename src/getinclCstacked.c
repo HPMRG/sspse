@@ -14,7 +14,7 @@ void getinclCstacked (
             int *n, 
             int *samplesize,
             int *Nk
-		 ) {
+                 ) {
   int i, ni, Ki, isamp, isamplesize;
   // nbyclass = the number of members of class k=1,...,K
   // size = the size (i.e., degree) of the kth class k=1,...,K
@@ -107,32 +107,32 @@ static void ProbSampleNoReplaceStacked(int n, int *nbyclass, double *p, int *per
     /* Compute the sample */
     totalmass = 1.0;
     for (i = 0; i < nans; i++) {
-	rT = totalmass * unif_rand();
-	mass = 0.0;
-	for (j = 0; j < n; j++) {
-	    mass += p[j];
-	    if (rT <= mass)
-		break;
-	}
-	ans[i] = perm[j];
+        rT = totalmass * unif_rand();
+        mass = 0.0;
+        for (j = 0; j < n; j++) {
+            mass += p[j];
+            if (rT <= mass)
+                break;
+        }
+        ans[i] = perm[j];
 //Rprintf("j %d perm[j] %d p[j] %f nbyclass[j] %d totalmass %f rT %f n %d\n",j,perm[j],
 //p[j], nbyclass[j], totalmass,rT, n);
-//	/* update the reduced probabilities */
-	totalmass -= (p[j] / nbyclass[j]);
-	p[j] *= (1.0-1.0/nbyclass[j]);
-	nbyclass[j]--;
-	if(j < n - 1 && p[j] < p[j+1]){
-	  perm[j] = perm[j+1];
-	  perm[j+1] = ans[i];
-	  mass = p[j];
-	  p[j] = p[j+1];
-	  p[j+1] = mass;
-	  nby = nbyclass[j];
-	  nbyclass[j] = nbyclass[j+1];
-	  nbyclass[j+1] = nby;
+//        /* update the reduced probabilities */
+        totalmass -= (p[j] / nbyclass[j]);
+        p[j] *= (1.0-1.0/nbyclass[j]);
+        nbyclass[j]--;
+        if(j < n - 1 && p[j] < p[j+1]){
+          perm[j] = perm[j+1];
+          perm[j+1] = ans[i];
+          mass = p[j];
+          p[j] = p[j+1];
+          p[j+1] = mass;
+          nby = nbyclass[j];
+          nbyclass[j] = nbyclass[j+1];
+          nbyclass[j+1] = nby;
 //Rprintf("j %d perm[j] %d perm[j+1] %d p[j] %f p[j+1] %f nbyclass[j] %d totalmass %f rT %f\n",j,perm[j],
 //perm[j+1], p[j], p[j+1], nbyclass[j], totalmass,rT);
-	}
+        }
 //Rprintf("i %d ans %d\n",i,ans[i]);
     }
 }

@@ -18,7 +18,7 @@ void gcmpwpvis2 (int *pop12, int *pop21,
             int *samplesize, int *burnin, int *interval,
             double *mu, double *dfmu, 
             double *sigma, double *dfsigma,
-	    double *lnlam, double *nu,
+            double *lnlam, double *nu,
             double *beta0muprior, double *beta0sigmaprior, 
             double *beta1muprior, double *beta1sigmaprior, 
             double *lmemmu, double *memdfmu,
@@ -51,6 +51,7 @@ void gcmpwpvis2 (int *pop12, int *pop21,
   int step, staken, getone=1, intervalone=1, verboseMHcmp = 0;
   int i, j, k, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
   int umax;
+  double alpha=25.0, pnb, rnb;
   double memmui;
   double mui, sigmai, dsamp, nui, lnlami, sigma2i;
   double dbeta0, dbeta1;
@@ -84,6 +85,7 @@ void gcmpwpvis2 (int *pop12, int *pop21,
   maxc=(*maxcoupons);
 
   dimsample=5+Np+4;
+  pnb=(alpha-1.)/alpha;
 
   double *pi = (double *) malloc(sizeof(double) * Ki);
   double *pd = (double *) malloc(sizeof(double) * Ki);
@@ -281,24 +283,25 @@ void gcmpwpvis2 (int *pop12, int *pop21,
         if(srd[j]>=0){
 //        Use WP for localized
           memmui = exp(lmemmui)*(i+1.);
+          rnb=memmui/(alpha-1.);
           pd2[0]= exp(-fabs(memmui-1.)/sqrt(memnui));
           pis=pd2[0];
           for (k=1; k<(2*Ki); k++){
-            pd2[k]=pd2[k-1]*memmui*exp((fabs(k-memmui)-fabs(k+1-memmui))/sqrt(memnui))/((double)(k+1));
- 	    pis+=pd2[k];
+            pd2[k]= pd2[k-1]*(k+rnb)*pnb*exp((fabs(k-memmui)-fabs(k+1-memmui))/sqrt(memnui))/((double)(k+1));
+             pis+=pd2[k];
           }
           for (k=0; k<(2*Ki); k++){
             pd2[k]/=pis;
           }
-	  pis2=0.;
+          pis2=0.;
           for (k=Ki; k<(2*Ki); k++){
-	    pis2+=pd2[k];
+            pis2+=pd2[k];
           }
-	  if(srd[i] <= Ki){
+          if(srd[i] <= Ki){
             lliki += log(pd2[srd[j]-1]);
-	  }else{
+          }else{
             lliki += log(pis2);
-	  }
+          }
         }
         pd[i]=pi[i]*exp(lliki)*(i+1.);
         pdm[i]=exp(lliki);
@@ -344,7 +347,7 @@ void gcmpwpvis2 (int *pop12, int *pop21,
       if(srd[j] > 2*Ki){
        while((umax==0) & (sizei > 1)){
          sizei--;
-	 umax=nk[sizei-1];
+         umax=nk[sizei-1];
        }
        d1[j]=sizei;
        umax--;
@@ -386,24 +389,25 @@ void gcmpwpvis2 (int *pop12, int *pop21,
         if(srd2[j]>=0){
 //        Use WP for localized
           memmui = exp(lmemmui)*(i+1.);
+          rnb=memmui/(alpha-1.);
           pd2[0]= exp(-fabs(memmui-1.)/sqrt(memnui));
           pis=pd2[0];
           for (k=1; k<(2*Ki); k++){
-            pd2[k]=pd2[k-1]*memmui*exp((fabs(k-memmui)-fabs(k+1-memmui))/sqrt(memnui))/((double)(k+1));
- 	    pis+=pd2[k];
+            pd2[k]= pd2[k-1]*(k+rnb)*pnb*exp((fabs(k-memmui)-fabs(k+1-memmui))/sqrt(memnui))/((double)(k+1));
+            pis+=pd2[k];
           }
           for (k=0; k<(2*Ki); k++){
             pd2[k]/=pis;
           }
-	  pis2=0.;
+          pis2=0.;
           for (k=Ki; k<(2*Ki); k++){
-	    pis2+=pd2[k];
+            pis2+=pd2[k];
           }
-	  if(srd2[i] <= Ki){
+          if(srd2[i] <= Ki){
             lliki += log(pd2[srd2[j]-1]);
-	  }else{
+          }else{
             lliki += log(pis2);
-	  }
+          }
         }
         pd[i]=pi[i]*exp(lliki)*(i+1.);
        }else{
@@ -451,7 +455,7 @@ void gcmpwpvis2 (int *pop12, int *pop21,
       if(srd2[j] > 2*Ki){
        while((umax==0) & (sizei > 1)){
          sizei--;
-	 umax=nk[sizei-1];
+         umax=nk[sizei-1];
        }
        d2[j]=sizei;
        umax--;
@@ -679,6 +683,7 @@ void MHwpmem2 (int *d1, int *d2, int *n1, int *n2, int *K,
   double dbeta0proposal, dbeta1proposal;
   double dlmemmuproposal, dmemnuproposal;
   double pis, pis2;
+  double alpha=25.0, pnb, rnb;
 
 //Rprintf("burninbeta: %d\n", (*burninbeta));
 
@@ -731,10 +736,11 @@ void MHwpmem2 (int *d1, int *d2, int *n1, int *n2, int *K,
      if(srd[i]>=0){
 //    Use WP localized
       memmui = exp(lmemmui)*(d1[i]);
+      rnb=memmui/(alpha-1.);
       pd[0]= exp(-fabs(memmui-1.)/sqrt(memnui));
       pis=pd[0];
       for (k=1; k<(2*Ki); k++){
-        pd[k]=pd[k-1]*memmui*exp((fabs(k-memmui)-fabs(k+1-memmui))/sqrt(memnui))/((double)(k+1));
+        pd[k]= pd[k-1]*(k+rnb)*pnb*exp((fabs(k-memmui)-fabs(k+1-memmui))/sqrt(memnui))/((double)(k+1));
         pis+=pd[k];
       }
       for (k=0; k<(2*Ki); k++){
@@ -768,10 +774,11 @@ void MHwpmem2 (int *d1, int *d2, int *n1, int *n2, int *K,
      if(srd2[i]>=0){
 //    Use WP localized
       memmui = exp(lmemmui)*(d2[i]);
+      rnb=memmui/(alpha-1.);
       pd[0]= exp(-fabs(memmui-1.)/sqrt(memnui));
       pis=pd[0];
       for (k=1; k<(2*Ki); k++){
-        pd[k]=pd[k-1]*memmui*exp((fabs(k-memmui)-fabs(k+1-memmui))/sqrt(memnui))/((double)(k+1));
+        pd[k]= pd[k-1]*(k+rnb)*pnb*exp((fabs(k-memmui)-fabs(k+1-memmui))/sqrt(memnui))/((double)(k+1));
         pis+=pd[k];
       }
       for (k=0; k<(2*Ki); k++){
@@ -842,10 +849,11 @@ void MHwpmem2 (int *d1, int *d2, int *n1, int *n2, int *K,
        if(srd[i]>=0){
 //      Use WP localized
         memmustar = exp(lmemmustar)*(d1[i]);
+        rnb=memmustar/(alpha-1.);
         pd[0]= exp(-fabs(memmustar-1.)/sqrt(memnustar));
         pis=pd[0];
         for (k=1; k<(2*Ki); k++){
-          pd[k]=pd[k-1]*memmustar*exp((fabs(k-memmustar)-fabs(k+1-memmustar))/sqrt(memnustar))/((double)(k+1));
+          pd[k]= pd[k-1]*(k+rnb)*pnb*exp((fabs(k-memmustar)-fabs(k+1-memmustar))/sqrt(memnustar))/((double)(k+1));
           pis+=pd[k];
         }
         for (k=0; k<(2*Ki); k++){
@@ -884,10 +892,11 @@ void MHwpmem2 (int *d1, int *d2, int *n1, int *n2, int *K,
        if(srd2[i]>=0){
 //      Use WP localized
         memmustar = exp(lmemmustar)*(d2[i]);
+        rnb=memmustar/(alpha-1.);
         pd[0]= exp(-fabs(memmustar-1.)/sqrt(memnustar));
         pis=pd[0];
         for (k=1; k<(2*Ki); k++){
-          pd[k]=pd[k-1]*memmustar*exp((fabs(k-memmustar)-fabs(k+1-memmustar))/sqrt(memnustar))/((double)(k+1));
+          pd[k]= pd[k-1]*(k+rnb)*pnb*exp((fabs(k-memmustar)-fabs(k+1-memmustar))/sqrt(memnustar))/((double)(k+1));
           pis+=pd[k];
         }
         for (k=0; k<(2*Ki); k++){

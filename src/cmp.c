@@ -36,7 +36,7 @@ double zcmp(double lambda, double nu, double err, int K, int give_log)
 //   Next is relative error which we ignore
      while (aj > err*z && j < 200){
 //if(j > 180){
-//       	Rprintf("cmp terms %d aj %f err*z %f z %f\n", j, aj, err*z, z);
+//              Rprintf("cmp terms %d aj %f err*z %f z %f\n", j, aj, err*z, z);
 //Rprintf("nu %f lambda %f\n", nu, lambda);
 //}
        j++;
