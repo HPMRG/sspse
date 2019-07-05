@@ -19,6 +19,7 @@ void gcmpwpvis (int *pop,
             double *beta1muprior, double *beta1sigmaprior,
             double *lmemmu, double *memdfmu,
             double *memnu, double *memdfnu,
+            double *memod,
             int *Npi,
             int *srd,
             int *numrec,
@@ -43,7 +44,7 @@ void gcmpwpvis (int *pop,
   int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
   int j, k;
   int umax;
-  double alpha=25., pnb, rnb;
+  double alpha, pnb, rnb;
   double mui, sigmai, lnlami, nui, dsamp;
   double sigma2i;
   double dbeta0, dbeta1;
@@ -72,6 +73,7 @@ void gcmpwpvis (int *pop,
   dbeta1=(*beta1muprior);
   dlmemmu=(*lmemmu);
   dmemnu=(*memnu);
+  alpha=(*memod);
   maxc=(*maxcoupons);
   
   dimsample=5+Np+4;

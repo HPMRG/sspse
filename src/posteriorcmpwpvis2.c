@@ -23,6 +23,7 @@ void gcmpwpvis2 (int *pop12, int *pop21,
             double *beta1muprior, double *beta1sigmaprior, 
             double *lmemmu, double *memdfmu,
             double *memnu, double *memdfnu,
+            double *memod,
             int *Npi,
             int *srd, 
             int *numrec, 
@@ -51,7 +52,7 @@ void gcmpwpvis2 (int *pop12, int *pop21,
   int step, staken, getone=1, intervalone=1, verboseMHcmp = 0;
   int i, j, k, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
   int umax;
-  double alpha=25.0, pnb, rnb;
+  double alpha, pnb, rnb;
   double memmui;
   double mui, sigmai, dsamp, nui, lnlami, sigma2i;
   double dbeta0, dbeta1;
@@ -82,6 +83,7 @@ void gcmpwpvis2 (int *pop12, int *pop21,
   dbeta1=(*beta1muprior);
   dlmemmu=(*lmemmu);
   dmemnu=(*memnu);
+  alpha=(*memod);
   maxc=(*maxcoupons);
 
   dimsample=5+Np+4;
@@ -709,6 +711,8 @@ void MHwpmem2 (int *d1, int *d2, int *n1, int *n2, int *K,
   dbeta1proposal=(*beta1proposal);
   dlmemmuproposal=(*lmemmuproposal);
   dmemnuproposal=(*memnuproposal);
+
+  pnb=(alpha-1.)/alpha;
 
   // First set starting values
   isamp = taken = 0;
