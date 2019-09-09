@@ -7,7 +7,7 @@
 \method{plot}{sspse}(x, xlim = NULL, support = 1000, HPD.level = 0.9,
   N = NULL, ylim = NULL, mcmc = FALSE, type = "all",
   main = "Posterior for population size", smooth = 4,
-  include.tree = TRUE, cex.main = 1, ...)
+  include.tree = TRUE, cex.main = 1, log.degree = "", ...)
 }
 \arguments{
 \item{x}{an object of class \code{"plot.sspse"}, usually, a result of a call
@@ -57,6 +57,10 @@ This reflects a more accurate value for the visibility, but is not the reported 
 In particular, it typically produces a positive visibility (compared to a possibility zero reported degree).}
 
 \item{cex.main}{an overall title for the posterior plot.}
+
+\item{log.degree}{a character string which contains \code{"x"} if the (horizontal) degree axis in the plot
+of the estimated visibilites for each respondent verses their reported network sizes be logarithmic. 
+A value of \code{"y"} uses a logarithmic visibility axis and \code{"xy"} both. The default is \code{""}, no logarithmic axes.}
 
 \item{\dots}{further arguments passed to or from other methods.}
 }

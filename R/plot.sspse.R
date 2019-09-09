@@ -51,6 +51,9 @@
 #' This reflects a more accurate value for the visibility, but is not the reported degree.
 #' In particular, it typically produces a positive visibility (compared to a possibility zero reported degree). 
 #' @param cex.main an overall title for the posterior plot.
+#' @param log.degree a character string which contains \code{"x"} if the (horizontal) degree axis in the plot
+#' of the estimated visibilites for each respondent verses their reported network sizes be logarithmic. 
+#' A value of \code{"y"} uses a logarithmic visibility axis and \code{"xy"} both. The default is \code{""}, no logarithmic axes.
 #' @param \dots further arguments passed to or from other methods.
 #' @seealso The model fitting function \code{\link{posteriorsize}},
 #' \code{\link[graphics]{plot}}.
@@ -98,7 +101,7 @@
 #' @export
 plot.sspse <- function(x,
 		       xlim=NULL,support=1000,HPD.level=0.90,N=NULL,ylim=NULL,mcmc=FALSE,type="all",
-		       main="Posterior for population size",smooth=4,include.tree=TRUE,cex.main=1,...){
+		       main="Posterior for population size",smooth=4,include.tree=TRUE,cex.main=1,log.degree="",...){
   p.args <- as.list( sys.call() )[-c(1,2)]
   formal.args<-formals(sys.function())[-c(1)]
 
@@ -278,7 +281,7 @@ if(control$type %in% c("visibility","degree","all")){
      pfit <- predict(gfit, newdata=list(x=1:max(network.size,na.rm=TRUE)), type="response", se.fit=FALSE)
      graphics::plot(y=x$visibilities, x=network.size,ylab="estimated visibilities",
        xlab=data.title, ylim=range(c(x$visibilities,pfit),na.rm=TRUE),
-       main="Estimated Visibilites for each respondent", cex.main=cex.main)
+       main="Estimated Visibilites for each respondent", cex.main=cex.main,log=log.degree)
      lines(x=1:max(network.size,na.rm=TRUE),y=pfit)
      qs <- apply(x$vsample,2,stats::quantile,probs=c(0.25,0.75))
      errorbar(y=x$visibilities, x=network.size,yminus=qs[1,],yplus=qs[2,],add=TRUE)
