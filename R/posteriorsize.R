@@ -94,13 +94,15 @@
 #' @param df.mem.optimism.prior scalar; A hyper parameter being the degrees-of-freedom
 #' of the prior for the optimism parameter. This gives the equivalent sample size that would
 #' contain the same amount of information inherent in the prior.
-#' @param mem.scale.prior scalar; A hyper parameter being the mean of the 
-#' distribution of the scale parameter in the CMP visibility model.
+#' @param mem.scale.prior scalar; A hyper parameter being the scale of the concentration of
+#' baseline negative binomial measurement error model.
 #' @param df.mem.scale.prior scalar; A hyper parameter being the degrees-of-freedom of
 #' the prior for the standard deviation of the dispersion parameter in the visibility model.
 #' This gives the equivalent sample size
 #' that would contain the same amount of information inherent in the prior for
 #' the standard deviation.
+#' @param mem.overdispersion scalar; A parameter being the overdispersion of the negative binomial
+#' distribution that is the baseline for the measurement error model.
 #' @param visibility logical; Indicate if the measurement error model
 #' is to be used, whereby latent visibilities are used in place of the reported 
 #' network sizes as the unit size variable. If \code{TRUE} then a \code{rds.data.frame}
@@ -191,6 +193,8 @@
 #' the (proportional) inflation of the self-reported degrees relative to the unit sizes.
 #' @param reflect.time logical; If \code{TRUE} then the \code{recruit.time} is the time before the 
 #' end of the study (instead of the time since the survey started or chronological time).
+#' @param equalize logical; If \code{TRUE} and the capture-recapture model is used, adjusts for gross differences in the 
+#' reported network sizes between the two samples.
 #' @param verbose logical; if this is \code{TRUE}, the program will print out
 #' additional information, including goodness of fit statistics.
 #' @return \code{\link{posteriorsize}} returns a list consisting of the
@@ -404,9 +408,9 @@ posteriorsize<-function(s,
                   df.mean.prior.visibility=1,df.sd.prior.visibility=3,
                   beta0.mean.prior=-3, beta1.mean.prior=0,
                   beta0.sd.prior=10, beta1.sd.prior=10,
-                  mem.optimism.prior=1, df.mem.optimism.prior=5, 
+                  mem.optimism.prior=NULL, df.mem.optimism.prior=5, 
                   mem.scale.prior=2, df.mem.scale.prior=10,
-		  mem.overdispersion=25,
+		  mem.overdispersion=15,
                   visibility=TRUE,
                   type.impute = c("median","distribution","mode","mean"),
                   Np=0,
@@ -426,6 +430,7 @@ posteriorsize<-function(s,
                   include.tree=TRUE, unit.scale=FALSE, 
                   optimism = TRUE,
                   reflect.time=FALSE,
+                  equalize=TRUE,
                   verbose=TRUE){
 #
   visibilitydistribution=match.arg(visibilitydistribution)
@@ -637,6 +642,17 @@ posteriorsize<-function(s,
                    "network sizes were missing in the second RDS data set. These will be imputed from the marginal distribution"), call. = FALSE)
    }
    
+   if(equalize){
+    if(sum(!remvalues) >= sum(!remvalues2)){
+     a <- rank(network.size2[!remvalues2],ties.method="random")
+     network.size2[!remvalues2] <- sort((network.size[!remvalues])[1:sum(!remvalues2)])[a]
+    }else{
+     a <- round(sum(!remvalues)*rank(network.size2[!remvalues2],ties.method="random")/sum(!remvalues2))
+     network.size2[!remvalues2] <- sort(network.size[!remvalues])[a]
+    }
+    message(sprintf("Adjusting for the gross differences in the reported network sizes between the two samples.\n"),appendLF=FALSE)
+   }
+
    if(!is.null(K) & is.logical(K) & (K==FALSE)){
     if(visibility){
 #    K.fixed <- max(network.size2[!remvalues2])
@@ -683,7 +699,7 @@ posteriorsize<-function(s,
     if(!is.logical(rc) | length(s2)!=length(rc)){
       stop("The argument 'previous' must have a variable in the second RDS data set that is a logical vector of the same length as s2, indicating if the corresponding unit was sampled in the first RDS.")
     }
-    rc <- as.numeric(rc)
+#   rc <- !(rc==0)
     remvalues2 <- is.na(s2)
     if(sum(!remvalues2) < length(s2)){
      warning(paste(length(s2)-sum(!remvalues2),"of",length(s2),
@@ -722,7 +738,7 @@ posteriorsize<-function(s,
     stop("You need to specify 'mean.prior.size', and possibly 'sd.prior.size' if you use the 'nbinom' prior.") 
   }
   if(is.null(K.fixed) & visibility){
-    cat(sprintf("Initial cap on influence of the visibility is K = %d.\n",K))
+    message(sprintf("Initial cap on influence of the visibility is K = %d.\n",K),appendLF=FALSE)
     K=round(stats::quantile(s.prior,0.90))+1
     degs <- s.prior
     degs[degs>K] <- K
@@ -749,8 +765,40 @@ posteriorsize<-function(s,
     K=(0:max(s.prior))[which.max(cumsum(y)>0.99)]
 #   K=round(stats::quantile(s,0.99))
   }
-  if(!is.null(K.fixed)){K <- K.fixed}
-  cat(sprintf("The cap on influence of the personal network size is K = %d.\n",K))
+  if(!is.null(K.fixed) & abs(df.mem.optimism.prior-10001)>0.001){K <- K.fixed}
+  if(visibility & is.null(mem.optimism.prior)){
+    degs <- network.size
+#   degs[degs>K.fixed] <- K.fixed
+    degs[degs==0]<-1
+    ds<-degs
+    isnas <- is.na(degs)
+    degs <- sum(!isnas)*(degs)/sum(degs,na.rm=TRUE)
+#   weights <- (1/degs)
+    weights <- degs-degs+1
+    weights[is.na(weights)] <- 0
+    mean.pd <- sum(ds*weights)/sum(weights)
+#   sd.pd <- sum(ds*ds*weights)/sum(weights)
+#   sd.pd <- sqrt(sd.pd - mean.pd^2)
+#   if(sd.pd > max.sd.prior.visibility*mean.pd){
+#    sd.pd <- min(max.sd.prior.visibility*mean.pd, sd.pd)
+#   }
+    message(sprintf("The mean of the recorded personal network sizes is %f.\n",mean.pd),appendLF=FALSE)
+    xv <- ds
+    xp <- weights
+    xp <- length(xp)*xp/sum(xp)
+    txp <- tapply(xp,xv,sum)
+    txv <- tapply(xv,xv,stats::median)
+    mem.optimism.prior <- nb0mle(xv=txv,xp=txp,cutabove=K.fixed-1)[1] / 8
+#   mem.optimism.prior <- mean.pd / 8
+    K <- 35
+    df.mem.optimism.prior <- 10001
+    message(sprintf("mem.optimism.prior set is to %f.\n",mem.optimism.prior),appendLF=FALSE)
+  }
+  if(visibility){
+    message(sprintf("The cap on the visibility distribution is K = %d.\n",K),appendLF=FALSE)
+  }else{
+    message(sprintf("The cap on influence of the personal network size is K = %d.\n",K),appendLF=FALSE)
+  }
   if(is.null(mean.prior.visibility)){
     degs <- s.prior
     degs[degs>K] <- K
@@ -776,8 +824,8 @@ posteriorsize<-function(s,
             guess=c(mean.prior.visibility,sd.prior.visibility))
     fit <- cmp.to.mu.sd(fit,max.mu=5*mean.prior.visibility,force=TRUE)
     if(verbose){
-      cat(sprintf("The preliminary empirical value of the mean of the prior distribution for visibility is %f.\n",mean.prior.visibility))
-      cat(sprintf("The preliminary empirical value of the s.d. of the prior distribution for visibility is %f.\n",sd.prior.visibility))
+      message(sprintf("The preliminary empirical value of the mean of the prior distribution for visibility is %f.\n",mean.prior.visibility),appendLF=FALSE)
+      message(sprintf("The preliminary empirical value of the s.d. of the prior distribution for visibility is %f.\n",sd.prior.visibility),appendLF=FALSE)
     }
     mean.prior.visibility = fit[1]
     sd.prior.visibility = fit[2]
@@ -785,12 +833,12 @@ posteriorsize<-function(s,
     if(is.null(sd.prior.visibility)){sd.prior.visibility <- sqrt(mean.prior.visibility)}
   }
   if(verbose){
-    cat(sprintf("The mean of the prior distribution for visibility is %f.\n",mean.prior.visibility))
-    cat(sprintf("The s.d. of the prior distribution for visibility is %f.\n",sd.prior.visibility))
+    message(sprintf("The mean of the prior distribution for visibility is %f.\n",mean.prior.visibility),appendLF=FALSE)
+    message(sprintf("The s.d. of the prior distribution for visibility is %f.\n",sd.prior.visibility),appendLF=FALSE)
   }
   if(sd.prior.visibility > max.sd.prior.visibility*mean.prior.visibility){
     sd.prior.visibility <- min(max.sd.prior.visibility*mean.prior.visibility, sd.prior.visibility)
-    cat(sprintf("The suggested s.d. of the prior distribution for visibility is too large and has been reduced to the more reasonable %f.\n",sd.prior.visibility))
+    message(sprintf("The suggested s.d. of the prior distribution for visibility is too large and has been reduced to the more reasonable %f.\n",sd.prior.visibility),appendLF=FALSE)
   }
   ### are we running the job in parallel (parallel > 1), if not just 
   #   call the visibility specific function
@@ -842,7 +890,7 @@ posteriorsize<-function(s,
       beta0.sd.prior=beta0.sd.prior, beta1.sd.prior=beta1.sd.prior,
       mem.optimism.prior=mem.optimism.prior, df.mem.optimism.prior=df.mem.optimism.prior,
       mem.scale.prior=mem.scale.prior, df.mem.scale.prior=df.mem.scale.prior,
-		    mem.overdispersion=mem.overdispersion,
+      mem.overdispersion=mem.overdispersion,
       muproposal=muproposal, nuproposal=nuproposal, 
       beta0proposal=beta0proposal, beta1proposal=beta1proposal,
       memmuproposal=memmuproposal, memscaleproposal=memscaleproposal,
@@ -923,7 +971,7 @@ posteriorsize<-function(s,
     Cret$MAP <- apply(Cret$sample,2,mode.density)
     Cret$MAP["N"] <- mode.density(Cret$sample[,"N"],lbound=n,ubound=Cret$maxN)
     if(verbose){
-     cat("parallel samplesize=", parallel,"by", samplesize.parallel,"\n")
+     message("parallel samplesize=", parallel,"by", samplesize.parallel,"\n",appendLF=FALSE)
     }
     
     ### stop cluster

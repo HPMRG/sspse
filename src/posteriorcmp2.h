@@ -17,7 +17,7 @@ void gcmp2 (int *pop12,
             double *nuproposal, 
             int *N, int *maxN, 
             double *sample, 
-            double *ppos, 
+            double *posu, 
             double *lpriorm, 
             int *burnintheta,
             int *verbose

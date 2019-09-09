@@ -16,8 +16,9 @@ posteriorsize(s, s2 = NULL, previous = NULL,
   max.sd.prior.visibility = 4, df.mean.prior.visibility = 1,
   df.sd.prior.visibility = 3, beta0.mean.prior = -3,
   beta1.mean.prior = 0, beta0.sd.prior = 10, beta1.sd.prior = 10,
-  mem.optimism.prior = 1, df.mem.optimism.prior = 5,
-  mem.scale.prior = 2, df.mem.scale.prior = 10, visibility = TRUE,
+  mem.optimism.prior = NULL, df.mem.optimism.prior = 5,
+  mem.scale.prior = 2, df.mem.scale.prior = 10,
+  mem.overdispersion = 15, visibility = TRUE,
   type.impute = c("median", "distribution", "mode", "mean"), Np = 0,
   n = NULL, n2 = NULL, muproposal = 0.1, nuproposal = 0.15,
   beta0proposal = 0.2, beta1proposal = 0.001, memmuproposal = 0.1,
@@ -26,7 +27,7 @@ posteriorsize(s, s2 = NULL, previous = NULL,
   supplied = list(maxN = maxN), max.coupons = NULL,
   recruit.time = NULL, recruit.time2 = NULL, include.tree = TRUE,
   unit.scale = FALSE, optimism = TRUE, reflect.time = FALSE,
-  verbose = TRUE)
+  equalize = TRUE, verbose = TRUE)
 }
 \arguments{
 \item{s}{either a vector of integers or an \code{rds.data.frame} providing network 
@@ -145,14 +146,17 @@ distribution of the optimism parameter.}
 of the prior for the optimism parameter. This gives the equivalent sample size that would
 contain the same amount of information inherent in the prior.}
 
-\item{mem.scale.prior}{scalar; A hyper parameter being the mean of the 
-distribution of the scale parameter in the CMP visibility model.}
+\item{mem.scale.prior}{scalar; A hyper parameter being the scale of the concentration of
+baseline negative binomial measurement error model.}
 
 \item{df.mem.scale.prior}{scalar; A hyper parameter being the degrees-of-freedom of
 the prior for the standard deviation of the dispersion parameter in the visibility model.
 This gives the equivalent sample size
 that would contain the same amount of information inherent in the prior for
 the standard deviation.}
+
+\item{mem.overdispersion}{scalar; A parameter being the overdispersion of the negative binomial
+distribution that is the baseline for the measurement error model.}
 
 \item{visibility}{logical; Indicate if the measurement error model
 is to be used, whereby latent visibilities are used in place of the reported 
@@ -268,6 +272,9 @@ the (proportional) inflation of the self-reported degrees relative to the unit s
 
 \item{reflect.time}{logical; If \code{TRUE} then the \code{recruit.time} is the time before the 
 end of the study (instead of the time since the survey started or chronological time).}
+
+\item{equalize}{logical; If \code{TRUE} and the capture-recapture model is used, adjusts for gross differences in the 
+reported network sizes between the two samples.}
 
 \item{verbose}{logical; if this is \code{TRUE}, the program will print out
 additional information, including goodness of fit statistics.}

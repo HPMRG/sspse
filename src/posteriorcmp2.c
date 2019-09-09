@@ -10,30 +10,30 @@
 #include <math.h>
 
 void gcmp2 (int *pop12,
-            int *pop21, 
-            int *nk, 
-            int *K, 
-            int *n1, 
-            int *n2, 
-            int *n0, 
+            int *pop21,
+            int *nk,
+            int *K,
+            int *n1,
+            int *n2,
+            int *n0,
             int *samplesize, int *burnin, int *interval,
-            double *mu, double *dfmu, 
+            double *mu, double *dfmu,
             double *sigma, double *dfsigma,
             double *lnlam, double *nu,
             int *Npi,
-            double *muproposal, 
-            double *nuproposal, 
-            int *N, int *maxN, 
-            double *sample, 
-            double *ppos, 
-            double *lpriorm, 
+            double *muproposal,
+            double *nuproposal,
+            int *N, int *maxN,
+            double *sample,
+            double *posu,
+            double *lpriorm,
             int *burnintheta,
             int *verbose
             ) {
   int dimsample, Np;
   int step, staken, getone=1, intervalone=1, verboseMHcmp = 0;
   int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
-  int ni1, ni2, ni0;
+  int ni1, ni2, ni0, unrecap;
   double mui, sigmai, lnlami, nui, dsamp, sigma2i;
   double ddfmu, ddfsigma, dnuproposal;
   int tU1, tU2, sizei, imaxN, imaxm, give_log0=0, give_log1=1;
@@ -74,16 +74,28 @@ void gcmp2 (int *pop12,
   double *lnlamsample = (double *) malloc(sizeof(double));
   double *nusample = (double *) malloc(sizeof(double));
 
+  for (i=0; i<Ki; i++){
+    nk[i]=0;
+  }
   for (i=0; i<imaxN; i++){
     d1[i]=0;
     d2[i]=0;
   }
+  unrecap=0;
   for (i=0; i<ni; i++){
-    d1[i]=pop12[i];
+    if((pop12[i] >0) && (pop12[i] <= Ki)){ d1[i]=pop12[i];}
+    if( pop12[i]==0){ d1[i]=1;}
+    if( pop12[i]>Ki){ d1[i]=Ki;}
+    nk[d1[i]-1]=nk[d1[i]-1]+1;
+    unrecap+=d1[i];
   }
-  for (i=0; i<(ni2+1); i++){
-    d2[i]=pop21[i];
+  for (i=0; i<ni2; i++){
+    if((pop21[i] >0) && (pop21[i] <= Ki)){ d2[i]=pop21[i];}
+    if( pop21[i]==0){ d2[i]=1;}
+    if( pop21[i]>Ki){ d2[i]=Ki;}
+    unrecap-=d2[i];
   }
+
   // b is the cumulative version of d, which is uobs
   // so b1 is cumulative unit sizes for first list
   // b2 is cumulative unit sizes for second list
@@ -101,14 +113,14 @@ void gcmp2 (int *pop12,
   for (i=0; i<Ki; i++){
      Nk[i]=nk[i];
      Nkpos[i]=0;
-     ppos[i]=0.;
+     posu[i]=0.;
   }
   // tU1 is the total unit sizes from the first list
   tU1=0;
   for (i=ni1; i<Ni; i++){
     tU1+=d1[i];
   }
-  tU2=0;
+  tU2=unrecap;
   for (i=ni2; i<Ni; i++){
     tU2+=d2[i];
   }
@@ -133,10 +145,10 @@ void gcmp2 (int *pop12,
   while (isamp < isamplesize) {
     /* Draw new theta */
     /* but less often than the other full conditionals */
-    if (step == -iburnin || step==(10*(step/10))) { 
+    if (step == -iburnin || step==(10*(step/10))) {
      MHcmptheta(Nk,K,mu,dfmu,sigma,dfsigma,muproposal,nuproposal,
            &Ni, &Np, psample,
-           lnlamsample, nusample, &getone, &staken, burnintheta, &intervalone, 
+           lnlamsample, nusample, &getone, &staken, burnintheta, &intervalone,
            &verboseMHcmp);
     }
 
@@ -214,14 +226,14 @@ void gcmp2 (int *pop12,
     // Add back the sample size
     Ni += ni;
     if(Ni > imaxN) Ni = imaxN;
-                    
+
     /* Draw phis */
     // tU1 is the total unit sizes from first list
     tU1=0;
     for (i=ni1; i<Ni; i++){
       tU1+=d1[i];
     }
-    tU2=0;
+    tU2=unrecap;
     for (i=ni2; i<Ni; i++){
       tU2+=d2[i];
     }
@@ -267,7 +279,7 @@ void gcmp2 (int *pop12,
 //    if((sizei <= 0) | (sizei > Ki-1)) Rprintf("sizei %d r %f\n", sizei,r);
       Nk[sizei-1]=Nk[sizei-1]+1;
     }
-    if (step > 0 && step==(iinterval*(step/iinterval))) { 
+    if (step > 0 && step==(iinterval*(step/iinterval))) {
       /* record statistics for posterity */
       Nd=(double)Ni;
       sample[isamp*dimsample  ]=Nd;
@@ -286,7 +298,7 @@ void gcmp2 (int *pop12,
       }
       for (i=0; i<Ki; i++){
         Nkpos[i]=Nkpos[i]+Nk[i];
-        ppos[i]+=((Nk[i]*1.)/Nd);
+        posu[i]+=((Nk[i]*1.)/Nd);
       }
       isamp++;
       if (*verbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d samples...\n", isamp);
@@ -297,7 +309,7 @@ void gcmp2 (int *pop12,
   dsamp=((double)isamp);
   for (i=0; i<Ki; i++){
     nk[i]=Nkpos[i];
-    ppos[i]/=dsamp;
+    posu[i]/=dsamp;
   }
   for (i=0; i<ni1; i++){
      pop12[i]=d1[i];

@@ -20,7 +20,7 @@ void gcmp (int *pop,
             double *nuproposal,
             int *N, int *maxN,
             double *sample,
-            double *ppos,
+            double *posu,
             double *lpriorm,
             int *burnintheta,
             int *verbose
@@ -77,7 +77,7 @@ void gcmp (int *pop,
   for (i=0; i<Ki; i++){
      Nk[i]=nk[i];
      Nkpos[i]=0;
-     ppos[i]=0.;
+     posu[i]=0.;
   }
   tU=0;
   for (i=ni; i<Ni; i++){
@@ -247,7 +247,7 @@ void gcmp (int *pop,
       }
       for (i=0; i<Ki; i++){
         Nkpos[i]=Nkpos[i]+Nk[i];
-        ppos[i]+=((Nk[i]*1.)/Nd);
+        posu[i]+=((Nk[i]*1.)/Nd);
       }
       isamp++;
       if (*verbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d samples...\n", isamp);
@@ -258,7 +258,7 @@ void gcmp (int *pop,
   dsamp=((double)isamp);
   for (i=0; i<Ki; i++){
     nk[i]=Nkpos[i];
-    ppos[i]/=dsamp;
+    posu[i]/=dsamp;
   }
   for (i=0; i<ni; i++){
      pop[i]=d[i];

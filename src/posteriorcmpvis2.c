@@ -40,7 +40,7 @@ void gcmpvis2 (int *pop12, int *pop21,
             double *sample, 
             int *vsample, 
             int *vsample2, 
-            double *ppos, 
+            double *posu, 
             double *lpriorm, 
             int *burnintheta,
             int *burninbeta,
@@ -50,7 +50,7 @@ void gcmpvis2 (int *pop12, int *pop21,
   int ni0, ni1, ni2, itemp;
   int step, staken, getone=1, intervalone=1, verboseMHcmp = 0;
   int i, j, k, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
-  int umax;
+  int umax, unrecap;
   double mui, sigmai, dsamp, nui, lnlami, sigma2i;
   double dbeta0, dbeta1;
   double dlmemmu, dmemnu;
@@ -111,21 +111,25 @@ void gcmpvis2 (int *pop12, int *pop21,
     d1[i]=0;
     d2[i]=0;
   }
+  unrecap=0;
   uprob1=ni;
   for (i=0; i<ni; i++){
-    if((pop12[i]>0) && (pop12[i] <= Ki)){ d1[i]=pop12[i];}
-    if(pop12[i]==0){ d1[i]=1;}
-    if(pop12[i]>Ki){ d1[i]=Ki; uprob1--;}
+    if((pop12[i] >0) && (pop12[i] <= Ki)){ d1[i]=pop12[i];}
+    if( pop12[i]==0){ d1[i]=1;}
+    if( pop12[i]>Ki){ d1[i]=Ki; uprob1--;}
     nk[d1[i]-1]=nk[d1[i]-1]+1;
+    unrecap+=d1[i];
   }
   uprob1/=ni;
   uprob1 = 0.5 + uprob1/2.0;
   uprob2=ni2+1;
-  for (i=0; i<(ni2+1); i++){
-    if((pop21[i]>0) && (pop21[i] <= Ki)){ d2[i]=pop21[i];}
-    if(pop21[i]==0){ d2[i]=1;}
-    if(pop21[i]>Ki){ d2[i]=Ki; uprob2--;}
+  for (i=0; i<ni2; i++){
+    if((pop21[i] >0) && (pop21[i] <= Ki)){ d2[i]=pop21[i];}
+    if( pop21[i]==0){ d2[i]=1;}
+    if( pop21[i]>Ki){ d2[i]=Ki; uprob2--;}
+    unrecap-=d2[i];
   }
+
   uprob2/=ni2+1;
   uprob2 = 0.5 + uprob2/2.0;
   b1[ni1-1]=d1[ni1-1];
@@ -142,13 +146,13 @@ void gcmpvis2 (int *pop12, int *pop21,
   for (i=0; i<Ki; i++){
      Nk[i]=nk[i];
      Nkpos[i]=0;
-     ppos[i]=0.;
+     posu[i]=0.;
   }
   tU1=0;
   for (i=ni1; i<Ni; i++){
     tU1+=d1[i];
   }
-  tU2=0;
+  tU2=unrecap;
   for (i=ni2; i<Ni; i++){
     tU2+=d2[i];
   }
@@ -432,7 +436,7 @@ void gcmpvis2 (int *pop12, int *pop21,
      for (i=0; i<ni2; i++){
        if(rc[i]!=0) itemp-=d2[i];
      }
-     d2[ni2]=itemp;
+     unrecap=itemp;
      // Rebuild b2
      b2[ni2]=0;
      if(ni2 > 0){
@@ -450,7 +454,7 @@ void gcmpvis2 (int *pop12, int *pop21,
     for (i=ni1; i<Ni; i++){
       tU1+=d1[i];
     }
-    tU2=0;
+    tU2=unrecap;
     for (i=ni2; i<Ni; i++){
       tU2+=d2[i];
     }
@@ -552,7 +556,7 @@ void gcmpvis2 (int *pop12, int *pop21,
       }
       for (i=0; i<Ki; i++){
         Nkpos[i]=Nkpos[i]+Nk[i];
-        ppos[i]+=((Nk[i]*1.)/Nd);
+        posu[i]+=((Nk[i]*1.)/Nd);
       }
       for (i=0; i<ni1; i++){
          vsample[isamp*ni1+i]=d1[i];
@@ -571,7 +575,7 @@ void gcmpvis2 (int *pop12, int *pop21,
   dsamp=((double)isamp);
   for (i=0; i<Ki; i++){
     nk[i]=Nkpos[i];
-    ppos[i]/=dsamp;
+    posu[i]/=dsamp;
   }
   for (i=0; i<ni1; i++){
      pop12[i]=d1[i];
