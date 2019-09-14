@@ -551,6 +551,7 @@ posteriorsize<-function(s,
   gmean <- HT.estimate(RDS::vh.weights(nsize[!is.na(nsize)]),nsize[!is.na(nsize)])
   if(is.na(gmean)) gmean <- 38
   
+  recruit.times.order <- order(order(recruit.times))
   s <- nsize[order(recruit.times)]
   recruit.times <- recruit.times[order(recruit.times)]
   nr <- nr[order(recruit.times)]
@@ -675,6 +676,7 @@ posteriorsize<-function(s,
    gmean <- HT.estimate(RDS::vh.weights(nsize2[!is.na(nsize2)]),nsize2[!is.na(nsize2)])
    if(is.na(gmean)) gmean <- 38
    
+   recruit.times2.order <- order(order(recruit.times2))
    s2 <- nsize2[order(recruit.times2)]
    recruit.times2 <- recruit.times2[order(recruit.times2)]
    nr2 <- nr2[order(recruit.times2)]
@@ -971,7 +973,7 @@ posteriorsize<-function(s,
     Cret$MAP <- apply(Cret$sample,2,mode.density)
     Cret$MAP["N"] <- mode.density(Cret$sample[,"N"],lbound=n,ubound=Cret$maxN)
     if(verbose){
-     message("parallel samplesize=", parallel,"by", samplesize.parallel,"\n",appendLF=FALSE)
+     message("parallel samplesize = ", parallel," by ", samplesize.parallel,"\n",appendLF=FALSE)
     }
     
     ### stop cluster
@@ -1048,7 +1050,11 @@ posteriorsize<-function(s,
                  )
       }
     }
-    Cret$visibilities <- visibilities
+    Cret$visibilities <- visibilities[recruit.times.order]
+    Cret$vsample <- Cret$vsample[recruit.times.order,]
+    if(!is.null(s2)){
+      Cret$vsample2 <- Cret$vsample2[recruit.times2.order,]
+    }
   }
 
 # Cret$mean.prior.size <- mean.prior.size
