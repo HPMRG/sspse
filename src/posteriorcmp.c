@@ -79,9 +79,11 @@ void gcmp (int *pop,
      Nkpos[i]=0;
      posu[i]=0.;
   }
+  for (i=ni; i<imaxN; i++){
+    d[i]=d[(int)trunc(10*unif_rand()+ni-10)];
+  }
   tU=0;
   for (i=ni; i<Ni; i++){
-    pop[i]=d[(int)trunc(10*unif_rand()+ni-10)];
     tU+=d[i];
   }
   /* Draw initial phis */
@@ -187,7 +189,7 @@ void gcmp (int *pop,
     /* Draw phis */
     tU=0;
     for (i=ni; i<Ni; i++){
-      tU+=pop[i];
+      tU+=d[i];
     }
     r=0.;
     for (i=0; i<ni; i++){
@@ -224,7 +226,7 @@ void gcmp (int *pop,
        }
       }
 //    if(sizei >= Ki){sizei=Ki-1;}
-      pop[i]=sizei;
+      d[i]=sizei;
 //    if((sizei <= 0) | (sizei > Ki-1)) Rprintf("sizei %d r %f\n", sizei,r);
       Nk[sizei-1]=Nk[sizei-1]+1;
     }

@@ -6,12 +6,21 @@
  number of their (direct) recruits. It uses the time the person was recruited as a factor in 
  determining the number of recruits they produce.}
 \usage{
-impute.visibility(rds.data, max.coupons = NULL,
+impute.visibility(
+  rds.data,
+  max.coupons = NULL,
   type.impute = c("median", "distribution", "mode", "mean"),
-  recruit.time = NULL, include.tree = FALSE, unit.scale = NULL,
-  reflect.time = TRUE, K = FALSE, parallel = 1,
-  parallel.type = "PSOCK", interval = 10, burnin = 5000,
-  verbose = TRUE)
+  recruit.time = NULL,
+  include.tree = FALSE,
+  unit.scale = NULL,
+  reflect.time = TRUE,
+  K = FALSE,
+  parallel = 1,
+  parallel.type = "PSOCK",
+  interval = 10,
+  burnin = 5000,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{rds.data}{An rds.data.frame}

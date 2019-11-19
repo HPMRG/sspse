@@ -4,14 +4,26 @@
 \alias{dsizeprior}
 \title{Prior distributions for the size of a hidden population}
 \usage{
-dsizeprior(n, type = c("beta", "nbinom", "pln", "flat", "continuous",
-  "supplied"), mean.prior.size = NULL, sd.prior.size = NULL,
+dsizeprior(
+  n,
+  type = c("beta", "nbinom", "pln", "flat", "continuous", "supplied"),
+  mean.prior.size = NULL,
+  sd.prior.size = NULL,
   mode.prior.sample.proportion = NULL,
-  median.prior.sample.proportion = NULL, median.prior.size = NULL,
-  mode.prior.size = NULL, quartiles.prior.size = NULL,
-  effective.prior.df = 1, alpha = NULL, beta = NULL, maxN = NULL,
-  log = FALSE, maxbeta = 120, maxNmax = 2e+05, supplied = list(maxN
-  = maxN), verbose = TRUE)
+  median.prior.sample.proportion = NULL,
+  median.prior.size = NULL,
+  mode.prior.size = NULL,
+  quartiles.prior.size = NULL,
+  effective.prior.df = 1,
+  alpha = NULL,
+  beta = NULL,
+  maxN = NULL,
+  log = FALSE,
+  maxbeta = 120,
+  maxNmax = 2e+05,
+  supplied = list(maxN = maxN),
+  verbose = TRUE
+)
 }
 \arguments{
 \item{n}{count; the sample size.}

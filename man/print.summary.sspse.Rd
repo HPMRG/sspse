@@ -4,10 +4,15 @@
 \alias{print.summary.sspse}
 \title{Summarizing Population Size Estimation Model Fits}
 \usage{
-\method{print}{summary.sspse}(x, digits = max(3, getOption("digits") -
-  3), correlation = FALSE, covariance = FALSE,
-  signif.stars = getOption("show.signif.stars"), eps.Pvalue = 1e-04,
-  ...)
+\method{print}{summary.sspse}(
+  x,
+  digits = max(3, getOption("digits") - 3),
+  correlation = FALSE,
+  covariance = FALSE,
+  signif.stars = getOption("show.signif.stars"),
+  eps.Pvalue = 1e-04,
+  ...
+)
 }
 \arguments{
 \item{x}{an object of class \code{"summary.sspse"}, usually, a result of a

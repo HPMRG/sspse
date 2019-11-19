@@ -1051,9 +1051,9 @@ posteriorsize<-function(s,
       }
     }
     Cret$visibilities <- visibilities[recruit.times.order]
-    Cret$vsample <- Cret$vsample[recruit.times.order,]
+    Cret$vsample <- Cret$vsample[,recruit.times.order]
     if(!is.null(s2)){
-      Cret$vsample2 <- Cret$vsample2[recruit.times2.order,]
+      Cret$vsample2 <- Cret$vsample2[,recruit.times2.order]
     }
   }
 

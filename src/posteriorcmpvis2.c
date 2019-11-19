@@ -107,10 +107,6 @@ void gcmpvis2 (int *pop12, int *pop21,
   for (i=0; i<Ki; i++){
     nk[i]=0;
   }
-  for (i=0; i<imaxN; i++){
-    d1[i]=0;
-    d2[i]=0;
-  }
   unrecap=0;
   uprob1=ni;
   for (i=0; i<ni; i++){
@@ -148,9 +144,15 @@ void gcmpvis2 (int *pop12, int *pop21,
      Nkpos[i]=0;
      posu[i]=0.;
   }
+  for (i=ni1; i<imaxN; i++){
+    d1[i]=d1[(int)trunc(10*unif_rand()+ni1-10)];
+  }
   tU1=0;
   for (i=ni1; i<Ni; i++){
     tU1+=d1[i];
+  }
+  for (i=ni2; i<imaxN; i++){
+    d2[i]=d2[(int)trunc(10*unif_rand()+ni2-10)];
   }
   tU2=unrecap;
   for (i=ni2; i<Ni; i++){

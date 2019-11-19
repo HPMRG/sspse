@@ -115,9 +115,11 @@ void gcmpvis (int *pop,
      posu[i]=0.;
      posd[i]=0.;
   }
+  for (i=ni; i<imaxN; i++){
+    u[i]=u[(int)trunc(10*unif_rand()+ni-10)];
+  }
   tU=0;
   for (i=ni; i<Ni; i++){
-    u[i]=u[(int)trunc(10.0*unif_rand()+ni-10)];
     tU+=u[i];
   }
   /* Draw initial phis */

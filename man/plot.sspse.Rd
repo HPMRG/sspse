@@ -4,10 +4,22 @@
 \alias{plot.sspse}
 \title{Plot Summary and Diagnostics for Population Size Estimation Model Fits}
 \usage{
-\method{plot}{sspse}(x, xlim = NULL, support = 1000, HPD.level = 0.9,
-  N = NULL, ylim = NULL, mcmc = FALSE, type = "all",
-  main = "Posterior for population size", smooth = 4,
-  include.tree = TRUE, cex.main = 1, log.degree = "", ...)
+\method{plot}{sspse}(
+  x,
+  xlim = NULL,
+  support = 1000,
+  HPD.level = 0.9,
+  N = NULL,
+  ylim = NULL,
+  mcmc = FALSE,
+  type = "all",
+  main = "Posterior for population size",
+  smooth = 4,
+  include.tree = TRUE,
+  cex.main = 1,
+  log.degree = "",
+  ...
+)
 }
 \arguments{
 \item{x}{an object of class \code{"plot.sspse"}, usually, a result of a call

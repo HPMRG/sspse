@@ -262,12 +262,12 @@ if(control$type %in% c("visibility","degree","all")){
      network.size[!remvalues] <- (network.size[!remvalues])[order(x$rectime)]
    }
    Kmax <- max(seq_along(x$predictive.visibility))
-   bbb <- tabulate(network.size[!remvalues],nbins=Kmax) #, nbins=max(x$data))
-   bbb <- bbb/sum(bbb)
+   ns.prob <- tabulate(network.size[!remvalues],nbins=Kmax) #, nbins=max(x$data))
+   ns.prob <- ns.prob/sum(ns.prob)
 #  med.vis <- which.max(cumsum(x$predictive.visibility)>=0.5)
    if(control$type %in% c("visibility","all")){
-    aaa <- graphics::barplot(bbb,names.arg=1:Kmax,add=FALSE,axes=TRUE,width=rep(0.5,length(bbb)),space=1,col=0,
-     xlab="visibility",ylab="probability", xlim=c(1,Kmax), ylim=c(0,max(c(bbb,x$predictive.visibility))),
+    aaa <- graphics::barplot(ns.prob,names.arg=1:Kmax,add=FALSE,axes=TRUE,width=rep(0.5,length(ns.prob)),space=1,col=0,
+     xlab="visibility",ylab="probability", xlim=c(1,Kmax), ylim=c(0,max(c(ns.prob,x$predictive.visibility))),
      main="Posterior with sample visibility\n histogram overlaid (median matched)", cex.main=cex.main)
 #   graphics::lines(x=-0.25+median(network.size[!remvalues])*seq_along(x$predictive.visibility)/med.vis,y=x$predictive.visibility, type='h', col='red', lwd=2)
     graphics::lines(x=-0.25+exp(x$mem.optimism.prior)*seq_along(x$predictive.visibility),y=x$predictive.visibility, type='h', col='red', lwd=2)
