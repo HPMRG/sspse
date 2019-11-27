@@ -50,7 +50,7 @@ void gcmp (int *pop,
   dimsample=5+Np;
 
   double *pi = (double *) malloc(sizeof(double) * Ki);
-  int *d = (int *) malloc(sizeof(int) * ni);
+  int *d = (int *) malloc(sizeof(int) * imaxN);
   int *b = (int *) malloc(sizeof(int) * ni);
   int *nk = (int *) malloc(sizeof(int) * Ki);
   int *Nk = (int *) malloc(sizeof(int) * Ki);

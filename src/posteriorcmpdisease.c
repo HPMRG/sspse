@@ -62,7 +62,7 @@ void gcmpdisease (int *pop, int *dis,
   double *p0i = (double *) malloc(sizeof(double) * Ki);
   double *p1i = (double *) malloc(sizeof(double) * Ki);
   double *pd = (double *) malloc(sizeof(double) * Ki);
-  int *d = (int *) malloc(sizeof(int) * ni);
+  int *d = (int *) malloc(sizeof(int) * imaxN);
   int *b = (int *) malloc(sizeof(int) * ni);
   int *Nk0 = (int *) malloc(sizeof(int) * Ki);
   int *Nk0pos = (int *) malloc(sizeof(int) * Ki);
