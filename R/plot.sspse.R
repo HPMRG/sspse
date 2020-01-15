@@ -265,7 +265,7 @@ if(control$type %in% c("visibility","degree","all")){
    ns.prob <- tabulate(network.size[!remvalues],nbins=Kmax) #, nbins=max(x$data))
    ns.prob <- ns.prob/sum(ns.prob)
 #  med.vis <- which.max(cumsum(x$predictive.visibility)>=0.5)
-   if(control$type %in% c("visibility","all")){
+   if(control$type %in% c("visibility","all") & x$visibility){
     aaa <- graphics::barplot(ns.prob,names.arg=1:Kmax,add=FALSE,axes=TRUE,width=rep(0.5,length(ns.prob)),space=1,col=0,
      xlab="visibility",ylab="probability", xlim=c(1,Kmax), ylim=c(0,max(c(ns.prob,x$predictive.visibility))),
      main="Posterior with sample visibility\n histogram overlaid (median matched)", cex.main=cex.main)

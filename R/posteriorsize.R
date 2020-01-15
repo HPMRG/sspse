@@ -552,6 +552,7 @@ posteriorsize<-function(s,
   if(is.na(gmean)) gmean <- 38
   
   recruit.times.order <- order(order(recruit.times))
+  recruit.times.order.notrem <- order(order(recruit.times[!remvalues]))
   s <- nsize[order(recruit.times)]
   recruit.times <- recruit.times[order(recruit.times)]
   nr <- nr[order(recruit.times)]
@@ -677,6 +678,7 @@ posteriorsize<-function(s,
    if(is.na(gmean)) gmean <- 38
    
    recruit.times2.order <- order(order(recruit.times2))
+   recruit.times2.order.notrem <- order(order(recruit.times2[!remvalues2]))
    s2 <- nsize2[order(recruit.times2)]
    recruit.times2 <- recruit.times2[order(recruit.times2)]
    nr2 <- nr2[order(recruit.times2)]
@@ -1050,13 +1052,21 @@ posteriorsize<-function(s,
                  )
       }
     }
+#     print(length(visibilities))
+#     print(dim(Cret$vsample))
+#     print(range(recruit.times.order))
+#     print(range(recruit.times.order.notrem))
     Cret$visibilities <- visibilities[recruit.times.order]
-    Cret$vsample <- Cret$vsample[,recruit.times.order]
+    Cret$vsample <- Cret$vsample[,recruit.times.order.notrem]
     if(!is.null(s2)){
-      Cret$vsample2 <- Cret$vsample2[,recruit.times2.order]
+#     print(dim(Cret$vsample2))
+#     print(range(recruit.times2.order))
+#     print(range(recruit.times2.order.notrem))
+      Cret$vsample2 <- Cret$vsample2[,recruit.times2.order.notrem]
     }
   }
 
+  Cret$visibility <- visibility
 # Cret$mean.prior.size <- mean.prior.size
   Cret$data <- rds.data
   Cret$data2 <- rds.data2
