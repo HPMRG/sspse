@@ -989,7 +989,7 @@ posteriorsize<-function(s,
   #
   Cret$sample <- Cret$sample[,-match(c("visibility1","totalsize"), colnames(Cret$sample))]
   #
-  if(verbose & Cret$predictive.visibility[length(Cret$predictive.visibility)] > 0.01){
+  if(verbose & Cret$predictive.visibility[length(Cret$predictive.visibility)] > 0.3){
    warning("There is a non-trivial proportion of the posterior mass on very high visibilities. This may indicate convergence problems in the MCMC.", call. = FALSE)
   }
   Cret$visibilitydistribution <- visibilitydistribution

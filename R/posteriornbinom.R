@@ -97,7 +97,7 @@ posteriornbinom<-function(s,
     ### stop cluster
     endparallel(cl)
   }
-  if(Cret$ppos[length(Cret$ppos)] > 0.01){
+  if(Cret$ppos[length(Cret$ppos)] > 0.3){
    warning("There is a non-trivial proportion of the posterior mass on very high degrees. This may indicate convergence problems in the MCMC.")
   }
   ### return result
