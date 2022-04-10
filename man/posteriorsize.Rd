@@ -507,7 +507,7 @@ R package, Los Angeles, CA.  Version 0.5, \url{http://hpmrg.org}.
 
 Handcock MS (2003).  \pkg{degreenet}: Models for Skewed Count Distributions
 Relevant to Networks.  Statnet Project, Seattle, WA.  Version 1.2,
-\url{http://statnetproject.org}.
+\url{http://statnet.org}.
 
 Handcock, Mark S., Gile, Krista J. and Mar, Corinne M. (2014)
 \emph{Estimating Hidden Population Size using Respondent-Driven Sampling
