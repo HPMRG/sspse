@@ -22,27 +22,45 @@ mode.density <- function(x,lbound=min(x,na.rm=TRUE),ubound=max(x,na.rm=TRUE), sm
       posdensN$x[which.max(posdensN$y)]
 }
 #' @keywords internal
-ll.density <- function(x,lbound=min(x,na.rm=TRUE),ubound=max(x,na.rm=TRUE), smooth=0.35, h=0){
+ll.density <- function(x,lbound=min(x,na.rm=TRUE),ubound=max(x,na.rm=TRUE), smooth=0.35, h=0, method="bgk"){
 #     posdensN <- locfit(~ x, alpha=c(2*smooth,0.3))
 #     posdensN <- locfit(~ x)
 #     xp <- floor(lbound):ceiling(ubound)
       x <- x[!is.na(x)]
       if(length(x)==0){return(NA)}
       xp <- seq(lbound, ubound, length=10000)
-#     posdensN <- try(locfit( ~ lp(x, nn=2*smooth, h=h, maxk=500)),silent=TRUE)
-      posdensN <- .catchToList(bgk_kde(x,n=2^(ceiling(log(ubound-lbound)/log(2))),MIN=lbound,MAX=ubound))
-      if(!is.null(posdensN$error)){
-       posdensN <- stats::density(x, from=lbound, to=ubound)
-       list(x=xp,y=posdensN)
+      if(method == "bgk"){
+#       posdensN <- try(locfit( ~ lp(x, nn=2*smooth, h=h, maxk=500)),silent=TRUE)
+        posdensN <- .catchToList(bgk_kde(x,n=2^(ceiling(log(ubound-lbound)/log(2))),MIN=lbound,MAX=ubound))
+        if(!is.null(posdensN$error)){
+         posdensN <- stats::density(x, from=lbound, to=ubound)
+         list(x=xp,y=posdensN)
+        }else{
+#        posdensN <- try(predict(posdensN, newdata=xp),silent=TRUE)
+         posdensN <- .catchToList(stats::spline(x=posdensN$value[1,],y=posdensN$value[2,],xout=xp)$y)
+         if(!is.null(posdensN$error)){
+          posdensN <- stats::density(x, from=lbound, to=ubound)
+          list(x=xp,y=posdensN)
+         }else{
+          list(x=xp,y=posdensN$value)
+         }
+        }
       }else{
-#      posdensN <- try(predict(posdensN, newdata=xp),silent=TRUE)
-       posdensN <- .catchToList(stats::spline(x=posdensN$value[1,],y=posdensN$value[2,],xout=xp)$y)
-       if(!is.null(posdensN$error)){
-        posdensN <- stats::density(x, from=lbound, to=ubound)
-        list(x=xp,y=posdensN)
-       }else{
-        list(x=xp,y=posdensN$value)
-       }
+        if(requireNamespace("densEstBayes", quietly = TRUE)){
+          control<-list(samples=4000, burnin=1000)
+          a=densEstBayes::densEstBayes(x,method="NUTS",
+            control=densEstBayes::densEstBayes.control(range.x=c(lbound,ubound),numBins=401,numBasis=round(smooth*50/0.35),
+                                                       nKept=control$samples,nWarm=control$burnin))
+          xTrang <- seq(-0.05, 1.05, length = length(xp))
+          Xg <- cbind(1,xTrang)
+          Zg <- .ZOSull(xTrang,intKnots=a$intKnots,range.x=c(-0.05,1.05))
+          Cg <- cbind(Xg,Zg)
+          betauMCMC <- a$stochaFitObj$betauMCMC
+          etaHatMCMC <- crossprod(t(Cg),betauMCMC)
+          posdensN <- exp(apply(etaHatMCMC, 1, mean))
+          posdensN <- length(xp)*posdensN / ((lbound-ubound)*sum(posdensN))
+          list(x=xp,y=posdensN)
+        }
       }
 }
 #' @keywords internal
