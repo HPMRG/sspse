@@ -235,7 +235,11 @@ poscmpwp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
      }else{
       colnames(Cret$sample) <- colnamessample
      }
-     Cret$sample[,"mem.optimism"] <- exp(Cret$sample[,"mem.optimism"])
+     if(stats::var(Cret$sample[,"mem.optimism"])>1e-8){
+       Cret$sample[,"mem.optimism"] <- exp(Cret$sample[,"mem.optimism"])
+     }else{
+       Cret$sample <- Cret$sample[,-match("mem.optimism",colnames(Cret$sample))]
+     }
      #
      # Transform WP parametrization to mean
      # parametrization (for the mean visibility value)
