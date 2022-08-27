@@ -18,6 +18,8 @@
   include.tree = TRUE,
   cex.main = 1,
   log.degree = "",
+  layout = c(3, 2),
+  method = "bgk",
   ...
 )
 }
@@ -73,6 +75,13 @@ In particular, it typically produces a positive visibility (compared to a possib
 \item{log.degree}{a character string which contains \code{"x"} if the (horizontal) degree axis in the plot
 of the estimated visibilites for each respondent verses their reported network sizes be logarithmic. 
 A value of \code{"y"} uses a logarithmic visibility axis and \code{"xy"} both. The default is \code{""}, no logarithmic axes.}
+
+\item{layout}{a vector of the form ‘c(nv, nc)’. The produced plots, in particular the MCMC diagnostics, will be draw in 
+figures in ‘nv’-by-‘nc’ arrays per page. `nc` is typically 2 to have the trace plots on the left and density plots on the right.
+`nv` is then the number of variables per page, by default 3.}
+
+\item{method}{character; The method to use for density estimation (default Gaussian Kernel; "bgk").
+"Bayes" uses a Bayesian density estimator which has good properties.}
 
 \item{\dots}{further arguments passed to or from other methods.}
 }
