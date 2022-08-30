@@ -3,7 +3,7 @@
 #                     Mark S. Handcock, University of California - Los Angeles
 # 
 # For license and citation information see
-#    http://statnet.org/attribution
+#    https://statnet.org/attribution
 #
 # We have invested a lot of time and effort in creating 'statnet',
 # for use by other researchers. We require that the attributions

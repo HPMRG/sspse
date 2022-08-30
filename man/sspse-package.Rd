@@ -20,7 +20,7 @@ to be cited as:
 
 Gile, Krista J. and Handcock, Mark S. (2018) \pkg{sspse}: Estimating Hidden 
 Population Size using Respondent Driven Sampling Data
-R package, Los Angeles, CA.  Version 0.8, \url{http://hpmrg.org}.
+R package, Los Angeles, CA.  Version 0.8, \url{https://github.com/HPMRG}.
 
 All programs derived from this package must cite it. For complete citation
 information, use\cr \code{citation(package="sspse")}.
@@ -32,7 +32,7 @@ visualize and analyze data collected via respondent-driven sampling designs.
 It has a broad range of estimation and visualization capabilities.
 
 For detailed information on how to download and install the software, go to
-the Hard-to-Reach Population Methods Research Group website: \url{http://hpmrg.org}.
+the Hard-to-Reach Population Methods Research Group website: \url{https://github.com/HPMRG}.
 A tutorial, support
 newsgroup, references and links to further resources are provided there.
 }
@@ -46,11 +46,11 @@ Sampling: An Assessment of Current Methodology}, Sociological Methodology
 
 Gile, Krista J. and Handcock, Mark S. (2018) \pkg{sspse}: Estimating Hidden 
 Population Size using Respondent Driven Sampling Data
-R package, Los Angeles, CA.  Version 0.8, \url{http://hpmrg.org}.
+R package, Los Angeles, CA.  Version 0.8, \url{https://github.com/HPMRG}.
 
 Handcock MS (2003).  \pkg{degreenet}: Models for Skewed Count Distributions
 Relevant to Networks.  Statnet Project, Seattle, WA.  Version 1.2,
-\url{http://statnet.org}.
+\url{https://statnet.org}.
 
 Handcock, Mark S., Gile, Krista J. and Mar, Corinne M. (2014)
 \emph{Estimating Hidden Population Size using Respondent-Driven Sampling

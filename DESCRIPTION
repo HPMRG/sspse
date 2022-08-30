@@ -17,7 +17,7 @@ Description: Estimate the size of a networked population based on
     See Handcock, Gile and Mar (2014) <doi:10.1214/14-EJS923> and
     Handcock, Gile and Mar (2015) <doi:10.1111/biom.12255>.
 License: GPL-3 + file LICENSE
-URL: http://www.hpmrg.org
+URL: https://github.com/HPMRG
 Imports: scam, coda
 Encoding: UTF-8
 RoxygenNote: 7.2.1
