@@ -1,3 +1,5 @@
+<img src="man/figures/sspse_hl.png" align="left" width="250" height="250" alt="RDS network"/>
+
 # The `sspse` package
 
 This is an R package to implement successive sampling population size estimation (SS-PSE).
