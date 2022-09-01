@@ -1,4 +1,4 @@
-<img src="man/figures/sspse_hl.png" align="left" width="250" height="250" style="padding:30px;"alt="RDS network"/>
+<img src="man/figures/sspse_hl.png" align="left" width="250" height="250" style="padding:30px;" alt="RDS network"/>
 
 # The `sspse` package
 
