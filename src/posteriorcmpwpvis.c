@@ -187,12 +187,6 @@ void gcmpwpvis (int *pop,
     for (i=0; i<Np; i++){
       pi[i]=pdegi[i];
     }
-//  temp=0.;
-//  for (umax=1; umax<=Ki; umax++){
-//    temp+=pi[umax-1];
-//    if(temp > uprob) break;
-//  }
-// Rprintf("uprob %f umax %d K %d\n", uprob, umax,uprob);
 
     // Now computes mean and s.d. from log-lambda and nu
     mui=0.0;
@@ -206,7 +200,6 @@ void gcmpwpvis (int *pop,
 
     /* Draw new beta using MCMC */
     if (step == -iburnin || step==(20*(step/20))) { 
-//  if (step == -iburnin) { 
      MHwpmem(u,n,K,beta0muprior,beta0sigmaprior,beta1muprior,beta1sigmaprior,
        lmemmu,memdfmu,memnu,memdfnu,srd,numrec,rectime,maxcoupons,
        beta0proposal,beta1proposal,
@@ -218,7 +211,6 @@ void gcmpwpvis (int *pop,
      beta1i=beta1sample[0];
      lmemmui=lmemmusample[0];
      memnui=memnusample[0];
-//  Rprintf("step %d lmemmui: %f rmemnui %f beta0i %f beta1i %f\n",step,lmemmui,rmemnui,beta0i,beta1i);
 
     /* Draw true unit sizes based on the reported degrees*/
     // First reset counts
@@ -230,10 +222,9 @@ void gcmpwpvis (int *pop,
      if(srd[j] <= (10*Ki)){
       temp = beta0i + beta1i*rectime[j];
       rtprob = exp(temp)/(1.0+exp(temp));
-//    Multiply by the Conway=Maxwell-Poisson PMF for observation
+//    Multiply by the Conway-Maxwell-Poisson PMF for observation
       for (i=0; i<Ki; i++){
        // Next to exclude unit sizes inconsistent with the number of recruits
-//     if((numrec[j] <= (i+1)) & ((maxc-1) <= (i+1))){
        if((numrec[j] <= (i+1))){
         lliki=0.0;
         if(((i+1) <= maxc)|(numrec[j]<maxc)){
@@ -248,53 +239,27 @@ void gcmpwpvis (int *pop,
           pd2[0]= exp(-fabs(memmui-1.)/sqrt(memnui));
           pis=pd2[0];
           for (k=1; k<(10*Ki); k++){
-//          pd2[k]= pd2[k-1]*memmui*exp((fabs(k-memmui)-fabs(k+1-memmui))/sqrt(memnui))/((double)(k+1));
             pd2[k]= pd2[k-1]*(k+rnb)*pnb*exp((fabs(k-memmui)-fabs(k+1-memmui))/sqrt(memnui))/((double)(k+1));
             pis+=pd2[k];
           }
           for (k=0; k<(10*Ki); k++){
             pd2[k]/=pis;
-// Rprintf("srd[j] %d memmui %f k %d pd2[k]: %f\n",srd[j],memmui,k+1,pd2[k]);
           }
           pis2=0.;
           for (k=Ki; k<(10*Ki); k++){
             pis2+=pd2[k];
           }
-//if(j==6) Rprintf("\n");
-//if(j==6) Rprintf("pd2[srd]: %f\n",pd2[srd[j]-1]);
-//Rprintf(" memnui %f pd2[srd[j]]: %f\n",memnui,pd2[srd[j]-1]);
-//        if(srd[j] <= (Ki*exp(lmemmui))){
           if(srd[j] <= 10*Ki){
             lliki += log(pd2[srd[j]-1]);
           }else{
-//          lliki += log(pd2[Ki-1]);
             lliki += log(pis2);
           }
-//            if(temp<1.0){
-//              lliki += log(1.-temp);
-//            }else{
-//              lliki += -100.0;
-//            }
-// Rprintf("lliki0 lmemmui %f memnui %f srd: %d llik %f p[50] %f p %f\n",lmemmui,memnui,srd[i],lliki,pd2[49],(1.-temp));
-// if((1.-temp) > 0.99){
-//        for (k=0; k<Ki; k++){ Rprintf("k %d pd2[k] %f\n",k,pd2[k]);}
-// }
-//        }
         }
-//      pd[i]=pi[i]*exp(lliki);
         pd[i]=pi[i]*exp(lliki)*(i+1.);
        }else{
         pd[i]=0.0;
        }
-//    if((i+1) != d[j]){
-//      pd[i] = 0.0;
-//    }
-//     pd[i]=pi[i];
-//Rprintf("srd[j] %d i %d pd[i] %f\n", srd[j],i, pd[i]);
-//Rprintf("srd[j] %d numrec %f i %d lliki %f\n", srd[j], numrec[j], i+1, lliki);
       }
-      // Set up pd to be cumulative for the random draws
-//if(j==6) Rprintf("pd[i]: ");
     pis=0.;
     for (i=0; i<Ki; i++){
       pis+=pd[i];
@@ -302,22 +267,9 @@ void gcmpwpvis (int *pop,
     for (i=0; i<Ki; i++){
       pd[i]/=pis;
     }
-//Rprintf("j %d d[j] %d pd: %f %f %f %f\n",j, d[j], pd[d[j]-2], pd[d[j]-1], pd[d[j]], pd[d[j]+1]);
       for (i=1; i<Ki; i++){
-//if(j==6) Rprintf("%f ", pd[i]);
        pd[i]=pd[i-1]+pd[i];
       }
-//if(j==6) Rprintf("\n");
-//if(j==6)Rprintf("beta0i %f beta1i %f lmemmui %f rmemnui %f rtprob %f pd[Ki-1] %f\n", beta0i,beta1i,lmemmui,rmemnui,rtprob,pd[Ki-1]);
-//    if(pd[(10*Ki)-1]<0.00000000001){
-//     Rprintf("fixed bad pd[(10*Ki)-1] %f\n", pd[(10*Ki)-1]);
-//     for (i=0; i<(10*Ki); i++){
-//      pd[i]=pi[i];
-//     }
-//     for (i=1; i<(10*Ki); i++){
-//      pd[i]=pd[i-1]+pd[i];
-//     }
-//    }
       /* Draw unit size for the observed degree */
       /* Now propose the true size for unit i based on reported size and disease status */
       /* In the next three lines a sizei is chosen */
@@ -328,39 +280,9 @@ void gcmpwpvis (int *pop,
       nk[sizei-1]=nk[sizei-1]+1;
       u[j]=sizei;
 
-//    if(sizei > umax) umax = sizei;
     }
-// Next line to force unit sizes to degrees
-// Rprintf("j %d u[j] %d sim u %d\n", j, u[j], sizei);
-// sizei=u[j];
-
-//    if(u[j] < numrec[j]) Rprintf("Warning: j %d u[j] %d numrec[j] %d maxc %d: %f %f %f %f\n",j,u[j],numrec[j],maxc,pd[0],pd[1],pd[2],pd[3]);
-//Rprintf("j %d dis %d sizei %d pd[Ki-1] %f\n", j, ddis, sizei, pd[Ki-1]);
      } 
-//   pis=0.;
-//   for (i=0; i<Ki; i++){
-//     pd[i]=(i+1)*(i+1)*nk[i];
-//     pis+=pd[i];
-//   }
-//   for (i=0; i<Ki; i++){
-//     pd[i]/=pis;
-//   }
-//   for (i=1; i<Ki; i++){
-//    pd[i]=pd[i-1]+pd[i];
-//   }
 
-//   /* Deal with the outliers */
-//   for (j=0; j<ni; j++){
-//    if(srd[j] > Ki){
-//     temp = pd[Ki-1] * unif_rand();
-//     for (sizei=1; sizei<=Ki; sizei++){
-//      if(temp <= pd[sizei-1]) break;
-//     }
-//     nk[sizei-1]=nk[sizei-1]+1;
-//     u[j]=sizei;
-//    }
-//   }
-//
      /* Deal with the outliers */
      umax=nk[Ki-1];
      sizei=Ki;
@@ -385,13 +307,8 @@ void gcmpwpvis (int *pop,
      for (i=(ni-2); i>=0; i--){
       b[i]=b[i+1]+u[i];
      }
-// Rprintf("j %d u[j] %d pd[Ki-1] %f\n", j, u[j], pd[Ki-1]);
-//
      /* End of imputed unit sizes for observed */
     }
-
-//  }
-// Rprintf("step %d b[ni-2] %d; End of imputed unit sizes for observed\n", step, b[ni-2]);
 
     /* Draw phis */
     tU=0;
@@ -400,7 +317,6 @@ void gcmpwpvis (int *pop,
     }
     r=0.;
     for (i=0; i<ni; i++){
-//    phi[i]=(tU+b[i])*exp_rand();
       r+=exp_rand()/(tU+b[i]);
     }
 
@@ -436,12 +352,10 @@ void gcmpwpvis (int *pop,
 
     /* Draw unseen sizes */
     for (i=0; i<Ki; i++){
-//Rprintf("i %d nk[i] %f\n", i, nk[i]/(1.0*ni));
       Nk[i]=nk[i];
     }
     // Set up pi to be cumulative for random draws
     for (i=1; i<Ki; i++){
-//    Rprintf("i %d pi[i] %f\n", i, pi[i]);
       pi[i]=pi[i-1]+pi[i];
     }
     for (i=ni; i<Ni; i++){
@@ -455,24 +369,18 @@ void gcmpwpvis (int *pop,
         /* In the next two lines a sizei is chosen */
         /* with parameters lnlami and nui */
         temp = unif_rand();
-//      gammart = pi[Ki-1] * unif_rand();
         for (sizei=1; sizei<=Ki; sizei++){
           if(temp <= pi[sizei-1]) break;
         }
-//      Rprintf("sizei %d pi[Ki-1] %f gammart %f\n", sizei, pi[Ki-1],gammart);
        }
       }
-//    if(sizei >= Ki){sizei=Ki-1;}
       u[i]=sizei;
-//    if((sizei <= 0) | (sizei > Ki-1)) Rprintf("sizei %d r %f\n", sizei,r);
       Nk[sizei-1]=Nk[sizei-1]+1;
     }
     if (step > 0 && step==(iinterval*(step/iinterval))) { 
       /* record statistics for posterity */
       Nd=(double)Ni;
       sample[isamp*dimsample  ]=Nd;
-//if(nui > 4.0 || lnlami > 4.5) Rprintf("sample: %f %f\n", lnlami,nui);
-// Rprintf("sample: step %d %f %f %d %d %d\n", step, lnlami,nui,Np,isamp*dimsample+8,isamp*ni+ni-1);
       sample[isamp*dimsample+1]=mui;
       sample[isamp*dimsample+2]=sigmai;
       sample[isamp*dimsample+3]=(double)(Nk[0]);
@@ -513,7 +421,6 @@ void gcmpwpvis (int *pop,
       }
       isamp++;
       if (*verbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d samples...\n", isamp);
-//    if (*verbose) Rprintf("Taken %d samples...\n", isamp);
     }
     step++;
   }
@@ -526,7 +433,6 @@ void gcmpwpvis (int *pop,
   for (i=0; i<ni; i++){
      pop[i]=u[i];
   }
- // Rprintf("ni %d Ki %d\n", ni, Ki);
   PutRNGstate();  /* Disable RNG before returning */
   free(pi);
   free(pd);
@@ -630,7 +536,6 @@ void MHwpmem (int *u, int *n, int *K,
        lliki += log(1.0-pbinom(maxc-1.0,u[i],rtprob,give_log0,give_log0));
      }
      if(srd[i]>=0){
-//    lliki += log(poilog(srd[i],log((double)(u[i]))-lmemmui,memnui));
 //    Use WP for localized
       memmui = exp(lmemmui)*u[i];
       rnb=memmui/(alpha-1.);
@@ -642,43 +547,27 @@ void MHwpmem (int *u, int *n, int *K,
       }
       for (k=0; k<(10*Ki); k++){
         pd[k]/=pis;
-//Rprintf("memmui %f k %d pd[k]: %f\n",memmui,k+1,pd[k]);
       }
       pis2=0.;
       for (k=Ki; k<(10*Ki); k++){
         pis2+=pd[k];
       }
-//if(j==6) Rprintf("\n");
       if(srd[i] <= 10*Ki){
         lliki += log(pd[srd[i]-1]);
       }else{
         lliki += log(pis2);
       }
       lliki += log((double)(u[i]));
-//if(temp<1.0){
-//        lliki += log(1.-temp);
-//}else{
-//        lliki += -100.0;
-//}
-// Rprintf("lliki srd: %d llik %f p[50] %f p %f\n",srd[i],lliki,pd[49],(1.-temp));
      }
-//  }else{
-//   lliki = -100000.0; 
     }
   }
   if(!isfinite(lliki)) lliki = -100000.0; 
-
-//Rprintf("New call: lliki=%f lmemmui=%f memnui=%f rtprob=%f\n",lliki,lmemmui,memnui,rtprob);
 
   // Compute initial prior
   pibeta0i = dnorm(beta0i, dbeta0, dbeta0sd, give_log1);
   if(dbeta1sd > 0.0) pibeta1i = dnorm(beta1i, dbeta1, dbeta1sd, give_log1);
   pimemi = dnorm(lmemmui, dlmemmu, rmemnui/rmemdfmu, give_log1);
   pimemi = pimemi+dsclinvchisq(memnui, dmemdfnu, dmemnu);
-//pimemi = dsclinvchisq(memnui, dmemdfnu, dmemnu);
-
-//Rprintf("dmemdfmu %f dmemdfnu %f ddfmu %f ddfsigma %f\n", memdfmu, memdfnu, dfmu, dfsigma);
-//Rprintf("dmemdfmu %f dmemdfnu %f rmemdfmu %f\n", dmemdfmu, dmemdfnu, rmemdfmu);
 
   // Now do the MCMC updates (starting with the burnin updates)
   while (isamp < isamplesize && step < iburnin) {
@@ -699,32 +588,19 @@ void MHwpmem (int *u, int *n, int *K,
     memnustar = memnui*exp(rnorm(0., dmemnuproposal));
     rmemnustar = sqrt(memnustar);
 
-// for (i=0; i<ni; i++){
-//    Rprintf("%f %i %f\n",numrec[i],u[i],rectime[i]);
-// }
-  
     llikstar = 0.0;
     for (i=0; i<ni; i++){
       temp = beta0star + beta1star*rectime[i];
       rtprob = exp(temp)/(1.0+exp(temp));
-//    Rprintf("%f %f %f %f\n",llikstar,lmemmustar,memnustar,rtprob);
-//    if((numrec[i] <= u[i]) && ((maxc-1) <= u[i])){
       if(numrec[i] <= u[i]){
        if((u[i] <= maxc)|(numrec[i]<maxc)){
         llikstar += dbinom(numrec[i],u[i],rtprob,give_log1);
-//      Rprintf("< %f %f %f %f\n",numrec[i],rtprob[i],u,dbinom(numrec[i],u,rtprob[i],give_log0));
        }else{
         llikstar += log(1.0-pbinom(maxc-1.0,u[i],rtprob,give_log0,give_log0));
-//      Rprintf("< %f\n",1.0-pbinom(maxc-1.0,u,rtprob[i],give_log0,give_log0));
        }
        if(srd[i]>=0){
-//      llikstar += log(poilog(srd[i],log(u[i])-lmemmustar,exp(memnustar)));
-//      Use WP localized
-//      llans <- -x*lambda - theta + (x-1) * log(theta + x*lambda) +
-//                 log(theta) - lgamma(x+1)
         memmustar = exp(lmemmustar)*u[i];
         rnb=memmustar/(alpha-1.);
-//      pd[0]= memmustar*exp(-fabs(memmustar-1.)/sqrt(memnustar));
         pd[0]= exp(-fabs(memmustar-1.)/sqrt(memnustar));
         pis=pd[0];
         for (k=1; k<(10*Ki); k++){
@@ -744,28 +620,10 @@ void MHwpmem (int *u, int *n, int *K,
           llikstar += log(pis2);
         }
         llikstar += log((double)(u[i]));
-//      }else{
-////      llikstar += log(pd[Ki-1]);
-//if(temp<1.0){
-//         llikstar += log(1.-temp);
-//}else{
-//         llikstar += -100.0;
-//}
-// Rprintf("llikstar srd: %d llik %f p[50] %f p %f\n",srd[i],lliki,pd[49],(1.-temp));
-//  Rprintf("llikstar: %i %f %f %f %f %f %f %f\n",i, llikstar,lmemmustar,memnustar,beta0star,beta1star,temp,rtprob);
        }
-//    }else{
-//     llikstar = -100000.0; 
       }
     }
     if(!isfinite(llikstar)) llikstar = -100000.0; 
-
-//  Rprintf("llikstar: %f %f %f %f\n",llikstar,lmemmustar,memnustar,rtprob);
-
-//    Rprintf("dn %f\n", poilog(srd[0],log(u[0])-lmemmustar,exp(memnustar)));
-
-//      Rprintf("dn %f\n", log(temp));
-//  if(!isnan(temp)) llikstar += temp; 
 
     /* Calculate pieces of the prior. */
     pibeta0star = dnorm(beta0star, dbeta0, dbeta0sd, give_log1);
@@ -785,25 +643,13 @@ void MHwpmem (int *u, int *n, int *K,
     if(dbeta1sd > 0.0) ip = ip + pibeta1star-pibeta1i;
     ip = ip + pimemstar - pimemi;
 
-//  Rprintf("pibeta0star=%f pibeta0i=%f %f %f %f %f\n",pibeta0star,pibeta0i,pibeta1star,pibeta1i,pimemstar,pimemi);
-
     /* The logic is to set exp(cutoff) = exp(ip) * qratio ,
     then let the MH probability equal min{exp(cutoff), 1.0}.
     But we'll do it in log space instead.  */
-//  if (*verbose)
-//  Rprintf("Now proposing %d MH steps %f ip1...\n", step, ip);
-//  cutoff = ip + lliki-llikstar;
     cutoff = ip + llikstar - lliki + qi - qstar;
       
-//Rprintf("Proposed: cutoff=%f ip=%f llikstar=%f lliki= %f qi=%f qstar=%f\n", cutoff, ip, llikstar, lliki, qi, qstar);
-//  Rprintf("Proposed: beta0i=%f beta0star=%f beta1s=%f beta1star=%f\n", beta0i,beta0star,beta1i,beta1star);
-
-//  if (*verbose)
-//    Rprintf("Now proposing %d MH steps %f cutoff...\n", step, cutoff);
-
     /* if we accept the proposed network */
     if (cutoff >= 0.0 || log(unif_rand()) < cutoff) { 
-//Rprintf("Accepted: cutoff=%f ip=%f llikstar=%f lliki=%f qi=%f qstar=%f\n",cutoff, ip,llikstar, lliki, qi, qstar);
       /* Make proposed changes */
       beta0i = beta0star;
       beta1i = beta1star;
@@ -826,13 +672,11 @@ void MHwpmem (int *u, int *n, int *K,
         if (*verbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d MH samples...\n", isamp);
       }
     }
-//  Rprintf("%d of %d MH samples taken in %d steps; cutoff=%f\n", isamp, samplesize, step, cutoff);
     step++;
   }
 //PutRNGstate();  /* Disable RNG before returning */
   free(pd);
   /*Check for interrupts (if recursion is taking way too long...)*/
   R_CheckUserInterrupt();
-//Rprintf("Done: %d MH samples taken with %d steps\n", taken, step);
   *staken = taken;
 }

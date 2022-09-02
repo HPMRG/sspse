@@ -63,7 +63,7 @@ posteriorsize(
   optimism = TRUE,
   reflect.time = FALSE,
   equalize = TRUE,
-  verbose = TRUE
+  verbose = FALSE
 )
 }
 \arguments{

@@ -394,7 +394,9 @@ dsizeprior<-function(n,
       if(is.null(maxN.set)){maxN = min(maxNmax,maxN)}
      }
      }
-     cat(sprintf("Final alpha: %f, beta = %f max=%f\n",alpha, beta, maxbeta))
+     if(verbose){
+       cat(sprintf("Final alpha: %f, beta = %f max=%f\n",alpha, beta, maxbeta))
+     }
      if(is.null(alpha)) alpha=1
      if(is.null(beta)){
        warning("No prior information about the population size was specified! Using a prior mode of twice the sample size. Please specify prior information!", call. = FALSE)

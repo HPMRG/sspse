@@ -431,7 +431,7 @@ posteriorsize<-function(s,
                   optimism = TRUE,
                   reflect.time=FALSE,
                   equalize=TRUE,
-                  verbose=TRUE){
+                  verbose=FALSE){
 #
   visibilitydistribution=match.arg(visibilitydistribution)
   posfn <- switch(visibilitydistribution,
@@ -786,7 +786,9 @@ posteriorsize<-function(s,
 #   if(sd.pd > max.sd.prior.visibility*mean.pd){
 #    sd.pd <- min(max.sd.prior.visibility*mean.pd, sd.pd)
 #   }
-    message(sprintf("The mean of the recorded personal network sizes is %f.\n",mean.pd),appendLF=FALSE)
+    if(verbose){
+      message(sprintf("The mean of the recorded personal network sizes is %f.\n",mean.pd),appendLF=FALSE)
+    }
     xv <- ds
     xp <- weights
     xp <- length(xp)*xp/sum(xp)
@@ -796,12 +798,14 @@ posteriorsize<-function(s,
 #   mem.optimism.prior <- mean.pd / 8
     K <- 35
     df.mem.optimism.prior <- 10001
-    message(sprintf("mem.optimism.prior set is to %f.\n",mem.optimism.prior),appendLF=FALSE)
+    # message(sprintf("mem.optimism.prior is set to %f.\n",mem.optimism.prior),appendLF=FALSE)
   }
-  if(visibility){
+  if(verbose){
+   if(visibility){
     message(sprintf("The cap on the visibility distribution is K = %d.\n",K),appendLF=FALSE)
-  }else{
+   }else{
     message(sprintf("The cap on influence of the personal network size is K = %d.\n",K),appendLF=FALSE)
+   }
   }
   if(is.null(mean.prior.visibility)){
     degs <- s.prior
@@ -878,6 +882,7 @@ posteriorsize<-function(s,
                     num.recruits2=nr2[!remvalues2],
                     recruit.times2=recruit.times2[!remvalues2],
                     max.coupons=max.coupons,
+                    verbose=verbose,
                     maxbeta=maxbeta)
   }else{
   ### since running job in parallel, start vm (if not already running)
@@ -918,6 +923,7 @@ posteriorsize<-function(s,
       num.recruits2=nr2[!remvalues2],
       recruit.times2=recruit.times2[!remvalues2],
       max.coupons=max.coupons,
+      verbose=verbose,
       maxbeta=maxbeta)
 #
 #   Process the results
