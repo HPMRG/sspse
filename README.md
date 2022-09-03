@@ -6,7 +6,7 @@ This is an R package to implement successive sampling population size estimation
 
 SS-PSE is used to estimate the size of hidden populations using respondent-driven sampling (RDS) data. The package can implement SS-PSE, visibility SS-PSE, and capture-recapture SS-PSE. 
 
-The package was developed by the [Hard-to-Reach Population Methods Research Group (HPMRG)](https://github.com/HPMRG).
+The package was developed by the [Hard-to-Reach Population Methods Research Group (HPMRG)](https://hpmrg.org).
 
 <img src="man/Figures/fauxmadrona_recplot.jpeg" width = 900 alt="sspse banner"/>
 
@@ -48,15 +48,20 @@ reingold.tilford.plot(fauxmadrona,
                       vertex.color="seed")
 ```
 
+<img src="man/Figures/reingold.tilford.png" align="center"/>
+
 ## The `posteriorsize()` function
 
-The function that will perform both the original and visibility variants of SS-PSE is called `posteriorsize()`. It requires some prior knowledge about the population size, $N$, which is usually expressed using the `median.prior.size=` argument. 
+The function that will perform both the original and visibility variants of SS-PSE is called `posteriorsize()`. It requires some prior knowledge
+about the population size, $N$, which is usually expressed using the `median.prior.size=` argument. 
 
-Although there are many options within the `posteriorsize` function, most can be left at their default values unless you have a specific reason to believe they should be set differently.
+Although there are many options within the `posteriorsize` function, most can be left at their default values unless you have a specific reason
+to believe they should be set differently.
 
 ## Original SS-PSE example
 
-Set `visibility=FALSE`. By default, 1000 samples will be drawn from the posterior distribution for $N$ using a burnin of 1000 and an interval of 10. This may take a few seconds to run.
+Set `visibility=FALSE`. By default, 1000 samples will be drawn from the posterior distribution for $N$ using a burnin of 1000 and an interval of
+10. This may take a few seconds to run.
 
 ```
 fit1 <- posteriorsize(fauxmadrona, 
@@ -64,17 +69,33 @@ fit1 <- posteriorsize(fauxmadrona,
               visibility=FALSE)
 ```
 
+    ## Using non-measurement error model with K = 14.
+    ## Taken 1 samples...
+    ## Taken 2 samples...
+    ## Taken 4 samples...
+    ...
+    ## Taken 500 samples...
+    ## Taken 1000 samples...
+
 Plot the posterior distribution for $N$.
 
 ```
 plot(fit1, type="N")
 ```
 
-Create a table summary for the prior and posterior distributions for population size, specifying that we are interested in a 90% credible interval for $N$.
+<img src="man/figures/fit.nme.png" align="center"/>
+
+Create a table summary for the prior and posterior distributions for population size, specifying that we are interested in a 90% credible
+interval for $N$.
 
 ```
 summary(fit1, HPD.level = 0.9)
 ```
+
+    ## Summary of Population Size Estimation
+    ##           Mean Median Mode 25%  75%  90%  5%  95%
+    ## Prior     1247   1000  680 748 1480 2240 583 2852
+    ## Posterior  974    936  874 808 1100 1275 656 1400
 
 ## Visibility SS-PSE example
 
@@ -86,21 +107,40 @@ fit2 <- posteriorsize(fauxmadrona,
               visibility=TRUE)
 ```
 
+    ## Using a Exponentially Weighted Poisson measurement error model with K = 35.
+
+    ## computing ...
+    ## Taken 1 samples...
+    ## Taken 2 samples...
+    ...
+    ## Taken 500 samples...
+    ## Taken 1000 samples...
+
+## Summary of Population Size Estimation
+
 Plot the posterior distribution for $N$.
 
 ```
 plot(fit2, type="N")
 ```
 
-Create a table summary for the prior and posterior distributions for population size, specifying that we are interested in a 90% credible interval for $N$.
+<img src="man/figures/fit.me.png" align="center"/>
+
+
+Create a table summary for the prior and posterior distributions for population size, specifying that we are interested in a 90% credible
+interval for $N$.
 
 ```
 summary(fit2, HPD.level = 0.9)
 ```
 
+    ## Summary of Population Size Estimation
+    ##           Mean Median Mode 25%  75%  90%  5%  95%
+    ## Prior     1247   1000  680 748 1480 2240 583 2852
+    ## Posterior 1275   1061  839 823 1486 2156 609 2732
 # Resources
 
-Please use the GitHub repository to report bugs or request features: https://https://github.com/HPMRG/sspse
+Please use the GitHub repository to report bugs or request features: https://github.com/HPMRG/sspse
 
 <!-- A more detailed vignette with information on measurement error and diagnostics can be found here: [[link to katie's page]] -->
 

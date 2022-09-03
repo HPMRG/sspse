@@ -160,11 +160,11 @@ Sampling: An Assessment of Current Methodology}, Sociological Methodology
 
 Gile, Krista J. and Handcock, Mark S. (2014) \pkg{sspse}: Estimating Hidden 
 Population Size using Respondent Driven Sampling Data
-R package, Los Angeles, CA.  Version 0.5, \url{https://github.com/HPMRG}.
+R package, Los Angeles, CA.  Version 0.5, \url{https://hpmrg.org/sspse/}.
 
 Handcock MS (2003).  \pkg{degreenet}: Models for Skewed Count Distributions
 Relevant to Networks.  Statnet Project, Seattle, WA.  Version 1.2,
-\url{https://statnet.org}.
+\url{https://statnet.org/}.
 
 Handcock, Mark S., Gile, Krista J. and Mar, Corinne M. (2014)
 \emph{Estimating Hidden Population Size using Respondent-Driven Sampling
