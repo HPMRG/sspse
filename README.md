@@ -83,7 +83,7 @@ Plot the posterior distribution for $N$.
 plot(fit1, type="N")
 ```
 
-<img src="man/figures/fit.nme.png" align="center"/>
+<img src="man/Figures/fit.nme.png" align="center"/>
 
 Create a table summary for the prior and posterior distributions for population size, specifying that we are interested in a 90% credible
 interval for $N$.
@@ -124,7 +124,7 @@ Plot the posterior distribution for $N$.
 plot(fit2, type="N")
 ```
 
-<img src="man/figures/fit.me.png" align="center"/>
+<img src="man/Figures/fit.me.png" align="center"/>
 
 
 Create a table summary for the prior and posterior distributions for population size, specifying that we are interested in a 90% credible
