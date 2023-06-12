@@ -31,6 +31,8 @@
 #' the estimated posterior density function.
 #' @param HPD.level numeric; probability level of the highest probability
 #' density interval determined from the estimated posterior.
+#' @param method character; The method to use for density estimation (default Gaussian Kernel; "bgk").
+#' "Bayes" uses a Bayesian density estimator which has good properties.
 #' @param \dots further arguments passed to or from other methods.
 #' @return The function \code{summary.sspse} computes and returns a two row matrix of
 #' summary statistics of the prior and estimated posterior distributions. The rows correspond to the \code{Prior} and the
@@ -52,13 +54,13 @@
 #' 
 #' @method summary sspse
 #' @export
-summary.sspse <- function(object, support=1000, HPD.level=0.95,...){
+summary.sspse <- function(object, support=1000, HPD.level=0.95, method="bgk",...){
 #summary.sspse <- function(object, ...){
   p.args <- as.list( sys.call() )[-c(1,2)]
   formal.args<-formals(sys.function())[-1]
 # control <- list(support=1000,HPD.level=0.95)
 
-  control<-list()
+  control<-list(samples=4000, burnin=1000)
   names.formal.args <- names(formal.args)
   names.formal.args <- names.formal.args[-match("...",names.formal.args)]
   for(arg in names.formal.args){ control[arg]<-list(get(arg)) }
@@ -76,8 +78,21 @@ if(!is.null(out)){
   xp <- seq(object$n,object$maxN, length=control$support)
 # a=locfit::locfit( ~ lp(outN,nn=0.5))
 # posdensN <- predict(a, newdata=xp)
-  a=bgk_kde(outN,n=2^(ceiling(log((object$maxN-object$n))/log(2))),MIN=object$n,MAX=object$maxN)
-  posdensN <- stats::spline(x=a[1,],y=a[2,],xout=xp)$y
+  if(method=="bgk" || !requireNamespace("densEstBayes", quietly = TRUE)){
+    a=bgk_kde(outN,n=2^(ceiling(log((object$maxN-object$n))/log(2))),MIN=object$n,MAX=object$maxN)
+    posdensN <- stats::spline(x=a[1,],y=a[2,],xout=xp)$y
+  }else{
+    a=densEstBayes::densEstBayes(outN,method="NUTS",
+      control=densEstBayes::densEstBayes.control(range.x=c(object$n*0.95,object$maxN*1.05),#numBins=min(401,round(length(outN)/2)),
+                                                 nKept=control$samples,nWarm=control$burnin))
+    xTrang <- seq(-0.05, 1.05, length = length(xp))
+    Xg <- cbind(1,xTrang)
+    Zg <- .ZOSull(xTrang,intKnots=a$intKnots,range.x=c(-0.05,1.05))
+    Cg <- cbind(Xg,Zg)
+    betauMCMC <- a$stochaFitObj$betauMCMC
+    etaHatMCMC <- crossprod(t(Cg),betauMCMC)
+    posdensN <- exp(apply(etaHatMCMC, 1, mean))
+  }
   posdensN <- control$support*posdensN / ((object$maxN-object$n)*sum(posdensN))
   # Next from coda
   # hpd <- HPDinterval(object$sample[,"N"])[1:2]

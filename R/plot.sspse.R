@@ -54,6 +54,8 @@
 #' @param log.degree a character string which contains \code{"x"} if the (horizontal) degree axis in the plot
 #' of the estimated visibilites for each respondent verses their reported network sizes be logarithmic. 
 #' A value of \code{"y"} uses a logarithmic visibility axis and \code{"xy"} both. The default is \code{""}, no logarithmic axes.
+#' @param method character; The method to use for density estimation (default Gaussian Kernel; "bgk").
+#' "Bayes" uses a Bayesian density estimator which has good properties.
 #' @param \dots further arguments passed to or from other methods.
 #' @seealso The model fitting function \code{\link{posteriorsize}},
 #' \code{\link[graphics]{plot}}.
@@ -101,11 +103,12 @@
 #' @export
 plot.sspse <- function(x,
 		       xlim=NULL,support=1000,HPD.level=0.90,N=NULL,ylim=NULL,mcmc=FALSE,type="all",
-		       main="Posterior for population size",smooth=4,include.tree=TRUE,cex.main=1,log.degree="",...){
+		       main="Posterior for population size",smooth=4,include.tree=TRUE,cex.main=1,log.degree="",method="bgk",...){
   p.args <- as.list( sys.call() )[-c(1,2)]
   formal.args<-formals(sys.function())[-c(1)]
 
-  control<-list()
+ #control<-list()
+  control<-list(samples=4000, burnin=1000)
   names.formal.args <- names(formal.args)
   names.formal.args <- names.formal.args[-match("...",names.formal.args)]
   for(arg in names.formal.args){ control[arg]<-list(get(arg)) }
@@ -143,18 +146,31 @@ if(!is.null(out)){
   outN <- out[,"N"]
   ##a=locfit( ~ lp(outN, nn=0.35, h=0, maxk=500))
   xp <- seq(x$n,x$maxN, length=control$support)
-# posdensN=bgk_kde(data=outN,n=2^(ceiling(log(x$maxN-x$n)/log(2))),MIN=x$n,MAX=x$maxN, smooth=smooth)
-# maxposdensN <- max(posdensN[1,],na.rm=TRUE)
-# posdensN <- stats::spline(x=posdensN[1,],y=posdensN[2,],xout=xp)$y
-  posdensN=KernSmooth::bkde(x=log(outN), kernel = "normal", gridsize = length(xp), range.x=log(c(x$n,x$maxN)))
-# posdensN=density(x=log(outN),n=control$support,from=log(x$n),to=log(x$maxN))
-# xp=exp(posdensN$x)
-# posdensN=posdensN$y/xp
-  maxposdensN <- max(exp(posdensN$x),na.rm=TRUE)
-  posdensN <- stats::spline(x=exp(posdensN$x),y=posdensN$y/exp(posdensN$x),xout=xp)$y
-  posdensN[xp > maxposdensN] <- 0
-  #a=locfit::locfit( ~ lp(outN,nn=0.5))
-  #posdensN <- predict(a, newdata=xp)
+  if(method=="bgk" || !requireNamespace("densEstBayes", quietly = TRUE)){
+#   posdensN=bgk_kde(data=outN,n=2^(ceiling(log(x$maxN-x$n)/log(2))),MIN=x$n,MAX=x$maxN, smooth=smooth)
+#   maxposdensN <- max(posdensN[1,],na.rm=TRUE)
+#   posdensN <- stats::spline(x=posdensN[1,],y=posdensN[2,],xout=xp)$y
+    posdensN=KernSmooth::bkde(x=log(outN), kernel = "normal", gridsize = length(xp), range.x=log(c(x$n,x$maxN)))
+#   posdensN=density(x=log(outN),n=control$support,from=log(x$n),to=log(x$maxN))
+#   xp=exp(posdensN$x)
+#   posdensN=posdensN$y/xp
+    maxposdensN <- max(exp(posdensN$x),na.rm=TRUE)
+    posdensN <- stats::spline(x=exp(posdensN$x),y=posdensN$y/exp(posdensN$x),xout=xp)$y
+    posdensN[xp > maxposdensN] <- 0
+    #a=locfit::locfit( ~ lp(outN,nn=0.5))
+    #posdensN <- predict(a, newdata=xp)
+  }else{
+    a=densEstBayes::densEstBayes(outN,method="NUTS",
+      control=densEstBayes::densEstBayes.control(range.x=c(x$n*0.95,x$maxN*1.05),#numBins=min(401,round(length(outN)/2)),
+                                                 nKept=control$samples,nWarm=control$burnin))
+    xTrang <- seq(-0.05, 1.05, length = length(xp))
+    Xg <- cbind(1,xTrang)
+    Zg <- .ZOSull(xTrang,intKnots=a$intKnots,range.x=c(-0.05,1.05))
+    Cg <- cbind(Xg,Zg)
+    betauMCMC <- a$stochaFitObj$betauMCMC
+    etaHatMCMC <- crossprod(t(Cg),betauMCMC)
+    posdensN <- exp(apply(etaHatMCMC, 1, mean))
+  }
   posdensN <- control$support*posdensN / ((x$maxN-x$n)*sum(posdensN))
   #
   if(is.null(control$xlim)){control$xlim <- stats::quantile(outN,0.99)}
