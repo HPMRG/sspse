@@ -79,7 +79,7 @@ poscmp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
                   verbose=verbose)
     if(!is.null(s2)){
      if(visibility){
-      cat(sprintf("Using Capture-recapture measurement error model with K = %d.\n",K))
+      cat(sprintf("Using Capture-recapture with a CMP measurement error model with K = %d.\n",K))
       nk=tabulate(c(s,s2[!rc]),nbins=K)
       Cret <- .C("gcmpvis2",
               pop12=as.integer(c(s, s2[!rc], rep(0,prior$maxN-length(s)-length(s2[!rc])))),
@@ -156,7 +156,7 @@ poscmp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
      }
     }else{
      if(visibility){
-      cat(sprintf("Using CMP measurement error model with K = %d.\n",K))
+      cat(sprintf("Using a CMP measurement error model with K = %d.\n",K))
       Cret <- .C("gcmpvis",
               pop=as.integer(c(s,rep(0,prior$maxN-n1))),
               K=as.integer(K),
@@ -191,7 +191,7 @@ poscmp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
               burninbeta=as.integer(burninbeta),
               verbose=as.integer(verbose), PACKAGE="sspse")
      }else{
-      cat(sprintf("Using non-measurement error model with K = %d.\n",K))
+      cat(sprintf("Using a non-measurement error model with K = %d.\n",K))
       s[s>K] <- K
       s[s<1] <- 1
       Cret <- .C("gcmp",

@@ -69,7 +69,7 @@ data(fauxmadrona)
 # Here interval=1 so that it will run faster. It should be higher in a 
 # real application.
 fit <- posteriorsize(fauxmadrona, median.prior.size=1000,
-                                 burnin=100, interval=1, samplesize=100)
+                                 burnin=20, interval=1, samplesize=100)
 fit
 
 }
@@ -83,11 +83,11 @@ Sampling: An Assessment of Current Methodology}, Sociological Methodology
 
 Gile, Krista J. and Handcock, Mark S. (2014) \pkg{sspse}: Estimating Hidden 
 Population Size using Respondent Driven Sampling Data
-R package, Los Angeles, CA.  Version 0.5, \url{http://hpmrg.org}.
+R package, Los Angeles, CA.  Version 0.5, \url{https://hpmrg.org/sspse/}.
 
 Handcock MS (2003).  \pkg{degreenet}: Models for Skewed Count Distributions
 Relevant to Networks.  Statnet Project, Seattle, WA.  Version 1.2,
-\url{http://statnet.org}.
+\url{https://statnet.org/}.
 
 Handcock, Mark S., Gile, Krista J. and Mar, Corinne M. (2014)
 \emph{Estimating Hidden Population Size using Respondent-Driven Sampling

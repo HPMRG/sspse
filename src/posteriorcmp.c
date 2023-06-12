@@ -124,16 +124,12 @@ void gcmp (int *pop,
     if(lzcmp < -100000.0){continue;}
     pi[Np]=cmp(Np+1,lnlami,nui,lzcmp,give_log0);
     pis+=pi[Np];
-//Rprintf("lnlami %f nui %f lzcmp %f pi %f\n", lnlami, nui, lzcmp, pi[Np]);
     for (i=Np+1; i<Ki; i++){
       pi[i]=pi[i-1]*exp(lnlami-nui*log((double)(i+1)));
       pis+=pi[i];
     }
-//  Rprintf("isamp %d pis %f\n", isamp, pis);
-//  pis=1.-exp(-lzcmp);
     for (i=0; i<Ki; i++){
       pi[i]/=pis;
-//Rprintf("i %d pi %f pi0 %f\n", i, pi[i], pi0[i], pis, pis0);
     }
     pis=1.;
     for (i=0; i<Np; i++){
@@ -193,18 +189,15 @@ void gcmp (int *pop,
     }
     r=0.;
     for (i=0; i<ni; i++){
-//    phi[i]=(tU+b[i])*exp_rand();
       r+=exp_rand()/(tU+b[i]);
     }
 
     /* Draw unseen sizes */
     for (i=0; i<Ki; i++){
-//Rprintf("i %d nk[i] %f\n", i, nk[i]/(1.0*ni));
       Nk[i]=nk[i];
     }
     // Set up pi to be cumulative for random draws
     for (i=1; i<Ki; i++){
-//    Rprintf("i %d pi[i] %f\n", i, pi[i]);
       pi[i]=pi[i-1]+pi[i];
     }
     for (i=ni; i<Ni; i++){
@@ -218,24 +211,18 @@ void gcmp (int *pop,
         /* In the next two lines a sizei is chosen */
         /* with parameters lnlami and nui */
         temp = unif_rand();
-//      gammart = pi[Ki-1] * unif_rand();
         for (sizei=1; sizei<=Ki; sizei++){
           if(temp <= pi[sizei-1]) break;
         }
-//      Rprintf("sizei %d pi[Ki-1] %f gammart %f\n", sizei, pi[Ki-1],gammart);
        }
       }
-//    if(sizei >= Ki){sizei=Ki-1;}
       d[i]=sizei;
-//    if((sizei <= 0) | (sizei > Ki-1)) Rprintf("sizei %d r %f\n", sizei,r);
       Nk[sizei-1]=Nk[sizei-1]+1;
     }
     if (step > 0 && step==(iinterval*(step/iinterval))) { 
       /* record statistics for posterity */
       Nd=(double)Ni;
       sample[isamp*dimsample  ]=Nd;
-//if(nui > 4.0 || lnlami > 4.5) Rprintf("sample: %f %f\n", lnlami,nui);
-// Rprintf("sample: %f %f\n", lnlami,nui);
       sample[isamp*dimsample+1]=mui;
       sample[isamp*dimsample+2]=sigmai;
       sample[isamp*dimsample+3]=(double)(Nk[0]);
@@ -253,7 +240,6 @@ void gcmp (int *pop,
       }
       isamp++;
       if (*verbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d samples...\n", isamp);
-//    if (*verbose) Rprintf("Taken %d samples...\n", isamp);
     }
     step++;
   }
@@ -342,22 +328,16 @@ void MHcmptheta (int *Nk, int *K,
     lnlamstar = lnlami;
   }
   nui = nusample[0];
-// if(nui > 4.0 || lnlami > 4.5) Rprintf("%f %f\n", lnlami,nui);
-// Rprintf("%f %f\n", lnlami,nui);
-//    Rprintf("mui %f nui %f lzcmp %f\n", mui, nui, lzcmp);
   pis=0.;
   lzcmp = zcmp(exp(lnlami), nui, errval, 2*Ki, give_log1);
-//Rprintf("lnlami %f nui %f lzcmp %f\n", lnlami, nui, lzcmp);
   pi[Np]=cmp(Np+1,lnlami,nui,lzcmp,give_log0);
   pis+=pi[Np];
   for (i=Np+1; i<Ki; i++){
     pi[i]=pi[i-1]*exp(lnlami-nui*log((double)(i+1)));
     pis+=pi[i];
   }
-//pis=1.-exp(-lzcmp);
   for (i=0; i<Ki; i++){
     pi[i]/=pis;
-//Rprintf("i %d pi %f pi0 %f\n", i, pi[i], pi0[i], pis, pis0);
   }
   pis=1.;
   for (i=0; i<Np; i++){
@@ -385,9 +365,6 @@ void MHcmptheta (int *Nk, int *K,
   }
   sigma2i=sigma2i-mui*mui;
   sigmai  = sqrt(sigma2i);
-
-//Rprintf("mu %f sigma %f\n", *mu, (*sigma));
-//Rprintf("mui %f sigmai %f\n", mui, sigmai);
 
   pithetai = dsclinvchisq(sigma2i, ddfsigma, dsigma2);
   if(rdfmu > 0.0){
@@ -419,19 +396,14 @@ void MHcmptheta (int *Nk, int *K,
 
     pstars=0.;
     lzcmp = zcmp(exp(lnlamstar), nustar, errval, 2*Ki, give_log1);
-//if(nustar > 4.0 || lnlamstar > 4.5)  Rprintf("lnlamstar %f nustar %f lzcmp %f\n", lnlamstar, nustar, lzcmp);
-//    if(nustar > 4.0 || lnlamstar > 4.5){step++;continue;}
     pstar[Np]=cmp(Np+1,lnlamstar,nustar,lzcmp,give_log0);
     pstars+=pstar[Np];
-//  Rprintf("lnlamstar %f nustar %f lzcmp %f pstar %f\n", lnlamstar, nustar, lzcmp,pstar[Np]);
     for (i=Np+1; i<Ki; i++){
       pstar[i]=pstar[i-1]*exp(lnlamstar-nustar*log((double)(i+1)));
       pstars+=pstar[i];
     }
-//  pstars=1.-exp(-lzcmp);
     for (i=0; i<Ki; i++){
       pstar[i]/=pstars;
-//if(pstar[Np] < 0.00001){Rprintf("i %d pstar %f pi %f\n", i, pstar[i], pi[i]);}
     }
     pstars=1.;
     for (i=0; i<Np; i++){
@@ -451,20 +423,16 @@ void MHcmptheta (int *Nk, int *K,
     pstar[Ki-1]=pstars;
 
     // Now compute mean and s.d. from log-lambda and nu
-//  pstars=0.;
     mustar=0.0;
     sigma2star=0.0;
     for (i=0; i<Ki; i++){
       mustar+=pstar[i]*(i+1);
       sigma2star+=pstar[i]*(i+1)*(i+1);
-//    pstars+=pstar[i];
     }
     sigma2star=sigma2star-mustar*mustar;
-//  Rprintf("Check: %f\n", pstars);
 
     sigmastar  = sqrt(sigma2star);
 
-//  if(nustar > 4.0 || lnlamstar > 4.5) Rprintf("%f %f %f %f %f\n", lnlamstar, dlnlam, nustar, ddflnlam, nui);
     /* Calculate pieces of the posterior. */
     qnustar = dnorm(log(nustar/nui)/dnuproposal,0.,1.,give_log1)
                   -log(dnuproposal*nustar);
@@ -479,7 +447,6 @@ void MHcmptheta (int *Nk, int *K,
     ip = pithetastar-pithetai;
 
     for (i=0; i<Ki; i++){
-//if(pstar[Np] < 0.00001){Rprintf("i %d pstar %f pi %f\n", i, pstar[i], pi[i]);}
      if(Nk[i]>0){
       lp = log(pstar[i]/pi[i]);
       if(fabs(lp) < 100.){ip += (Nk[i]*lp);}
@@ -488,14 +455,8 @@ void MHcmptheta (int *Nk, int *K,
     /* The logic is to set exp(cutoff) = exp(ip) * qratio ,
     then let the MH probability equal min{exp(cutoff), 1.0}.
     But we'll do it in log space instead.  */
-//  if (*verbose)
-//  Rprintf("Now proposing %d MH steps %f ip1...\n", step, ip);
     cutoff = ip + qnui-qnustar;
       
-// Rprintf("mui %f mustar %f dmu %f ip %f pithetai, %f pithetastar %f cutoff %f\n", mui, mustar, dmu, ip, pithetai, pithetastar, cutoff);
-//  if (*verbose)
-//    Rprintf("Now proposing %d MH steps %f cutoff...\n", step, cutoff);
-
     /* if we accept the proposed network */
     if (cutoff >= 0.0 || log(unif_rand()) < cutoff) { 
       /* Make proposed changes */
@@ -520,7 +481,6 @@ void MHcmptheta (int *Nk, int *K,
         }
         isamp++;
         if (*verbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d MH samples...\n", isamp);
-//      Rprintf("Taken %d MH samples...\n", isamp);
       }
     }
     step++;

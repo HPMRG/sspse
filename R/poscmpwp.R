@@ -77,10 +77,14 @@ poscmpwp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
                   log=TRUE,
                   supplied=supplied,
                   verbose=verbose)
-    message(sprintf("Maximum population size set to %d.\n",prior$maxN),appendLF=FALSE)
+    if(verbose){
+      message(sprintf("Maximum population size set to %d.\n",prior$maxN),appendLF=FALSE)
+    }
     if(!is.null(s2)){
      if(visibility){
-      cat(sprintf("Using Capture-recapture Weighted Negative Binomial measurement error model with K = %d.\n",K))
+     #cat(sprintf("Using Capture-recapture Weighted Negative Binomial measurement error model with K = %d.\n",K))
+      cat(sprintf("Using Capture-recapture with a Exponentially Weighted Poisson measurement error model with K = %d.\n",K))
+      cat(sprintf("computing ...\n"))
       Cret <- .C("gcmpwpvis2",
               pop12=as.integer(c(s, s2[!rc], rep(0,prior$maxN-length(s)-length(s2[!rc])))),
               pop21=as.integer(c(s2,sum(s)-sum(s2[rc]), rep(0,prior$maxN-length(s2)-1))),
@@ -122,7 +126,7 @@ poscmpwp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
               lpriorm=as.double(prior$lprior),
               burnintheta=as.integer(burnintheta),
               burninbeta=as.integer(burninbeta),
-              verbose=as.integer(verbose), PACKAGE="sspse")
+              verbose=as.integer(TRUE), PACKAGE="sspse")
      }else{
       cat(sprintf("Using Capture-recapture non-measurement error model with K = %d.\n",K))
        s[ s>K] <- K
@@ -153,11 +157,13 @@ poscmpwp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
               posu=double(K),
               lpriorm=as.double(prior$lprior),
               burnintheta=as.integer(burnintheta),
-              verbose=as.integer(verbose), PACKAGE="sspse")
+              verbose=as.integer(TRUE), PACKAGE="sspse")
      }
     }else{
      if(visibility){
-      cat(sprintf("Using Weighted Negative Binomial measurement error model with K = %d.\n",K))
+     #cat(sprintf("Using Weighted Negative Binomial measurement error model with K = %d.\n",K))
+      cat(sprintf("Using a Exponentially Weighted Poisson measurement error model with K = %d.\n",K))
+      cat(sprintf("computing ...\n"))
       Cret <- .C("gcmpwpvis",
               pop=as.integer(c(s,rep(0,prior$maxN-n1))),
               K=as.integer(K),
@@ -191,7 +197,7 @@ poscmpwp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
               lpriorm=as.double(prior$lprior),
               burnintheta=as.integer(burnintheta),
               burninbeta=as.integer(burninbeta),
-              verbose=as.integer(verbose), PACKAGE="sspse")
+              verbose=as.integer(TRUE), PACKAGE="sspse")
      }else{
       cat(sprintf("Using non-measurement error model with K = %d.\n",K))
       s[s>K] <- K
@@ -215,7 +221,7 @@ poscmpwp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
               posu=double(K),
               lpriorm=as.double(prior$lprior),
               burnintheta=as.integer(burnintheta),
-              verbose=as.integer(verbose), PACKAGE="sspse")
+              verbose=as.integer(TRUE), PACKAGE="sspse")
      }
     }
     Cret$sample<-matrix(Cret$sample,nrow=samplesize,ncol=dimsample,byrow=TRUE)
@@ -235,7 +241,11 @@ poscmpwp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
      }else{
       colnames(Cret$sample) <- colnamessample
      }
-     Cret$sample[,"mem.optimism"] <- exp(Cret$sample[,"mem.optimism"])
+     if(stats::var(Cret$sample[,"mem.optimism"])>1e-8){
+       Cret$sample[,"mem.optimism"] <- exp(Cret$sample[,"mem.optimism"])
+     }else{
+       Cret$sample <- Cret$sample[,-match("mem.optimism",colnames(Cret$sample))]
+     }
      #
      # Transform WP parametrization to mean
      # parametrization (for the mean visibility value)

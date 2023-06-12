@@ -365,11 +365,11 @@
 #' 
 #' Gile, Krista J. and Handcock, Mark S. (2014) \pkg{sspse}: Estimating Hidden 
 #' Population Size using Respondent Driven Sampling Data
-#' R package, Los Angeles, CA.  Version 0.5, \url{http://hpmrg.org}.
+#' R package, Los Angeles, CA.  Version 0.5, \url{https://hpmrg.org/sspse/}.
 #' 
 #' Handcock MS (2003).  \pkg{degreenet}: Models for Skewed Count Distributions
 #' Relevant to Networks.  Statnet Project, Seattle, WA.  Version 1.2,
-#' \url{http://statnet.org}.
+#' \url{https://statnet.org/}.
 #' 
 #' Handcock, Mark S., Gile, Krista J. and Mar, Corinne M. (2014)
 #' \emph{Estimating Hidden Population Size using Respondent-Driven Sampling
@@ -384,7 +384,7 @@
 #' # Here interval=1 so that it will run faster. It should be higher in a 
 #' # real application.
 #' fit <- posteriorsize(fauxmadrona, median.prior.size=1000,
-#'                                  burnin=100, interval=1, samplesize=100)
+#'                                  burnin=20, interval=1, samplesize=100)
 #' summary(fit)
 #' @export posteriorsize
 posteriorsize<-function(s,
@@ -431,7 +431,7 @@ posteriorsize<-function(s,
                   optimism = TRUE,
                   reflect.time=FALSE,
                   equalize=TRUE,
-                  verbose=TRUE){
+                  verbose=FALSE){
 #
   visibilitydistribution=match.arg(visibilitydistribution)
   posfn <- switch(visibilitydistribution,
@@ -786,7 +786,9 @@ posteriorsize<-function(s,
 #   if(sd.pd > max.sd.prior.visibility*mean.pd){
 #    sd.pd <- min(max.sd.prior.visibility*mean.pd, sd.pd)
 #   }
-    message(sprintf("The mean of the recorded personal network sizes is %f.\n",mean.pd),appendLF=FALSE)
+    if(verbose){
+      message(sprintf("The mean of the recorded personal network sizes is %f.\n",mean.pd),appendLF=FALSE)
+    }
     xv <- ds
     xp <- weights
     xp <- length(xp)*xp/sum(xp)
@@ -796,12 +798,14 @@ posteriorsize<-function(s,
 #   mem.optimism.prior <- mean.pd / 8
     K <- 35
     df.mem.optimism.prior <- 10001
-    message(sprintf("mem.optimism.prior set is to %f.\n",mem.optimism.prior),appendLF=FALSE)
+    # message(sprintf("mem.optimism.prior is set to %f.\n",mem.optimism.prior),appendLF=FALSE)
   }
-  if(visibility){
+  if(verbose){
+   if(visibility){
     message(sprintf("The cap on the visibility distribution is K = %d.\n",K),appendLF=FALSE)
-  }else{
+   }else{
     message(sprintf("The cap on influence of the personal network size is K = %d.\n",K),appendLF=FALSE)
+   }
   }
   if(is.null(mean.prior.visibility)){
     degs <- s.prior
@@ -878,6 +882,7 @@ posteriorsize<-function(s,
                     num.recruits2=nr2[!remvalues2],
                     recruit.times2=recruit.times2[!remvalues2],
                     max.coupons=max.coupons,
+                    verbose=verbose,
                     maxbeta=maxbeta)
   }else{
   ### since running job in parallel, start vm (if not already running)
@@ -918,6 +923,7 @@ posteriorsize<-function(s,
       num.recruits2=nr2[!remvalues2],
       recruit.times2=recruit.times2[!remvalues2],
       max.coupons=max.coupons,
+      verbose=verbose,
       maxbeta=maxbeta)
 #
 #   Process the results

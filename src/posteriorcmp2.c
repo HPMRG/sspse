@@ -159,7 +159,6 @@ void gcmp2 (int *pop12,
     }
     lnlami=lnlamsample[0];
     nui=nusample[0];
-//  if(nui > 4.0 || lnlami > 4.5) Rprintf("lnlami %f nui %f dfmu %f\n", lnlami, nui, dfmu);
 
     /* Draw new N */
 
@@ -168,15 +167,12 @@ void gcmp2 (int *pop12,
     lzcmp = zcmp(exp(lnlami), nui, errval, Ki, give_log1);
     if(lzcmp < -100000.0){continue;}
     pi[Np]=cmp(Np+1,lnlami,nui,lzcmp,give_log0);
-//Rprintf("lnlami %f nui %f lzcmp %f pi %f\n", lnlami, nui, lzcmp, pi[Np]);
     for (i=Np+1; i<Ki; i++){
       pi[i]=pi[i-1]*exp(lnlami-nui*log((double)(i+1)));
     }
-//  Rprintf("isamp %d pis %f\n", isamp, pis);
     pis=1.-exp(-lzcmp);
     for (i=0; i<Ki; i++){
       pi[i]/=pis;
-//Rprintf("i %d pi %f pi0 %f\n", i, pi[i], pi0[i], pis, pis0);
     }
     pis=1.;
     for (i=0; i<Np; i++){
@@ -254,7 +250,6 @@ void gcmp2 (int *pop12,
     }
     // Set up pi to be cumulative for random draws
     for (i=1; i<Ki; i++){
-//    Rprintf("i %d pi[i] %f\n", i, pi[i]);
       pi[i]=pi[i-1]+pi[i];
     }
     for (i=ni; i<Ni; i++){
@@ -268,25 +263,19 @@ void gcmp2 (int *pop12,
         /* In the next two lines a sizei is chosen */
         /* with parameters mui and nui */
         temp = unif_rand();
-//      gammart = pi[Ki-1] * unif_rand();
         for (sizei=1; sizei<=Ki; sizei++){
           if(temp <= pi[sizei-1]) break;
         }
-//      Rprintf("sizei %d pi[Ki-1] %f gammart %f\n", sizei, pi[Ki-1],gammart);
        }
       }
-//    if(sizei >= Ki){sizei=Ki-1;}
       d1[i]=sizei;
       d2[i]=sizei;
-//    if((sizei <= 0) | (sizei > Ki-1)) Rprintf("sizei %d r %f\n", sizei,r);
       Nk[sizei-1]=Nk[sizei-1]+1;
     }
     if (step > 0 && step==(iinterval*(step/iinterval))) {
       /* record statistics for posterity */
       Nd=(double)Ni;
       sample[isamp*dimsample  ]=Nd;
-//if(sigmai > 4.0 || mui > 4.5) Rprintf("sample: %f %f\n", mui,sigmai);
-// Rprintf("sample: %f %f\n", mui,sigmai);
       sample[isamp*dimsample+1]=mui;
       sample[isamp*dimsample+2]=sigmai;
       sample[isamp*dimsample+3]=(double)(Nk[0]);
@@ -304,7 +293,6 @@ void gcmp2 (int *pop12,
       }
       isamp++;
       if (*verbose && isamplesize==(isamp*(isamplesize/isamp))) Rprintf("Taken %d samples...\n", isamp);
-//    if (*verbose) Rprintf("Taken %d samples...\n", isamp);
     }
     step++;
   }
