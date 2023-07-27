@@ -1,28 +1,59 @@
-#cat("'RDS Analyst' is a suite of packages for the statistical modeling of network data.\n")
-#cat('Please read the license using license.statnet()\n')
+# ---- BEGIN STATNET CITATION FUNCTIONS ----
+# A header function for ensuring that all the HPMRG packages provide consistent messaging
+HPMRG.cite.head <- function(pkg){
+  citHeader(
+    paste(#"If you are using the `",pkg,"` package for research that will be published, ",
+          "we request that you acknowledge this by citing the following.\n",
+          'For BibTeX format, use toBibtex(citation("',pkg,'")).',
+          sep="")
+    )
+}
 
-citHeader("If you are using 'sspse' for research that will be published, we request that you acknowledge this with the following citation:")
+# A footer function for ensuring that all the HPMRG packages provide consistent messaging
+HPMRG.cite.foot <- function(pkg){
+  # the 'meta' variable is be provided by R's CITATION processing script
+  citFooter("We have invested a lot of time and effort in creating the `",
+            pkg, "` package for use by other researchers.",
+            "Please cite it in all papers where it is used. The package `",pkg,"` is made distributed under the terms of the license:",meta$License )
+}
 
-# auts <- eval(parse(text=meta$`Authors@R`))
-# auts <- auts[sapply(auts, function(aut) "aut" %in% aut$role)]
-
-bibentry(bibtype="Manual",
+# generates a consistent bibentry citation for the software manual of the package
+HPMRG.cite.pkg <- function(pkg){
+  # the 'meta' variable is provided by R's CITATION processing script
+  projhomepage <- "https://github.com/HPMRG/sspse"
+  # compute the list of authors  
+  auts <- eval(parse(text=meta$`Authors@R`))
+  auts <- auts[sapply(auts, function(aut) "aut" %in% aut$role)]
+  # create a citation entry for a "software manual" for this version of the software
+  # it will be appended with any specific articles defined in the package citation file
+  bibentry("Manual",
          title = paste(meta$Package,": ", meta$Title, sep=""),
-         author = personList(as.person("Mark S. Handcock"),
-                             as.person("Krista J. Gile")),
+         author = structure(list(
+          list(given = "Mark S.", family = "Handcock", role = c("aut", "cre", "cph"), email = "handcock@stat.ucla.edu",
+               comment = c(ORCID = "0000-0002-9985-2785")),
+          list(given = "Krista J.", family= "Gile", role=c("ctb"), email="gile@math.umass.edu", comment = NULL),
+          list(given = "Brian J.", family= "Kim", role=c("ctb"), email="kimbrian@umd.edu", comment = NULL),
+          list(given = "Katherine R.", family= "McLaughlin", role=c("ctb"), email="katherine.mclaughlin@oregonstate.edu", comment = NULL)
+                                ), class="person"),
          year         = substr(meta$Date,1,4),
          note         = paste("R package version ", meta$Version, sep=""),
          address      = "Los Angeles, CA",
          url          = "https://CRAN.R-project.org/package=sspse",
-         
          textVersion = 
-         paste("Mark S. Handcock and Krista J. Gile (2014) ", 
+         paste("Mark S. Handcock, Krista J. Gile, Brian  J. Kim, Katherine R. McLaughlin (2023) ", 
                paste(meta$Package,": ", meta$Title, sep=""),
-               ", Version ", meta$Version, ". Project home page at https://hpmrg.org",
+               ", Version ", meta$Version, ". Project home page at https://github.com/HPMRG/sspse",
                ",", " URL https://CRAN.R-project.org/package=sspse.",
-               sep="")
-         )
+               sep=""),
+           organization = paste("University of California, Los Angeles (\\url{", projhomepage, "})",sep=""),
+           year         = substr(meta$Date,1,4),
+           note         = paste("R package version ", meta$Version, sep=""),
+           url          = paste("https://CRAN.R-project.org/package=",meta$Package,sep="")
+           )
+}
+# ---- END STATNET CITATION FUNCTIONS ----'
 
-citFooter("We have invested a lot of time and effort in creating the",
-          "'sspse' package for use by other researchers.",
-          "Please cite it in all papers where it is used.")
+# specific citation entries for the sspse package
+HPMRG.cite.head("sspse")
+HPMRG.cite.pkg("sspse")
+HPMRG.cite.foot("sspse")
