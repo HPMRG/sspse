@@ -81,14 +81,18 @@
 #' the prior for the standard deviation. This gives the equivalent sample size
 #' that would contain the same amount of information inherent in the prior for
 #' the standard deviation.
-#' @param beta0.mean.prior scalar; A hyper parameter being the mean of the 
-#' beta0 parameter distribution in the model for the number of recruits.
-#' @param beta1.mean.prior scalar; A hyper parameter being the mean of the 
-#' beta1 parameter distribution in the model for the number of recruits.
-#' @param beta0.sd.prior scalar; A hyper parameter being the standard deviation of the 
-#' beta0 parameter distribution in the model for the number of recruits.
-#' @param beta1.sd.prior scalar; A hyper parameter being the standard deviation of the 
-#' beta0 parameter distribution in the model for the number of recruits.
+#' @param beta_0.mean.prior scalar; A hyper parameter being the mean of the 
+#' beta_0 parameter distribution in the model for the number of recruits.
+#' @param beta_t.mean.prior scalar; A hyper parameter being the mean of the 
+#' beta_t parameter distribution in the model for the number of recruits. This corresponds to the time-to-recruit variable.
+#' @param beta_u.mean.prior scalar; A hyper parameter being the mean of the 
+#' beta_u parameter distribution in the model for the number of recruits. This corresponds to the visibility variable.
+#' @param beta_0.sd.prior scalar; A hyper parameter being the standard deviation of the 
+#' beta_0 parameter distribution in the model for the number of recruits.
+#' @param beta_t.sd.prior scalar; A hyper parameter being the standard deviation of the 
+#' beta_t parameter distribution in the model for the number of recruits. This corresponds to the time-to-recruit variable.
+#' @param beta_u.sd.prior scalar; A hyper parameter being the standard deviation of the 
+#' beta_u parameter distribution in the model for the number of recruits. This corresponds to the visibility variable.
 #' @param mem.optimism.prior scalar; A hyper parameter being the mean of the 
 #' distribution of the optimism parameter.
 #' @param df.mem.optimism.prior scalar; A hyper parameter being the degrees-of-freedom
@@ -124,17 +128,19 @@
 #' @param n2 integer; If \eqn{s2} is specified, this is the number of people in the second sample. 
 #' This is usually computed from
 #' \eqn{s} automatically and not usually specified by the user.
-#' @param muproposal scalar; The standard deviation of the proposal
+#' @param mu_proposal scalar; The standard deviation of the proposal
 #' distribution for the mean visibility.
-#' @param nuproposal scalar; The standard deviation of the proposal
+#' @param nu_proposal scalar; The standard deviation of the proposal
 #' distribution for the CMP scale parameter that determines the standard deviation of the visibility.
-#' @param beta0proposal scalar; The standard deviation of the proposal
-#' distribution for the beta0 parameter of the recruit model.
-#' @param beta1proposal scalar; The standard deviation of the proposal
-#' distribution for the beta1 parameter of the recruit model.
-#' @param memmuproposal scalar; The standard deviation of the proposal
+#' @param beta_0_proposal scalar; The standard deviation of the proposal
+#' distribution for the beta_0 parameter of the recruit model.
+#' @param beta_t_proposal scalar; The standard deviation of the proposal
+#' distribution for the beta_t parameter of the recruit model. This corresponds to the visibility variable.
+#' @param beta_u_proposal scalar; The standard deviation of the proposal
+#' distribution for the beta_u parameter of the recruit model. This corresponds to the time-to-recruit variable.
+#' @param memmu_proposal scalar; The standard deviation of the proposal
 #' distribution for the log of the optimism parameter (that is, gamma).
-#' @param memscaleproposal scalar; The standard deviation of the proposal
+#' @param memscale_proposal scalar; The standard deviation of the proposal
 #' distribution for the log of the s.d. in the optimism model.
 #' @param burnintheta count; the number of proposals in the Metropolis-Hastings
 #' sub-step for the visibility distribution parameters (\eqn{\theta}) before any
@@ -233,9 +239,9 @@
 #' separate parameter. This should adjust for an lack-of-fit of the parametric
 #' visibility distribution model at lower visibilities, although it also changes the
 #' model away from the parametric visibility distribution model.}
-#'\item{muproposal}{scalar; The standard deviation of the proposal
+#'\item{mu_proposal}{scalar; The standard deviation of the proposal
 #' distribution for the mean visibility.}
-#'\item{nuproposal}{scalar; The standard
+#'\item{nu_proposal}{scalar; The standard
 #' deviation of the proposal distribution for the CMP scale parameter of the
 #' visibility distribution.}
 #'\item{N}{vector of length 5; summary statistics for the posterior
@@ -275,8 +281,8 @@
 #' \code{cmp} model. It is the \eqn{\nu} parameter in the standard
 #' parameterization of the Conway-Maxwell-Poisson model for the visibility
 #' distribution.} } }
-#'\item{sample}{matrix of dimension \code{samplesize}\eqn{\times} \code{n} matrix of 
-#' posterior.draws from the unit size distribution for those in the survey.
+#'\item{vsample}{matrix of dimension \code{samplesize}\eqn{\times} \code{n} matrix of 
+#' posterior draws from the unit size distribution for those in the survey.
 #' The sample for the \code{i}th person is the \code{i}th column.}
 #'\item{lpriorm}{vector; the vector of (log) prior
 #' probabilities on each value of \eqn{m=N-n} - that is, the number of
@@ -406,8 +412,8 @@ posteriorsize<-function(s,
                   visibilitydistribution=c("cmp","nbinom","pln"),
                   mean.prior.visibility=NULL, sd.prior.visibility=NULL, max.sd.prior.visibility=4,
                   df.mean.prior.visibility=1,df.sd.prior.visibility=3,
-                  beta0.mean.prior=-3, beta1.mean.prior=0,
-                  beta0.sd.prior=10, beta1.sd.prior=10,
+                  beta_0.mean.prior=-3, beta_t.mean.prior=0, beta_u.mean.prior=0,
+                  beta_0.sd.prior=10, beta_t.sd.prior=10, beta_u.sd.prior=10,
                   mem.optimism.prior=NULL, df.mem.optimism.prior=5, 
                   mem.scale.prior=2, df.mem.scale.prior=10,
 		  mem.overdispersion=15,
@@ -416,10 +422,10 @@ posteriorsize<-function(s,
                   Np=0,
                   n=NULL,
                   n2=NULL,
-                  muproposal=0.1, 
-                  nuproposal=0.15, 
-                  beta0proposal=0.2, beta1proposal=0.001,
-                  memmuproposal=0.1, memscaleproposal=0.15,
+                  mu_proposal=0.1, 
+                  nu_proposal=0.15, 
+                  beta_0_proposal=0.2, beta_t_proposal=0.001, beta_u_proposal=0.001,
+                  memmu_proposal=0.1, memscale_proposal=0.15,
                   burnintheta=500,
                   burninbeta=50,
                   parallel=1, parallel.type="PSOCK", seed=NULL, 
@@ -854,14 +860,14 @@ posteriorsize<-function(s,
       Cret <- posfn(s=s,s2=s2,rc=rc,K=K,maxN=maxN,
                     mean.prior.visibility=mean.prior.visibility,df.mean.prior.visibility=df.mean.prior.visibility,
                     sd.prior.visibility=sd.prior.visibility,df.sd.prior.visibility=df.sd.prior.visibility,
-                    beta0.mean.prior=beta0.mean.prior, beta1.mean.prior=beta1.mean.prior,
-                    beta0.sd.prior=beta0.sd.prior, beta1.sd.prior=beta1.sd.prior,
+                    beta_0.mean.prior=beta_0.mean.prior, beta_t.mean.prior=beta_t.mean.prior, beta_u.mean.prior=beta_u.mean.prior,
+                    beta_0.sd.prior=beta_0.sd.prior, beta_t.sd.prior=beta_t.sd.prior, beta_u.sd.prior=beta_u.sd.prior,
                     mem.optimism.prior=mem.optimism.prior, df.mem.optimism.prior=df.mem.optimism.prior,
                     mem.scale.prior=mem.scale.prior, df.mem.scale.prior=df.mem.scale.prior,
 		    mem.overdispersion=mem.overdispersion,
-                    muproposal=muproposal, nuproposal=nuproposal, 
-                    beta0proposal=beta0proposal, beta1proposal=beta1proposal,
-                    memmuproposal=memmuproposal, memscaleproposal=memscaleproposal,
+                    mu_proposal=mu_proposal, nu_proposal=nu_proposal, 
+                    beta_0_proposal=beta_0_proposal, beta_t_proposal=beta_t_proposal, beta_u_proposal=beta_u_proposal,
+                    memmu_proposal=memmu_proposal, memscale_proposal=memscale_proposal,
                     visibility=visibility,
                     Np=Np,
                     samplesize=samplesize,burnin=burnin,interval=interval,
@@ -895,14 +901,14 @@ posteriorsize<-function(s,
       s=s,s2=s2,rc=rc,K=K,maxN=maxN,
       mean.prior.visibility=mean.prior.visibility,df.mean.prior.visibility=df.mean.prior.visibility,
       sd.prior.visibility=sd.prior.visibility,df.sd.prior.visibility=df.sd.prior.visibility,
-      beta0.mean.prior=beta0.mean.prior, beta1.mean.prior=beta1.mean.prior,
-      beta0.sd.prior=beta0.sd.prior, beta1.sd.prior=beta1.sd.prior,
+      beta_0.mean.prior=beta_0.mean.prior, beta_t.mean.prior=beta_t.mean.prior, beta_u.mean.prior=beta_u.mean.prior,
+      beta_0.sd.prior=beta_0.sd.prior, beta_t.sd.prior=beta_t.sd.prior, beta_u.sd.prior=beta_u.sd.prior,
       mem.optimism.prior=mem.optimism.prior, df.mem.optimism.prior=df.mem.optimism.prior,
       mem.scale.prior=mem.scale.prior, df.mem.scale.prior=df.mem.scale.prior,
       mem.overdispersion=mem.overdispersion,
-      muproposal=muproposal, nuproposal=nuproposal, 
-      beta0proposal=beta0proposal, beta1proposal=beta1proposal,
-      memmuproposal=memmuproposal, memscaleproposal=memscaleproposal,
+      mu_proposal=mu_proposal, nu_proposal=nu_proposal, 
+      beta_0_proposal=beta_0_proposal, beta_t_proposal=beta_t_proposal, beta_u_proposal=beta_u_proposal,
+      memmu_proposal=memmu_proposal, memscale_proposal=memscale_proposal,
       visibility=visibility,
       Np=Np,
       samplesize=samplesize.parallel,burnin=burnin,interval=interval,
@@ -952,7 +958,7 @@ posteriorsize<-function(s,
     #
     degnames <- NULL
     if(Np>0){degnames <- c(degnames,paste("pdeg",1:Np,sep=""))}
-#   colnamessample <- c("N","mu","sigma","visibility1","totalsize","beta0","beta1","mem.optimism","mem.scale","mem.visibility.mean")
+#   colnamessample <- c("N","mu","sigma","visibility1","totalsize","beta_0","beta_t","mem.optimism","mem.scale","mem.visibility.mean")
 #   colnamessample <- Cret$sample
 #   if(length(degnames)>0){
 #    colnamessample <- c(colnamessample, degnames)

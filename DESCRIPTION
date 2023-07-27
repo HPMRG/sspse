@@ -1,10 +1,10 @@
 Package: sspse
 Type: Package
-Version: 1.0.3
-Date: 2022-08-31
+Version: 1.1.0
+Date: 2023-07-27
 Title: Estimating Hidden Population Size using Respondent Driven Sampling Data
 Authors@R: c(
-    person("Mark S.", "Handcock", role=c("aut","cre","cph"), email="handcock@stat.ucla.edu"),
+    person("Mark S.", "Handcock", role=c("aut","cre","cph"), email="handcock@stat.ucla.edu", comment=c(ORCID="0000-0002-9985-2785")),
     person("Krista J.", "Gile", role=c("aut","cph"), email="gile@math.umass.edu"),
     person("Brian","Kim",role=c("ctb"),email="kimbrian@umd.edu"),
     person("Katherine R.","McLaughlin",role=c("ctb"),email="katherine.mclaughlin@oregonstate.edu"))
@@ -20,4 +20,4 @@ License: GPL-3 + file LICENSE
 URL: https://hpmrg.org
 Imports: scam, coda
 Encoding: UTF-8
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3

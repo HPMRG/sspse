@@ -28,10 +28,12 @@ posteriorsize(
   max.sd.prior.visibility = 4,
   df.mean.prior.visibility = 1,
   df.sd.prior.visibility = 3,
-  beta0.mean.prior = -3,
-  beta1.mean.prior = 0,
-  beta0.sd.prior = 10,
-  beta1.sd.prior = 10,
+  beta_0.mean.prior = -3,
+  beta_t.mean.prior = 0,
+  beta_u.mean.prior = 0,
+  beta_0.sd.prior = 10,
+  beta_t.sd.prior = 10,
+  beta_u.sd.prior = 10,
   mem.optimism.prior = NULL,
   df.mem.optimism.prior = 5,
   mem.scale.prior = 2,
@@ -42,12 +44,13 @@ posteriorsize(
   Np = 0,
   n = NULL,
   n2 = NULL,
-  muproposal = 0.1,
-  nuproposal = 0.15,
-  beta0proposal = 0.2,
-  beta1proposal = 0.001,
-  memmuproposal = 0.1,
-  memscaleproposal = 0.15,
+  mu_proposal = 0.1,
+  nu_proposal = 0.15,
+  beta_0_proposal = 0.2,
+  beta_t_proposal = 0.001,
+  beta_u_proposal = 0.001,
+  memmu_proposal = 0.1,
+  memscale_proposal = 0.15,
   burnintheta = 500,
   burninbeta = 50,
   parallel = 1,
@@ -164,17 +167,23 @@ the prior for the standard deviation. This gives the equivalent sample size
 that would contain the same amount of information inherent in the prior for
 the standard deviation.}
 
-\item{beta0.mean.prior}{scalar; A hyper parameter being the mean of the 
-beta0 parameter distribution in the model for the number of recruits.}
+\item{beta_0.mean.prior}{scalar; A hyper parameter being the mean of the 
+beta_0 parameter distribution in the model for the number of recruits.}
 
-\item{beta1.mean.prior}{scalar; A hyper parameter being the mean of the 
-beta1 parameter distribution in the model for the number of recruits.}
+\item{beta_t.mean.prior}{scalar; A hyper parameter being the mean of the 
+beta_t parameter distribution in the model for the number of recruits. This corresponds to the time-to-recruit variable.}
 
-\item{beta0.sd.prior}{scalar; A hyper parameter being the standard deviation of the 
-beta0 parameter distribution in the model for the number of recruits.}
+\item{beta_u.mean.prior}{scalar; A hyper parameter being the mean of the 
+beta_u parameter distribution in the model for the number of recruits. This corresponds to the visibility variable.}
 
-\item{beta1.sd.prior}{scalar; A hyper parameter being the standard deviation of the 
-beta0 parameter distribution in the model for the number of recruits.}
+\item{beta_0.sd.prior}{scalar; A hyper parameter being the standard deviation of the 
+beta_0 parameter distribution in the model for the number of recruits.}
+
+\item{beta_t.sd.prior}{scalar; A hyper parameter being the standard deviation of the 
+beta_t parameter distribution in the model for the number of recruits. This corresponds to the time-to-recruit variable.}
+
+\item{beta_u.sd.prior}{scalar; A hyper parameter being the standard deviation of the 
+beta_u parameter distribution in the model for the number of recruits. This corresponds to the visibility variable.}
 
 \item{mem.optimism.prior}{scalar; A hyper parameter being the mean of the 
 distribution of the optimism parameter.}
@@ -221,22 +230,25 @@ parametric visibility distribution model.}
 This is usually computed from
 \eqn{s} automatically and not usually specified by the user.}
 
-\item{muproposal}{scalar; The standard deviation of the proposal
+\item{mu_proposal}{scalar; The standard deviation of the proposal
 distribution for the mean visibility.}
 
-\item{nuproposal}{scalar; The standard deviation of the proposal
+\item{nu_proposal}{scalar; The standard deviation of the proposal
 distribution for the CMP scale parameter that determines the standard deviation of the visibility.}
 
-\item{beta0proposal}{scalar; The standard deviation of the proposal
-distribution for the beta0 parameter of the recruit model.}
+\item{beta_0_proposal}{scalar; The standard deviation of the proposal
+distribution for the beta_0 parameter of the recruit model.}
 
-\item{beta1proposal}{scalar; The standard deviation of the proposal
-distribution for the beta1 parameter of the recruit model.}
+\item{beta_t_proposal}{scalar; The standard deviation of the proposal
+distribution for the beta_t parameter of the recruit model. This corresponds to the visibility variable.}
 
-\item{memmuproposal}{scalar; The standard deviation of the proposal
+\item{beta_u_proposal}{scalar; The standard deviation of the proposal
+distribution for the beta_u parameter of the recruit model. This corresponds to the time-to-recruit variable.}
+
+\item{memmu_proposal}{scalar; The standard deviation of the proposal
 distribution for the log of the optimism parameter (that is, gamma).}
 
-\item{memscaleproposal}{scalar; The standard deviation of the proposal
+\item{memscale_proposal}{scalar; The standard deviation of the proposal
 distribution for the log of the s.d. in the optimism model.}
 
 \item{burnintheta}{count; the number of proposals in the Metropolis-Hastings
@@ -353,9 +365,9 @@ the proportions of the population with visibility \code{1:Np} each with a
 separate parameter. This should adjust for an lack-of-fit of the parametric
 visibility distribution model at lower visibilities, although it also changes the
 model away from the parametric visibility distribution model.}
-\item{muproposal}{scalar; The standard deviation of the proposal
+\item{mu_proposal}{scalar; The standard deviation of the proposal
 distribution for the mean visibility.}
-\item{nuproposal}{scalar; The standard
+\item{nu_proposal}{scalar; The standard
 deviation of the proposal distribution for the CMP scale parameter of the
 visibility distribution.}
 \item{N}{vector of length 5; summary statistics for the posterior
@@ -395,8 +407,8 @@ visibility distribution.}
 \code{cmp} model. It is the \eqn{\nu} parameter in the standard
 parameterization of the Conway-Maxwell-Poisson model for the visibility
 distribution.} } }
-\item{sample}{matrix of dimension \code{samplesize}\eqn{\times} \code{n} matrix of 
-posterior.draws from the unit size distribution for those in the survey.
+\item{vsample}{matrix of dimension \code{samplesize}\eqn{\times} \code{n} matrix of 
+posterior draws from the unit size distribution for those in the survey.
 The sample for the \code{i}th person is the \code{i}th column.}
 \item{lpriorm}{vector; the vector of (log) prior
 probabilities on each value of \eqn{m=N-n} - that is, the number of

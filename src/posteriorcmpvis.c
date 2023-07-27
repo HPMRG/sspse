@@ -16,7 +16,8 @@ void gcmpvis (int *pop,
             double *sigma, double *dfsigma,
             double *lnlam, double *nu,
             double *beta0muprior, double *beta0sigmaprior,
-            double *beta1muprior, double *beta1sigmaprior,
+            double *betatmuprior, double *betatsigmaprior,
+            double *betaumuprior, double *betausigmaprior,
             double *lmemmu, double *memdfmu,
             double *memnu, double *memdfnu,
             int *Npi,
@@ -26,7 +27,7 @@ void gcmpvis (int *pop,
             int *maxcoupons,
             double *lnlamproposal,
             double *nuproposal,
-            double *beta0proposal, double *beta1proposal,
+            double *beta0proposal, double *betatproposal, double *betauproposal,
             double *lmemmuproposal, double *memnuproposal,
             int *N, int *maxN,
             double *sample,
@@ -45,13 +46,13 @@ void gcmpvis (int *pop,
   int umax;
   double mui, sigmai, lnlami, nui, dsamp;
   double sigma2i;
-  double dbeta0, dbeta1;
+  double dbeta0, dbetat, dbetau;
   double dlmemmu, dmemnu;
-  double beta0i, beta1i, lmemmui, memnui;
+  double beta0i, betati, betaui, lmemmui, memnui;
   int tU, sizei, imaxN, imaxm, give_log0=0, give_log1=1;
   double r, gammart, pis, Nd;
   double temp, uprob;
-  double rtprob, lliki;
+  double lliki;
   int maxc;
   double errval=0.0000000001, lzcmp;
 
@@ -67,12 +68,13 @@ void gcmpvis (int *pop,
   iburnin=(*burnin);
   Np=(*Npi);
   dbeta0=(*beta0muprior);
-  dbeta1=(*beta1muprior);
+  dbetat=(*betatmuprior);
+  dbetau=(*betaumuprior);
   dlmemmu=(*lmemmu);
   dmemnu=(*memnu);
   maxc=(*maxcoupons);
   
-  dimsample=5+Np+4;
+  dimsample=5+Np+4+1;
 
   double *pi = (double *) malloc(sizeof(double) * Ki);
   double *pd = (double *) malloc(sizeof(double) * Ki);
@@ -88,7 +90,8 @@ void gcmpvis (int *pop,
   double *lnlamsample = (double *) malloc(sizeof(double));
   double *nusample = (double *) malloc(sizeof(double));
   double *beta0sample = (double *) malloc(sizeof(double));
-  double *beta1sample = (double *) malloc(sizeof(double));
+  double *betatsample = (double *) malloc(sizeof(double));
+  double *betausample = (double *) malloc(sizeof(double));
   double *lmemmusample = (double *) malloc(sizeof(double));
   double *memnusample = (double *) malloc(sizeof(double));
 
@@ -132,7 +135,8 @@ void gcmpvis (int *pop,
      psample[i] = 0.01;
   }
   beta0sample[0] = dbeta0;
-  beta1sample[0] = dbeta1;
+  betatsample[0] = dbetat;
+  betausample[0] = dbetau;
   lmemmusample[0] = dlmemmu;
   memnusample[0] = dmemnu;
   lnlamsample[0] = (*lnlam);
@@ -202,18 +206,19 @@ void gcmpvis (int *pop,
     /* Draw new beta using MCMC */
     if (step == -iburnin || step==(20*(step/20))) { 
 //  if (step == -iburnin) { 
-     MHcmpmem(u,n,K,beta0muprior,beta0sigmaprior,beta1muprior,beta1sigmaprior,
+     MHcmpmem(u,n,K,beta0muprior,beta0sigmaprior,betatmuprior,betatsigmaprior,betaumuprior,betausigmaprior,
        lmemmu,memdfmu,memnu,memdfnu,srd,numrec,rectime,maxcoupons,
-       beta0proposal,beta1proposal,
+       beta0proposal,betatproposal, betauproposal,
        lmemmuproposal,memnuproposal,
-       beta0sample, beta1sample,lmemmusample,memnusample,
+       beta0sample, betatsample, betausample, lmemmusample,memnusample,
        &getone, &staken, burninbeta, &intervalone, 
        &verboseMHcmp);
      beta0i=beta0sample[0];
-     beta1i=beta1sample[0];
+     betati=betatsample[0];
+     betaui=betausample[0];
      lmemmui=lmemmusample[0];
      memnui=memnusample[0];
-//  Rprintf("step %d lmemmui: %f rmemnui %f beta0i %f beta1i %f\n",step,lmemmui,rmemnui,beta0i,beta1i);
+//  Rprintf("step %d lmemmui: %f rmemnui %f beta0i %f betati %f\n",step,lmemmui,rmemnui,beta0i,betati);
 
     /* Draw true unit sizes based on the reported degrees*/
     // First reset counts
@@ -222,19 +227,16 @@ void gcmpvis (int *pop,
     }
     for (j=0; j<ni; j++){
       if(srd[j] <= Ki){
-      temp = beta0i + beta1i*rectime[j];
-      rtprob = exp(temp)/(1.0+exp(temp));
 //    Multiply by the PoissonLogNormal PMF for observation
       for (i=0; i<Ki; i++){
+       temp = beta0i + betati*log(rectime[j]) + betaui*log(i+1.0);
        // Next to exclude unit sizes inconsistent with the number of recruits
-//     if((numrec[j] <= (i+1)) & ((maxc-1) <= (i+1))){
-       if((numrec[j] <= (i+1))){
         lliki=0.0;
-        if(((i+1) <= maxc)|(numrec[j]<maxc)){
-          lliki += dbinom(numrec[j],(i+1),rtprob,give_log1);
-        }else{
-          lliki += log(1.0-pbinom(maxc-1.0,(i+1),rtprob,give_log0,give_log0));
-        }
+	if(numrec[j]<maxc){
+	  lliki += dpois(numrec[j],exp(temp),give_log1);
+	}else{
+	  lliki += log(1.0-ppois(maxc-1.0,exp(temp),give_log0,give_log0));
+	}   
         if(srd[j]>=0){
 //        Use CMP localized
           temp=lmemmui + log((double)(i+1));
@@ -267,9 +269,6 @@ void gcmpvis (int *pop,
           }
         }
         pd[i]=pi[i]*exp(lliki);
-       }else{
-        pd[i]=0.0;
-       }
 //    if((i+1) != d[j]){
 //      pd[i] = 0.0;
 //    }
@@ -292,7 +291,7 @@ void gcmpvis (int *pop,
        pd[i]=pd[i-1]+pd[i];
       }
 //if(j==6) Rprintf("\n");
-//if(j==6)Rprintf("beta0i %f beta1i %f lmemmui %f rmemnui %f rtprob %f pd[Ki-1] %f\n", beta0i,beta1i,lmemmui,rmemnui,rtprob,pd[Ki-1]);
+//if(j==6)Rprintf("beta0i %f betati %f lmemmui %f rmemnui %f rtprob %f pd[Ki-1] %f\n", beta0i,betati,lmemmui,rmemnui,rtprob,pd[Ki-1]);
       if(pd[Ki-1]<0.00000000001){
        Rprintf("fixed bad pd[Ki-1] %f\n", pd[Ki-1]);
        for (i=0; i<Ki; i++){
@@ -424,11 +423,12 @@ void gcmpvis (int *pop,
       }
       sample[isamp*dimsample+4]=temp;
       sample[isamp*dimsample+5]=beta0i;
-      sample[isamp*dimsample+6]=beta1i;
-      sample[isamp*dimsample+7]=lmemmui;
-      sample[isamp*dimsample+8]=memnui;
+      sample[isamp*dimsample+6]=betati;
+      sample[isamp*dimsample+7]=betaui;
+      sample[isamp*dimsample+8]=lmemmui;
+      sample[isamp*dimsample+9]=memnui;
       for (i=0; i<Np; i++){
-        sample[isamp*dimsample+9+i]=pdegi[i];
+        sample[isamp*dimsample+10+i]=pdegi[i];
       }
       for (i=0; i<Ki; i++){
         Nkpos[i]=Nkpos[i]+Nk[i];
@@ -486,22 +486,23 @@ void gcmpvis (int *pop,
   free(lnlamsample);
   free(nusample);
   free(beta0sample);
-  free(beta1sample);
+  free(betatsample);
+  free(betausample);
   free(lmemmusample);
   free(memnusample);
 }
 
 void MHcmpmem (int *u, int *n, int *K,
-            double *beta0, double *beta0sd, double *beta1, double *beta1sd, 
+            double *beta0, double *beta0sd, double *betat, double *betatsd, double *betau, double *betausd,
             double *lmemmu, double *memdfmu,
             double *memnu, double *memdfnu,
             int *srd, 
             int *numrec, 
             double *rectime,
             int *maxcoupons,
-            double *beta0proposal, double *beta1proposal, 
+            double *beta0proposal, double *betatproposal, double *betauproposal, 
             double *lmemmuproposal, double *memnuproposal, 
-            double *beta0sample, double *beta1sample,
+            double *beta0sample, double *betatsample, double *betausample,
             double *lmemmusample, double *memnusample,
             int *samplesize, int *staken, int *burnin, int *interval,
             int *verbose
@@ -510,18 +511,20 @@ void MHcmpmem (int *u, int *n, int *K,
   int step, taken, give_log1=1, give_log0=0;
   int i, k, isamp, iinterval, isamplesize, iburnin;
   double ip, cutoff;
-  double temp, rtprob;
-  double beta0star, beta1star, beta0i, beta1i;
+  double temp;
+  double beta0star, betatstar, beta0i, betati;
+  double betaustar, betaui;
   double qi, qstar, lliki, llikstar;
   double lmemmustar, memnustar, lmemmui, memnui;
   double rmemnui, rmemnustar;
   double pibeta0star, pibeta0i;
-  double pibeta1star=0.0, pibeta1i=0.0;
+  double pibetatstar=0.0, pibetati=0.0;
+  double pibetaustar=0.0, pibetaui=0.0;
   double pimemstar, pimemi;
-  double dbeta0, dbeta0sd, dbeta1, dbeta1sd;
+  double dbeta0, dbeta0sd, dbetat, dbetatsd, dbetau, dbetausd;
   double dlmemmu, dmemdfmu, dmemdfnu, rmemdfmu;
   double dmemnu, dmemnur;
-  double dbeta0proposal, dbeta1proposal;
+  double dbeta0proposal, dbetatproposal, dbetauproposal;
   double dlmemmuproposal, dmemnuproposal;
   double pis, errval=0.0000000001, lzcmp;
 
@@ -535,8 +538,10 @@ void MHcmpmem (int *u, int *n, int *K,
   iburnin=(*burnin);
   dbeta0=(*beta0);
   dbeta0sd=(*beta0sd);
-  dbeta1=(*beta1);
-  dbeta1sd=(*beta1sd);
+  dbetat=(*betat);
+  dbetatsd=(*betatsd);
+  dbetau=(*betau);
+  dbetausd=(*betausd);
   dlmemmu=(*lmemmu);
   dmemnu=(*memnu);
   dmemnur=sqrt(dmemnu);
@@ -544,7 +549,8 @@ void MHcmpmem (int *u, int *n, int *K,
   rmemdfmu=sqrt(dmemdfmu);
   dmemdfnu=(*memdfnu);
   dbeta0proposal=(*beta0proposal);
-  dbeta1proposal=(*beta1proposal);
+  dbetatproposal=(*betatproposal);
+  dbetauproposal=(*betauproposal);
   dlmemmuproposal=(*lmemmuproposal);
   dmemnuproposal=(*memnuproposal);
 
@@ -554,7 +560,8 @@ void MHcmpmem (int *u, int *n, int *K,
   ni =(*n);
   maxc=(*maxcoupons);
   beta0i = beta0sample[0];
-  beta1i = beta1sample[0];
+  betati = betatsample[0];
+  betaui = betausample[0];
   lmemmui = lmemmusample[0];
   memnui = memnusample[0];
   rmemnui = sqrt(memnui);
@@ -562,14 +569,11 @@ void MHcmpmem (int *u, int *n, int *K,
   // Compute initial current lik
   lliki = 0.0;
   for (i=0; i<ni; i++){
-    temp = beta0i + beta1i*rectime[i];
-    rtprob = exp(temp)/(1.0+exp(temp));
-//  if((numrec[i] <= u[i]) && ((maxc-1) <= u[i])){
-    if(numrec[i] <= u[i]){
-     if((u[i] <= maxc)|(numrec[i]<maxc)){
-       lliki += dbinom(numrec[i],u[i],rtprob,give_log1);
+     temp = beta0i + betati*log(rectime[i]) + betaui*log(u[i]);
+     if(numrec[i]<maxc){
+       lliki += dpois(numrec[i],exp(temp),give_log1);
      }else{
-       lliki += log(1.0-pbinom(maxc-1.0,u[i],rtprob,give_log0,give_log0));
+       lliki += log(1.0-ppois(maxc-1.0,exp(temp),give_log0,give_log0));
      }
      if(srd[i]>=0){
 //    lliki += log(poilog(srd[i],log((double)(u[i]))-lmemmui,memnui));
@@ -600,10 +604,6 @@ void MHcmpmem (int *u, int *n, int *K,
 // Rprintf("lliki srd: %d llik %f p[50] %f p %f\n",srd[i],lliki,pd[49],(1.-temp));
       }
      }
-     // Next 2 lines possibly comment out
-    }else{
-     lliki = -100000.0; 
-    }
   }
   if(!isfinite(lliki)) lliki = -100000.0; 
 
@@ -611,7 +611,8 @@ void MHcmpmem (int *u, int *n, int *K,
 
   // Compute initial prior
   pibeta0i = dnorm(beta0i, dbeta0, dbeta0sd, give_log1);
-  if(dbeta1sd > 0.0) pibeta1i = dnorm(beta1i, dbeta1, dbeta1sd, give_log1);
+  if(dbetatsd > 0.0) pibetati = dnorm(betati, dbetat, dbetatsd, give_log1);
+  if(dbetausd > 0.0) pibetaui = dnorm(betaui, dbetau, dbetausd, give_log1);
   pimemi = dnorm(lmemmui, dlmemmu, rmemnui/rmemdfmu, give_log1);
   pimemi = pimemi+dsclinvchisq(memnui, dmemdfnu, dmemnu);
 //pimemi = dsclinvchisq(memnui, dmemdfnu, dmemnu);
@@ -623,10 +624,15 @@ void MHcmpmem (int *u, int *n, int *K,
   while (isamp < isamplesize && step < iburnin) {
     /* Propose new beta */
     beta0star = rnorm(beta0i, dbeta0proposal);
-    if(dbeta1sd > 0.0){
-      beta1star = rnorm(beta1i, dbeta1proposal);
+    if(dbetatsd > 0.0){
+      betatstar = rnorm(betati, dbetatproposal);
     }else{
-      beta1star = beta1i;
+      betatstar = betati;
+    }
+    if(dbetausd > 0.0){
+      betaustar = rnorm(betaui, dbetauproposal);
+    }else{
+      betaustar = betaui;
     }
     /* Propose new memnu and lmemmu */
     lmemmustar = rnorm(lmemmui, dlmemmuproposal);
@@ -642,17 +648,12 @@ void MHcmpmem (int *u, int *n, int *K,
   
     llikstar = 0.0;
     for (i=0; i<ni; i++){
-      temp = beta0star + beta1star*rectime[i];
-      rtprob = exp(temp)/(1.0+exp(temp));
-//    Rprintf("%f %f %f %f\n",llikstar,lmemmustar,memnustar,rtprob);
-//    if((numrec[i] <= u[i]) && ((maxc-1) <= u[i])){
-      if(numrec[i] <= u[i]){
-       if((u[i] <= maxc)|(numrec[i]<maxc)){
-        llikstar += dbinom(numrec[i],u[i],rtprob,give_log1);
-//      Rprintf("< %f %f %f %f\n",numrec[i],rtprob[i],u,dbinom(numrec[i],u,rtprob[i],give_log0));
+       temp = beta0star + betatstar*log(rectime[i]) + betaustar*log(u[i]);
+  //   if((u[i] <= maxc)|(numrec[i]<maxc)){
+       if(numrec[i]<maxc){
+	llikstar += dpois(numrec[i],exp(temp),give_log1);
        }else{
-        llikstar += log(1.0-pbinom(maxc-1.0,u[i],rtprob,give_log0,give_log0));
-//      Rprintf("< %f\n",1.0-pbinom(maxc-1.0,u,rtprob[i],give_log0,give_log0));
+	llikstar += log(1.0-ppois(maxc-1.0,exp(temp),give_log0,give_log0));
        }
        if(srd[i]>=0){
 //      llikstar += log(poilog(srd[i],log(u[i])-lmemmustar,exp(memnustar)));
@@ -684,12 +685,8 @@ void MHcmpmem (int *u, int *n, int *K,
 //}
 // Rprintf("llikstar srd: %d llik %f p[50] %f p %f\n",srd[i],lliki,pd[49],(1.-temp));
         }
-//  Rprintf("llikstar: %i %f %f %f %f %f %f %f\n",i, llikstar,lmemmustar,memnustar,beta0star,beta1star,temp,rtprob);
+//  Rprintf("llikstar: %i %f %f %f %f %f %f %f\n",i, llikstar,lmemmustar,memnustar,beta0star,betatstar,temp,rtprob);
        }
-     // Next 2 lines possibly comment out
-      }else{
-       llikstar = -100000.0; 
-      }
     }
     if(!isfinite(llikstar)) llikstar = -100000.0; 
 
@@ -702,7 +699,8 @@ void MHcmpmem (int *u, int *n, int *K,
 
     /* Calculate pieces of the prior. */
     pibeta0star = dnorm(beta0star, dbeta0, dbeta0sd, give_log1);
-    if(dbeta1sd > 0.0) pibeta1star = dnorm(beta1star, dbeta1, dbeta1sd, give_log1);
+    if(dbetatsd > 0.0) pibetatstar = dnorm(betatstar, dbetat, dbetatsd, give_log1);
+    if(dbetausd > 0.0) pibetaustar = dnorm(betaustar, dbetau, dbetausd, give_log1);
     pimemstar = dnorm(lmemmustar, dlmemmu, rmemnustar/rmemdfmu, give_log1);
     pimemstar = pimemstar+dsclinvchisq(memnustar, dmemdfnu, dmemnu);
 //  pimemstar = dsclinvchisq(memnustar, dmemdfnu, dmemnu);
@@ -715,10 +713,11 @@ void MHcmpmem (int *u, int *n, int *K,
 
     /* Calculate ratio */
     ip =      pibeta0star-pibeta0i;
-    if(dbeta1sd > 0.0) ip = ip + pibeta1star-pibeta1i;
+    if(dbetatsd > 0.0) ip = ip + pibetatstar-pibetati;
+    if(dbetausd > 0.0) ip = ip + pibetaustar-pibetaui;
     ip = ip + pimemstar - pimemi;
 
-//  Rprintf("pibeta0star=%f pibeta0i=%f %f %f %f %f\n",pibeta0star,pibeta0i,pibeta1star,pibeta1i,pimemstar,pimemi);
+//  Rprintf("pibeta0star=%f pibeta0i=%f %f %f %f %f\n",pibeta0star,pibeta0i,pibetatstar,pibetati,pimemstar,pimemi);
 
     /* The logic is to set exp(cutoff) = exp(ip) * qratio ,
     then let the MH probability equal min{exp(cutoff), 1.0}.
@@ -729,7 +728,7 @@ void MHcmpmem (int *u, int *n, int *K,
     cutoff = ip + llikstar - lliki + qi - qstar;
       
 //  Rprintf("Proposed: cutoff=%f ip=%f llikstar=%f lliki= %f qi=%f qstar=%f\n", cutoff, ip, llikstar, lliki, qi, qstar);
-//  Rprintf("Proposed: beta0i=%f beta0star=%f beta1s=%f beta1star=%f\n", beta0i,beta0star,beta1i,beta1star);
+//  Rprintf("Proposed: beta0i=%f beta0star=%f betats=%f betatstar=%f\n", beta0i,beta0star,betati,betatstar);
 
 //  if (*verbose)
 //    Rprintf("Now proposing %d MH steps %f cutoff...\n", step, cutoff);
@@ -739,20 +738,23 @@ void MHcmpmem (int *u, int *n, int *K,
 //  Rprintf("Accepted: cutoff=%f ip=%f llikstar=%f lliki=%f qi=%f qstar=%f\n",cutoff, ip,llikstar, lliki, qi, qstar);
       /* Make proposed changes */
       beta0i = beta0star;
-      beta1i = beta1star;
+      betati = betatstar;
+      betaui = betaustar;
       lmemmui = lmemmustar;
       memnui = memnustar;
       rmemnui = rmemnustar;
       lliki = llikstar;
       qi = qstar;
       pibeta0i = pibeta0star;
-      if(dbeta1sd > 0.0) pibeta1i = pibeta1star;
+      if(dbetatsd > 0.0) pibetati = pibetatstar;
+      if(dbetausd > 0.0) pibetaui = pibetaustar;
       pimemi = pimemstar;
       taken++;
       if (step > 0 && step==(iinterval*(step/iinterval))) { 
         /* record statistics for posterity */
         beta0sample[isamp]=beta0i;
-        beta1sample[isamp]=beta1i;
+        betatsample[isamp]=betati;
+        betausample[isamp]=betaui;
         lmemmusample[isamp]=lmemmui;
         memnusample[isamp]=memnui;
         isamp++;
