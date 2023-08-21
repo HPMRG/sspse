@@ -100,10 +100,10 @@ the posterior mean network size distribution with sample histogram overlaid.
 \examples{
 
 data(fauxmadrona)
-# Here interval=1 so that it will run faster. It should be higher in a 
-# real application.
+# Here interval=1 and samplesize=50 so that it will run faster. It should be much higher
+# in a real application.
 fit <- posteriorsize(fauxmadrona, median.prior.size=1000,
-                                 burnin=100, interval=1, samplesize=100)
+                                  burnin=10, interval=1, samplesize=50)
 summary(fit)
 # Let's look at some MCMC diagnostics
 plot(fit, mcmc=TRUE)

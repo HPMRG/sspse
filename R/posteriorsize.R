@@ -740,8 +740,8 @@ posteriorsize<-function(s,
      }
    }
     if(!is.null(median.prior.size)){
-     warning(paste("The median of the prior distribution of the population size is set to", 
-                    median.prior.size), call. = FALSE)
+     message(paste0("The median of the prior distribution of the population size is set to ", 
+                    median.prior.size,"."))
     }
   }
   if(priorsizedistribution=="nbinom" && missing(mean.prior.size)){
