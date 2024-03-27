@@ -142,10 +142,10 @@ Create a table summary for the prior and posterior distributions for population 
 summary(crssfauxmadrona)
 ```
 
-## Summary of Population Size Estimation
-##           Mean Median Mode  25%  75%  90% 2.5% 97.5%
-## Prior     1596   1250  826  918 1900 2953  662  4594
-## Posterior 1055   1050 1039 1012 1094 1137  952  1170
+    ## Summary of Population Size Estimation
+    ##           Mean Median Mode  25%  75%  90% 2.5% 97.5%
+    ## Prior     1596   1250  826  918 1900 2953  662  4594
+    ## Posterior 1055   1050 1039 1012 1094 1137  952  1170
     
 ## Visibility SS-PSE example
 
