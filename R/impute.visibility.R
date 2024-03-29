@@ -1,5 +1,5 @@
 #
-# Extimate each person's visibility based on a measurement error model and Bayesian inference
+# Estimate each person's visibility based on a measurement error model and Bayesian inference
 #
 #
 #' Estimates each person's personal visibility based on their self-reported degree and the 

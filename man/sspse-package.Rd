@@ -2,6 +2,7 @@
 % Please edit documentation in R/sspse-package.R
 \docType{package}
 \name{sspse-package}
+\alias{sspse}
 \alias{sspse-package}
 \title{Estimating Hidden Population Size using Respondent Driven Sampling Data}
 \description{
@@ -59,6 +60,13 @@ Data}, Electronic Journal of Statistics, 8, 1, 1491-1521
 Handcock, Mark S., Gile, Krista J. and Mar, Corinne M. (2015)
 \emph{Estimating the Size of Populations at High Risk for HIV using Respondent-Driven 
 Sampling Data}, Biometrics.
+}
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://hpmrg.org}
+}
+
 }
 \author{
 Krista J. Gile \email{gile@math.umass.edu},\cr

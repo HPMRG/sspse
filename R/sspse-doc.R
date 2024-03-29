@@ -1,0 +1,53 @@
+#' A Pair of Simulated RDS Data Sets with no seed dependency
+#' 
+#' This is a faux set used to illustrate how the estimators for 
+#' multiple Respondent-Driven sampling surveys perform under
+#' different populations and RDS schemes.
+#' 
+#' The population is based on \code{fauxmadrona} from the \code{RDS} package. 
+#' It is a population with N=1000 nodes from which two successive respondent-driven samples are drawn.
+#' For the first survey, the sample size is 200 so
+#' that there is a relatively small sample fraction (20\%). There is homophily
+#' on disease status (R=5) and there is differential activity by disease status
+#' whereby the infected nodes have mean degree twice that of the uninfected
+#' (w=1.8).
+#' 
+#' In the sampling, the seeds are chosen randomly from the full population, so
+#' there is no dependency induced by seed selection.
+#' 
+#' Each sample member is given 2 uniquely identified coupons to distribute to
+#' other members of the target population in their acquaintance.  Further each
+#' respondent distributes their coupons completely at random from among those
+#' they are connected to.
+#' 
+#' For the second sample the sample size is 250. The second survey has an additional variable \code{recapture} 
+#' indicating if the respondent was also surveyed in the first survey.
+#' 
+#' Each survey is represented as an \code{rds.data.frame} and they are stored in a list with two elements. 
+#' 
+#' @name fauxmadrona2
+#' @aliases fauxmadrona2
+#' @docType data
+#' @format A list with the first element being an \code{rds.data.frame} of the first survey and the
+#' second element being an \code{rds.data.frame} of the second survey.
+#' @seealso \code{\link{fauxsycamore}}, \code{\link{fauxmadrona}}
+#' @references
+#' Gile, Krista J., Handcock, Mark S., 2010 \emph{Respondent-driven
+#' Sampling: An Assessment of Current Methodology}, \emph{Sociological
+#' Methodology}, 40, 285-327. \doi{10.1111/j.1467-9531.2010.01223.x}.
+#'
+#' Kim, Brian J. and Handcock, Mark S. 2021 \emph{Population Size Estimation Using Multiple Respondent-Driven Sampling Surveys},
+#' \emph{Journal of Survey Statistics and Methodology}, 9(1):94–120. \doi{10.1093/jssam/smz055}.
+#'
+#' @source The original network is included in the \code{RDS} package as
+#' \code{fauxmadrona.network}, a \code{network} object.  \cr The \code{RDS} package
+#' also includes a third respondent-driven sample  from the network and is referred to as 
+#' \code{fauxmadrona}.  \cr Use \code{data(package="sspse")} to get a full list
+#' of datasets.
+#' 
+#' @keywords datasets
+NULL
+
+
+
+

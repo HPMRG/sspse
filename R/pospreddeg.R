@@ -47,6 +47,7 @@
 #' Sampling Data}, Biometrics.
 #' @examples
 #' 
+#'\dontrun{
 #' data(fauxmadrona)
 #' # Here interval=1 so that it will run faster. It should be higher in a 
 #' # real application.
@@ -55,6 +56,7 @@
 #' summary(fit)
 #' # Let's look at some MCMC diagnostics
 #' pospreddeg(fit)
+#' }
 #' 
 #' @export
 pospreddeg <- function(x, order.by.recruitment.time=FALSE){
@@ -137,6 +139,7 @@ pospreddeg <- function(x, order.by.recruitment.time=FALSE){
 #' Sampling Data}, Biometrics.
 #' @examples
 #' 
+#'\dontrun{
 #' data(fauxmadrona)
 #' # Here interval=1 so that it will run faster. It should be higher in a 
 #' # real application.
@@ -145,6 +148,7 @@ pospreddeg <- function(x, order.by.recruitment.time=FALSE){
 #' summary(fit)
 #' # Let's look at some MCMC diagnostics
 #' plot(pospreddeg(fit))
+#' }
 #' 
 #' @method plot pospreddeg
 #' @export

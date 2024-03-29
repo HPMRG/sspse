@@ -32,6 +32,7 @@ as this indicates a misspecified model.
 }
 \examples{
 
+\dontrun{
 data(fauxmadrona)
 # Here interval=1 so that it will run faster. It should be higher in a 
 # real application.
@@ -40,6 +41,7 @@ fit <- posteriorsize(fauxmadrona, median.prior.size=1000,
 summary(fit)
 # Let's look at some MCMC diagnostics
 pospreddeg(fit)
+}
 
 }
 \references{

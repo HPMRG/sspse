@@ -89,6 +89,7 @@
 #' Sampling Data}, Biometrics.
 #' @examples
 #' 
+#' \dontrun{
 #' data(fauxmadrona)
 #' # Here interval=1 and samplesize=50 so that it will run faster. It should be much higher
 #' # in a real application.
@@ -97,6 +98,7 @@
 #' summary(fit)
 #' # Let's look at some MCMC diagnostics
 #' plot(fit, mcmc=TRUE)
+#' }
 #' 
 #' @importFrom coda mcmc
 #' @method plot sspse
