@@ -97,6 +97,56 @@ summary(fit1, HPD.level = 0.9)
     ## Prior     1247   1000  680 748 1480 2240 583 2852
     ## Posterior  974    936  874 808 1100 1275 656 1400
 
+## Example of Population Size Estimation Using Multiple Respondent-Driven Sampling Surveys
+
+Suppose we have two respondent-driven sampling survey of the same population and taken successively in time. Then due to ideas in Kim and Handcock (2021) we can use the overlap between the respondents sampled in both surveys as additional information in estimating the population size. We mean additional information in the sense that it is in addition to the information in the two surveys ignoring the information in the overlap. 
+In this example, two samples are drawn from the `fauxmadrona` network. For the first survey, the sample size is 200.
+For the second sample the sample size is 250. The second survey has an additional variable `recapture`
+indicating if the respondent was also surveyed in the first survey.
+
+First, let's load the data:
+
+```
+data("fauxmadrona2")
+```
+
+The `posteriorsize` function can be used with both samples specified. 
+We estimate the posterior distribution for $N$ using a burnin of 1000 and an interval of
+10. We set `visibility=FALSE`. This may take a few seconds to run.
+
+```
+crssfauxmadrona <- posteriorsize(fauxmadrona2[[1]], s2=fauxmadrona2[[2]], previous="recapture",
+  visibility=FALSE,  median.prior.size=1250)
+```
+
+    ## Adjusting for the gross differences in the reported network sizes between the two samples. 
+    ## Using Capture-recapture non-measurement error model with K = 14.
+    ## Taken 1 samples...
+    ## Taken 2 samples...
+    ## Taken 4 samples...
+    ...
+    ## Taken 500 samples...
+    ## Taken 1000 samples...
+
+Plot the posterior distribution for $N$.
+
+```
+plot(crssfauxmadrona, type="N")
+```
+
+<img src="man/Figures/crssfauxmadrona.png" align="center"/>
+
+Create a table summary for the prior and posterior distributions for population size.
+
+```
+summary(crssfauxmadrona)
+```
+
+    ## Summary of Population Size Estimation
+    ##           Mean Median Mode  25%  75%  90% 2.5% 97.5%
+    ## Prior     1596   1250  826  918 1900 2953  662  4594
+    ## Posterior 1055   1050 1039 1012 1094 1137  952  1170
+    
 ## Visibility SS-PSE example
 
 Set `visibility=TRUE`. Because of the measurement error model, this model will take a little longer to fit - perhaps a minute or so.
