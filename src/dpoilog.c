@@ -126,8 +126,8 @@
      double abstol=0.00001;
      sig = sig * sig;
      lenw = 4 * limit;
-     iwork =   (int *) Calloc(limit, int);
-     work = (double *) Calloc(lenw,  double);
+     iwork =   (int *) R_Calloc(limit, int);
+     work = (double *) R_Calloc(lenw,  double);
 
      m=poilogmaxf(x,my,sig);
      a=poiloglower(x,m,my,sig);
@@ -143,7 +143,7 @@
      if (ier!=0) error("error in integration\n");
 
      val = result*(1/sqrt(2*M_PI*sig));
-     Free(iwork);
-     Free(work);
+     R_Free(iwork);
+     R_Free(work);
      return(val);
   }
