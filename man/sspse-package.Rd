@@ -4,8 +4,10 @@
 \name{sspse-package}
 \alias{sspse}
 \alias{sspse-package}
-\title{Estimating Hidden Population Size using Respondent Driven Sampling Data}
+\title{sspse: Estimating Hidden Population Size using Respondent Driven Sampling Data}
 \description{
+Estimate the size of a networked population based on respondent-driven sampling data. The package is part of the "RDS Analyst" suite of packages for the analysis of respondent-driven sampling data. See Handcock, Gile and Mar (2014) \doi{10.1214/14-EJS923}, Handcock, Gile and Mar (2015) \doi{10.1111/biom.12255}, Kim and Handcock (2021) \doi{10.1093/jssam/smz055}, and McLaughlin, et. al. (2023) \doi{10.1214/23-AOAS1807}.
+
 An integrated set of tools to estimate the size of a networked population
 based on respondent-driven sampling data. The "sspse" packages is part of
 the "RDS Analyst" suite of packages for the analysis of respondent-driven
@@ -69,10 +71,25 @@ Useful links:
 
 }
 \author{
+\strong{Maintainer}: Mark S. Handcock \email{handcock@stat.ucla.edu} (\href{https://orcid.org/0000-0002-9985-2785}{ORCID}) [copyright holder]
+
+Authors:
+\itemize{
+  \item Krista J. Gile \email{gile@math.umass.edu} [copyright holder]
+}
+
+Other contributors:
+\itemize{
+  \item Brian Kim \email{kimbrian@umd.edu} [contributor]
+  \item Katherine R. McLaughlin \email{katherine.mclaughlin@oregonstate.edu} [contributor]
+}
+
+
 Krista J. Gile \email{gile@math.umass.edu},\cr
 Mark S. Handcock \email{handcock@stat.ucla.edu}
 
 Maintainer: Mark S. Handcock \email{handcock@stat.ucla.edu}
 }
+\keyword{internal}
 \keyword{models}
 \keyword{package}

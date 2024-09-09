@@ -30,7 +30,7 @@
 #' @docType data
 #' @format A list with the first element being an \code{rds.data.frame} of the first survey and the
 #' second element being an \code{rds.data.frame} of the second survey.
-#' @seealso \code{\link{fauxsycamore}}, \code{\link{fauxmadrona}}
+#' @seealso \code{\link[RDS]{fauxsycamore}}, \code{\link[RDS]{fauxmadrona}}
 #' @references
 #' Gile, Krista J., Handcock, Mark S., 2010 \emph{Respondent-driven
 #' Sampling: An Assessment of Current Methodology}, \emph{Sociological

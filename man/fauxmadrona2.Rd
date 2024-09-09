@@ -51,6 +51,6 @@ Kim, Brian J. and Handcock, Mark S. 2021 \emph{Population Size Estimation Using 
 \emph{Journal of Survey Statistics and Methodology}, 9(1):94–120. \doi{10.1093/jssam/smz055}.
 }
 \seealso{
-\code{\link{fauxsycamore}}, \code{\link{fauxmadrona}}
+\code{\link[RDS]{fauxsycamore}}, \code{\link[RDS]{fauxmadrona}}
 }
 \keyword{datasets}

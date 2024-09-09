@@ -1,3 +1,6 @@
+#' @keywords internal 
+"_PACKAGE"
+
 #' Estimating Hidden Population Size using Respondent Driven Sampling Data
 #' 
 #' An integrated set of tools to estimate the size of a networked population
@@ -31,7 +34,6 @@
 #' newsgroup, references and links to further resources are provided there.
 #' 
 #' @name sspse-package
-#' @docType package
 #' @author Krista J. Gile \email{gile@@math.umass.edu},\cr
 #' Mark S. Handcock \email{handcock@@stat.ucla.edu}
 #' 
