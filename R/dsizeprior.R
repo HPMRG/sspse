@@ -157,7 +157,7 @@ dsizeprior<-function(n,
   }
   dfn <- function(alpha,beta,x,n,effective.prior.df){
    lpriorm <- lfn(x+0.5,beta,n,effective.prior.df,alpha)
-   priorm <- exp(lpriorm)
+   priorm <- exp(lpriorm-max(lpriorm,na.rm=TRUE))
    priorm/sum(priorm,na.rm=TRUE)
   }
   lpriorm <- switch(priorsizedistribution,
@@ -432,6 +432,7 @@ dsizeprior<-function(n,
     )
 #    End of switch to compute lpriorm
      x <- n:maxN
+     lpriorm[!is.finite(lpriorm)] <- -1000
      if(log){
       priorm <- exp(lpriorm)
      }else{

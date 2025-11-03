@@ -11,7 +11,7 @@ void gsppsdis (int *pop, int *dis,
             int *nk0, int *nk1, 
             int *K, 
             int *n, 
-            int *samplesize, int *burnin, int *interval,
+            int *samplesize, int *warmup, int *interval,
             double *mu0, double *mu1, double *kappa0, 
             double *sigma0,  double *sigma1, double *df0,
 	    int *Np0i, int *Np1i,
@@ -20,12 +20,12 @@ void gsppsdis (int *pop, int *dis,
             int *N, int *maxN, 
             double *sample, 
             double *p0pos, double *p1pos, 
-            int *burnintheta,
+            int *warmuptheta,
             int *verbose
               ) {
   int dimsample, Np0, Np1;
   int step, staken, getone=1, intervalone=1, verboseMHdis = 0;
-  int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
+  int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iwarmup;
   double mu, mu0i, mu1i, pbeta, beta, sigma0i, sigma1i;
   double dkappa0, ddf0, dmu0, dmu1, dsigma0, dsigma1, dmuproposal, dsigmaproposal;
   int tU, popi, imaxN, imaxm, itotdis0, itotdis;
@@ -40,7 +40,7 @@ void gsppsdis (int *pop, int *dis,
   imaxm=imaxN-ni;
   isamplesize=(*samplesize);
   iinterval=(*interval);
-  iburnin=(*burnin);
+  iwarmup=(*warmup);
   Np0=(*Np0i);
   Np1=(*Np1i);
   dkappa0=(*kappa0);
@@ -65,9 +65,9 @@ void gsppsdis (int *pop, int *dis,
   double *pdeg0i = (double *) malloc(sizeof(double) * Np0);
   double *pdeg1i = (double *) malloc(sizeof(double) * Np1);
   double *psample = (double *) malloc(sizeof(double) * (Np0+Np1));
-  double *musample = (double *) malloc(sizeof(double) * 2);
-  double *betasample = (double *) malloc(sizeof(double));
-  double *sigmasample = (double *) malloc(sizeof(double) * 2);
+  double *musample = (double *) malloc(sizeof(double) * isamplesize);
+  double *betasample = (double *) malloc(sizeof(double) * isamplesize);
+  double *sigmasample = (double *) malloc(sizeof(double) * isamplesize);
 
   b[ni-1]=pop[ni-1];
   for (i=(ni-2); i>=0; i--){
@@ -110,14 +110,14 @@ void gsppsdis (int *pop, int *dis,
   sigmasample[1] = dsigma1;
 
   isamp = 0;
-  step = -iburnin;
+  step = -iwarmup;
   while (isamp < isamplesize) {
     /* Draw new theta */
     MHdis(Nk0,Nk1,&itotdis,K,mu0,mu1,kappa0,sigma0,sigma1,df0,
           muproposal, sigmaproposal,
 	  &Ni, &Np0, &Np1, psample, 
 	  musample, betasample, sigmasample, &getone, &staken, 
-	  burnintheta, &intervalone, 
+	  warmuptheta, &intervalone, 
 	  &verboseMHdis);
 
     beta=betasample[0];
@@ -317,12 +317,12 @@ void MHdis (int *Nk0, int *Nk1, int *totdis, int *K,
             double *sigmaproposal, 
             int *N, int *Np0i, int *Np1i, double *psample,
             double *musample, double *betasample, double *sigmasample,
-            int *samplesize, int *staken, int *burnin, int *interval,
+            int *samplesize, int *staken, int *warmup, int *interval,
 	    int *verbose
 			 ) {
   int Np0, Np1;
   int step, taken, give_log=1;
-  int i, Ki, Ni, isamp, iinterval, isamplesize, iburnin, itotdis;
+  int i, Ki, Ni, isamp, iinterval, isamplesize, iwarmup, itotdis;
   double ip, cutoff;
   double mu0star, mu1star, mu0i, mu1i, lp;
   double pbeta, betastar, betai;
@@ -355,7 +355,7 @@ void MHdis (int *Nk0, int *Nk1, int *totdis, int *K,
   Ni=(*N);
   isamplesize=(*samplesize);
   iinterval=(*interval);
-  iburnin=(*burnin);
+  iwarmup=(*warmup);
   dkappa0=(*kappa0);
   rkappa0=sqrt(dkappa0);
   ddf0=(*df0);
@@ -371,7 +371,7 @@ void MHdis (int *Nk0, int *Nk1, int *totdis, int *K,
 
   // First set starting values
   isamp = taken = 0;
-  step = -iburnin;
+  step = -iwarmup;
   betai = betasample[0];
   p0is=1.;
   p1is=1.;
@@ -435,7 +435,7 @@ void MHdis (int *Nk0, int *Nk1, int *totdis, int *K,
     p1i[i]=pdeg1i[i];
   }
 
-  // Now do the MCMC updates (starting with the burnin updates)
+  // Now do the MCMC updates (starting with the warmup updates)
   while (isamp < isamplesize) {
 //  Rprintf("step %d Ni %d itotdis %d isamp %d\n", step, Ni, itotdis, isamp);
     /* Propose new theta */
@@ -620,11 +620,11 @@ void MHpriordis (double *mu0, double *mu1, double *kappa0,
             double *muproposal, 
             double *sigmaproposal, 
             double *musample, double *betasample, double *sigmasample,
-            int *samplesize, int *staken, int *burnin, int *interval,
+            int *samplesize, int *staken, int *warmup, int *interval,
 	    int *verbose
 			 ) {
   int step, taken, give_log=1;
-  int isamp, iinterval, isamplesize, iburnin;
+  int isamp, iinterval, isamplesize, iwarmup;
   double ip, cutoff;
   double mu0star, mu1star, mu0i, mu1i;
   double betastar, betai;
@@ -639,7 +639,7 @@ void MHpriordis (double *mu0, double *mu1, double *kappa0,
 
   isamplesize=(*samplesize);
   iinterval=(*interval);
-  iburnin=(*burnin);
+  iwarmup=(*warmup);
   dkappa0=(*kappa0);
   rkappa0=sqrt(dkappa0);
   ddf0=(*df0);
@@ -653,7 +653,7 @@ void MHpriordis (double *mu0, double *mu1, double *kappa0,
   dsigmaproposal=(*sigmaproposal);
   dmuproposal=(*muproposal);
   isamp = taken = 0;
-  step = -iburnin;
+  step = -iwarmup;
   mu0i = dmu0;
   mu1i = dmu1;
   betai = -1.386294;

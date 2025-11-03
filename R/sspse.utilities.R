@@ -47,10 +47,10 @@ ll.density <- function(x,lbound=min(x,na.rm=TRUE),ubound=max(x,na.rm=TRUE), smoo
         }
       }else{
         if(requireNamespace("densEstBayes", quietly = TRUE)){
-          control<-list(samples=4000, burnin=1000)
+          control<-list(samples=4000, warmup=1000)
           a=densEstBayes::densEstBayes(x,method="NUTS",
             control=densEstBayes::densEstBayes.control(range.x=c(lbound,ubound),numBins=401,numBasis=round(smooth*50/0.35),
-                                                       nKept=control$samples,nWarm=control$burnin))
+                                                       nKept=control$samples,nWarm=control$warmup))
           xTrang <- seq(-0.05, 1.05, length = length(xp))
           Xg <- cbind(1,xTrang)
           Zg <- .ZOSull(xTrang,intKnots=a$intKnots,range.x=c(-0.05,1.05))

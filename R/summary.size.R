@@ -49,7 +49,7 @@
 #' # Here interval=1 so that it will run faster. It should be higher in a 
 #' # real application.
 #' fit <- posteriorsize(fauxmadrona, median.prior.size=1000,
-#'                                  burnin=20, interval=1, samplesize=100)
+#'                                  warmup=20, interval=1, samplesize=100)
 #' summary(fit)
 #' 
 #' @method summary sspse
@@ -60,7 +60,7 @@ summary.sspse <- function(object, support=1000, HPD.level=0.95, method="bgk",...
   formal.args<-formals(sys.function())[-1]
 # control <- list(support=1000,HPD.level=0.95)
 
-  control<-list(samples=4000, burnin=1000)
+  control<-list(samples=4000, warmup=1000)
   names.formal.args <- names(formal.args)
   names.formal.args <- names.formal.args[-match("...",names.formal.args)]
   for(arg in names.formal.args){ control[arg]<-list(get(arg)) }
@@ -84,7 +84,7 @@ if(!is.null(out)){
   }else{
     a=densEstBayes::densEstBayes(outN,method="NUTS",
       control=densEstBayes::densEstBayes.control(range.x=c(object$n*0.95,object$maxN*1.05),#numBins=min(401,round(length(outN)/2)),
-                                                 nKept=control$samples,nWarm=control$burnin))
+                                                 nKept=control$samples,nWarm=control$warmup))
     xTrang <- seq(-0.05, 1.05, length = length(xp))
     Xg <- cbind(1,xTrang)
     Zg <- .ZOSull(xTrang,intKnots=a$intKnots,range.x=c(-0.05,1.05))

@@ -104,7 +104,7 @@ data(fauxmadrona)
 # Here interval=1 and samplesize=50 so that it will run faster. It should be much higher
 # in a real application.
 fit <- posteriorsize(fauxmadrona, median.prior.size=1000,
-                                  burnin=10, interval=1, samplesize=50)
+                                  warmup=10, interval=1, samplesize=50)
 summary(fit)
 # Let's look at some MCMC diagnostics
 plot(fit, mcmc=TRUE)

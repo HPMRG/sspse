@@ -16,7 +16,7 @@ void gcmp2 (int *pop12,
             int *n1,
             int *n2,
             int *n0,
-            int *samplesize, int *burnin, int *interval,
+            int *samplesize, int *warmup, int *interval,
             double *mu, double *dfmu,
             double *sigma, double *dfsigma,
             double *lnlam, double *nu,
@@ -27,12 +27,12 @@ void gcmp2 (int *pop12,
             double *sample,
             double *posu,
             double *lpriorm,
-            int *burnintheta,
+            int *warmuptheta,
             int *verbose
             ) {
   int dimsample, Np;
   int step, staken, getone=1, intervalone=1, verboseMHcmp = 0;
-  int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
+  int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iwarmup;
   int ni1, ni2, ni0, unrecap;
   double mui, sigmai, lnlami, nui, dsamp, sigma2i;
   double ddfmu, ddfsigma, dnuproposal;
@@ -53,7 +53,7 @@ void gcmp2 (int *pop12,
   imaxm=imaxN-ni;
   isamplesize=(*samplesize);
   iinterval=(*interval);
-  iburnin=(*burnin);
+  iwarmup=(*warmup);
   Np=(*Npi);
   ddfmu=(*dfmu);
   ddfsigma=(*dfsigma);
@@ -71,8 +71,8 @@ void gcmp2 (int *pop12,
   double *lpm = (double *) malloc(sizeof(double) * imaxm);
   double *pdegi = (double *) malloc(sizeof(double) * (Np+1));
   double *psample = (double *) malloc(sizeof(double) * (Np+1));
-  double *lnlamsample = (double *) malloc(sizeof(double));
-  double *nusample = (double *) malloc(sizeof(double));
+  double *lnlamsample = (double *) malloc(sizeof(double) * isamplesize);
+  double *nusample = (double *) malloc(sizeof(double) * isamplesize);
 
   for (i=0; i<Ki; i++){
     nk[i]=0;
@@ -143,14 +143,14 @@ void gcmp2 (int *pop12,
   nusample[0] = (*nu);
 
   isamp = 0;
-  step = -iburnin;
+  step = -iwarmup;
   while (isamp < isamplesize) {
     /* Draw new theta */
     /* but less often than the other full conditionals */
-    if (step == -iburnin || step==(10*(step/10))) {
+    if (step == -iwarmup || step==(10*(step/10))) {
      MHcmptheta(Nk,K,mu,dfmu,sigma,dfsigma,muproposal,nuproposal,
            &Ni, &Np, psample,
-           lnlamsample, nusample, &getone, &staken, burnintheta, &intervalone,
+           lnlamsample, nusample, &getone, &staken, warmuptheta, &intervalone,
            &verboseMHcmp);
     }
 

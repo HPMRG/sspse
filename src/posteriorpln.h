@@ -23,7 +23,7 @@ void gpln (int *pop,
             int *nk, 
             int *K, 
             int *n, 
-            int *samplesize, int *burnin, int *interval,
+            int *samplesize, int *warmup, int *interval,
             double *mu0, double *kappa0, 
             double *sigma0,  double *df0,
             int *Npi,
@@ -33,7 +33,7 @@ void gpln (int *pop,
             double *sample, 
 	    double *ppos,
 	    double *lpriorm,
-            int *burnintheta,
+            int *warmuptheta,
 	    int *verbose
 			 );
 void MHpln (int *Nk, int *K,
@@ -43,7 +43,7 @@ void MHpln (int *Nk, int *K,
             double *sigmaproposal, 
             int *N, int *Npi, double *psample,
             double *musample, double *sigmasample,
-            int *samplesize, int *staken, int *burnin, int *interval,
+            int *samplesize, int *staken, int *warmup, int *interval,
 	    int *verbose
 			 );
 #endif /* POSTERIORPLN_H */

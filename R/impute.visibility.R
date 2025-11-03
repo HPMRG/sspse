@@ -31,8 +31,11 @@
 #' @param parallel.type The type of parallel processing to use. The options are
 #' "PSOCK" or "MPI". This requires the corresponding type to be installed.
 #' The default is "PSOCK".
+#' @param samplesize count; the number of Monte-Carlo samples to draw to
+#' compute the posterior. This is the number returned by the
+#' Metropolis-Hastings algorithm. The default is 1000.
 #' @param interval count; the number of proposals between sampled statistics.
-#' @param burnin count; the number of proposals before any MCMC sampling is
+#' @param warmup count; the number of proposals before any MCMC sampling is
 #' done. It typically is set to a fairly large number.
 #' @param mem.optimism.prior scalar; A hyper parameter being the mean of the 
 #' distribution of the optimism parameter.
@@ -76,7 +79,8 @@ impute.visibility <-function(rds.data,max.coupons=NULL,
                              reflect.time=FALSE,
                              parallel=1, parallel.type="PSOCK",
                              interval=10,
-                             burnin=5000,
+                             warmup=5000,
+                             samplesize=1000,
                              mem.optimism.prior=NULL, df.mem.optimism.prior=5,
                              mem.scale.prior=2, df.mem.scale.prior=10,
                              mem.overdispersion=15,
@@ -87,18 +91,20 @@ impute.visibility <-function(rds.data,max.coupons=NULL,
   
   if(missing(type.impute)){type.impute <- "median"}
 
-  fit <- posteriorsize(s=rds.data,
-                  K=FALSE,
-                  visibility=TRUE,
-		  type.impute = type.impute,
-                  parallel=parallel, parallel.type=parallel.type, interval=interval, burnin=burnin,
-                  recruit.time=recruit.time, include.tree=include.tree,
-                  optimism = TRUE,
-                  reflect.time=reflect.time,
-                  mem.optimism.prior=mem.optimism.prior, df.mem.optimism.prior=df.mem.optimism.prior,
-                  mem.scale.prior=mem.scale.prior, df.mem.scale.prior=df.mem.scale.prior,
-                  mem.overdispersion=mem.overdispersion,
-                  verbose=verbose)
+    posfn <- posteriorsize
+    fit <- posfn(s=rds.data,
+               K=FALSE,
+               visibility=TRUE,
+               type.impute = type.impute,
+               parallel=parallel, parallel.type=parallel.type,
+               samplesize=samplesize, interval=interval, warmup=warmup,
+               recruit.time=recruit.time, include.tree=include.tree,
+               optimism = TRUE,
+               reflect.time=reflect.time,
+               mem.optimism.prior=mem.optimism.prior, df.mem.optimism.prior=df.mem.optimism.prior,
+               mem.scale.prior=mem.scale.prior, df.mem.scale.prior=df.mem.scale.prior,
+               mem.overdispersion=mem.overdispersion,
+               verbose=verbose)
 
   if(verbose){
     print(prettyNum(apply(fit$sample,2,median)[-1],digits=2))

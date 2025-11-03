@@ -21,7 +21,7 @@
 void gcmp (int *pop,
             int *K, 
             int *n, 
-            int *samplesize, int *burnin, int *interval,
+            int *samplesize, int *warmup, int *interval,
             double *mu, double *dfmu, 
             double *sigma, double *dfsigma,
             double *lnlam, double *nu,
@@ -32,7 +32,7 @@ void gcmp (int *pop,
             double *sample, 
             double *posu, 
             double *lpriorm, 
-            int *burnintheta,
+            int *warmuptheta,
             int *verbose
          );
 
@@ -43,7 +43,7 @@ void MHcmptheta (int *Nk, int *K,
             double *nuproposal, 
             int *N, int *Npi, double *psample,
             double *lnlamsample, double *nusample,
-            int *samplesize, int *staken, int *burnintheta, int *interval,
+            int *samplesize, int *staken, int *warmuptheta, int *interval,
             int *verbose
          );
 

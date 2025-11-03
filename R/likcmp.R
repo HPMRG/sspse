@@ -5,7 +5,7 @@ likcmp<-function(s,maxN=NULL,
                   muproposal=0.1, 
                   sigmaproposal=0.15, 
                   Np=0,
-                  samplesize=10,burnin=0,interval=1,burnintheta=500,
+                  samplesize=10,warmup=0,interval=1,warmuptheta=500,
 		  priorsizedistribution=c("flat","beta","nbinom","pln"),
 		  mean.prior.size=NULL, sd.prior.size=NULL,
 		  mode.prior.sample.proportion=0.5,
@@ -56,7 +56,7 @@ likcmp<-function(s,maxN=NULL,
               K=as.integer(K),
               n=as.integer(n),
               samplesize=as.integer(samplesize),
-              burnin=as.integer(burnin),
+              warmup=as.integer(warmup),
               interval=as.integer(interval),
               mu=as.double(mu), df.mean.prior.visibility=as.double(df.mean.prior.visibility),
               sigma=as.double(sigma), df.sd.prior.visibility=as.double(df.sd.prior.visibility),
@@ -68,7 +68,7 @@ likcmp<-function(s,maxN=NULL,
               sample=double(samplesize*dimsample),
               ppos=double(K),
               lpriorm=as.double(prior$lprior),
-              burnintheta=as.integer(burnintheta),
+              warmuptheta=as.integer(warmuptheta),
               verbose=as.integer(verbose), PACKAGE="sspse")
     Cret$sample<-matrix(Cret$sample,nrow=samplesize,ncol=dimsample,byrow=TRUE)
     degnames <- NULL
@@ -96,8 +96,8 @@ likcmp<-function(s,maxN=NULL,
     Cret$nk<-NULL
     Cret$predictive.visibility<-Cret$ppos
     Cret$ppos<-NULL
-    endrun <- burnin+interval*(samplesize-1)
-    attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
+    endrun <- warmup+interval*(samplesize-1)
+    attr(Cret$sample, "mcpar") <- c(warmup+1, endrun, interval)
     attr(Cret$sample, "class") <- "mcmc"
     ### compute modes of posterior samples,Maximum A Posterior (MAP) values N, mu, sigma, degree1
     Cret$MAP <- apply(Cret$sample,2,mode.density)

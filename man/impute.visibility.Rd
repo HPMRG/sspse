@@ -16,7 +16,8 @@ impute.visibility(
   parallel = 1,
   parallel.type = "PSOCK",
   interval = 10,
-  burnin = 5000,
+  warmup = 5000,
+  samplesize = 1000,
   mem.optimism.prior = NULL,
   df.mem.optimism.prior = 5,
   mem.scale.prior = 2,
@@ -63,8 +64,12 @@ The default is "PSOCK".}
 
 \item{interval}{count; the number of proposals between sampled statistics.}
 
-\item{burnin}{count; the number of proposals before any MCMC sampling is
+\item{warmup}{count; the number of proposals before any MCMC sampling is
 done. It typically is set to a fairly large number.}
+
+\item{samplesize}{count; the number of Monte-Carlo samples to draw to
+compute the posterior. This is the number returned by the
+Metropolis-Hastings algorithm. The default is 1000.}
 
 \item{mem.optimism.prior}{scalar; A hyper parameter being the mean of the 
 distribution of the optimism parameter.}

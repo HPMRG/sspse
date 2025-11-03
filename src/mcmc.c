@@ -11,7 +11,7 @@ void gspps (int *pop,
             int *nk, 
             int *K, 
             int *n, 
-            int *samplesize, int *burnin, int *interval,
+            int *samplesize, int *warmup, int *interval,
             double *mu0, double *kappa0, 
             double *sigma0,  double *df0,
 	    int *Npi,
@@ -20,12 +20,12 @@ void gspps (int *pop,
             int *N, int *maxN, 
             double *sample, 
             double *ppos, 
-            int *burnintheta,
+            int *warmuptheta,
 	    int *verbose
 			 ) {
   int step, staken, getone=1, intervalone=1, verboseMHpln = 0;
   int dimsample, Np;
-  int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
+  int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iwarmup;
   double mu, mui, sigmai;
   double dkappa0, ddf0, dmu0, dsigma0, dmuproposal, dsigmaproposal;
   int tU, popi, imaxN, imaxm;
@@ -40,7 +40,7 @@ void gspps (int *pop,
   imaxm=imaxN-ni;
   isamplesize=(*samplesize);
   iinterval=(*interval);
-  iburnin=(*burnin);
+  iwarmup=(*warmup);
   Np=(*Npi);
   dkappa0=(*kappa0);
   ddf0=(*df0);
@@ -58,8 +58,8 @@ void gspps (int *pop,
   double *lpm = (double *) malloc(sizeof(double) * imaxm);
   double *pdegi = (double *) malloc(sizeof(double) * (Np+1));
   double *psample = (double *) malloc(sizeof(double) * (Np+1));
-  double *musample = (double *) malloc(sizeof(double));
-  double *sigmasample = (double *) malloc(sizeof(double));
+  double *musample = (double *) malloc(sizeof(double) * isamplesize);
+  double *sigmasample = (double *) malloc(sizeof(double) * isamplesize);
 
   b[ni-1]=pop[ni-1];
   for (i=(ni-2); i>=0; i--){
@@ -87,12 +87,12 @@ void gspps (int *pop,
   sigmasample[0] = dsigma0;
 
   isamp = 0;
-  step = -iburnin;
+  step = -iwarmup;
   while (isamp < isamplesize) {
     /* Draw new theta */
     MHplnorig(Nk,K,mu0,kappa0,sigma0,df0,muproposal,sigmaproposal,
           &Ni, &Np, psample,
-	  musample, sigmasample, &getone, &staken, burnintheta, &intervalone, 
+	  musample, sigmasample, &getone, &staken, warmuptheta, &intervalone, 
 	  &verboseMHpln);
 
     for (i=0; i<Np; i++){
@@ -216,7 +216,7 @@ void gsppsN (int *pop,
             int *nk, 
             int *K, 
             int *n, 
-            int *samplesize, int *burnin, int *interval,
+            int *samplesize, int *warmup, int *interval,
             double *mu0, double *kappa0, 
             double *sigma0,  double *df0,
 	    int *Npi,
@@ -224,12 +224,12 @@ void gsppsN (int *pop,
             double *sigmaproposal, 
             int *N,
             int *sample, 
-            int *burnintheta,
+            int *warmuptheta,
 	    int *verbose
 			 ) {
   int Np;
   int step, staken, getone=1, intervalone=1, verboseMHpln = 0;
-  int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
+  int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iwarmup;
   double mu;
   double dkappa0, ddf0, dmu0, dsigma0, dmuproposal, dsigmaproposal;
   int tU, popi;
@@ -243,7 +243,7 @@ void gsppsN (int *pop,
   Np=(*Npi);
   isamplesize=(*samplesize);
   iinterval=(*interval);
-  iburnin=(*burnin);
+  iwarmup=(*warmup);
   dkappa0=(*kappa0);
   ddf0=(*df0);
   dsigma0=(*sigma0);
@@ -255,8 +255,8 @@ void gsppsN (int *pop,
   int *Nk = (int *) malloc(sizeof(int) * Ki);
   double *phi = (double *) malloc(sizeof(double) * ni);
   double *psample = (double *) malloc(sizeof(double) * (Np+1));
-  double *musample = (double *) malloc(sizeof(double));
-  double *sigmasample = (double *) malloc(sizeof(double));
+  double *musample = (double *) malloc(sizeof(double) * isamplesize);
+  double *sigmasample = (double *) malloc(sizeof(double) * isamplesize);
   b[ni-1]=pop[ni-1];
   for (i=(ni-2); i>=0; i--){
     b[i]=b[i+1]+pop[i];
@@ -266,12 +266,12 @@ void gsppsN (int *pop,
   }
 
   isamp = 0;
-  step = -iburnin;
+  step = -iwarmup;
   while (isamp < isamplesize) {
     /* Draw new theta */
     MHplnorig(Nk,K,mu0,kappa0,sigma0,df0,muproposal,sigmaproposal,N,
           &Np, psample,
-	  musample, sigmasample, &getone, &staken, burnintheta, &intervalone, 
+	  musample, sigmasample, &getone, &staken, warmuptheta, &intervalone, 
 	  &verboseMHpln);
     tU=0;
     for (i=ni; i<Ni; i++){
@@ -334,12 +334,12 @@ void MHplnorig (int *Nk, int *K,
             double *sigmaproposal, 
             int *N, int *Npi, double *psample,
             double *musample, double *sigmasample,
-            int *samplesize, int *staken, int *burnin, int *interval,
+            int *samplesize, int *staken, int *warmup, int *interval,
 	    int *verbose
 			 ) {
   int Np;
   int step, taken, give_log=1;
-  int i, Ki, Ni, isamp, iinterval, isamplesize, iburnin;
+  int i, Ki, Ni, isamp, iinterval, isamplesize, iwarmup;
   double ip, cutoff;
   double mustar, mui, lp;
   double pis, pstars;
@@ -362,7 +362,7 @@ void MHplnorig (int *Nk, int *K,
   Ni=(*N);
   isamplesize=(*samplesize);
   iinterval=(*interval);
-  iburnin=(*burnin);
+  iwarmup=(*warmup);
   dkappa0=(*kappa0);
   rkappa0=sqrt(dkappa0);
   ddf0=(*df0);
@@ -373,7 +373,7 @@ void MHplnorig (int *Nk, int *K,
   dmuproposal=(*muproposal);
   logK=log((double)Ki);
   isamp = taken = 0;
-  step = -iburnin;
+  step = -iwarmup;
   pis=1.;
   for (i=0; i<Np; i++){
     pdegi[i] = psample[i];
@@ -518,11 +518,11 @@ void MHpriorpln (double *mu0, double *kappa0,
             double *muproposal, 
             double *sigmaproposal, 
             double *musample, double *sigmasample,
-            int *samplesize, int *staken, int *burnin, int *interval,
+            int *samplesize, int *staken, int *warmup, int *interval,
 	    int *verbose
 			 ) {
   int step, taken, give_log=1;
-  int isamp, iinterval, isamplesize, iburnin;
+  int isamp, iinterval, isamplesize, iwarmup;
   double ip, cutoff;
   double mustar, mui;
   double sigmastar, sigmai, sigma2star, sigma2i, qsigma2star, qsigma2i;
@@ -534,7 +534,7 @@ void MHpriorpln (double *mu0, double *kappa0,
 
   isamplesize=(*samplesize);
   iinterval=(*interval);
-  iburnin=(*burnin);
+  iwarmup=(*warmup);
   dkappa0=(*kappa0);
   rkappa0=sqrt(dkappa0);
   ddf0=(*df0);
@@ -545,7 +545,7 @@ void MHpriorpln (double *mu0, double *kappa0,
   dsigmaproposal=(*sigmaproposal);
   dmuproposal=(*muproposal);
   isamp = taken = 0;
-  step = -iburnin;
+  step = -iwarmup;
   mui = dmu0;
   sigma2i = dsigma20;
   sigmai  = sqrt(sigma2i);

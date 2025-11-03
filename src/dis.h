@@ -23,7 +23,7 @@ void gsppsdis (int *pop, int *dis,
             int *nk0, int *nk1, 
             int *K, 
             int *n, 
-            int *samplesize, int *burnin, int *interval,
+            int *samplesize, int *warmup, int *interval,
             double *mu0, double *mu1, double *kappa0, 
             double *sigma0,  double *sigma1, double *df0,
 	    int *Np0i, int *Np1i,
@@ -32,7 +32,7 @@ void gsppsdis (int *pop, int *dis,
             int *N, int *maxN, 
             double *sample, 
             double *p0pos, double *p1pos, 
-            int *burnintheta,
+            int *warmuptheta,
 	    int *verbose
 			 );
 void MHdis (int *Nk0, int *Nk1, int *totdis, int *K,
@@ -42,7 +42,7 @@ void MHdis (int *Nk0, int *Nk1, int *totdis, int *K,
             double *sigmaproposal, 
             int *N, int *Np0i, int *Np1i, double *psample,
             double *musample, double *betasample, double *sigmasample,
-            int *samplesize, int *staken, int *burnin, int *interval,
+            int *samplesize, int *staken, int *warmup, int *interval,
 	    int *verbose
 			 );
 void MHpriordis (double *mu0, double *mu1, double *kappa0, 
@@ -50,7 +50,7 @@ void MHpriordis (double *mu0, double *mu1, double *kappa0,
             double *muproposal, 
             double *sigmaproposal, 
             double *musample, double *betasample, double *sigmasample,
-            int *samplesize, int *staken, int *burnin, int *interval,
+            int *samplesize, int *staken, int *warmup, int *interval,
 	    int *verbose
 			 );
 #endif /* DIS_H */

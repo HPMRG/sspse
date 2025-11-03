@@ -2,7 +2,7 @@ likelihoodsize<-function(s,
                   mean.prior.visibility=7, sd.prior.visibility=3,
                   df.mean.prior.visibility=1,df.sd.prior.visibility=5,
                   Np=0,
-                  samplesize=1000,burnin=100,interval=1,burnintheta=500,
+                  samplesize=1000,warmup=100,interval=1,warmuptheta=500,
 		  priorsizedistribution=c("flat","beta","nbinom","pln"),
 		  mean.prior.size=NULL, sd.prior.size=NULL,
 		  mode.prior.sample.proportion=0.5,
@@ -38,8 +38,8 @@ likelihoodsize<-function(s,
                     sd.prior.visibility=sd.prior.visibility,df.sd.prior.visibility=df.sd.prior.visibility,
                     muproposal=muproposal, sigmaproposal=sigmaproposal, 
 		    Np=Np,
-                    samplesize=samplesize,burnin=burnin,interval=interval,
-		    burnintheta=burnintheta,
+                    samplesize=samplesize,warmup=warmup,interval=interval,
+		    warmuptheta=warmuptheta,
 		    priorsizedistribution=priorsizedistribution,
 		    mean.prior.size=mean.prior.size, sd.prior.size=sd.prior.size,
 		    mode.prior.sample.proportion=mode.prior.sample.proportion,
@@ -65,8 +65,8 @@ likelihoodsize<-function(s,
       sd.prior.visibility=sd.prior.visibility,df.sd.prior.visibility=df.sd.prior.visibility,
       muproposal=muproposal, sigmaproposal=sigmaproposal, 
       Np=Np,
-      samplesize=samplesize.parallel,burnin=burnin,interval=interval,
-      burnintheta=burnintheta,
+      samplesize=samplesize.parallel,warmup=warmup,interval=interval,
+      warmuptheta=warmuptheta,
       priorsizedistribution=priorsizedistribution,
       mean.prior.size=mean.prior.size, sd.prior.size=sd.prior.size,
       mode.prior.sample.proportion=mode.prior.sample.proportion,
@@ -105,8 +105,8 @@ likelihoodsize<-function(s,
     colnames(Cret$sample) <- colnamessample
     
     ### Coda package which does MCMC diagnostics, requires certain attributes of MCMC sample
-    endrun <- burnin+interval*(samplesize)
-    attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
+    endrun <- warmup+interval*(samplesize)
+    attr(Cret$sample, "mcpar") <- c(warmup+1, endrun, interval)
     attr(Cret$sample, "class") <- "mcmc"
     
 #   ### Remove the padding from the last draws from the populations of visibilitys

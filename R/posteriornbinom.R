@@ -8,7 +8,7 @@ posteriornbinom<-function(s,
                   muproposal=0.1, 
                   sigmaproposal=0.15, 
                   Np=0,
-                  samplesize=1000,burnin=100,interval=1,burnintheta=500,
+                  samplesize=1000,warmup=100,interval=1,warmuptheta=500,
 		  mean.prior.size=N, sd.prior.size=N,
                   parallel=1, seed=NULL,
                   verbose=TRUE){
@@ -21,8 +21,8 @@ posteriornbinom<-function(s,
                       sd.prior.degree=sd.prior.degree,df.sd.prior=df.sd.prior,
                       muproposal=muproposal, sigmaproposal=sigmaproposal, 
 		      Np=Np,
-                      samplesize=samplesize,burnin=burnin,interval=interval,
-		      burnintheta=burnintheta,
+                      samplesize=samplesize,warmup=warmup,interval=interval,
+		      warmuptheta=warmuptheta,
 		      mean.prior.size=mean.prior.size, sd.prior.size=sd.prior.size,
                       seed=seed)
   }
@@ -39,8 +39,8 @@ posteriornbinom<-function(s,
       sd.prior.degree=sd.prior.degree,df.sd.prior=df.sd.prior,
       muproposal=muproposal, sigmaproposal=sigmaproposal, 
       Np=Np,
-      samplesize=samplesize.parallel,burnin=burnin,interval=interval,
-      burnintheta=burnintheta,
+      samplesize=samplesize.parallel,warmup=warmup,interval=interval,
+      warmuptheta=warmuptheta,
       mean.prior.size=mean.prior.size, sd.prior.size=sd.prior.size)
 #
 #   Process the results
@@ -68,8 +68,8 @@ posteriornbinom<-function(s,
     }
     
     ### Coda package which does MCMC diagnostics, requires certain attributes of MCMC sample
-    endrun <- burnin+interval*(samplesize-1)
-    attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
+    endrun <- warmup+interval*(samplesize-1)
+    attr(Cret$sample, "mcpar") <- c(warmup+1, endrun, interval)
     attr(Cret$sample, "class") <- "mcmc"
     
     ### define function that will compute mode of a sample

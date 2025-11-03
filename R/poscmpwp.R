@@ -13,7 +13,7 @@ poscmpwp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
                   memmu_proposal=0.1, memscale_proposal=0.15,
                   visibility=TRUE,
                   Np=0,
-                  samplesize=10,burnin=0,interval=1,burnintheta=500,burninbeta=20,
+                  samplesize=10,warmup=0,interval=1,warmuptheta=500,warmupbeta=20,
                   priorsizedistribution=c("beta","nbinom","pln","flat","supplied"),
                   mean.prior.size=NULL, sd.prior.size=NULL,
                   mode.prior.sample.proportion=NULL,
@@ -93,7 +93,7 @@ poscmpwp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
               n2=as.integer(n2),
               n0=as.integer(n0),
               samplesize=as.integer(samplesize),
-              burnin=as.integer(burnin),
+              warmup=as.integer(warmup),
               interval=as.integer(interval),
               mu=as.double(mean.prior.visibility), df.mean.prior.visibility=as.double(df.mean.prior.visibility),
               sigma=as.double(sd.prior.visibility), df.sd.prior.visibility=as.double(df.sd.prior.visibility),
@@ -124,8 +124,8 @@ poscmpwp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
               posu=double(K),
               posd=double(10*K),
               lpriorm=as.double(prior$lprior),
-              burnintheta=as.integer(burnintheta),
-              burninbeta=as.integer(burninbeta),
+              warmuptheta=as.integer(warmuptheta),
+              warmupbeta=as.integer(warmupbeta),
               verbose=as.integer(TRUE), PACKAGE="sspse")
      }else{
       cat(sprintf("Using Capture-recapture non-measurement error model with K = %d.\n",K))
@@ -143,7 +143,7 @@ poscmpwp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
               n2=as.integer(n2),
               n0=as.integer(n0),
               samplesize=as.integer(samplesize),
-              burnin=as.integer(burnin),
+              warmup=as.integer(warmup),
               interval=as.integer(interval),
               mu=as.double(mean.prior.visibility), df.mean.prior.visibility=as.double(df.mean.prior.visibility),
               sigma=as.double(sd.prior.visibility), df.sd.prior.visibility=as.double(df.sd.prior.visibility),
@@ -156,7 +156,7 @@ poscmpwp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
               sample=double(samplesize*dimsample),
               posu=double(K),
               lpriorm=as.double(prior$lprior),
-              burnintheta=as.integer(burnintheta),
+              warmuptheta=as.integer(warmuptheta),
               verbose=as.integer(TRUE), PACKAGE="sspse")
      }
     }else{
@@ -170,7 +170,7 @@ poscmpwp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
               K=as.integer(K),
               n=as.integer(n1),
               samplesize=as.integer(samplesize),
-              burnin=as.integer(burnin),
+              warmup=as.integer(warmup),
               interval=as.integer(interval),
               mu=as.double(mean.prior.visibility), df.mean.prior.visibility=as.double(df.mean.prior.visibility),
               sigma=as.double(sd.prior.visibility), df.sd.prior.visibility=as.double(df.sd.prior.visibility),
@@ -197,8 +197,8 @@ poscmpwp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
               posu=double(K),
               posd=double(10*K),
               lpriorm=as.double(prior$lprior),
-              burnintheta=as.integer(burnintheta),
-              burninbeta=as.integer(burninbeta),
+              warmuptheta=as.integer(warmuptheta),
+              warmupbeta=as.integer(warmupbeta),
               verbose=as.integer(TRUE), PACKAGE="sspse")
      }else{
       cat(sprintf("Using non-measurement error model with K = %d.\n",K))
@@ -209,7 +209,7 @@ poscmpwp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
               K=as.integer(K),
               n=as.integer(n1),
               samplesize=as.integer(samplesize),
-              burnin=as.integer(burnin),
+              warmup=as.integer(warmup),
               interval=as.integer(interval),
               mu=as.double(mean.prior.visibility), df.mean.prior.visibility=as.double(df.mean.prior.visibility),
               sigma=as.double(sd.prior.visibility), df.sd.prior.visibility=as.double(df.sd.prior.visibility),
@@ -222,7 +222,7 @@ poscmpwp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
               sample=double(samplesize*dimsample),
               posu=double(K),
               lpriorm=as.double(prior$lprior),
-              burnintheta=as.integer(burnintheta),
+              warmuptheta=as.integer(warmuptheta),
               verbose=as.integer(TRUE), PACKAGE="sspse")
      }
     }
@@ -303,13 +303,13 @@ poscmpwp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
 #   Cret$sample[,"mem.visibility.mean"] <- exp(log(mean.visibility)+Cret$sample[,"mem.optimism"]+0.5*Cret$sample[,"mem.scale"])
     #
 #   Cret$Nk<-Cret$nk/sum(Cret$nk)
-    Cret$predictive.visibility.count<-Cret$nk / samplesize
-    Cret$nk<-NULL
+ #  Cret$predictive.visibility.count<-Cret$nk / samplesize
+ #  Cret$nk<-NULL
     Cret$predictive.visibility<-Cret$posu
     Cret$predictive.degree<-Cret$posd
     Cret$posu<-NULL
-    endrun <- burnin+interval*(samplesize-1)
-    attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
+    endrun <- warmup+interval*(samplesize-1)
+    attr(Cret$sample, "mcpar") <- c(warmup+1, endrun, interval)
     attr(Cret$sample, "class") <- "mcmc"
     ### compute modes of posterior samples,Maximum A Posterior (MAP) values N, mu, sigma, visibility1
     Cret$MAP <- apply(Cret$sample,2,mode.density)

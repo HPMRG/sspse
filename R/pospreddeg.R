@@ -52,7 +52,7 @@
 #' # Here interval=1 so that it will run faster. It should be higher in a 
 #' # real application.
 #' fit <- posteriorsize(fauxmadrona, median.prior.size=1000,
-#'                                  burnin=20, interval=1, samplesize=100)
+#'                                  warmup=20, interval=1, samplesize=100)
 #' summary(fit)
 #' # Let's look at some MCMC diagnostics
 #' pospreddeg(fit)
@@ -144,7 +144,7 @@ pospreddeg <- function(x, order.by.recruitment.time=FALSE){
 #' # Here interval=1 so that it will run faster. It should be higher in a 
 #' # real application.
 #' fit <- posteriorsize(fauxmadrona, median.prior.size=1000,
-#'                                  burnin=10, interval=1, samplesize=50)
+#'                                  warmup=10, interval=1, samplesize=50)
 #' summary(fit)
 #' # Let's look at some MCMC diagnostics
 #' plot(pospreddeg(fit))

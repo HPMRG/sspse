@@ -8,7 +8,7 @@ void gcmp2 (int *pop12,
             int *n1, 
             int *n2, 
             int *n0, 
-            int *samplesize, int *burnin, int *interval,
+            int *samplesize, int *warmup, int *interval,
             double *mu, double *dfmu, 
             double *sigma, double *dfsigma,
 	    double *lnlam, double *nu,
@@ -19,7 +19,7 @@ void gcmp2 (int *pop12,
             double *sample, 
             double *posu, 
             double *lpriorm, 
-            int *burnintheta,
+            int *warmuptheta,
             int *verbose
            );
 #endif /* POSTERIORCMP2_H */

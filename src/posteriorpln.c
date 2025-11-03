@@ -11,7 +11,7 @@ void gpln (int *pop,
             int *nk, 
             int *K, 
             int *n, 
-            int *samplesize, int *burnin, int *interval,
+            int *samplesize, int *warmup, int *interval,
             double *mu0, double *kappa0, 
             double *sigma0,  double *df0,
 	    int *Npi,
@@ -21,12 +21,12 @@ void gpln (int *pop,
             double *sample, 
             double *ppos, 
             double *lpriorm, 
-            int *burnintheta,
+            int *warmuptheta,
 	    int *verbose
 			 ) {
   int dimsample, Np;
   int step, staken, getone=1, intervalone=1, verboseMHpln = 0;
-  int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
+  int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iwarmup;
   double mui, sigmai, dsamp;
   double dkappa0, ddf0, dmu0, dsigma0, dmuproposal, dsigmaproposal;
   int tU, popi, imaxN, imaxm;
@@ -41,7 +41,7 @@ void gpln (int *pop,
   imaxm=imaxN-ni;
   isamplesize=(*samplesize);
   iinterval=(*interval);
-  iburnin=(*burnin);
+  iwarmup=(*warmup);
   Np=(*Npi);
   dkappa0=(*kappa0);
   ddf0=(*df0);
@@ -59,8 +59,8 @@ void gpln (int *pop,
   double *lpm = (double *) malloc(sizeof(double) * imaxm);
   double *pdegi = (double *) malloc(sizeof(double) * (Np+1));
   double *psample = (double *) malloc(sizeof(double) * (Np+1));
-  double *musample = (double *) malloc(sizeof(double));
-  double *sigmasample = (double *) malloc(sizeof(double));
+  double *musample = (double *) malloc(sizeof(double) * isamplesize);
+  double *sigmasample = (double *) malloc(sizeof(double) * isamplesize);
 
   b[ni-1]=pop[ni-1];
   for (i=(ni-2); i>=0; i--){
@@ -88,12 +88,12 @@ void gpln (int *pop,
   sigmasample[0] = dsigma0;
 
   isamp = 0;
-  step = -iburnin;
+  step = -iwarmup;
   while (isamp < isamplesize) {
     /* Draw new theta */
     MHpln(Nk,K,mu0,kappa0,sigma0,df0,muproposal,sigmaproposal,
           &Ni, &Np, psample,
-	  musample, sigmasample, &getone, &staken, burnintheta, &intervalone, 
+	  musample, sigmasample, &getone, &staken, warmuptheta, &intervalone, 
 	  &verboseMHpln);
 
     for (i=0; i<Np; i++){
@@ -240,12 +240,12 @@ void MHpln (int *Nk, int *K,
             double *sigmaproposal, 
             int *N, int *Npi, double *psample,
             double *musample, double *sigmasample,
-            int *samplesize, int *staken, int *burnin, int *interval,
+            int *samplesize, int *staken, int *warmup, int *interval,
 	    int *verbose
 			 ) {
   int Np;
   int step, taken, give_log1=1;
-  int i, Ki, Ni, isamp, iinterval, isamplesize, iburnin;
+  int i, Ki, Ni, isamp, iinterval, isamplesize, iwarmup;
   double ip, cutoff;
   double mustar, mui, lp;
   double pis, pstars;
@@ -268,7 +268,7 @@ void MHpln (int *Nk, int *K,
   Ni=(*N);
   isamplesize=(*samplesize);
   iinterval=(*interval);
-  iburnin=(*burnin);
+  iwarmup=(*warmup);
   dkappa0=(*kappa0);
   rkappa0=sqrt(dkappa0);
   ddf0=(*df0);
@@ -278,7 +278,7 @@ void MHpln (int *Nk, int *K,
   dsigmaproposal=(*sigmaproposal);
   dmuproposal=(*muproposal);
   isamp = taken = 0;
-  step = -iburnin;
+  step = -iwarmup;
   pis=1.;
   for (i=0; i<Np; i++){
     pdegi[i] = psample[i];
@@ -312,7 +312,7 @@ void MHpln (int *Nk, int *K,
   for (i=0; i<Np; i++){
     pi[i]=pdegi[i];
   }
-  // Now do the MCMC updates (starting with the burnin updates)
+  // Now do the MCMC updates (starting with the warmup updates)
   while (isamp < isamplesize) {
     /* Propose new theta */
     /* Now the degree distribution model parameters */

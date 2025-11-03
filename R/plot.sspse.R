@@ -94,7 +94,7 @@
 #' # Here interval=1 and samplesize=50 so that it will run faster. It should be much higher
 #' # in a real application.
 #' fit <- posteriorsize(fauxmadrona, median.prior.size=1000,
-#'                                   burnin=10, interval=1, samplesize=50)
+#'                                   warmup=10, interval=1, samplesize=50)
 #' summary(fit)
 #' # Let's look at some MCMC diagnostics
 #' plot(fit, mcmc=TRUE)
@@ -110,7 +110,7 @@ plot.sspse <- function(x,
   formal.args<-formals(sys.function())[-c(1)]
 
  #control<-list()
-  control<-list(samples=4000, burnin=1000)
+  control<-list(samples=4000, warmup=1000)
   names.formal.args <- names(formal.args)
   names.formal.args <- names.formal.args[-match("...",names.formal.args)]
   for(arg in names.formal.args){ control[arg]<-list(get(arg)) }
@@ -164,7 +164,7 @@ if(!is.null(out)){
   }else{
     a=densEstBayes::densEstBayes(outN,method="NUTS",
       control=densEstBayes::densEstBayes.control(range.x=c(x$n*0.95,x$maxN*1.05),#numBins=min(401,round(length(outN)/2)),
-                                                 nKept=control$samples,nWarm=control$burnin))
+                                                 nKept=control$samples,nWarm=control$warmup))
     xTrang <- seq(-0.05, 1.05, length = length(xp))
     Xg <- cbind(1,xTrang)
     Zg <- .ZOSull(xTrang,intKnots=a$intKnots,range.x=c(-0.05,1.05))
@@ -239,16 +239,22 @@ if(control$type %in% c("summary","all")){
   graphics::plot(stats::density(out[,"mu"],na.rm=TRUE), xlab="mean visibility", main="Posterior for mean visibility in the population", cex.main=cex.main)
   graphics::plot(stats::density(out[,"sigma"],na.rm=TRUE), xlab="s.d. visibility", main="Posterior for s.d. of the visibility", cex.main=cex.main)
  }
- if("mu0" %in% colnames(out)){
-  graphics::plot(stats::density(out[,"mu0"],na.rm=TRUE), xlab="mean visibility for uninfected", main="Posterior for mean visibility in the uninfected population",sub="infected is dashed", cex.main=cex.main)
-  graphics::lines(stats::density(out[,"mu1"],na.rm=TRUE),lty=2)
-  graphics::plot(stats::density(out[,"sigma0"],na.rm=TRUE), xlab="s.d. visibility", main="Posterior for s.d. of the visibility for uninfected",sub="infected is dashed", cex.main=cex.main)
-  graphics::lines(stats::density(out[,"sigma1"],na.rm=TRUE),lty=2)
+ if("mu0" %in% colnames(out)){ # posteriordisease
+  graphics::plot(stats::density(out[,"mu0"],na.rm=TRUE), xlab="mean visibility for uninfected", xlim=range(c(out[,"mu0"],out[,"mu1"])),
+    main="Posterior for mean visibility in the uninfected population",sub="infected is dashed", cex.main=cex.main)
+  graphics::lines(stats::density(out[,"mu1"],na.rm=TRUE),col=3)
+  graphics::legend('topleft',col=c(1,3), lty=c(1,1),
+    legend=c("uninfected","infected"), bty="n",cex=0.75)
+  graphics::plot(stats::density(out[,"sigma0"],na.rm=TRUE), xlab="s.d. visibility", xlim=range(c(out[,"sigma0"],out[,"sigma1"])),
+    main="Posterior for s.d. of the visibility for uninfected",sub="infected is dashed", cex.main=cex.main)
+  graphics::lines(stats::density(out[,"sigma1"],na.rm=TRUE),col=3)
+  graphics::legend('topleft',col=c(1,3), lty=c(1,1),
+    legend=c("uninfected","infected"), bty="n",cex=0.75)
  }
 }
 #
 if(control$type %in% c("visibility","degree","all")){
- if(control$type %in% c("visibility","all")){
+ if(control$type %in% c("visibility")){
   graphics::plot(seq_along(x$predictive.visibility),y=x$predictive.visibility, type='h',
   col='red', lwd=2, xlab="visibility",ylab="probability", ylim=c(0,max(x$predictive.visibility)),
     main="Visibility distribution", cex.main=cex.main)
@@ -279,7 +285,7 @@ if(control$type %in% c("visibility","degree","all")){
    if(!is.null(x$rectime)){
      network.size[!remvalues] <- (network.size[!remvalues])[order(x$rectime)]
    }
-   Kmax <- max(seq_along(x$predictive.visibility))
+   Kmax <- max(c(length(x$predictive.visibility),network.size[!remvalues]))
    ns.prob <- tabulate(network.size[!remvalues],nbins=Kmax) #, nbins=max(x$data))
    ns.prob <- ns.prob/sum(ns.prob)
 #  med.vis <- which.max(cumsum(x$predictive.visibility)>=0.5)
@@ -288,7 +294,11 @@ if(control$type %in% c("visibility","degree","all")){
      xlab="visibility",ylab="probability", xlim=c(1,Kmax), ylim=c(0,max(c(ns.prob,x$predictive.visibility))),
      main="Posterior with sample visibility\n histogram overlaid (median matched)", cex.main=cex.main)
 #   graphics::lines(x=-0.25+median(network.size[!remvalues])*seq_along(x$predictive.visibility)/med.vis,y=x$predictive.visibility, type='h', col='red', lwd=2)
-    graphics::lines(x=-0.25+exp(x$mem.optimism.prior)*seq_along(x$predictive.visibility),y=x$predictive.visibility, type='h', col='red', lwd=2)
+    if(!is.null(x$mem.optimism.prior)){
+      graphics::lines(x=-0.25+exp(x$mem.optimism.prior)*seq_along(x$predictive.visibility),y=x$predictive.visibility, type='h', col='red', lwd=2)
+    }else{
+      graphics::lines(x=-0.25+exp(x$mem.optimism.prior1)*seq_along(x$predictive.visibility),y=x$predictive.visibility, type='h', col='red', lwd=2)
+     }
    }
   
    if(control$type %in% c("degree","all")){

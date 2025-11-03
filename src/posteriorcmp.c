@@ -11,7 +11,7 @@
 void gcmp (int *pop,
             int *K,
             int *n,
-            int *samplesize, int *burnin, int *interval,
+            int *samplesize, int *warmup, int *interval,
             double *mu, double *dfmu,
             double *sigma, double *dfsigma,
             double *lnlam, double *nu,
@@ -22,12 +22,12 @@ void gcmp (int *pop,
             double *sample,
             double *posu,
             double *lpriorm,
-            int *burnintheta,
+            int *warmuptheta,
             int *verbose
                          ) {
   int dimsample, Np;
   int step, staken, getone=1, intervalone=1, verboseMHcmp = 0;
-  int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
+  int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iwarmup;
   double mui, sigmai, lnlami, nui, dsamp;
   double sigma2i;
   int tU, sizei, imaxN, imaxm, give_log0=0, give_log1=1;
@@ -44,7 +44,7 @@ void gcmp (int *pop,
   imaxm=imaxN-ni;
   isamplesize=(*samplesize);
   iinterval=(*interval);
-  iburnin=(*burnin);
+  iwarmup=(*warmup);
   Np=(*Npi);
 
   dimsample=5+Np;
@@ -58,8 +58,8 @@ void gcmp (int *pop,
   double *lpm = (double *) malloc(sizeof(double) * imaxm);
   double *pdegi = (double *) malloc(sizeof(double) * (Np+1));
   double *psample = (double *) malloc(sizeof(double) * (Np+1));
-  double *lnlamsample = (double *) malloc(sizeof(double));
-  double *nusample = (double *) malloc(sizeof(double));
+  double *lnlamsample = (double *) malloc(sizeof(double) * isamplesize);
+  double *nusample = (double *) malloc(sizeof(double) * isamplesize);
 
   for (i=0; i<Ki; i++){
     nk[i]=0;
@@ -99,15 +99,15 @@ void gcmp (int *pop,
   nusample[0] = (*nu);
 
   isamp = 0;
-  step = -iburnin;
+  step = -iwarmup;
   while (isamp < isamplesize) {
 
     /* Draw new theta */
     /* but less often than the other full conditionals */
-    if (step == -iburnin || step==(10*(step/10))) { 
+    if (step == -iwarmup || step==(10*(step/10))) { 
      MHcmptheta(Nk,K,mu,dfmu,sigma,dfsigma,lnlamproposal,nuproposal,
        &Ni, &Np, psample,
-       lnlamsample, nusample, &getone, &staken, burnintheta, &intervalone, 
+       lnlamsample, nusample, &getone, &staken, warmuptheta, &intervalone, 
        &verboseMHcmp);
 
      lnlami=lnlamsample[0];
@@ -272,12 +272,12 @@ void MHcmptheta (int *Nk, int *K,
             double *nuproposal, 
             int *N, int *Npi, double *psample,
             double *lnlamsample, double *nusample,
-            int *samplesize, int *staken, int *burnintheta, int *interval,
+            int *samplesize, int *staken, int *warmuptheta, int *interval,
             int *verbose
          ) {
   int Np;
   int step, taken, give_log1=1, give_log0=0;
-  int i, Ki, Ni, isamp, iinterval, isamplesize, iburnintheta;
+  int i, Ki, Ni, isamp, iinterval, isamplesize, iwarmuptheta;
   double ip, cutoff;
   double mui, mustar, lnlamstar, lnlami, lp;
   double pis, pstars;
@@ -302,7 +302,7 @@ void MHcmptheta (int *Nk, int *K,
   Ni=(*N);
   isamplesize=(*samplesize);
   iinterval=(*interval);
-  iburnintheta=(*burnintheta);
+  iwarmuptheta=(*warmuptheta);
   ddfmu=(*dfmu);
   rdfmu=sqrt(ddfmu);
   ddfsigma=(*dfsigma);
@@ -314,7 +314,7 @@ void MHcmptheta (int *Nk, int *K,
 
   // First set starting values
   isamp = taken = 0;
-  step = -iburnintheta;
+  step = -iwarmuptheta;
   pis=1.;
   for (i=0; i<Np; i++){
     pdegi[i] = psample[i];
@@ -371,7 +371,7 @@ void MHcmptheta (int *Nk, int *K,
    pithetai = pithetai + dnorm(mui, dmu, sigmai/rdfmu, give_log1);
   }
 
-  // Now do the MCMC updates (starting with the burnin updates)
+  // Now do the MCMC updates (starting with the warmup updates)
   while (isamp < isamplesize) {
     /* Propose new theta */
     /* Now the degree distribution model parameters */

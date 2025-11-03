@@ -11,7 +11,7 @@
 void gcmpwpvis_binomial (int *pop,
             int *K,
             int *n,
-            int *samplesize, int *burnin, int *interval,
+            int *samplesize, int *warmup, int *interval,
             double *mu, double *dfmu,
             double *sigma, double *dfsigma,
             double *lnlam, double *nu,
@@ -35,13 +35,13 @@ void gcmpwpvis_binomial (int *pop,
             double *posu,
             double *posd,
             double *lpriorm,
-            int *burnintheta,
-            int *burninbeta,
+            int *warmuptheta,
+            int *warmupbeta,
             int *verbose
                          ) {
   int dimsample, Np;
   int step, staken, getone=1, intervalone=1, verboseMHcmp = 0;
-  int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
+  int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iwarmup;
   int j, k;
   int umax;
   double alpha, pnb, rnb;
@@ -67,7 +67,7 @@ void gcmpwpvis_binomial (int *pop,
   imaxm=imaxN-ni;
   isamplesize=(*samplesize);
   iinterval=(*interval);
-  iburnin=(*burnin);
+  iwarmup=(*warmup);
   Np=(*Npi);
   dbeta0=(*beta0muprior);
   dbetat=(*betatmuprior);
@@ -90,12 +90,12 @@ void gcmpwpvis_binomial (int *pop,
   double *lpm = (double *) malloc(sizeof(double) * imaxm);
   double *pdegi = (double *) malloc(sizeof(double) * (Np+1));
   double *psample = (double *) malloc(sizeof(double) * (Np+1));
-  double *lnlamsample = (double *) malloc(sizeof(double));
-  double *nusample = (double *) malloc(sizeof(double));
-  double *beta0sample = (double *) malloc(sizeof(double));
-  double *betatsample = (double *) malloc(sizeof(double));
-  double *lmemmusample = (double *) malloc(sizeof(double));
-  double *memnusample = (double *) malloc(sizeof(double));
+  double *lnlamsample = (double *) malloc(sizeof(double) * isamplesize);
+  double *nusample = (double *) malloc(sizeof(double) * isamplesize);
+  double *beta0sample = (double *) malloc(sizeof(double) * isamplesize);
+  double *betatsample = (double *) malloc(sizeof(double) * isamplesize);
+  double *lmemmusample = (double *) malloc(sizeof(double) * isamplesize);
+  double *memnusample = (double *) malloc(sizeof(double) * isamplesize);
 
   for (i=0; i<Ki; i++){
     nk[i]=0;
@@ -144,15 +144,15 @@ void gcmpwpvis_binomial (int *pop,
   nusample[0] = (*nu);
 
   isamp = 0;
-  step = -iburnin;
+  step = -iwarmup;
   while (isamp < isamplesize) {
 
     /* Draw new theta */
     /* but less often than the other full conditionals */
-    if (step == -iburnin || step==(10*(step/10))) { 
+    if (step == -iwarmup || step==(10*(step/10))) { 
      MHcmptheta(Nk,K,mu,dfmu,sigma,dfsigma,lnlamproposal,nuproposal,
        &Ni, &Np, psample,
-       lnlamsample, nusample, &getone, &staken, burnintheta, &intervalone, 
+       lnlamsample, nusample, &getone, &staken, warmuptheta, &intervalone, 
        &verboseMHcmp);
 
      lnlami=lnlamsample[0];
@@ -199,13 +199,13 @@ void gcmpwpvis_binomial (int *pop,
     sigmai = sqrt(sigma2i);
 
     /* Draw new beta using MCMC */
-    if (step == -iburnin || step==(20*(step/20))) { 
+    if (step == -iwarmup || step==(20*(step/20))) { 
      MHwpmem_binomial(u,n,K,beta0muprior,beta0sigmaprior,betatmuprior,betatsigmaprior,
        lmemmu,memdfmu,memnu,memdfnu,srd,numrec,rectime,maxcoupons,
        beta0proposal,betatproposal,
        lmemmuproposal,memnuproposal,
        beta0sample, betatsample,lmemmusample,memnusample,
-       &getone, &staken, burninbeta, &intervalone, 
+       &getone, &staken, warmupbeta, &intervalone, 
        &verboseMHcmp);
      beta0i=beta0sample[0];
      betati=betatsample[0];
@@ -465,12 +465,12 @@ void MHwpmem_binomial (int *u, int *n, int *K,
             double *lmemmuproposal, double *memnuproposal, 
             double *beta0sample, double *betatsample,
             double *lmemmusample, double *memnusample,
-            int *samplesize, int *staken, int *burnin, int *interval,
+            int *samplesize, int *staken, int *warmup, int *interval,
             int *verbose
          ) {
   int Ki, maxc, ni;
   int step, taken, give_log1=1, give_log0=0;
-  int i, k, isamp, iinterval, isamplesize, iburnin;
+  int i, k, isamp, iinterval, isamplesize, iwarmup;
   double ip, cutoff;
   double temp, rtprob;
   double beta0star, betatstar, beta0i, betati;
@@ -497,7 +497,7 @@ void MHwpmem_binomial (int *u, int *n, int *K,
 
   isamplesize=(*samplesize);
   iinterval=(*interval);
-  iburnin=(*burnin);
+  iwarmup=(*warmup);
   dbeta0=(*beta0);
   dbeta0sd=(*beta0sd);
   dbetat=(*betat);
@@ -515,7 +515,7 @@ void MHwpmem_binomial (int *u, int *n, int *K,
 
   // First set starting values
   isamp = taken = 0;
-  step = -iburnin;
+  step = -iwarmup;
   ni =(*n);
   maxc=(*maxcoupons);
   beta0i = beta0sample[0];
@@ -569,8 +569,8 @@ void MHwpmem_binomial (int *u, int *n, int *K,
   pimemi = dnorm(lmemmui, dlmemmu, rmemnui/rmemdfmu, give_log1);
   pimemi = pimemi+dsclinvchisq(memnui, dmemdfnu, dmemnu);
 
-  // Now do the MCMC updates (starting with the burnin updates)
-  while (isamp < isamplesize && step < iburnin) {
+  // Now do the MCMC updates (starting with the warmup updates)
+  while (isamp < isamplesize && step < iwarmup) {
     /* Propose new beta */
     beta0star = rnorm(beta0i, dbeta0proposal);
     if(dbetatsd > 0.0){

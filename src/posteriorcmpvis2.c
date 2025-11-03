@@ -15,7 +15,7 @@ void gcmpvis2 (int *pop12, int *pop21,
             int *n1, 
             int *n2, 
             int *n0, 
-            int *samplesize, int *burnin, int *interval,
+            int *samplesize, int *warmup, int *interval,
             double *mu, double *dfmu, 
             double *sigma, double *dfsigma,
             double *lnlam, double *nu,
@@ -43,14 +43,14 @@ void gcmpvis2 (int *pop12, int *pop21,
             int *vsample2, 
             double *posu, 
             double *lpriorm, 
-            int *burnintheta,
-            int *burninbeta,
+            int *warmuptheta,
+            int *warmupbeta,
             int *verbose
                          ) {
   int dimsample, Np;
   int ni0, ni1, ni2, itemp;
   int step, staken, getone=1, intervalone=1, verboseMHcmp = 0;
-  int i, j, k, ni, Ni, Ki, isamp, iinterval, isamplesize, iburnin;
+  int i, j, k, ni, Ni, Ki, isamp, iinterval, isamplesize, iwarmup;
   int umax, unrecap;
   double mui, sigmai, dsamp, nui, lnlami, sigma2i;
   double dbeta0, dbetat, dbetau;
@@ -75,7 +75,7 @@ void gcmpvis2 (int *pop12, int *pop21,
   imaxm=imaxN-ni;
   isamplesize=(*samplesize);
   iinterval=(*interval);
-  iburnin=(*burnin);
+  iwarmup=(*warmup);
   Np=(*Npi);
   dbeta0=(*beta0muprior);
   dbetat=(*betatmuprior);
@@ -99,13 +99,13 @@ void gcmpvis2 (int *pop12, int *pop21,
   double *lpm = (double *) malloc(sizeof(double) * imaxm);
   double *pdegi = (double *) malloc(sizeof(double) * (Np+1));
   double *psample = (double *) malloc(sizeof(double) * (Np+1));
-  double *lnlamsample = (double *) malloc(sizeof(double));
-  double *nusample = (double *) malloc(sizeof(double));
-  double *beta0sample = (double *) malloc(sizeof(double));
-  double *betatsample = (double *) malloc(sizeof(double));
-  double *betausample = (double *) malloc(sizeof(double));
-  double *lmemmusample = (double *) malloc(sizeof(double));
-  double *memnusample = (double *) malloc(sizeof(double));
+  double *lnlamsample = (double *) malloc(sizeof(double) * isamplesize);
+  double *nusample = (double *) malloc(sizeof(double) * isamplesize);
+  double *beta0sample = (double *) malloc(sizeof(double) * isamplesize);
+  double *betatsample = (double *) malloc(sizeof(double) * isamplesize);
+  double *betausample = (double *) malloc(sizeof(double) * isamplesize);
+  double *lmemmusample = (double *) malloc(sizeof(double) * isamplesize);
+  double *memnusample = (double *) malloc(sizeof(double) * isamplesize);
 
   for (i=0; i<Ki; i++){
     nk[i]=0;
@@ -184,15 +184,15 @@ void gcmpvis2 (int *pop12, int *pop21,
   nusample[0] = (*nu);
 
   isamp = 0;
-  step = -iburnin;
+  step = -iwarmup;
   while (isamp < isamplesize) {
 
     /* Draw new theta */
     /* but less often than the other full conditionals */
-    if (step == -iburnin || step==(10*(step/10))) { 
+    if (step == -iwarmup || step==(10*(step/10))) { 
      MHcmptheta(Nk,K,mu,dfmu,sigma,dfsigma,muproposal,nuproposal,
        &Ni, &Np, psample,
-       lnlamsample, nusample, &getone, &staken, burnintheta, &intervalone, 
+       lnlamsample, nusample, &getone, &staken, warmuptheta, &intervalone, 
        &verboseMHcmp);
 
      for (i=0; i<Np; i++){
@@ -246,18 +246,18 @@ void gcmpvis2 (int *pop12, int *pop21,
     sigma2i=sigma2i-mui*mui;
     sigmai = sqrt(sigma2i);
 
-//  if (step == -iburnin || step==(10*(step/10))) { 
+//  if (step == -iwarmup || step==(10*(step/10))) { 
 //    Rprintf("mean unit size = %f s.d. = %f\n", mui, sigmai);
 //  }
-//  Rprintf("burninbeta: %d\n", (*burninbeta));
+//  Rprintf("warmupbeta: %d\n", (*warmupbeta));
     /* Draw new beta using MCMC */
-    if (step == -iburnin || step==(10*(step/10))) { 
+    if (step == -iwarmup || step==(10*(step/10))) { 
      MHcmpbetau(d1,d2,n1,n2,K,beta0muprior,beta0sigmaprior,betatmuprior,betatsigmaprior,betaumuprior,betausigmaprior,
        lmemmu,memdfmu,memnu,memdfnu,srd,numrec,rectime,srd2,numrec2,rectime2,maxcoupons,
        beta0proposal,betatproposal, betauproposal,
        lmemmuproposal,memnuproposal,
        beta0sample, betatsample, betausample, lmemmusample,memnusample,
-       &getone, &staken, burninbeta, &intervalone, 
+       &getone, &staken, warmupbeta, &intervalone, 
        &verboseMHcmp);
      beta0i=beta0sample[0];
      betati=betatsample[0];
@@ -615,12 +615,12 @@ void MHcmpbetau (int *d1, int *d2, int *n1, int *n2, int *K,
             double *lmemmuproposal, double *memnuproposal, 
             double *beta0sample, double *betatsample, double *betausample,
             double *lmemmusample, double *memnusample,
-            int *samplesize, int *staken, int *burninbeta, int *interval,
+            int *samplesize, int *staken, int *warmupbeta, int *interval,
             int *verbose
          ) {
   int Ki, maxc, ni1, ni2;
   int step, taken, give_log1=1, give_log0=0;
-  int i, k, isamp, iinterval, isamplesize, iburninbeta;
+  int i, k, isamp, iinterval, isamplesize, iwarmupbeta;
   double ip, cutoff;
   double temp, rtprob;
   double beta0star, betatstar, beta0i, betati, betaustar, betaui;
@@ -638,7 +638,7 @@ void MHcmpbetau (int *d1, int *d2, int *n1, int *n2, int *K,
   double dlmemmuproposal, dmemnuproposal;
   double pis, errval=0.0000000001, lzcmp;
 
-//Rprintf("burninbeta: %d\n", (*burninbeta));
+//Rprintf("warmupbeta: %d\n", (*warmupbeta));
 
   Ki=(*K);
   double *pd = (double *) malloc(sizeof(double) * Ki);
@@ -647,7 +647,7 @@ void MHcmpbetau (int *d1, int *d2, int *n1, int *n2, int *K,
 
   isamplesize=(*samplesize);
   iinterval=(*interval);
-  iburninbeta=(*burninbeta);
+  iwarmupbeta=(*warmupbeta);
   dbeta0=(*beta0);
   dbeta0s=(*beta0s);
   dbetat=(*betat);
@@ -668,7 +668,7 @@ void MHcmpbetau (int *d1, int *d2, int *n1, int *n2, int *K,
 
   // First set starting values
   isamp = taken = 0;
-  step = -iburninbeta;
+  step = -iwarmupbeta;
   ni1 =(*n1);
   ni2 =(*n2);
   maxc=(*maxcoupons);
@@ -737,7 +737,7 @@ void MHcmpbetau (int *d1, int *d2, int *n1, int *n2, int *K,
   if(!isfinite(lliki)) lliki = -100000.0; 
 
 //  Rprintf("%d of %d MH samples taken in %i steps %i; cutoff=%f\n",
-//   isamp, isamplesize, step, iburninbeta, cutoff);
+//   isamp, isamplesize, step, iwarmupbeta, cutoff);
 //Rprintf("numrec =%d rectime =%f\n",numrec[3],rectime[3]);
 //Rprintf("numrec2=%d rectime2=%f\n",numrec2[3],rectime2[3]);
 //Rprintf("New call: lliki=%f lmemmui=%f memnui=%f rtprob=%f\n",lliki,lmemmui,memnui,rtprob);
@@ -753,7 +753,7 @@ void MHcmpbetau (int *d1, int *d2, int *n1, int *n2, int *K,
   qi = dnorm(log(memnui/memnui)/dmemnuproposal,0.,1.,give_log1)
        -log(dmemnuproposal*memnui);
 
-  // Now do the MCMC updates (starting with the burnin updates)
+  // Now do the MCMC updates (starting with the warmup updates)
   while (isamp < isamplesize && step < 1000) {
     /* Propose new beta */
     beta0star = rnorm(beta0i, dbeta0proposal);
@@ -891,7 +891,7 @@ void MHcmpbetau (int *d1, int *d2, int *n1, int *n2, int *K,
       }
     }
 //  Rprintf("%d of %d MH samples taken in %d steps %d; cutoff=%f\n",
-//   isamp, isamplesize, step, iburninbeta, cutoff);
+//   isamp, isamplesize, step, iwarmupbeta, cutoff);
     step++;
   }
 //PutRNGstate();  /* Disable RNG before returning */

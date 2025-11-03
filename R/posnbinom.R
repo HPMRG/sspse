@@ -6,7 +6,7 @@ posnbinom<-function(s,maxN=4*length(s),
                   muproposal=0.25, 
                   sigmaproposal=0.15, 
                   Np=0,
-                  samplesize=10,burnin=0,interval=1,burnintheta=500,
+                  samplesize=10,warmup=0,interval=1,warmuptheta=500,
 		  mean.prior.size=N, sd.prior.size=N,
                   seed=NULL,
                   verbose=TRUE){
@@ -27,7 +27,7 @@ posnbinom<-function(s,maxN=4*length(s),
               K=as.integer(K),
               n=as.integer(n),
               samplesize=as.integer(samplesize),
-              burnin=as.integer(burnin),
+              warmup=as.integer(warmup),
               interval=as.integer(interval),
               mu0=as.double(mu0), df.mean.prior=as.double(df.mean.prior),
               sigma0=as.double(sigma0), df.sd.prior=as.double(df.sd.prior),
@@ -39,7 +39,7 @@ posnbinom<-function(s,maxN=4*length(s),
               sample=double(samplesize*dimsample),
               ppos=double(K),
               lpriorm=as.double(lpriorm),
-              burnintheta=as.integer(burnintheta),
+              warmuptheta=as.integer(warmuptheta),
               verbose=as.integer(verbose), PACKAGE="sspse")
     Cret$sample<-matrix(Cret$sample,nrow=samplesize,ncol=dimsample,byrow=TRUE)
     degnames <- NULL
@@ -53,8 +53,8 @@ posnbinom<-function(s,maxN=4*length(s),
 #   Cret$Nk<-Cret$nk/sum(Cret$nk)
     Cret$predictive.degree.count<-Cret$nk / samplesize
     Cret$nk<-NULL
-    endrun <- burnin+interval*(samplesize-1)
-    attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
+    endrun <- warmup+interval*(samplesize-1)
+    attr(Cret$sample, "mcpar") <- c(warmup+1, endrun, interval)
     attr(Cret$sample, "class") <- "mcmc"
     mapfn <- function(x,lbound=min(x),ubound=max(x)){
       posdensN <- stats::density(x, from=lbound, to=ubound)

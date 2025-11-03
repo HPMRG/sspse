@@ -77,7 +77,7 @@
 #' # Here interval=1 so that it will run faster. It should be higher in a 
 #' # real application.
 #' fit <- posteriorsize(fauxmadrona, median.prior.size=1000,
-#'                                  burnin=20, interval=1, samplesize=100)
+#'                                  warmup=20, interval=1, samplesize=100)
 #' fit
 #' 
 print.summary.sspse <- function (x,

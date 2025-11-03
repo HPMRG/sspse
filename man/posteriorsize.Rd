@@ -10,7 +10,7 @@ posteriorsize(
   previous = NULL,
   median.prior.size = NULL,
   interval = 10,
-  burnin = 5000,
+  warmup = 5000,
   maxN = NULL,
   K = FALSE,
   samplesize = 1000,
@@ -51,8 +51,8 @@ posteriorsize(
   beta_u_proposal = 0.001,
   memmu_proposal = 0.1,
   memscale_proposal = 0.15,
-  burnintheta = 500,
-  burninbeta = 50,
+  warmuptheta = 500,
+  warmupbeta = 50,
   parallel = 1,
   parallel.type = "PSOCK",
   seed = NULL,
@@ -92,7 +92,7 @@ prior distribution on the population size.}
 
 \item{interval}{count; the number of proposals between sampled statistics.}
 
-\item{burnin}{count; the number of proposals before any MCMC sampling is
+\item{warmup}{count; the number of proposals before any MCMC sampling is
 done. It typically is set to a fairly large number.}
 
 \item{maxN}{integer; maximum possible population size. By default this is
@@ -251,11 +251,11 @@ distribution for the log of the optimism parameter (that is, gamma).}
 \item{memscale_proposal}{scalar; The standard deviation of the proposal
 distribution for the log of the s.d. in the optimism model.}
 
-\item{burnintheta}{count; the number of proposals in the Metropolis-Hastings
+\item{warmuptheta}{count; the number of proposals in the Metropolis-Hastings
 sub-step for the visibility distribution parameters (\eqn{\theta}) before any
 MCMC sampling is done. It typically is set to a modestly large number.}
 
-\item{burninbeta}{count; the number of proposals in the Metropolis-Hastings
+\item{warmupbeta}{count; the number of proposals in the Metropolis-Hastings
 sub-step for the visibility distribution parameters (\eqn{\beta}) before any
 MCMC sampling is done. It typically is set to a modestly large number.}
 
@@ -341,7 +341,7 @@ degree.}
 \item{samplesize}{count; the
 number of Monte-Carlo samples to draw to compute the posterior. This is the
 number returned by the Metropolis-Hastings algorithm.The default is 1000.}
-\item{burnin}{count; the number of proposals before any MCMC sampling is
+\item{warmup}{count; the number of proposals before any MCMC sampling is
 done. It typically is set to a fairly large number.}
 \item{interval}{count; the number of proposals between sampled statistics.}
 \item{mu}{scalar; The
@@ -414,7 +414,7 @@ The sample for the \code{i}th person is the \code{i}th column.}
 probabilities on each value of \eqn{m=N-n} - that is, the number of
 unobserved members of the population. The values are
 \code{n:(length(lpriorm)-1+n)}.}
-\item{burnintheta}{count; the number of
+\item{warmuptheta}{count; the number of
 proposals in the Metropolis-Hastings sub-step for the visibility distribution
 parameters (\eqn{\theta}) before any MCMC sampling is done. It typically is
 set to a modestly large number.}
@@ -502,7 +502,7 @@ data(fauxmadrona)
 # Here interval=1 so that it will run faster. It should be higher in a 
 # real application.
 fit <- posteriorsize(fauxmadrona, median.prior.size=1000,
-                                 burnin=20, interval=1, samplesize=100)
+                                 warmup=20, interval=1, samplesize=100)
 summary(fit)
 }
 \references{

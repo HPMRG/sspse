@@ -24,7 +24,7 @@
 #' @param median.prior.size scalar; A hyperparameter being the mode of the
 #' prior distribution on the population size.
 #' @param interval count; the number of proposals between sampled statistics.
-#' @param burnin count; the number of proposals before any MCMC sampling is
+#' @param warmup count; the number of proposals before any MCMC sampling is
 #' done. It typically is set to a fairly large number.
 #' @param maxN integer; maximum possible population size. By default this is
 #' determined from an upper quantile of the prior distribution.
@@ -142,10 +142,10 @@
 #' distribution for the log of the optimism parameter (that is, gamma).
 #' @param memscale_proposal scalar; The standard deviation of the proposal
 #' distribution for the log of the s.d. in the optimism model.
-#' @param burnintheta count; the number of proposals in the Metropolis-Hastings
+#' @param warmuptheta count; the number of proposals in the Metropolis-Hastings
 #' sub-step for the visibility distribution parameters (\eqn{\theta}) before any
 #' MCMC sampling is done. It typically is set to a modestly large number.
-#' @param burninbeta count; the number of proposals in the Metropolis-Hastings
+#' @param warmupbeta count; the number of proposals in the Metropolis-Hastings
 #' sub-step for the visibility distribution parameters (\eqn{\beta}) before any
 #' MCMC sampling is done. It typically is set to a modestly large number.
 #' @param parallel count; the number of parallel processes to run for the
@@ -215,7 +215,7 @@
 #'\item{samplesize}{count; the
 #' number of Monte-Carlo samples to draw to compute the posterior. This is the
 #' number returned by the Metropolis-Hastings algorithm.The default is 1000.}
-#'\item{burnin}{count; the number of proposals before any MCMC sampling is
+#'\item{warmup}{count; the number of proposals before any MCMC sampling is
 #' done. It typically is set to a fairly large number.}
 #'\item{interval}{count; the number of proposals between sampled statistics.}
 #'\item{mu}{scalar; The
@@ -288,7 +288,7 @@
 #' probabilities on each value of \eqn{m=N-n} - that is, the number of
 #' unobserved members of the population. The values are
 #' \code{n:(length(lpriorm)-1+n)}.}
-#'\item{burnintheta}{count; the number of
+#'\item{warmuptheta}{count; the number of
 #' proposals in the Metropolis-Hastings sub-step for the visibility distribution
 #' parameters (\eqn{\theta}) before any MCMC sampling is done. It typically is
 #' set to a modestly large number.}
@@ -390,14 +390,14 @@
 #' # Here interval=1 so that it will run faster. It should be higher in a 
 #' # real application.
 #' fit <- posteriorsize(fauxmadrona, median.prior.size=1000,
-#'                                  burnin=20, interval=1, samplesize=100)
+#'                                  warmup=20, interval=1, samplesize=100)
 #' summary(fit)
 #' @export posteriorsize
 posteriorsize<-function(s,
                   s2=NULL, previous=NULL,
                   median.prior.size=NULL,
                   interval=10,
-                  burnin=5000,
+                  warmup=5000,
                   maxN=NULL,
                   K=FALSE,
                   samplesize=1000,
@@ -426,8 +426,8 @@ posteriorsize<-function(s,
                   nu_proposal=0.15, 
                   beta_0_proposal=0.2, beta_t_proposal=0.001, beta_u_proposal=0.001,
                   memmu_proposal=0.1, memscale_proposal=0.15,
-                  burnintheta=500,
-                  burninbeta=50,
+                  warmuptheta=500,
+                  warmupbeta=50,
                   parallel=1, parallel.type="PSOCK", seed=NULL, 
                   maxbeta=90, 
                   supplied=list(maxN=maxN),
@@ -525,25 +525,25 @@ posteriorsize<-function(s,
     recruit.times <- max(recruit.times)-recruit.times
   }
   network.size <- as.numeric(rds.data[[attr(rds.data,"network.size.variable")]])
-  remvalues <- is.na(network.size)
-  if(any(remvalues)){
-    warning(paste(sum(remvalues),"of",nrow(rds.data),
+  remns <- is.na(network.size)
+  if(any(remns)){
+    warning(paste(sum(remns),"of",nrow(rds.data),
                   "network sizes were missing. These will be imputed from the marginal distribution"), call. = FALSE)
   }
   
   if(!is.null(K) & is.logical(K) & (K==FALSE)){
    if(visibility){
-#   K.fixed <- max(network.size[!remvalues])
-#   K.fixed <- round(stats::quantile(network.size[!remvalues],0.99))
-    K.fixed <- round(stats::quantile(network.size[!remvalues],0.95))
+#   K.fixed <- max(network.size[!remns])
+#   K.fixed <- round(stats::quantile(network.size[!remns],0.99))
+    K.fixed <- round(stats::quantile(network.size[!remns],0.95))
    }else{
     K.fixed <- NULL
    }
   }
   if(is.null(K.fixed)){
-    if(length(network.size[!remvalues])>0){
-      K <- round(stats::quantile(network.size[!remvalues],0.95))
-#     K <- round(stats::quantile(network.size[!remvalues],0.99))
+    if(length(network.size[!remns])>0){
+      K <- round(stats::quantile(network.size[!remns],0.95))
+#     K <- round(stats::quantile(network.size[!remns],0.99))
     }
   }
   
@@ -557,11 +557,13 @@ posteriorsize<-function(s,
   gmean <- HT.estimate(RDS::vh.weights(nsize[!is.na(nsize)]),nsize[!is.na(nsize)])
   if(is.na(gmean)) gmean <- 38
   
-  recruit.times.order <- order(order(recruit.times))
-  recruit.times.order.notrem <- order(order(recruit.times[!remvalues]))
-  s <- nsize[order(recruit.times)]
-  recruit.times <- recruit.times[order(recruit.times)]
-  nr <- nr[order(recruit.times)]
+  order.recruit.times <- order(recruit.times)
+  recruit.times.order <- order(order.recruit.times)
+  recruit.times.order.notrem <- order(order(recruit.times[!remns]))
+  recruit.times.order.rem <- order(order(recruit.times[remns]))
+  s <- nsize[order.recruit.times]
+  nr <- nr[order.recruit.times]
+  recruit.times <- recruit.times[order.recruit.times]
   }
   # End of measurement model information extraction for the first RDS
 
@@ -569,7 +571,7 @@ posteriorsize<-function(s,
   rc2 <- NULL
   nr2 <- 1
   recruit.times2 <- 1
-  remvalues2 <- TRUE
+  remns2 <- TRUE
   rds.data2 <- NULL
   if(!is.null(s2)){
   if(!methods::is(s2,"rds.data.frame")){
@@ -644,33 +646,33 @@ posteriorsize<-function(s,
      recruit.times2 <- max(recruit.times2)-recruit.times2
    }
    network.size2 <- as.numeric(rds.data2[[attr(rds.data2,"network.size.variable")]])
-   remvalues2 <- is.na(network.size2)
-   if(any(remvalues2)){
-     warning(paste(sum(remvalues2),"of",nrow(rds.data2),
+   remns2 <- is.na(network.size2)
+   if(any(remns2)){
+     warning(paste(sum(remns2),"of",nrow(rds.data2),
                    "network sizes were missing in the second RDS data set. These will be imputed from the marginal distribution"), call. = FALSE)
    }
    
    if(equalize){
-    if(sum(!remvalues) >= sum(!remvalues2)){
-     a <- rank(network.size2[!remvalues2],ties.method="random")
-     network.size2[!remvalues2] <- sort((network.size[!remvalues])[1:sum(!remvalues2)])[a]
+    if(sum(!remns) >= sum(!remns2)){
+     a <- rank(network.size2[!remns2],ties.method="random")
+     network.size2[!remns2] <- sort((network.size[!remns])[1:sum(!remns2)])[a]
     }else{
-     a <- round(sum(!remvalues)*rank(network.size2[!remvalues2],ties.method="random")/sum(!remvalues2))
-     network.size2[!remvalues2] <- sort(network.size[!remvalues])[a]
+     a <- round(sum(!remns)*rank(network.size2[!remns2],ties.method="random")/sum(!remns2))
+     network.size2[!remns2] <- sort(network.size[!remns])[a]
     }
     message(sprintf("Adjusting for the gross differences in the reported network sizes between the two samples.\n"),appendLF=FALSE)
    }
 
    if(!is.null(K) & is.logical(K) & (K==FALSE)){
     if(visibility){
-#    K.fixed <- max(network.size2[!remvalues2])
-     K.fixed <- max(K.fixed, round(stats::quantile(network.size2[!remvalues2],0.99)))
+#    K.fixed <- max(network.size2[!remns2])
+     K.fixed <- max(K.fixed, round(stats::quantile(network.size2[!remns2],0.99)))
     }else{
      K.fixed <- NULL
     }
    }
-   if(is.null(K.fixed) & length(network.size2[!remvalues2])>0){
-     K <- max(K, round(stats::quantile(network.size2[!remvalues2],0.95)))
+   if(is.null(K.fixed) & length(network.size2[!remns2])>0){
+     K <- max(K, round(stats::quantile(network.size2[!remns2],0.95)))
    }
    
    #Augment the reported network size by the number of recruits and the recruiter (if any).
@@ -683,12 +685,15 @@ posteriorsize<-function(s,
    gmean <- HT.estimate(RDS::vh.weights(nsize2[!is.na(nsize2)]),nsize2[!is.na(nsize2)])
    if(is.na(gmean)) gmean <- 38
    
-   recruit.times2.order <- order(order(recruit.times2))
-   recruit.times2.order.notrem <- order(order(recruit.times2[!remvalues2]))
-   s2 <- nsize2[order(recruit.times2)]
-   recruit.times2 <- recruit.times2[order(recruit.times2)]
-   nr2 <- nr2[order(recruit.times2)]
-  }}
+   order.recruit.times2 <- order(recruit.times2)
+   recruit.times2.order <- order(order.recruit.times2)
+   recruit.times2.order.notrem <- order(order(recruit.times2[!remns2]))
+   s2 <- nsize2[order.recruit.times2]
+   nr2 <- nr2[order.recruit.times2]
+   recruit.times2 <- recruit.times2[order.recruit.times2]
+  }}else{
+   s2.nomiss <- NULL
+  }
   # End of measurement model information extraction for the second survey
   # End of measurement model information extraction
 
@@ -696,16 +701,18 @@ posteriorsize<-function(s,
   if(sum(!remvalues) < length(s)){
    warning(paste(length(s)-sum(!remvalues),"of",length(s),
           "sizes values were missing and were removed."), call. = FALSE)
-   s <- s[!remvalues]
-   n <- length(s)
+   s.nomiss <- s[!remvalues]
+   n <- length(s.nomiss)
+  }else{
+   s.nomiss <- s
   }
-  s.prior <- s
+  s.prior <- s.nomiss
   if(!is.null(s2)){
     if(is.null(rds.data2[[previous]])){
       stop("The argument 'previous' must have a variable in the second RDS data set indicating if the corresponding unit was sampled in the first RDS.")
     }
     rc <- rds.data2[[previous]]
-    rc <- rc[order(recruit.times2)]
+    rc <- rc[order.recruit.times2]
     if(!is.logical(rc) | length(s2)!=length(rc)){
       stop("The argument 'previous' must have a variable in the second RDS data set that is a logical vector of the same length as s2, indicating if the corresponding unit was sampled in the first RDS.")
     }
@@ -714,11 +721,14 @@ posteriorsize<-function(s,
     if(sum(!remvalues2) < length(s2)){
      warning(paste(length(s2)-sum(!remvalues2),"of",length(s2),
             "sizes values from the second RDS were missing and were removed."), call. = FALSE)
-     s2 <- s2[!remvalues2]
-     rc <- rc[!remvalues2]
-     n2 <- length(s2)
+     s2.nomiss <- s2[!remvalues2]
+     rc.nomiss <- rc[!remvalues2]
+     n2 <- length(s2.nomiss)
+    }else{
+     s2.nomiss <- s2
+     rc.nomiss <- rc
     }
-    s.prior <- c(s.prior,s2[!rc])
+    s.prior <- c(s.prior,s2.nomiss[!rc.nomiss])
   }
   priorsizedistribution=match.arg(priorsizedistribution)
   # Extract the population size from the network if it is not set.
@@ -857,7 +867,7 @@ posteriorsize<-function(s,
   ### are we running the job in parallel (parallel > 1), if not just 
   #   call the visibility specific function
   if(parallel==1){
-      Cret <- posfn(s=s,s2=s2,rc=rc,K=K,maxN=maxN,
+      Cret <- posfn(s=s.nomiss,s2=s2.nomiss,rc=rc.nomiss,K=K,maxN=maxN,
                     mean.prior.visibility=mean.prior.visibility,df.mean.prior.visibility=df.mean.prior.visibility,
                     sd.prior.visibility=sd.prior.visibility,df.sd.prior.visibility=df.sd.prior.visibility,
                     beta_0.mean.prior=beta_0.mean.prior, beta_t.mean.prior=beta_t.mean.prior, beta_u.mean.prior=beta_u.mean.prior,
@@ -870,9 +880,9 @@ posteriorsize<-function(s,
                     memmu_proposal=memmu_proposal, memscale_proposal=memscale_proposal,
                     visibility=visibility,
                     Np=Np,
-                    samplesize=samplesize,burnin=burnin,interval=interval,
-                    burnintheta=burnintheta,
-                    burninbeta=burninbeta,
+                    samplesize=samplesize,warmup=warmup,interval=interval,
+                    warmuptheta=warmuptheta,
+                    warmupbeta=warmupbeta,
                     priorsizedistribution=priorsizedistribution,
                     mean.prior.size=mean.prior.size, sd.prior.size=sd.prior.size,
                     mode.prior.sample.proportion=mode.prior.sample.proportion,
@@ -898,7 +908,7 @@ posteriorsize<-function(s,
     ### cluster call, send following to each of the virtual machines, posnbinom function
     ### with it's arguments
     outlist <- parallel::clusterCall(cl, posfn,
-      s=s,s2=s2,rc=rc,K=K,maxN=maxN,
+      s=s.nomiss,s2=s2.nomiss,rc=rc.nomiss,K=K,maxN=maxN,
       mean.prior.visibility=mean.prior.visibility,df.mean.prior.visibility=df.mean.prior.visibility,
       sd.prior.visibility=sd.prior.visibility,df.sd.prior.visibility=df.sd.prior.visibility,
       beta_0.mean.prior=beta_0.mean.prior, beta_t.mean.prior=beta_t.mean.prior, beta_u.mean.prior=beta_u.mean.prior,
@@ -911,9 +921,9 @@ posteriorsize<-function(s,
       memmu_proposal=memmu_proposal, memscale_proposal=memscale_proposal,
       visibility=visibility,
       Np=Np,
-      samplesize=samplesize.parallel,burnin=burnin,interval=interval,
-      burnintheta=burnintheta,
-      burninbeta=burninbeta,
+      samplesize=samplesize.parallel,warmup=warmup,interval=interval,
+      warmuptheta=warmuptheta,
+      warmupbeta=warmupbeta,
       priorsizedistribution=priorsizedistribution,
       mean.prior.size=mean.prior.size, sd.prior.size=sd.prior.size,
       mode.prior.sample.proportion=mode.prior.sample.proportion,
@@ -975,8 +985,8 @@ posteriorsize<-function(s,
     Cret$sample[is.nan(Cret$sample)] <- 0
     
     ### Coda package which does MCMC diagnostics, requires certain attributes of MCMC sample
-    endrun <- burnin+interval*(samplesize)
-    attr(Cret$sample, "mcpar") <- c(burnin+1, endrun, interval)
+    endrun <- warmup+interval*(samplesize)
+    attr(Cret$sample, "mcpar") <- c(warmup+1, endrun, interval)
     attr(Cret$sample, "class") <- "mcmc"
     
 #   ### Remove the padding from the last draws from the populations of visibilities
@@ -1001,9 +1011,6 @@ posteriorsize<-function(s,
   #
   Cret$sample <- Cret$sample[,-match(c("visibility1","totalsize"), colnames(Cret$sample))]
   #
-  if(verbose & Cret$predictive.visibility[length(Cret$predictive.visibility)] > 0.3){
-   warning("There is a non-trivial proportion of the posterior mass on very high visibilities. This may indicate convergence problems in the MCMC.", call. = FALSE)
-  }
   Cret$visibilitydistribution <- visibilitydistribution
   Cret$priorsizedistribution <- priorsizedistribution
   #
@@ -1014,8 +1021,10 @@ posteriorsize<-function(s,
     stop(paste('You must specify a valid type.impute. The valid types are "distribution","mode","median", and "mean"'), call.=FALSE)
   }
   if(visibility){
+    vsample <- matrix(0,ncol=nrow(rds.data),nrow=nrow(Cret$vsample))
+    vsample[,!remvalues[recruit.times.order]] <- Cret$vsample
     visibilities <- rep(0,length=nrow(rds.data))
-    visibilities[!remvalues] <- switch(type.impute, 
+    visibilities[!remvalues[recruit.times.order]] <- switch(type.impute, 
                `distribution` = {
                  Cret$pop[1:Cret$n1]
                },
@@ -1028,29 +1037,37 @@ posteriorsize<-function(s,
                `mean` = {
                  apply(Cret$vsample,2,mean)
                }
-              )
+              )[recruit.times.order.notrem]
     # impute the missing values
     if(sum(remvalues) > 0){
-     for(i in seq_along(recruit.times[remvalues])){
-      mf <- (recruit.times[remvalues])[i] == recruit.times[!remvalues] & (nr[remvalues])[i] == nr[!remvalues]
-      if(length(mf) > 0){
+     rem.visibilities.reordered.matrix <- matrix(0,ncol=sum(remvalues),nrow=nrow(Cret$vsample))
+     rem.visibilities.reordered <- rep(0,length=sum(remvalues))
+     # work through each recruit time for missing network size
+     rval <- recruit.times[remvalues]
+     for(i in seq_along(rval)){
+      # mf is the vector of indices of non-missing with the same recruitingtime and number of recruits
+      mf <- rval[i] == recruit.times[!remvalues] & (nr[remvalues])[i] == nr[!remvalues]
+      if(sum(mf) > 0){
+       # form a single column
        mf <- matrix(Cret$vsample[,mf],ncol=1)
       }else{
-       mf <- (recruit.times[remvalues])[i] == recruit.times[!remvalues]
-       if(length(mf) > 0){
+       # none that match on both recruit time and number of recruits, so match on number of recruits only
+       mf <- rval[i] == recruit.times[!remvalues]
+       if(sum(mf) > 0){
         mf <- matrix(Cret$vsample[,mf],ncol=1)
        }else{
         mf <- (nr[remvalues])[i] == nr[!remvalues]
-        if(length(mf) > 0){
+        if(sum(mf) > 0){
          mf <- matrix(Cret$vsample[,mf],ncol=1)
         }else{
          mf <- matrix(Cret$vsample,ncol=1)
         }
        }
       }
-      visibilities[which(remvalues)[i]] <- switch(type.impute, 
+      rem.visibilities.reordered.matrix[,i] <- sample(x=mf, size=nrow(Cret$vsample),replace=TRUE)
+      rem.visibilities.reordered[i] <- switch(type.impute, 
                    `distribution` = {
-                     mf[sample.int(n=1,size=length(mf))]
+                     mf[sample.int(n=1,size=sum(mf))]
                    },
                    `mode` = {
                      apply(mf,2,function(x){a <- tabulate(x);mean(which(a==max(a,na.rm=TRUE)))})
@@ -1063,13 +1080,22 @@ posteriorsize<-function(s,
                    }
                  )
       }
+      visibilities[remvalues[recruit.times.order]] <- rem.visibilities.reordered[recruit.times.order.rem]
+      vsample[, remvalues[recruit.times.order]] <- rem.visibilities.reordered.matrix[,recruit.times.order.rem]
     }
 #     print(length(visibilities))
 #     print(dim(Cret$vsample))
 #     print(range(recruit.times.order))
 #     print(range(recruit.times.order.notrem))
-    Cret$visibilities <- visibilities[recruit.times.order]
-    Cret$vsample <- Cret$vsample[,recruit.times.order.notrem]
+#   Cret$visibilities <- visibilities[recruit.times.order]
+#   Cret$vsample <- Cret$vsample[,recruit.times.order.notrem]
+    Cret$visibilities <- visibilities
+    Cret$vsample <- vsample
+    Cret$predictive.visibility.count <- table(Cret$vsample) / ncol(Cret$vsample)
+    Cret$predictive.visibility <- Cret$predictive.visibility.count / nrow(Cret$vsample)
+    if(verbose & Cret$predictive.visibility[length(Cret$predictive.visibility)] > 0.3){
+     warning("There is a non-trivial proportion of the posterior mass on very high visibilities. This may indicate convergence problems in the MCMC.", call. = FALSE)
+    }
     if(!is.null(s2)){
 #     print(dim(Cret$vsample2))
 #     print(range(recruit.times2.order))

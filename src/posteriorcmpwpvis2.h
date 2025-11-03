@@ -6,7 +6,7 @@ void gcmpwpvis2 (int *pop12, int *pop21,
             int *n1,
             int *n2,
             int *n0,
-            int *samplesize, int *burnin, int *interval,
+            int *samplesize, int *warmup, int *interval,
             double *mu, double *dfmu,
             double *sigma, double *dfsigma,
             double *lnlam, double *nu,
@@ -36,8 +36,8 @@ void gcmpwpvis2 (int *pop12, int *pop21,
             double *posu,
             double *posd,
             double *lpriorm,
-            int *burnintheta,
-            int *burninbeta,
+            int *warmuptheta,
+            int *warmupbeta,
             int *verbose
                          );
 void MHwpmem2 (int *d1, int *d2, int *n1, int *n2, int *K,
@@ -56,7 +56,7 @@ void MHwpmem2 (int *d1, int *d2, int *n1, int *n2, int *K,
             double *lmemmuproposal, double *memnuproposal,
             double *beta0sample, double *betatsample, double *betausample,
             double *lmemmusample, double *memnusample,
-            int *samplesize, int *staken, int *burninbeta, int *interval,
+            int *samplesize, int *staken, int *warmupbeta, int *interval,
             int *verbose
          );
 
