@@ -51,6 +51,10 @@
 #' the standard deviation.
 #' @param mem.overdispersion scalar; A parameter being the overdispersion of the negative binomial
 #' distribution that is the baseline for the measurement error model.
+#' @param K count; the maximum visibility for an individual. This is usually
+#' calculated as \code{round(stats::quantile(degree,0.80))}.
+#' It applies to network sizes and (latent) visibilities.
+#' If logical and FALSE then the K is unbounded but set to compute the visibilities.
 #' @param return.posterior.sample.visibilities logical; If TRUE then return a
 #' matrix of dimension \code{samplesize} by \code{n} of 
 #' posterior draws from the visibility distribution for those in the survey.
@@ -84,6 +88,7 @@ impute.visibility <-function(rds.data,max.coupons=NULL,
                              mem.optimism.prior=NULL, df.mem.optimism.prior=5,
                              mem.scale.prior=2, df.mem.scale.prior=10,
                              mem.overdispersion=15,
+                             K=FALSE,
                              return.posterior.sample.visibilities=FALSE,
                              verbose=FALSE){
   if(!is(rds.data,"rds.data.frame"))
@@ -93,7 +98,6 @@ impute.visibility <-function(rds.data,max.coupons=NULL,
 
     posfn <- posteriorsize
     fit <- posfn(s=rds.data,
-               K=FALSE,
                visibility=TRUE,
                type.impute = type.impute,
                parallel=parallel, parallel.type=parallel.type,
@@ -103,7 +107,7 @@ impute.visibility <-function(rds.data,max.coupons=NULL,
                reflect.time=reflect.time,
                mem.optimism.prior=mem.optimism.prior, df.mem.optimism.prior=df.mem.optimism.prior,
                mem.scale.prior=mem.scale.prior, df.mem.scale.prior=df.mem.scale.prior,
-               mem.overdispersion=mem.overdispersion,
+               mem.overdispersion=mem.overdispersion, K=K,
                verbose=verbose)
 
   if(verbose){

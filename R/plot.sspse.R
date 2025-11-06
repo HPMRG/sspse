@@ -285,8 +285,9 @@ if(control$type %in% c("visibility","degree","all")){
    if(!is.null(x$rectime)){
      network.size[!remvalues] <- (network.size[!remvalues])[order(x$rectime)]
    }
-   Kmax <- max(c(length(x$predictive.visibility),network.size[!remvalues]))
-   ns.prob <- tabulate(network.size[!remvalues],nbins=Kmax) #, nbins=max(x$data))
+   rescale <- exp(ifelse(is.null(x$mem.optimism.prior),0,x$mem.optimism.prior))
+   Kmax <- max(c(length(x$predictive.visibility)*rescale,network.size[!remvalues]))
+   ns.prob <- tabulate(round(network.size[!remvalues]),nbins=Kmax) #, nbins=max(x$data))
    ns.prob <- ns.prob/sum(ns.prob)
 #  med.vis <- which.max(cumsum(x$predictive.visibility)>=0.5)
    if(control$type %in% c("visibility","all") & x$visibility){

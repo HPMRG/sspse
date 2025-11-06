@@ -23,6 +23,9 @@
 #' indicating if the corresponding unit was sampled in the first RDS.
 #' @param median.prior.size scalar; A hyperparameter being the mode of the
 #' prior distribution on the population size.
+#' @param samplesize count; the number of Monte-Carlo samples to draw to
+#' compute the posterior. This is the number returned by the
+#' Metropolis-Hastings algorithm.The default is 1000.
 #' @param interval count; the number of proposals between sampled statistics.
 #' @param warmup count; the number of proposals before any MCMC sampling is
 #' done. It typically is set to a fairly large number.
@@ -31,9 +34,6 @@
 #' @param K count; the maximum visibility for an individual. This is usually
 #' calculated as \code{round(stats::quantile(s,0.80))}. It applies to network sizes and (latent) visibilities.
 #' If logical and FALSE then the K is unbounded but set to compute the visibilities.
-#' @param samplesize count; the number of Monte-Carlo samples to draw to
-#' compute the posterior. This is the number returned by the
-#' Metropolis-Hastings algorithm.The default is 1000.
 #' @param quartiles.prior.size vector of length 2; A pair of hyperparameters
 #' being the lower and upper quartiles of the prior distribution on the
 #' population size. For example, \cr \code{quartiles.prior.size=c(1000,4000)}
@@ -396,11 +396,11 @@
 posteriorsize<-function(s,
                   s2=NULL, previous=NULL,
                   median.prior.size=NULL,
+                  samplesize=1000,
                   interval=10,
                   warmup=5000,
                   maxN=NULL,
                   K=FALSE,
-                  samplesize=1000,
                   quartiles.prior.size=NULL,
                   mean.prior.size=NULL,
                   mode.prior.size=NULL,
@@ -533,9 +533,13 @@ posteriorsize<-function(s,
   
   if(!is.null(K) & is.logical(K) & (K==FALSE)){
    if(visibility){
+    rescale <- ifelse(is.null(mem.optimism.prior),1,mem.optimism.prior)
 #   K.fixed <- max(network.size[!remns])
 #   K.fixed <- round(stats::quantile(network.size[!remns],0.99))
-    K.fixed <- round(stats::quantile(network.size[!remns],0.95))
+    K.fixed <- round(stats::quantile(network.size[!remns] / rescale,0.95))
+    if(K.fixed < 25){
+      K.fixed <- max(25, round(stats::quantile(network.size[!remns] / rescale,0.995)) )
+    }
    }else{
     K.fixed <- NULL
    }
@@ -665,8 +669,9 @@ posteriorsize<-function(s,
 
    if(!is.null(K) & is.logical(K) & (K==FALSE)){
     if(visibility){
+     rescale <- ifelse(is.null(mem.optimism.prior),1,mem.optimism.prior)
 #    K.fixed <- max(network.size2[!remns2])
-     K.fixed <- max(K.fixed, round(stats::quantile(network.size2[!remns2],0.99)))
+     K.fixed <- max(K.fixed, round(stats::quantile(network.size2[!remns2] / rescale,0.99)))
     }else{
      K.fixed <- NULL
     }
@@ -757,8 +762,11 @@ posteriorsize<-function(s,
   if(priorsizedistribution=="nbinom" && missing(mean.prior.size)){
     stop("You need to specify 'mean.prior.size', and possibly 'sd.prior.size' if you use the 'nbinom' prior.") 
   }
-  if(is.null(K.fixed) & visibility){
-    message(sprintf("Initial cap on influence of the visibility is K = %d.\n",K),appendLF=FALSE)
+# if(is.null(K.fixed) & visibility){
+  if(visibility){
+    if(is.numeric(K)){
+      message(sprintf("Initial cap on influence of the visibility is K = %d.\n",K),appendLF=FALSE)
+    }
     K=round(stats::quantile(s.prior,0.90))+1
     degs <- s.prior
     degs[degs>K] <- K
@@ -796,7 +804,7 @@ posteriorsize<-function(s,
 #   weights <- (1/degs)
     weights <- degs-degs+1
     weights[is.na(weights)] <- 0
-    mean.pd <- sum(ds*weights)/sum(weights)
+    mean.pd <- sum(ds*weights, na.rm=TRUE)/sum(weights, na.rm=TRUE)
 #   sd.pd <- sum(ds*ds*weights)/sum(weights)
 #   sd.pd <- sqrt(sd.pd - mean.pd^2)
 #   if(sd.pd > max.sd.prior.visibility*mean.pd){
@@ -810,11 +818,11 @@ posteriorsize<-function(s,
     xp <- length(xp)*xp/sum(xp)
     txp <- tapply(xp,xv,sum)
     txv <- tapply(xv,xv,stats::median)
-    mem.optimism.prior <- nb0mle(xv=txv,xp=txp,cutabove=K.fixed-1)[1] / 8
-#   mem.optimism.prior <- mean.pd / 8
+#   mem.optimism.prior <- nb0mle(xv=txv,xp=txp,cutabove=K.fixed-1)[1] / 8
+    mem.optimism.prior <- mean.pd / 8
     K <- 35
     df.mem.optimism.prior <- 10001
-    # message(sprintf("mem.optimism.prior is set to %f.\n",mem.optimism.prior),appendLF=FALSE)
+    message(sprintf("mem.optimism.prior is set to %f.\n",mem.optimism.prior),appendLF=FALSE)
   }
   if(verbose){
    if(visibility){
@@ -824,7 +832,7 @@ posteriorsize<-function(s,
    }
   }
   if(is.null(mean.prior.visibility)){
-    degs <- s.prior
+    degs <- s.prior / mem.optimism.prior
     degs[degs>K] <- K
     degs[degs==0]<-1
     ds<-degs
@@ -1022,7 +1030,7 @@ posteriorsize<-function(s,
   }
   if(visibility){
     vsample <- matrix(0,ncol=nrow(rds.data),nrow=nrow(Cret$vsample))
-    vsample[,!remvalues[recruit.times.order]] <- Cret$vsample
+    vsample[,!remvalues[recruit.times.order]] <- Cret$vsample[,recruit.times.order.notrem]
     visibilities <- rep(0,length=nrow(rds.data))
     visibilities[!remvalues[recruit.times.order]] <- switch(type.impute, 
                `distribution` = {
@@ -1039,13 +1047,13 @@ posteriorsize<-function(s,
                }
               )[recruit.times.order.notrem]
     # impute the missing values
-    if(sum(remvalues) > 0){
+    if(any(remvalues)){
      rem.visibilities.reordered.matrix <- matrix(0,ncol=sum(remvalues),nrow=nrow(Cret$vsample))
      rem.visibilities.reordered <- rep(0,length=sum(remvalues))
      # work through each recruit time for missing network size
      rval <- recruit.times[remvalues]
      for(i in seq_along(rval)){
-      # mf is the vector of indices of non-missing with the same recruitingtime and number of recruits
+      # mf is the vector of indices of non-missing with the same recruiting time and number of recruits
       mf <- rval[i] == recruit.times[!remvalues] & (nr[remvalues])[i] == nr[!remvalues]
       if(sum(mf) > 0){
        # form a single column
@@ -1064,6 +1072,8 @@ posteriorsize<-function(s,
         }
        }
       }
+#message(sprintf(" i= %d mf size = %d\n",i,length(mf)))
+      # mf is for the reordered
       rem.visibilities.reordered.matrix[,i] <- sample(x=mf, size=nrow(Cret$vsample),replace=TRUE)
       rem.visibilities.reordered[i] <- switch(type.impute, 
                    `distribution` = {
@@ -1079,9 +1089,9 @@ posteriorsize<-function(s,
                      apply(mf,2,mean)
                    }
                  )
-      }
-      visibilities[remvalues[recruit.times.order]] <- rem.visibilities.reordered[recruit.times.order.rem]
-      vsample[, remvalues[recruit.times.order]] <- rem.visibilities.reordered.matrix[,recruit.times.order.rem]
+     }
+     visibilities[remvalues[recruit.times.order]] <- rem.visibilities.reordered[recruit.times.order.rem]
+     vsample[, remvalues[recruit.times.order]] <- rem.visibilities.reordered.matrix[,recruit.times.order.rem]
     }
 #     print(length(visibilities))
 #     print(dim(Cret$vsample))

@@ -200,6 +200,7 @@ poscmpwp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
               warmuptheta=as.integer(warmuptheta),
               warmupbeta=as.integer(warmupbeta),
               verbose=as.integer(TRUE), PACKAGE="sspse")
+              Cret$mem.optimism.prior=as.double(log(mem.optimism.prior))
      }else{
       cat(sprintf("Using non-measurement error model with K = %d.\n",K))
       s[s>K] <- K

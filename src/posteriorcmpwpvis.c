@@ -49,7 +49,7 @@ void gcmpwpvis (int *pop,
   double mui, sigmai, lnlami, nui, dsamp;
   double sigma2i;
   double dbeta0, dbetat, dbetau;
-  double dlmemmu, dmemnu;
+  double dlmemmu, dmemnu, dmemmu;
   double beta0i, betati, betaui, lmemmui, memnui;
   double memmui;
   int tU, sizei, imaxN, imaxm, give_log0=0, give_log1=1;
@@ -74,6 +74,7 @@ void gcmpwpvis (int *pop,
   dbetat=(*betatmuprior);
   dbetau=(*betaumuprior);
   dlmemmu=(*lmemmu);
+  dmemmu=exp(*lmemmu);
   dmemnu=(*memnu);
   alpha=(*memod);
   maxc=(*maxcoupons);
@@ -105,11 +106,18 @@ void gcmpwpvis (int *pop,
   }
   uprob=ni;
   for (i=0; i<ni; i++){
-    if((pop[i]>0) && (pop[i] <= Ki)){ u[i]=pop[i];}
+    if((pop[i]>0) && (pop[i] <= Ki*dmemmu)){ u[i]=round(pop[i] / ((double)dmemmu));}
     if( pop[i]==0){ u[i]=1;}
-    if( pop[i]>Ki){ u[i]=Ki; uprob--;}
+    if( pop[i]>Ki*dmemmu){ u[i]=Ki; uprob--;}
+    srd[i] = round( srd[i] / ((double)dmemmu));
+//  Rprintf("i %d u[i] %d srd[i] %d\n", i, u[i], srd[i]);
     nk[u[i]-1]=nk[u[i]-1]+1;
   }
+  // VIP setting the mem.optimism.prior = mem.optimism to 1
+  // as the network.sizes have been divided by it
+  dlmemmu=0.0;
+  *lmemmu=0.0;
+  //
   uprob/=ni;
   uprob = 0.5 + uprob/2.0;
 // Rprintf("uprob %f\n", uprob);
@@ -395,7 +403,7 @@ void gcmpwpvis (int *pop,
       sample[isamp*dimsample+5]=beta0i;
       sample[isamp*dimsample+6]=betati;
       sample[isamp*dimsample+7]=betaui;
- if(betati < 0.0) Rprintf("beta0 %f betati %f betaui %f\n", beta0i, betati, betaui);
+// f(betati < 0.0) Rprintf("beta0 %f betati %f betaui %f\n", beta0i, betati, betaui);
       sample[isamp*dimsample+8]=lmemmui;
       sample[isamp*dimsample+9]=memnui;
       for (i=0; i<Np; i++){
@@ -600,8 +608,10 @@ void MHwpmem (int *u, int *n, int *K,
     }
     /* Propose new memnu and lmemmu */
     lmemmustar = rnorm(lmemmui, dlmemmuproposal);
-// VIP Remember this next line hold the optimism fixed at 1!!! VIP
+// VIP Remember this next line hold the optimism fixed at at its
+//     initial value !!! VIP
     lmemmustar = lmemmui;
+//Rprintf("lmemmui %f memmui %f\n", lmemmui, exp(lmemmui));
 
 //  lmemmustar = 0.0;
 //  rmemnustar = rnorm(memnui, dmemnuproposal);
@@ -620,6 +630,7 @@ void MHwpmem (int *u, int *n, int *K,
        }
        if(srd[i]>=0){
         memmustar = exp(lmemmustar)*u[i];
+// Rprintf("i %d u[i] %d memmustar %f\n", i, u[i], memmustar);
         rnb=memmustar/(alpha-1.);
         pd[0]= exp(-fabs(memmustar-1.)/sqrt(memnustar));
         pis=pd[0];

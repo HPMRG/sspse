@@ -23,6 +23,7 @@ impute.visibility(
   mem.scale.prior = 2,
   df.mem.scale.prior = 10,
   mem.overdispersion = 15,
+  K = FALSE,
   return.posterior.sample.visibilities = FALSE,
   verbose = FALSE
 )
@@ -89,6 +90,11 @@ the standard deviation.}
 
 \item{mem.overdispersion}{scalar; A parameter being the overdispersion of the negative binomial
 distribution that is the baseline for the measurement error model.}
+
+\item{K}{count; the maximum visibility for an individual. This is usually
+calculated as \code{round(stats::quantile(degree,0.80))}.
+It applies to network sizes and (latent) visibilities.
+If logical and FALSE then the K is unbounded but set to compute the visibilities.}
 
 \item{return.posterior.sample.visibilities}{logical; If TRUE then return a
 matrix of dimension \code{samplesize} by \code{n} of 

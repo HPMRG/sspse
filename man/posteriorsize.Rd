@@ -9,11 +9,11 @@ posteriorsize(
   s2 = NULL,
   previous = NULL,
   median.prior.size = NULL,
+  samplesize = 1000,
   interval = 10,
   warmup = 5000,
   maxN = NULL,
   K = FALSE,
-  samplesize = 1000,
   quartiles.prior.size = NULL,
   mean.prior.size = NULL,
   mode.prior.size = NULL,
@@ -90,6 +90,10 @@ indicating if the corresponding unit was sampled in the first RDS.}
 \item{median.prior.size}{scalar; A hyperparameter being the mode of the
 prior distribution on the population size.}
 
+\item{samplesize}{count; the number of Monte-Carlo samples to draw to
+compute the posterior. This is the number returned by the
+Metropolis-Hastings algorithm.The default is 1000.}
+
 \item{interval}{count; the number of proposals between sampled statistics.}
 
 \item{warmup}{count; the number of proposals before any MCMC sampling is
@@ -101,10 +105,6 @@ determined from an upper quantile of the prior distribution.}
 \item{K}{count; the maximum visibility for an individual. This is usually
 calculated as \code{round(stats::quantile(s,0.80))}. It applies to network sizes and (latent) visibilities.
 If logical and FALSE then the K is unbounded but set to compute the visibilities.}
-
-\item{samplesize}{count; the number of Monte-Carlo samples to draw to
-compute the posterior. This is the number returned by the
-Metropolis-Hastings algorithm.The default is 1000.}
 
 \item{quartiles.prior.size}{vector of length 2; A pair of hyperparameters
 being the lower and upper quartiles of the prior distribution on the
