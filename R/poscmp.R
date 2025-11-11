@@ -56,8 +56,8 @@ poscmp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
     # Determine if we are in the two-sample case or the one-sample
     n1 = n
     if(!is.null(s2)){
-     n0 = sum(rc)
-     n = n1 + n2 - n0 # The number of unique people seen
+     n12 = sum(rc)
+     n = n1 + n2 - n12 # The number of unique people seen
     }
     #
     priorsizedistribution=match.arg(priorsizedistribution)
@@ -88,7 +88,7 @@ poscmp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
               K=as.integer(K),
               n1=as.integer(n1),
               n2=as.integer(n2),
-              n0=as.integer(n0),
+              n12=as.integer(n12),
               samplesize=as.integer(samplesize),
               warmup=as.integer(warmup),
               interval=as.integer(interval),
@@ -137,7 +137,7 @@ poscmp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
               K=as.integer(K),
               n1=as.integer(n1),
               n2=as.integer(n2),
-              n0=as.integer(n0),
+              n12=as.integer(n12),
               samplesize=as.integer(samplesize),
               warmup=as.integer(warmup),
               interval=as.integer(interval),
@@ -304,7 +304,7 @@ poscmp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
     ### compute modes of posterior samples,Maximum A Posterior (MAP) values N, mu, sigma, visibility1
     Cret$MAP <- apply(Cret$sample,2,mode.density)
     Cret$MAP["N"] <- mode.density(Cret$sample[,"N"],lbound=n,ubound=prior$maxN)
-    if(!is.null(s2)){Cret$n <- Cret$n1 +  Cret$n2 - Cret$n0}
+    if(!is.null(s2)){Cret$n <- Cret$n1 +  Cret$n2 - Cret$n12}
 #
 #   Cret$MSE <- c(((prior$x-mean.prior.visibility)^2)*prior$lprior/sum(prior$lprior),mean((Cret$sample[,"N"]-mean.prior.visibility)^2))
     Cret$maxN <- prior$maxN

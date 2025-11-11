@@ -49,6 +49,9 @@ poscmpwp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
     #
     if(visibility){
       dimsample <- 5+Np+4
+      if(!is.null(s2)){
+        dimsample <- dimsample + 1
+      }
     }else{
       dimsample <- 5+Np
     }
@@ -56,8 +59,8 @@ poscmpwp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
     # Determine if we are in the two-sample case or the one-sample
     n1 = n
     if(!is.null(s2)){
-     n0 = sum(rc)
-     n = n1 + n2 - n0 # The number of unique people seen
+     n12 = sum(rc)
+     n = n1 + n2 - n12 # The number of unique people seen
     }
     #
     priorsizedistribution=match.arg(priorsizedistribution)
@@ -91,7 +94,7 @@ poscmpwp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
               K=as.integer(K),
               n1=as.integer(n1),
               n2=as.integer(n2),
-              n0=as.integer(n0),
+              n12=as.integer(n12),
               samplesize=as.integer(samplesize),
               warmup=as.integer(warmup),
               interval=as.integer(interval),
@@ -100,6 +103,7 @@ poscmpwp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
               lnlam=as.double(lnlam), nu=as.double(nu),
               beta0.mean.prior=as.double(beta_0.mean.prior), beta0.sd.prior=as.double(beta_0.sd.prior),
               betat.mean.prior=as.double(beta_t.mean.prior), betat.sd.prior=as.double(beta_t.sd.prior),
+              betau.mean.prior=as.double(beta_u.mean.prior), betau.sd.prior=as.double(beta_u.sd.prior),
               mem.optimism.prior=as.double(log(mem.optimism.prior)), df.mem.optimism.prior=as.double(df.mem.optimism.prior),
               mem.scale.prior=as.double(mem.scale.prior^2), df.mem.scale.prior=as.double(df.mem.scale.prior),
               mem.overdispersion=as.double(mem.overdispersion),
@@ -114,7 +118,7 @@ poscmpwp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
               maxcoupons=as.integer(max.coupons),
               muproposal=as.double(mu_proposal),
               nuproposal=as.double(nu_proposal),
-              beta0proposal=as.double(beta_0_proposal), betatproposal=as.double(beta_t_proposal),
+              beta0proposal=as.double(beta_0_proposal), betatproposal=as.double(beta_t_proposal), betauproposal=as.double(beta_u_proposal),
               memmuproposal=as.double(memmu_proposal), memscaleproposal=as.double(memscale_proposal),
               N=as.integer(prior$N),
               maxN=as.integer(prior$maxN),
@@ -141,7 +145,7 @@ poscmpwp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
               K=as.integer(K),
               n1=as.integer(n1),
               n2=as.integer(n2),
-              n0=as.integer(n0),
+              n12=as.integer(n12),
               samplesize=as.integer(samplesize),
               warmup=as.integer(warmup),
               interval=as.integer(interval),
@@ -311,11 +315,10 @@ poscmpwp<-function(s,s2=NULL,rc=rep(FALSE,length=length(s2)),maxN=NULL,
     Cret$posu<-NULL
     endrun <- warmup+interval*(samplesize-1)
     attr(Cret$sample, "mcpar") <- c(warmup+1, endrun, interval)
-    attr(Cret$sample, "class") <- "mcmc"
     ### compute modes of posterior samples,Maximum A Posterior (MAP) values N, mu, sigma, visibility1
     Cret$MAP <- apply(Cret$sample,2,mode.density)
     Cret$MAP["N"] <- mode.density(Cret$sample[,"N"],lbound=n,ubound=prior$maxN)
-    if(!is.null(s2)){Cret$n <- Cret$n1 +  Cret$n2 - Cret$n0}
+    if(!is.null(s2)){Cret$n <- Cret$n1 +  Cret$n2 - Cret$n12}
 #
 #   Cret$MSE <- c(((prior$x-mean.prior.visibility)^2)*prior$lprior/sum(prior$lprior),mean((Cret$sample[,"N"]-mean.prior.visibility)^2))
     Cret$maxN <- prior$maxN
