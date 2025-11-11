@@ -446,8 +446,10 @@ posteriorsize<-function(s,
                   cmp=poscmpwp,
                   poscmpwp)
   K.fixed <- K
-  # If the passed "s" is an rds.rata.frame, extract out the components
+  # If the passed "s" is an rds.data.frame, extract out the components
+  s2.nomiss <- NULL
   rc <- NULL
+  rc.nomiss <- NULL
   nr <- 1
   recruit.times <- 1
   remvalues <- TRUE
@@ -575,31 +577,32 @@ posteriorsize<-function(s,
   rc2 <- NULL
   nr2 <- 1
   recruit.times2 <- 1
+  remvalues2 <- FALSE
   remns2 <- TRUE
   rds.data2 <- NULL
   if(!is.null(s2)){
-  if(!methods::is(s2,"rds.data.frame")){
-   # a sequence is passed
-   visibility <- FALSE
-   if(is.null(K.fixed)) K=max(c(s,s2),na.rm=TRUE)
-   if(is.null(n2)) n2=length(s2)
-  }else{
-   # an rds.data.frame is passed
-   rds.data2 <- s2
-   n2 <- nrow(rds.data2)
-   if(is.null(attr(rds.data2,"network.size.variable"))){
-     stop("The second rds.data must have a network.size attribute.")
-   }
-   nr2 <- RDS::get.number.of.recruits(rds.data2)
-   nw2 <- RDS::get.wave(rds.data2)
-   ns2 <- RDS::get.seed.id(rds.data2)
-   is.seed2 <- (RDS::get.rid(rds.data2)=="seed")
+   if(!methods::is(s2,"rds.data.frame")){
+    # a sequence is passed
+    visibility <- FALSE
+    if(is.null(K.fixed)) K=max(c(s,s2),na.rm=TRUE)
+    if(is.null(n2)) n2=length(s2)
+   }else{
+    # an rds.data.frame is passed
+    rds.data2 <- s2
+    n2 <- nrow(rds.data2)
+    if(is.null(attr(rds.data2,"network.size.variable"))){
+      stop("The second rds.data must have a network.size attribute.")
+    }
+    nr2 <- RDS::get.number.of.recruits(rds.data2)
+    nw2 <- RDS::get.wave(rds.data2)
+    ns2 <- RDS::get.seed.id(rds.data2)
+    is.seed2 <- (RDS::get.rid(rds.data2)=="seed")
    
-   max.coupons2 <- attr(rds.data2,"max.coupons")
-   if(is.null(max.coupons2)){
-     max.coupons2 <- max(nr2,na.rm=TRUE)
-   }
-   if(length(recruit.time2)==1){
+    max.coupons2 <- attr(rds.data2,"max.coupons")
+    if(is.null(max.coupons2)){
+      max.coupons2 <- max(nr2,na.rm=TRUE)
+    }
+    if(length(recruit.time2)==1){
      if(is.character(recruit.time2)){
        if(recruit.time2=="wave"){
          recruit.times2 <- nw2
@@ -620,7 +623,7 @@ posteriorsize<-function(s,
          stop("The recruitment time should be a variable in the second RDS data, or 'wave' to indicate the wave number or NA/NULL to indicate that the recruitment time is not available and/or used.")
        }
      }
-   }else{
+    }else{
      if(length(recruit.time2)==0 & is.null(recruit.time2)){
        recruit.time2 <- 1:n2
      }else{
@@ -634,69 +637,70 @@ posteriorsize<-function(s,
        recruit.times2 <- recruit.time2
      }
      recruit.time2 <- TRUE
-   }
-   if(any(is.na(recruit.times2))){
+    }
+    if(any(is.na(recruit.times2))){
      med.index <- cbind(c(2,1:(n2-1)),c(3,3:n2,n2))
      moving.median=function(i){stats::median(recruit.times2[med.index[i,]],na.rm=TRUE)}
      while(any(is.na(recruit.times2))){
        for(i in which(is.na(recruit.times2))){recruit.times2[i] <- moving.median(i)}
      }
-   }
- # gap <- diff(sort(recruit.times))
- # gap <- min(gap[gap > 0])
- # recruit.times <- recruit.times + 0.01*(1:n)*gap/(n+1)
-   recruit.times2 <- recruit.times2 - min(recruit.times2)
-   if(reflect.time){
+    }
+ #  gap <- diff(sort(recruit.times))
+ #  gap <- min(gap[gap > 0])
+ #  recruit.times <- recruit.times + 0.01*(1:n)*gap/(n+1)
+    recruit.times2 <- recruit.times2 - min(recruit.times2)
+    if(reflect.time){
      recruit.times2 <- max(recruit.times2)-recruit.times2
-   }
-   network.size2 <- as.numeric(rds.data2[[attr(rds.data2,"network.size.variable")]])
-   remns2 <- is.na(network.size2)
-   if(any(remns2)){
+    }
+    network.size2 <- as.numeric(rds.data2[[attr(rds.data2,"network.size.variable")]])
+    remns2 <- is.na(network.size2)
+    if(any(remns2)){
      warning(paste(sum(remns2),"of",nrow(rds.data2),
                    "network sizes were missing in the second RDS data set. These will be imputed from the marginal distribution"), call. = FALSE)
-   }
-   
-   if(equalize){
-    if(sum(!remns) >= sum(!remns2)){
-     a <- rank(network.size2[!remns2],ties.method="random")
-     network.size2[!remns2] <- sort((network.size[!remns])[1:sum(!remns2)])[a]
-    }else{
-     a <- round(sum(!remns)*rank(network.size2[!remns2],ties.method="random")/sum(!remns2))
-     network.size2[!remns2] <- sort(network.size[!remns])[a]
     }
-    message(sprintf("Adjusting for the gross differences in the reported network sizes between the two samples.\n"),appendLF=FALSE)
-   }
+   
+    if(equalize){
+     if(sum(!remns) >= sum(!remns2)){
+      a <- rank(network.size2[!remns2],ties.method="random")
+      network.size2[!remns2] <- sort((network.size[!remns])[1:sum(!remns2)])[a]
+     }else{
+      a <- round(sum(!remns)*rank(network.size2[!remns2],ties.method="random")/sum(!remns2))
+      network.size2[!remns2] <- sort(network.size[!remns])[a]
+     }
+     message(sprintf("Adjusting for the gross differences in the reported network sizes between the two samples.\n"),appendLF=FALSE)
+    }
 
-   if(!is.null(K) & is.logical(K) & (K==FALSE)){
-    if(visibility){
-     rescale <- ifelse(is.null(mem.optimism.prior),1,mem.optimism.prior)
-#    K.fixed <- max(network.size2[!remns2])
-     K.fixed <- max(K.fixed, round(stats::quantile(network.size2[!remns2] / rescale,0.99)))
-    }else{
-     K.fixed <- NULL
+    if(!is.null(K) & is.logical(K) & (K==FALSE)){
+     if(visibility){
+      rescale <- ifelse(is.null(mem.optimism.prior),1,mem.optimism.prior)
+#     K.fixed <- max(network.size2[!remns2])
+      K.fixed <- max(K.fixed, round(stats::quantile(network.size2[!remns2] / rescale,0.99)))
+     }else{
+      K.fixed <- NULL
+     }
     }
-   }
-   if(is.null(K.fixed) & length(network.size2[!remns2])>0){
+    if(is.null(K.fixed) & length(network.size2[!remns2])>0){
      K <- max(K, round(stats::quantile(network.size2[!remns2],0.95)))
-   }
+    }
    
-   #Augment the reported network size by the number of recruits and the recruiter (if any).
-   if(include.tree){
+    #Augment the reported network size by the number of recruits and the recruiter (if any).
+    if(include.tree){
      nsize2 <- pmax(network.size2,nr2+!is.seed2)
-   }else{
+    }else{
      nsize2 <- network.size2
+    }
+   
+    gmean <- HT.estimate(RDS::vh.weights(nsize2[!is.na(nsize2)]),nsize2[!is.na(nsize2)])
+    if(is.na(gmean)) gmean <- 38
+   
+    order.recruit.times2 <- order(recruit.times2)
+    recruit.times2.order <- order(order.recruit.times2)
+    recruit.times2.order.notrem <- order(order(recruit.times2[!remns2]))
+    s2 <- nsize2[order.recruit.times2]
+    nr2 <- nr2[order.recruit.times2]
+    recruit.times2 <- recruit.times2[order.recruit.times2]
    }
-   
-   gmean <- HT.estimate(RDS::vh.weights(nsize2[!is.na(nsize2)]),nsize2[!is.na(nsize2)])
-   if(is.na(gmean)) gmean <- 38
-   
-   order.recruit.times2 <- order(recruit.times2)
-   recruit.times2.order <- order(order.recruit.times2)
-   recruit.times2.order.notrem <- order(order(recruit.times2[!remns2]))
-   s2 <- nsize2[order.recruit.times2]
-   nr2 <- nr2[order.recruit.times2]
-   recruit.times2 <- recruit.times2[order.recruit.times2]
-  }}else{
+  }else{ # so is.null(s2) == TRUE
    s2.nomiss <- NULL
   }
   # End of measurement model information extraction for the second survey
@@ -794,7 +798,7 @@ posteriorsize<-function(s,
 #   K=round(stats::quantile(s,0.99))
   }
   if(!is.null(K.fixed) & abs(df.mem.optimism.prior-10001)>0.001){K <- K.fixed}
-  if(visibility & is.null(mem.optimism.prior)){
+  if(is.null(mem.optimism.prior)){
     degs <- network.size
 #   degs[degs>K.fixed] <- K.fixed
     degs[degs==0]<-1
@@ -1028,6 +1032,7 @@ posteriorsize<-function(s,
   if(is.na(type.impute)) { # User typed an unrecognizable name
     stop(paste('You must specify a valid type.impute. The valid types are "distribution","mode","median", and "mean"'), call.=FALSE)
   }
+  visibility.impute.class <- rep(NA,length=sum(remvalues))
   if(visibility){
     vsample <- matrix(0,ncol=nrow(rds.data),nrow=nrow(Cret$vsample))
     vsample[,!remvalues[recruit.times.order]] <- Cret$vsample[,recruit.times.order.notrem]
@@ -1050,24 +1055,30 @@ posteriorsize<-function(s,
     if(any(remvalues)){
      rem.visibilities.reordered.matrix <- matrix(0,ncol=sum(remvalues),nrow=nrow(Cret$vsample))
      rem.visibilities.reordered <- rep(0,length=sum(remvalues))
+     visibility.impute.class <- rep(0,length=sum(remvalues))
      # work through each recruit time for missing network size
-     rval <- recruit.times[remvalues]
-     for(i in seq_along(rval)){
+     rtval <- recruit.times[remvalues]
+     nrval <- nr[remvalues]
+     for(i in seq_along(rtval)){
       # mf is the vector of indices of non-missing with the same recruiting time and number of recruits
-      mf <- rval[i] == recruit.times[!remvalues] & (nr[remvalues])[i] == nr[!remvalues]
+      mf <- rtval[i] == recruit.times[!remvalues] & nrval[i] == nr[!remvalues]
       if(sum(mf) > 0){
+       visibility.impute.class[i] <- 3
        # form a single column
        mf <- matrix(Cret$vsample[,mf],ncol=1)
       }else{
        # none that match on both recruit time and number of recruits, so match on number of recruits only
-       mf <- rval[i] == recruit.times[!remvalues]
+       mf <- rtval[i] == recruit.times[!remvalues]
        if(sum(mf) > 0){
+        visibility.impute.class[i] <- 2
         mf <- matrix(Cret$vsample[,mf],ncol=1)
        }else{
-        mf <- (nr[remvalues])[i] == nr[!remvalues]
+        mf <- nrval[i] == nr[!remvalues]
         if(sum(mf) > 0){
+         visibility.impute.class[i] <- 1
          mf <- matrix(Cret$vsample[,mf],ncol=1)
         }else{
+         visibility.impute.class[i] <- 0
          mf <- matrix(Cret$vsample,ncol=1)
         }
        }
@@ -1077,7 +1088,7 @@ posteriorsize<-function(s,
       rem.visibilities.reordered.matrix[,i] <- sample(x=mf, size=nrow(Cret$vsample),replace=TRUE)
       rem.visibilities.reordered[i] <- switch(type.impute, 
                    `distribution` = {
-                     mf[sample.int(n=1,size=sum(mf))]
+                     mf[sample.int(n=sum(mf), size=1 )]
                    },
                    `mode` = {
                      apply(mf,2,function(x){a <- tabulate(x);mean(which(a==max(a,na.rm=TRUE)))})
@@ -1114,6 +1125,7 @@ posteriorsize<-function(s,
     }
   }
 
+  Cret$visibility.impute.class <- visibility.impute.class
   Cret$visibility <- visibility
 # Cret$mean.prior.size <- mean.prior.size
   Cret$data <- rds.data
