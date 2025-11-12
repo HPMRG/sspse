@@ -293,7 +293,8 @@ if(control$type %in% c("visibility","degree","all")){
    if(control$type %in% c("visibility","all") & x$visibility){
     aaa <- graphics::barplot(ns.prob,names.arg=1:Kmax,add=FALSE,axes=TRUE,width=rep(0.5,length(ns.prob)),space=1,col=0,
      xlab="visibility",ylab="probability", xlim=c(1,Kmax), ylim=c(0,max(c(ns.prob,x$predictive.visibility))),
-     main="Posterior with sample visibility\n histogram overlaid (median matched)", cex.main=cex.main)
+     main="Posterior with sample visibility\n histogram overlaid (median matched)", cex.main=cex.main,
+     sub="(posterior in red)")
 #   graphics::lines(x=-0.25+median(network.size[!remvalues])*seq_along(x$predictive.visibility)/med.vis,y=x$predictive.visibility, type='h', col='red', lwd=2)
     if(!is.null(x$mem.optimism.prior)){
       graphics::lines(x=-0.25+exp(x$mem.optimism.prior)*seq_along(x$predictive.visibility),y=x$predictive.visibility, type='h', col='red', lwd=2)

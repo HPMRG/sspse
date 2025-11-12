@@ -1112,8 +1112,8 @@ posteriorsize<-function(s,
 #   Cret$vsample <- Cret$vsample[,recruit.times.order.notrem]
     Cret$visibilities <- visibilities
     Cret$vsample <- vsample
-    Cret$predictive.visibility.count <- table(Cret$vsample) / ncol(Cret$vsample)
-    Cret$predictive.visibility <- Cret$predictive.visibility.count / nrow(Cret$vsample)
+    Cret$predictive.visibility.count <- tabulate(Cret$vsample, nbins=K) / ncol(Cret$vsample)
+  # Cret$predictive.visibility <- Cret$predictive.visibility.count / nrow(Cret$vsample)
     if(verbose & Cret$predictive.visibility[length(Cret$predictive.visibility)] > 0.3){
      warning("There is a non-trivial proportion of the posterior mass on very high visibilities. This may indicate convergence problems in the MCMC.", call. = FALSE)
     }

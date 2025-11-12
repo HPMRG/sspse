@@ -13,9 +13,9 @@ void gcmp2 (int *pop12,
             int *pop21,
             int *nk,
             int *K,
-            int *n1,
-            int *n2,
-            int *n12,
+            int *n1i,
+            int *n2i,
+            int *n12i,
             int *samplesize, int *warmup, int *interval,
             double *mu, double *dfmu,
             double *sigma, double *dfsigma,
@@ -32,8 +32,8 @@ void gcmp2 (int *pop12,
             ) {
   int dimsample, Np;
   int step, staken, getone=1, intervalone=1, verboseMHcmp = 0;
-  int i, ni, Ni, Ki, isamp, iinterval, isamplesize, iwarmup;
-  int ni1, ni2, ni12, unrecap;
+  int i, n, Ni, Ki, isamp, iinterval, isamplesize, iwarmup;
+  int n1, n2, n12, unrecap;
   double mui, sigmai, lnlami, nui, dsamp, sigma2i;
   double ddfmu, ddfsigma, dnuproposal;
   int tU1, tU2, sizei, imaxN, imaxm, give_log0=0, give_log1=1;
@@ -43,14 +43,14 @@ void gcmp2 (int *pop12,
 
   GetRNGstate();  /* R function enabling uniform RNG */
 
-  ni1=(*n1);
-  ni2=(*n2);
-  ni12=(*n12);
+  n1=(*n1i);
+  n2=(*n2i);
+  n12=(*n12i);
   Ni=(*N);
   Ki=(*K);
   imaxN=(*maxN);
-  ni = ni1 + ni2 - ni12; /* The number unique people seen */
-  imaxm=imaxN-ni;
+  n = n1 + n2 - n12; /* The number unique people seen */
+  imaxm=imaxN-n;
   isamplesize=(*samplesize);
   iinterval=(*interval);
   iwarmup=(*warmup);
@@ -64,8 +64,8 @@ void gcmp2 (int *pop12,
   double *pi = (double *) malloc(sizeof(double) * Ki);
   int *u1 = (int *) malloc(sizeof(int) * imaxN);
   int *u2 = (int *) malloc(sizeof(int) * imaxN);
-  int *b1 = (int *) malloc(sizeof(int) * ni1);
-  int *b2 = (int *) malloc(sizeof(int) * (ni2+1));
+  int *b1 = (int *) malloc(sizeof(int) * n1);
+  int *b2 = (int *) malloc(sizeof(int) * (n2+1));
   int *Nk = (int *) malloc(sizeof(int) * Ki);
   int *Nkpos = (int *) malloc(sizeof(int) * Ki);
   double *lpm = (double *) malloc(sizeof(double) * imaxm);
@@ -78,14 +78,14 @@ void gcmp2 (int *pop12,
     nk[i]=0;
   }
   unrecap=0;
-  for (i=0; i<ni; i++){
+  for (i=0; i<n; i++){
     if((pop12[i] >0) && (pop12[i] <= Ki)){ u1[i]=pop12[i];}
     if( pop12[i]==0){ u1[i]=1;}
     if( pop12[i]>Ki){ u1[i]=Ki;}
     nk[u1[i]-1]=nk[u1[i]-1]+1;
     unrecap+=u1[i];
   }
-  for (i=0; i<ni2; i++){
+  for (i=0; i<n2; i++){
     if((pop21[i] >0) && (pop21[i] <= Ki)){ u2[i]=pop21[i];}
     if( pop21[i]==0){ u2[i]=1;}
     if( pop21[i]>Ki){ u2[i]=Ki;}
@@ -95,14 +95,14 @@ void gcmp2 (int *pop12,
   // b is the cumulative version of d, which is uobs
   // so b1 is cumulative unit sizes for first list
   // b2 is cumulative unit sizes for second list
-  b1[ni1-1]=u1[ni1-1];
-  for (i=(ni1-2); i>=0; i--){
+  b1[n1-1]=u1[n1-1];
+  for (i=(n1-2); i>=0; i--){
     b1[i]=b1[i+1]+u1[i];
   }
-  b2[ni2]=0;
-  if(ni2 > 0){
-    b2[ni2-1]=u2[ni2-1];
-    for (i=(ni2-2); i>=0; i--){
+  b2[n2]=0;
+  if(n2 > 0){
+    b2[n2-1]=u2[n2-1];
+    for (i=(n2-2); i>=0; i--){
       b2[i]=b2[i+1]+u2[i];
     }
   }
@@ -111,28 +111,28 @@ void gcmp2 (int *pop12,
      Nkpos[i]=0;
      posu[i]=0.;
   }
-  for (i=ni1; i<imaxN; i++){
-    u1[i]=u1[(int)trunc(10*unif_rand()+ni1-10)];
+  for (i=n1; i<imaxN; i++){
+    u1[i]=u1[(int)trunc(10*unif_rand()+n1-10)];
   }
   // tU1 is the total unit sizes from the first list
   tU1=0;
-  for (i=ni1; i<Ni; i++){
+  for (i=n1; i<Ni; i++){
     tU1+=u1[i];
   }
-  for (i=ni2; i<imaxN; i++){
-    u2[i]=u2[(int)trunc(10*unif_rand()+ni2-10)];
+  for (i=n2; i<imaxN; i++){
+    u2[i]=u2[(int)trunc(10*unif_rand()+n2-10)];
   }
   tU2=unrecap;
-  for (i=ni2; i<Ni; i++){
+  for (i=n2; i<Ni; i++){
     tU2+=u2[i];
   }
   /* Draw initial phis */
   r1=0.;
-  for (i=0; i<ni1; i++){
+  for (i=0; i<n1; i++){
     r1+=(exp_rand()/(tU1+b1[i]));
   }
   r2=0.;
-  for (i=0; i<ni2; i++){
+  for (i=0; i<n2; i++){
     r2+=(exp_rand()/(tU2+b2[i]));
   }
 
@@ -163,19 +163,19 @@ void gcmp2 (int *pop12,
     /* Draw phis */
     // tU1 is the total unit sizes from first list
     tU1=0;
-    for (i=ni1; i<Ni; i++){
+    for (i=n1; i<Ni; i++){
       tU1+=u1[i];
     }
     tU2=unrecap;
-    for (i=ni2; i<Ni; i++){
+    for (i=n2; i<Ni; i++){
       tU2+=u2[i];
     }
     r1=0.;
-    for (i=0; i<ni1; i++){
+    for (i=0; i<n1; i++){
       r1+=(exp_rand()/(tU1+b1[i]));
     }
     r2=0.;
-    for (i=0; i<ni2; i++){
+    for (i=0; i<n2; i++){
       r2+=(exp_rand()/(tU2+b2[i]));
     }
 
@@ -227,7 +227,7 @@ void gcmp2 (int *pop12,
     // N = m + n
     // Compute (log) P(m | \theta and data and \Psi)
     for (i=0; i<imaxm; i++){
-      lpm[i]=i*gammart+lgamma(ni+i+1.)-lgamma(i+1.);
+      lpm[i]=i*gammart+lgamma(n+i+1.)-lgamma(i+1.);
 //    Add in the (log) prior on m: P(m)
       lpm[i]+=lpriorm[i];
       if(lpm[i] > temp) temp = lpm[i];
@@ -243,7 +243,7 @@ void gcmp2 (int *pop12,
       if(temp <= lpm[Ni]) break;
     }
     // Add back the sample size
-    Ni += ni;
+    Ni += n;
     if(Ni > imaxN) Ni = imaxN;
 
 
@@ -255,7 +255,7 @@ void gcmp2 (int *pop12,
     for (i=1; i<Ki; i++){
       pi[i]=pi[i-1]+pi[i];
     }
-    for (i=ni; i<Ni; i++){
+    for (i=n; i<Ni; i++){
       /* Propose unseen size for unit i */
       /* Use rejection sampling */
       sizei=1000000;
@@ -304,10 +304,10 @@ void gcmp2 (int *pop12,
     nk[i]=Nkpos[i];
     posu[i]/=dsamp;
   }
-  for (i=0; i<ni1; i++){
+  for (i=0; i<n1; i++){
      pop12[i]=u1[i];
   }
-  for (i=0; i<ni2; i++){
+  for (i=0; i<n2; i++){
      pop21[i]=u2[i];
   }
   PutRNGstate();  /* Disable RNG before returning */

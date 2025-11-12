@@ -235,7 +235,8 @@ void gcmpvis (int *pop,
 	if(numrec[j]<maxc){
 	  lliki += dpois(numrec[j],exp(temp),give_log1);
 	}else{
-	  lliki += log(1.0-ppois(maxc-1.0,exp(temp),give_log0,give_log0));
+//        lliki += log(1.0-ppois(maxc-1.0,exp(temp),give_log0,give_log0));
+	  lliki += ppois(maxc-1.0, exp(temp), /*lower_tail=*/0, /*log_p=*/1);
 	}   
         if(srd[j]>=0){
 //        Use CMP localized
@@ -573,7 +574,8 @@ void MHcmpmem (int *u, int *n, int *K,
      if(numrec[i]<maxc){
        lliki += dpois(numrec[i],exp(temp),give_log1);
      }else{
-       lliki += log(1.0-ppois(maxc-1.0,exp(temp),give_log0,give_log0));
+   //  lliki += log(1.0-ppois(maxc-1.0,exp(temp),give_log0,give_log0));
+       lliki += ppois(maxc-1.0, exp(temp), /*lower_tail=*/0, /*log_p=*/1);
      }
      if(srd[i]>=0){
 //    lliki += log(poilog(srd[i],log((double)(u[i]))-lmemmui,memnui));
@@ -653,7 +655,8 @@ void MHcmpmem (int *u, int *n, int *K,
        if(numrec[i]<maxc){
 	llikstar += dpois(numrec[i],exp(temp),give_log1);
        }else{
-	llikstar += log(1.0-ppois(maxc-1.0,exp(temp),give_log0,give_log0));
+    //  llikstar += log(1.0-ppois(maxc-1.0,exp(temp),give_log0,give_log0));
+	llikstar += ppois(maxc-1.0, exp(temp), /*lower_tail=*/0, /*log_p=*/1);
        }
        if(srd[i]>=0){
 //      llikstar += log(poilog(srd[i],log(u[i])-lmemmustar,exp(memnustar)));

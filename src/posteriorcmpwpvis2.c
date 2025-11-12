@@ -11,9 +11,9 @@
 
 void gcmpwpvis2 (int *pop12, int *pop21,
             int *K,
-            int *n1,
-            int *n2,
-            int *n12,
+            int *n1i,
+            int *n2i,
+            int *n12i,
             int *samplesize, int *warmup, int *interval,
             double *mu, double *dfmu,
             double *sigma, double *dfsigma,
@@ -49,9 +49,9 @@ void gcmpwpvis2 (int *pop12, int *pop21,
             int *verbose
                          ) {
   int dimsample, Np;
-  int ni12, ni1, ni2, itemp;
+  int n12, n1, n2, itemp;
   int step, staken, getone=1, intervalone=1, verboseMHcmp = 0;
-  int i, j, k, ni, Ni, Ki, isamp, iinterval, isamplesize, iwarmup;
+  int i, j, k, n, Ni, Ki, isamp, iinterval, isamplesize, iwarmup;
   int umax, unrecap;
   double alpha, pnb, rnb;
   double memmui;
@@ -68,14 +68,14 @@ void gcmpwpvis2 (int *pop12, int *pop21,
 
   GetRNGstate();  /* R function enabling uniform RNG */
 
-  ni1=(*n1);
-  ni2=(*n2);
-  ni12=(*n12);
-  ni = ni1 + ni2 - ni12; /* The number unique people seen */
+  n1=(*n1i);
+  n2=(*n2i);
+  n12=(*n12i);
+  n = n1 + n2 - n12; /* The number unique people seen */
   Ni=(*N);
   Ki=(*K);
   imaxN=(*maxN);
-  imaxm=imaxN-ni;
+  imaxm=imaxN-n;
   isamplesize=(*samplesize);
   iinterval=(*interval);
   iwarmup=(*warmup);
@@ -98,8 +98,8 @@ void gcmpwpvis2 (int *pop12, int *pop21,
   double *pd2 = (double *) malloc(sizeof(double) * (10*Ki));
   int *u1 = (int *) malloc(sizeof(int) * imaxN);
   int *u2 = (int *) malloc(sizeof(int) * imaxN);
-  int *b1 = (int *) malloc(sizeof(int) * ni1);
-  int *b2 = (int *) malloc(sizeof(int) * ni2);
+  int *b1 = (int *) malloc(sizeof(int) * n1);
+  int *b2 = (int *) malloc(sizeof(int) * n2);
   int *nk = (int *) malloc(sizeof(int) * Ki);
   int *Nk = (int *) malloc(sizeof(int) * Ki);
   int *Nkpos = (int *) malloc(sizeof(int) * Ki);
@@ -118,17 +118,18 @@ void gcmpwpvis2 (int *pop12, int *pop21,
     nk[i]=0;
   }
   unrecap=0;
-  uprob1=ni;
-// Rprintf("ni12 %d ni1 %d ni2 %d ni %d\n", ni12, ni1, ni2,ni);
-  for (i=0; i<ni1; i++){
-    srd[i] = round( srd[i] / dmemmu);
+  uprob1=n;
+// Rprintf("n12 %d n1 %d n2 %d n %d\n", n12, n1, n2,n);
+  for (i=0; i<n1; i++){
+    srd[i] = (int)round( srd[i] / dmemmu);
+    if(srd[i]<1){ srd[i]=1;}
   }
-  for (i=0; i<ni; i++){
-    if((pop12[i] >0) && (pop12[i] <= Ki*dmemmu)){ u1[i]=round(pop12[i] / dmemmu);}
+  for (i=0; i<n; i++){
+ Rprintf("i %d pop12[i] %d dmemmu %f round(pop12[i] / dmemmu) %d\n", i, pop12[i], dmemmu, (int)round(pop12[i] / dmemmu));
+    if((pop12[i] >0) && (pop12[i] <= Ki*dmemmu)){ u1[i]=(int)round(pop12[i] / dmemmu);}
     if( pop12[i]==0){ u1[i]=1;}
     if( pop12[i]>Ki*dmemmu){ u1[i]=Ki; uprob1--;}
     nk[u1[i]-1]=nk[u1[i]-1]+1;
-// Rprintf("i %d u1[i] %d dmemmu %f\n", i, u1[i], dmemmu);
     unrecap+=u1[i];
   }
   // VIP setting the mem.optimism.prior = mem.optimism to 1
@@ -136,26 +137,31 @@ void gcmpwpvis2 (int *pop12, int *pop21,
   dlmemmu=0.0;
   *lmemmu=0.0;
   //
-  uprob1/=ni;
+  uprob1/=n;
   uprob1 = 0.5 + uprob1/2.0;
-  uprob2=ni2+1;
-  for (i=0; i<ni2; i++){
-    if((pop21[i] >0) && (pop21[i] <= Ki*dmemmu)){ u2[i]=round(pop21[i] / dmemmu);}
+  uprob2=n2+1;
+  for (i=0; i<n2; i++){
+    srd2[i] = (int)round( srd2[i] / dmemmu);
+    if(srd2[i]<1){ srd2[i]=1;}
+  }
+  for (i=0; i<n2; i++){
+ Rprintf("i %d pop21[i] %d dmemmu %f (int)round(pop21[i] / dmemmu) %d\n", i, pop21[i], dmemmu, (int)round(pop21[i] / dmemmu));
+    if((pop21[i] >0) && (pop21[i] <= Ki*dmemmu)){ u2[i]=(int)round(pop21[i] / dmemmu);}
     if( pop21[i]==0){ u2[i]=1;}
     if( pop21[i]>Ki*dmemmu){ u2[i]=Ki; uprob2--;}
-    srd2[i] = round( srd2[i] / dmemmu);
     unrecap-=u2[i];
+    if(rc[i]!=0) unrecap-=u2[i];
   }
 
-  uprob2/=ni2+1;
+  uprob2/=n2+1;
   uprob2 = 0.5 + uprob2/2.0;
-  b1[ni1-1]=u1[ni1-1];
-  for (i=(ni1-2); i>=0; i--){
+  b1[n1-1]=u1[n1-1];
+  for (i=(n1-2); i>=0; i--){
     b1[i]=b1[i+1]+u1[i];
   }
-  if(ni2 > 0){
-    b2[ni2-1]=u2[ni2-1];
-    for (i=(ni2-2); i>=0; i--){
+  if(n2 > 0){
+    b2[n2-1]=u2[n2-1];
+    for (i=(n2-2); i>=0; i--){
       b2[i]=b2[i+1]+u2[i];
     }
   }
@@ -167,27 +173,27 @@ void gcmpwpvis2 (int *pop12, int *pop21,
   for (i=0; i<10*Ki; i++){
      posd[i]=0.;
   }
-  for (i=ni1; i<imaxN; i++){
-    u1[i]=u1[(int)trunc(10*unif_rand()+ni1-10)];
+  for (i=n1; i<imaxN; i++){
+    u1[i]=u1[(int)trunc(10*unif_rand()+n1-10)];
   }
   tU1=0;
-  for (i=ni1; i<Ni; i++){
+  for (i=n1; i<Ni; i++){
     tU1+=u1[i];
   }
-  for (i=ni2; i<imaxN; i++){
-    u2[i]=u2[(int)trunc(10*unif_rand()+ni2-10)];
+  for (i=n2; i<imaxN; i++){
+    u2[i]=u2[(int)trunc(10*unif_rand()+n2-10)];
   }
   tU2=unrecap;
-  for (i=ni2; i<Ni; i++){
+  for (i=n2; i<Ni; i++){
     tU2+=u2[i];
   }
   /* Draw initial phis */
   r1=0.;
-  for (i=0; i<ni1; i++){
+  for (i=0; i<n1; i++){
     r1+=(exp_rand()/(tU1+b1[i]));
   }
   r2=0.;
-  for (i=0; i<ni2; i++){
+  for (i=0; i<n2; i++){
     r2+=(exp_rand()/(tU2+b2[i]));
   }
 
@@ -262,10 +268,10 @@ void gcmpwpvis2 (int *pop12, int *pop21,
 
     /* Draw new beta using MCMC */
     if (step == -iwarmup || step % 10 == 0) {
-     MHwpmem2(u1,u2,n1,n2,K,beta0muprior,beta0sigmaprior,betatmuprior,betatsigmaprior,betaumuprior,betausigmaprior,
+     MHwpmem2(u1,u2,&n1,&n2,K,beta0muprior,beta0sigmaprior,betatmuprior,betatsigmaprior,betaumuprior,betausigmaprior,
        lmemmu,memdfmu,memnu,memdfnu,memod,srd,numrec,rectime,srd2,numrec2,rectime2,maxcoupons,
        beta0proposal, betatproposal, betauproposal,
-       lmemmuproposal,memnuproposal,
+       lmemmuproposal, memnuproposal,
        beta0sample, betatsample, betausample, lmemmusample,memnusample,
        &getone, &staken, warmupbeta, &intervalone,
        &verboseMHcmp);
@@ -282,7 +288,7 @@ void gcmpwpvis2 (int *pop12, int *pop21,
      nk[i]=0;
     }
     umax=0;
-    for (j=0; j<ni1; j++){
+    for (j=0; j<n1; j++){
       if(srd[j] <= (10*Ki)){
 //     Multiply by the Conway-Maxwell-Poisson PMF for observation
        for (i=0; i<Ki; i++){
@@ -344,8 +350,9 @@ void gcmpwpvis2 (int *pop12, int *pop21,
      /* Deal with the outliers */
      umax=nk[Ki-1];
      sizei=Ki;
-     for (j=0; j<ni1; j++){
+     for (j=0; j<n1; j++){
       if(srd[j] > 10*Ki){
+ Rprintf("j %d srd[j] %d nk[j] %d\n", j, srd[j], nk[j]);
        while((umax==0) & (sizei > 1)){
          sizei--;
          umax=nk[sizei-1];
@@ -354,21 +361,21 @@ void gcmpwpvis2 (int *pop12, int *pop21,
        umax--;
       }
      }
-     for (j=0; j<ni1; j++){
+     for (j=0; j<n1; j++){
       if(srd[j] > 10*Ki){
        nk[u1[j]-1]=nk[u1[j]-1]+1;
       }
      }
 
      // Rebuild b1
-     b1[ni1-1]=u1[ni1-1];
-     for (i=(ni1-2); i>=0; i--){
+     b1[n1-1]=u1[n1-1];
+     for (i=(n1-2); i>=0; i--){
       b1[i]=b1[i+1]+u1[i];
      }
      /* End of imputed unit sizes for observed in the first RDS*/
 
     /* Draw true degrees (sizes) of the second RDS sample based on the reported degrees*/
-    for (j=0; j<ni2; j++){
+    for (j=0; j<n2; j++){
      if(srd2[j] <= (10*Ki)){
 //    Multiply by the Conway-Maxwell-Poisson PMF for observation
       for (i=0; i<Ki; i++){
@@ -433,7 +440,7 @@ void gcmpwpvis2 (int *pop12, int *pop21,
      /* Deal with the outliers */
      umax=nk[Ki-1];
      sizei=Ki;
-     for (j=0; j<ni2; j++){
+     for (j=0; j<n2; j++){
       if(srd2[j] > 10*Ki){
        while((umax==0) & (sizei > 1)){
          sizei--;
@@ -445,26 +452,26 @@ void gcmpwpvis2 (int *pop12, int *pop21,
      }
 
      itemp=0;
-     for (j=0; j<ni2; j++){
+     for (j=0; j<n2; j++){
       if(rc[j]==0){
         nk[u2[j]-1]=nk[u2[j]-1]+1;
-        u1[ni1 + itemp]=u2[j];
+        u1[n1 + itemp]=u2[j];
         itemp++;
       }
      }
 
      itemp=0;
-     for (i=0; i<ni1; i++){
+     for (i=0; i<n1; i++){
        itemp+=u1[i];
      }
-     for (i=0; i<ni2; i++){
+     for (i=0; i<n2; i++){
        if(rc[i]!=0) itemp-=u2[i];
      }
      unrecap=itemp;
      // Rebuild b2
-     if(ni2 > 0){
-       b2[ni2-1]=u2[ni2-1];
-       for (i=(ni2-2); i>=0; i--){
+     if(n2 > 0){
+       b2[n2-1]=u2[n2-1];
+       for (i=(n2-2); i>=0; i--){
          b2[i]=b2[i+1]+u2[i];
        }
      }
@@ -474,19 +481,19 @@ void gcmpwpvis2 (int *pop12, int *pop21,
 
     /* Draw phis */
     tU1=0;
-    for (i=ni1; i<Ni; i++){
+    for (i=n1; i<Ni; i++){
       tU1+=u1[i];
     }
     tU2=unrecap;
-    for (i=ni2; i<Ni; i++){
+    for (i=n2; i<Ni; i++){
       tU2+=u2[i];
     }
     r1=0.;
-    for (i=0; i<ni1; i++){
+    for (i=0; i<n1; i++){
       r1+=exp_rand()/(tU1+b1[i]);
     }
     r2=0.;
-    for (i=0; i<ni2; i++){
+    for (i=0; i<n2; i++){
       r2+=exp_rand()/(tU2+b2[i]);
     }
 
@@ -501,7 +508,7 @@ void gcmpwpvis2 (int *pop12, int *pop21,
     // N = m + n
     // Compute (log) P(m | \theta and data and \Psi)
     for (i=0; i<imaxm; i++){
-      lpm[i]=i*gammart+lgamma(ni+i+1.)-lgamma(i+1.);
+      lpm[i]=i*gammart+lgamma(n+i+1.)-lgamma(i+1.);
 //    Add in the (log) prior on m: P(m)
       lpm[i]+=lpriorm[i];
       if(lpm[i] > temp) temp = lpm[i];
@@ -517,7 +524,7 @@ void gcmpwpvis2 (int *pop12, int *pop21,
       if(temp <= lpm[Ni]) break;
     }
     // Add back the sample size
-    Ni += ni;
+    Ni += n;
     if(Ni > imaxN) Ni = imaxN;
 
 
@@ -529,7 +536,7 @@ void gcmpwpvis2 (int *pop12, int *pop21,
     for (i=1; i<Ki; i++){
       pi[i]=pi[i-1]+pi[i];
     }
-    for (i=ni; i<Ni; i++){
+    for (i=n; i<Ni; i++){
       /* Propose unseen size for unit i */
       /* Use rejection sampling */
       sizei=1000000;
@@ -546,8 +553,25 @@ void gcmpwpvis2 (int *pop12, int *pop21,
        }
       }
       u1[i]=sizei;
-      u2[i]=sizei;
       Nk[sizei-1]=Nk[sizei-1]+1;
+    }
+    for (i=n; i<Ni; i++){
+      /* Propose unseen size for unit i */
+      /* Use rejection sampling */
+      sizei=1000000;
+      while(sizei >= Ki){
+       sizei=1000000;
+       while(log(1.0-unif_rand()) > -(r1+r2)*sizei){
+        /* Now propose unseen size for unit i */
+        /* In the next two lines a sizei is chosen */
+        /* with parameters lnlami and nui */
+        temp = unif_rand();
+        for (sizei=1; sizei<=Ki; sizei++){
+          if(temp <= pi[sizei-1]) break;
+        }
+       }
+      }
+      u2[i]=sizei;
     }
     if (step > 0 && step % iinterval == 0) {
       /* record statistics for posterity */
@@ -571,17 +595,17 @@ void gcmpwpvis2 (int *pop12, int *pop21,
       }
       for (i=0; i<Ki; i++){
         Nkpos[i]=Nkpos[i]+Nk[i];
-        posu[i]+=((Nk[i]*1.)/Nd);
+        posu[i]+=(((double)(Nk[i]))/Nd);
       }
-      for (i=0; i<ni1; i++){
-        vsample[isamp*ni1+i]=u1[i];
+      for (i=0; i<n1; i++){
+        vsample[isamp*n1+i]=u1[i];
         if((srd[i]>0) && (srd[i] <= 10*Ki)){ posd[srd[i]-1]+=(1./Nd); }
       }
-      for (i=0; i<ni2; i++){
-        vsample2[isamp*ni2+i]=u2[i];
+      for (i=0; i<n2; i++){
+        vsample2[isamp*n2+i]=u2[i];
       }
 //    Record the predicted degrees (not unit sizes)
-      for (i=ni1; i<Ni; i++){
+      for (i=n1; i<Ni; i++){
         memmui = exp(lmemmui)*u1[i];
         rnb=memmui/(alpha-1.);
         pd2[0]= exp(-fabs(memmui-1.)/sqrt(memnui));
@@ -605,10 +629,13 @@ void gcmpwpvis2 (int *pop12, int *pop21,
     nk[i]=Nkpos[i];
     posu[i]/=dsamp;
   }
-  for (i=0; i<ni1; i++){
+  for (i=0; i<Ki; i++){
+ Rprintf("i %d posu[i] %f nk[i] %d Nk[i] %d\n", i, posu[i], nk[i], Nk[i]);
+  }
+  for (i=0; i<n1; i++){
      pop12[i]=u1[i];
   }
-  for (i=0; i<ni2; i++){
+  for (i=0; i<n2; i++){
      pop21[i]=u2[i];
   }
   PutRNGstate();  /* Disable RNG before returning */
@@ -635,7 +662,7 @@ void gcmpwpvis2 (int *pop12, int *pop21,
   free(memnusample);
 }
 
-void MHwpmem2 (int *u1, int *u2, int *n1, int *n2, int *K,
+void MHwpmem2 (int *u1, int *u2, int *n1i, int *n2i, int *K,
             double *beta0, double *beta0s, double *betat, double *betats, double *betau, double *betaus,
             double *lmemmu, double *memdfmu,
             double *memnu, double *memdfnu,
@@ -654,7 +681,7 @@ void MHwpmem2 (int *u1, int *u2, int *n1, int *n2, int *K,
             int *samplesize, int *staken, int *warmupbeta, int *interval,
             int *verbose
          ) {
-  int Ki, maxc, ni1, ni2;
+  int Ki, maxc, n1, n2;
   int step, taken, give_log1=1, give_log0=0;
   int i, k, isamp, iinterval, isamplesize, iwarmupbeta;
   double ip, cutoff;
@@ -710,18 +737,19 @@ void MHwpmem2 (int *u1, int *u2, int *n1, int *n2, int *K,
   // First set starting values
   isamp = taken = 0;
   step = -iwarmupbeta;
-  ni1 =(*n1);
-  ni2 =(*n2);
+  n1 =(*n1i);
+  n2 =(*n2i);
   maxc=(*maxcoupons);
   beta0i = beta0sample[0];
   betati = betatsample[0];
   betaui = betausample[0];
   lmemmui = lmemmusample[0];
   memnui = memnusample[0];
+  rmemnui  = sqrt(memnui);
 
   // Compute initial current lik
   lliki = 0.0;
-  for (i=0; i<ni1; i++){
+  for (i=0; i<n1; i++){
      temp = beta0i + betati*log(rectime[i]) + betaui*log(u1[i]);
      if(numrec[i]<maxc){
        lliki += dpois(numrec[i],exp(temp),give_log1);
@@ -753,7 +781,7 @@ void MHwpmem2 (int *u1, int *u2, int *n1, int *n2, int *K,
       lliki += log((double)(u1[i]));
     }
   }
-  for (i=0; i<ni2; i++){
+  for (i=0; i<n2; i++){
      temp = beta0i + betati*log(rectime2[i]) + betaui*log(u2[i]);
      if(numrec2[i]<maxc){
        lliki += dpois(numrec2[i],exp(temp),give_log1);
@@ -789,9 +817,8 @@ void MHwpmem2 (int *u1, int *u2, int *n1, int *n2, int *K,
 
   // Compute initial prior
   pibeta0i = dnorm(beta0i, dbeta0, dbeta0s, give_log1);
-  pibetati = dnorm(betati, dbetat, dbetats, give_log1);
-  pibetaui = dnorm(betaui, dbetau, dbetaus, give_log1);
-  rmemnui  = sqrt(memnui);
+  if(dbetats > 0.0) pibetati = dnorm(betati, dbetat, dbetats, give_log1);
+  if(dbetaus > 0.0) pibetaui = dnorm(betaui, dbetau, dbetaus, give_log1);
   pimemi = dnorm(lmemmui, dlmemmu, rmemnui/rmemdfmu, give_log1);
   pimemi = pimemi+dsclinvchisq(memnui, dmemdfnu, dmemnu);
 
@@ -799,7 +826,7 @@ void MHwpmem2 (int *u1, int *u2, int *n1, int *n2, int *K,
 //     -log(dmemnuproposal*memnui);
 
   // Now do the MCMC updates (starting with the warmup updates)
-  while (isamp < isamplesize && step < 1000) {
+  while (isamp < isamplesize && step < iwarmupbeta) {
     /* Propose new beta */
     beta0star = rnorm(beta0i, dbeta0proposal);
     if(dbetats > 0.0){
@@ -823,7 +850,7 @@ void MHwpmem2 (int *u1, int *u2, int *n1, int *n2, int *K,
     rmemnustar = sqrt(memnustar);
 
     llikstar = 0.0;
-    for (i=0; i<ni1; i++){
+    for (i=0; i<n1; i++){
        temp = beta0star + betatstar*log(rectime[i]) + betaustar*log(u1[i]);
        if(numrec[i]<maxc){
          llikstar += dpois(numrec[i],exp(temp),give_log1);
@@ -856,7 +883,7 @@ void MHwpmem2 (int *u1, int *u2, int *n1, int *n2, int *K,
 
        }
     }
-    for (i=0; i<ni2; i++){
+    for (i=0; i<n2; i++){
        temp = beta0star + betatstar*log(rectime2[i]) + betaustar*log(u2[i]);
        if(numrec2[i]<maxc){
          llikstar += dpois(numrec2[i],exp(temp),give_log1);
@@ -927,8 +954,8 @@ void MHwpmem2 (int *u1, int *u2, int *n1, int *n2, int *K,
       lliki = llikstar;
       qi = qstar;
       pibeta0i = pibeta0star;
-      pibetati = pibetatstar;
-      pibetaui = pibetaustar;
+      if(dbetats > 0.0) pibetati = pibetatstar;
+      if(dbetaus > 0.0) pibetaui = pibetaustar;
       pimemi = pimemstar;
       taken++;
       if (step > 0 && step==(iinterval*(step/iinterval))) {

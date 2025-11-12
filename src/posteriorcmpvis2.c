@@ -282,7 +282,8 @@ void gcmpvis2 (int *pop12, int *pop21,
          if(numrec[j]<maxc){
            lliki += dpois(numrec[j],exp(temp),give_log1);
          }else{
- 	  lliki += log(1.0-ppois(maxc-1.0,exp(temp),give_log0,give_log0));
+//	  lliki += log(1.0-ppois(maxc-1.0,exp(temp),give_log0,give_log0));
+          lliki += ppois(maxc-1.0, exp(temp), /*lower_tail=*/0, /*log_p=*/1);
          }
 //      if(srd[j] < 0) Rprintf("srd: %d\n", srd[j]);
         if(srd[j]>=0){
@@ -362,7 +363,8 @@ void gcmpvis2 (int *pop12, int *pop21,
         if(numrec2[j]<maxc){
           lliki += dpois(numrec2[j],exp(temp),give_log1);
         }else{
-	  lliki += log(1.0-ppois(maxc-1.0,exp(temp),give_log0,give_log0));
+   //     lliki += log(1.0-ppois(maxc-1.0,exp(temp),give_log0,give_log0));
+          lliki += ppois(maxc-1.0, exp(temp), /*lower_tail=*/0, /*log_p=*/1);
         }
         if(srd2[j]>=0){
 //        Use CMP localized
@@ -685,7 +687,8 @@ void MHcmpbetau (int *d1, int *d2, int *n1, int *n2, int *K,
      if(numrec[i]<maxc){
        lliki += dpois(numrec[i],exp(temp),give_log1);
      }else{
-       lliki += log(1.0-ppois(maxc-1.0,exp(temp),give_log0,give_log0));
+   //  lliki += log(1.0-ppois(maxc-1.0,exp(temp),give_log0,give_log0));
+       lliki += ppois(maxc-1.0, exp(temp), /*lower_tail=*/0, /*log_p=*/1);
      }
      if(srd[i]>=0){
 //    Use CMP localized
@@ -713,7 +716,8 @@ void MHcmpbetau (int *d1, int *d2, int *n1, int *n2, int *K,
      if(numrec2[i]<maxc){
        lliki += dpois(numrec2[i],exp(temp),give_log1);
      }else{
-       lliki += log(1.0-ppois(maxc-1.0,exp(temp),give_log0,give_log0));
+  //   lliki += log(1.0-ppois(maxc-1.0,exp(temp),give_log0,give_log0));
+       lliki += ppois(maxc-1.0, exp(temp), /*lower_tail=*/0, /*log_p=*/1);
      }
      if(srd2[i]>=0){
 //    Use CMP localized
@@ -775,7 +779,8 @@ void MHcmpbetau (int *d1, int *d2, int *n1, int *n2, int *K,
        if(numrec[i]<maxc){
          llikstar += dpois(numrec[i],exp(temp),give_log1);
        }else{
-         llikstar += log(1.0-ppois(maxc-1.0,exp(temp),give_log0,give_log0));
+    //   llikstar += log(1.0-ppois(maxc-1.0,exp(temp),give_log0,give_log0));
+         llikstar += ppois(maxc-1.0, exp(temp), /*lower_tail=*/0, /*log_p=*/1);
        }
        if(srd[i]>=0){
 //      Use CMP localized
@@ -805,7 +810,8 @@ void MHcmpbetau (int *d1, int *d2, int *n1, int *n2, int *K,
        if(numrec2[i]<maxc){
          llikstar += dpois(numrec2[i],exp(temp),give_log1);
        }else{
-         llikstar += log(1.0-ppois(maxc-1.0,exp(temp),give_log0,give_log0));
+     //  llikstar += log(1.0-ppois(maxc-1.0,exp(temp),give_log0,give_log0));
+         llikstar += ppois(maxc-1.0, exp(temp), /*lower_tail=*/0, /*log_p=*/1);
        }
        if(srd2[i]>=0){
 //      Use CMP localized
