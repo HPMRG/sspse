@@ -229,7 +229,7 @@ void gcmpvis (int *pop,
       if(srd[j] <= Ki){
 //    Multiply by the PoissonLogNormal PMF for observation
       for (i=0; i<Ki; i++){
-       temp = beta0i + betati*log(rectime[j]) + betaui*log(i+1.0);
+       temp = beta0i + betati*log(rectime[j]+1.0) + betaui*log(i+1.0);
        // Next to exclude unit sizes inconsistent with the number of recruits
         lliki=0.0;
 	if(numrec[j]<maxc){
@@ -570,7 +570,7 @@ void MHcmpmem (int *u, int *n, int *K,
   // Compute initial current lik
   lliki = 0.0;
   for (i=0; i<ni; i++){
-     temp = beta0i + betati*log(rectime[i]) + betaui*log(u[i]);
+     temp = beta0i + betati*log(rectime[i]+1.0) + betaui*log(u[i]);
      if(numrec[i]<maxc){
        lliki += dpois(numrec[i],exp(temp),give_log1);
      }else{
@@ -650,7 +650,7 @@ void MHcmpmem (int *u, int *n, int *K,
   
     llikstar = 0.0;
     for (i=0; i<ni; i++){
-       temp = beta0star + betatstar*log(rectime[i]) + betaustar*log(u[i]);
+       temp = beta0star + betatstar*log(rectime[i]+1.0) + betaustar*log(u[i]);
   //   if((u[i] <= maxc)|(numrec[i]<maxc)){
        if(numrec[i]<maxc){
 	llikstar += dpois(numrec[i],exp(temp),give_log1);

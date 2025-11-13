@@ -29,6 +29,8 @@
 #' @param interval count; the number of proposals between sampled statistics.
 #' @param warmup count; the number of proposals before any MCMC sampling is
 #' done. It typically is set to a fairly large number.
+#' @param burnin count; the number of proposals before any MCMC sampling is
+#' done. This is depreciated in favor of the alias \code{warmup}.
 #' @param maxN integer; maximum possible population size. By default this is
 #' determined from an upper quantile of the prior distribution.
 #' @param K count; the maximum visibility for an individual. This is usually
@@ -398,7 +400,7 @@ posteriorsize<-function(s,
                   median.prior.size=NULL,
                   samplesize=1000,
                   interval=10,
-                  warmup=5000,
+                  warmup=5000, burnin=warmup,
                   maxN=NULL,
                   K=FALSE,
                   quartiles.prior.size=NULL,
@@ -446,6 +448,10 @@ posteriorsize<-function(s,
                   cmp=poscmpwp,
                   poscmpwp)
   K.fixed <- K
+  if(!missing(burnin)){
+   warning("The parameter 'burnin' has been renamed to 'warmup'. Please use 'warmup' instead.")
+   if(missing(warmup)) warmup <- burnin
+  } 
   # If the passed "s" is an rds.data.frame, extract out the components
   s2.nomiss <- NULL
   rc <- NULL

@@ -293,7 +293,7 @@ void gcmpwpvis2 (int *pop12, int *pop21,
 //     Multiply by the Conway-Maxwell-Poisson PMF for observation
        for (i=0; i<Ki; i++){
         // Next to exclude unit sizes inconsistent with the number of recruits
-        temp = beta0i + betati*log(rectime[j]) + betaui*log(i+1.0);
+        temp = beta0i + betati*log(rectime[j]+1.0) + betaui*log(i+1.0);
          lliki=0.0;
          if(numrec[j]<maxc){
            lliki += dpois(numrec[j],exp(temp),give_log1);
@@ -380,7 +380,7 @@ void gcmpwpvis2 (int *pop12, int *pop21,
 //    Multiply by the Conway-Maxwell-Poisson PMF for observation
       for (i=0; i<Ki; i++){
        // Next to exclude unit sizes inconsistent with the number of recruits
-       temp = beta0i + betati*log(rectime2[j]) + betaui*log(i+1.0);
+       temp = beta0i + betati*log(rectime2[j]+1.0) + betaui*log(i+1.0);
         lliki=0.0;
         if(numrec2[j]<maxc){
           lliki += dpois(numrec2[j],exp(temp),give_log1);
@@ -750,7 +750,7 @@ void MHwpmem2 (int *u1, int *u2, int *n1i, int *n2i, int *K,
   // Compute initial current lik
   lliki = 0.0;
   for (i=0; i<n1; i++){
-     temp = beta0i + betati*log(rectime[i]) + betaui*log(u1[i]);
+     temp = beta0i + betati*log(rectime[i]+1.0) + betaui*log(u1[i]);
      if(numrec[i]<maxc){
        lliki += dpois(numrec[i],exp(temp),give_log1);
      }else{
@@ -782,7 +782,7 @@ void MHwpmem2 (int *u1, int *u2, int *n1i, int *n2i, int *K,
     }
   }
   for (i=0; i<n2; i++){
-     temp = beta0i + betati*log(rectime2[i]) + betaui*log(u2[i]);
+     temp = beta0i + betati*log(rectime2[i]+1.0) + betaui*log(u2[i]);
      if(numrec2[i]<maxc){
        lliki += dpois(numrec2[i],exp(temp),give_log1);
      }else{
@@ -851,7 +851,7 @@ void MHwpmem2 (int *u1, int *u2, int *n1i, int *n2i, int *K,
 
     llikstar = 0.0;
     for (i=0; i<n1; i++){
-       temp = beta0star + betatstar*log(rectime[i]) + betaustar*log(u1[i]);
+       temp = beta0star + betatstar*log(rectime[i]+1.0) + betaustar*log(u1[i]);
        if(numrec[i]<maxc){
          llikstar += dpois(numrec[i],exp(temp),give_log1);
        }else{
@@ -884,7 +884,7 @@ void MHwpmem2 (int *u1, int *u2, int *n1i, int *n2i, int *K,
        }
     }
     for (i=0; i<n2; i++){
-       temp = beta0star + betatstar*log(rectime2[i]) + betaustar*log(u2[i]);
+       temp = beta0star + betatstar*log(rectime2[i]+1.0) + betaustar*log(u2[i]);
        if(numrec2[i]<maxc){
          llikstar += dpois(numrec2[i],exp(temp),give_log1);
        }else{

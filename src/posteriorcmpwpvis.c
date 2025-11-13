@@ -237,9 +237,10 @@ void gcmpwpvis (int *pop,
      if(srd[j] <= (10*Ki)){
 //    Multiply by the Conway-Maxwell-Poisson PMF for observation
       for (i=0; i<Ki; i++){
-       // Next to exclude unit sizes inconsistent with the number of recruits
-       temp = beta0i + betati*log(rectime[j]) + betaui*log(i+1.0);
-    // if((numrec[j] <= (i+1))){
+        // Next to exclude unit sizes inconsistent with the number of recruits
+// if(j == 0) Rprintf("j %d numrec[j] %d rectime[j] %d maxc %d temp %f\n", j, numrec[j],rectime[j],maxc,temp );
+        temp = beta0i + betati*log(rectime[j]+1.0) + betaui*log(i+1.0);
+    //  if((numrec[j] <= (i+1))){
         lliki=0.0;
    //   if(((i+1) <= maxc)|(numrec[j]<maxc)){
         if(numrec[j]<maxc){
@@ -265,20 +266,23 @@ void gcmpwpvis (int *pop,
             pis2+=pd2[k];
           }
           if(srd[j] <= 10*Ki){
+ //if(j == 0) Rprintf("j %d pd2[srd[j]-1] %f lliki %f\n", j, pd2[srd[j]-1], lliki);
             lliki += log(pd2[srd[j]-1]);
           }else{
             lliki += log(pis2);
           }
         }
         pd[i]=pi[i]*exp(lliki)*(i+1.);
+// if(j == 0) Rprintf("j %d pd[i] %f pi[i] %f lliki %f\n", j, pd[i], pi[i], lliki);
       }
-    pis=0.;
-    for (i=0; i<Ki; i++){
-      pis+=pd[i];
-    }
-    for (i=0; i<Ki; i++){
-      pd[i]/=pis;
-    }
+      pis=0.;
+      for (i=0; i<Ki; i++){
+// if(j == 0) Rprintf("j %d pd[i] %f srd[j] %d\n", j, pd[i], srd[j]);
+        pis+=pd[i];
+      }
+      for (i=0; i<Ki; i++){
+        pd[i]/=pis;
+      }
       for (i=1; i<Ki; i++){
        pd[i]=pd[i-1]+pd[i];
       }
@@ -291,28 +295,28 @@ void gcmpwpvis (int *pop,
       }
       nk[sizei-1]=nk[sizei-1]+1;
       u[j]=sizei;
+// if(j == 0) Rprintf("j %d u[j] %d pd[35] %f pd[34] %f\n", j, u[j], pd[35], pd[34]);
+     } // srd
+    } // for (j=0; j<n; j++){
 
+    /* Deal with the outliers */
+    umax=nk[Ki-1];
+    sizei=Ki;
+    for (j=0; j<n; j++){
+     if(srd[j] > 10*Ki){
+      while((umax==0) & (sizei > 1)){
+        sizei--;
+        umax=nk[sizei-1];
+      }
+      u[j]=sizei;
+      umax--;
+     }
     }
-     } 
-
-     /* Deal with the outliers */
-     umax=nk[Ki-1];
-     sizei=Ki;
-     for (j=0; j<n; j++){
-      if(srd[j] > 10*Ki){
-       while((umax==0) & (sizei > 1)){
-         sizei--;
-         umax=nk[sizei-1];
-       }
-       u[j]=sizei;
-       umax--;
-      }
+    for (j=0; j<n; j++){
+     if(srd[j] > 10*Ki){
+      nk[u[j]-1]=nk[u[j]-1]+1;
      }
-     for (j=0; j<n; j++){
-      if(srd[j] > 10*Ki){
-       nk[u[j]-1]=nk[u[j]-1]+1;
-      }
-     }
+    }
 
      // Rebuild b
      b[n-1]=u[n-1];
@@ -549,7 +553,7 @@ void MHwpmem (int *u, int *ni, int *K,
   // Compute initial current lik
   lliki = 0.0;
   for (i=0; i<n; i++){
-     temp = beta0i + betati*log(rectime[i]) + betaui*log(u[i]);
+     temp = beta0i + betati*log(rectime[i]+1.0) + betaui*log(u[i]);
  // if(numrec[i] <= u[i]){
  //  if((u[i] <= maxc)|(numrec[i]<maxc)){
      if(numrec[i]<maxc){
@@ -622,7 +626,7 @@ void MHwpmem (int *u, int *ni, int *K,
     llikstar = 0.0;
     for (i=0; i<n; i++){
   //  if(numrec[i] <= u[i]){
-       temp = beta0star + betatstar*log(rectime[i]) + betaustar*log(u[i]);
+       temp = beta0star + betatstar*log(rectime[i]+1.0) + betaustar*log(u[i]);
   //   if((u[i] <= maxc)|(numrec[i]<maxc)){
        if(numrec[i]<maxc){
 	llikstar += dpois(numrec[i],exp(temp),give_log1);
